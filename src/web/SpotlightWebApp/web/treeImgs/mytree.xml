@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : mytree.xml.xml
+    Created on : September 29, 2010, 6:07 PM
+    Author     : Andrés
+    Description:
+        Purpose of the document follows.
+-->
+<tree>
+  <node caption="Node 1" url="about:blank" target="other" retreiveUrl="tree2.xml" icon="img/folder.gif" expanded="true"/>
+  <node caption="Node 2" url="about:blank" target="other" retreiveUrl="tree2.xml" icon="img/folder.gif"/>
+  <node caption="Node 3" url="about:blank" target="other" retreiveUrl="tree2.xml" icon="img/folder.gif"/>
+  <node caption="Node 4" url="about:blank" target="other" retreiveUrl="tree2.xml" icon="img/folder.gif"/>
+  <node caption="Node 5" url="about:blank" target="other" retreiveUrl="tree2.xml" icon="img/folder.gif"/>
+</tree>

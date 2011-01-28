@@ -1,0 +1,11 @@
+   .defaultTreeTable{
+          margin : 0;
+          padding : 0;
+          border : 0;          
+    }
+    .containerTableStyle { overflow : auto;}
+    .standartTreeRow{  font-family : Verdana, Geneva, Arial, Helvetica, sans-serif;   font-size : 12px; -moz-user-select: none; }
+    .selectedTreeRow{ background-color : navy; color:white; font-family : Verdana, Geneva, Arial, Helvetica, sans-serif;     font-size : 12px;  -moz-user-select: none;  }
+    .standartTreeImage{ width:18px; height:18px;  overflow:hidden; border:0; padding:0; margin:0; }
+    .hiddenRow { width:1px;   overflow:hidden;  }
+    .dragSpanDiv{   font-size : 12px;   border: thin solid 1 1 1 1; }
