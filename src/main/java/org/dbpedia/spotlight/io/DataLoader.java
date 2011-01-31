@@ -1,7 +1,6 @@
 package org.dbpedia.spotlight.io;
 
-import it.unimi.dsi.io.FastBufferedReader;
-import it.unimi.dsi.lang.MutableString;
+import com.sun.org.apache.xerces.internal.xs.StringList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -61,11 +60,10 @@ public class DataLoader {
 
         if (f.getName().length() != 0) {
             try {
-                FastBufferedReader in = new FastBufferedReader(new FileReader(f));
-                //BufferedReader in  = new BufferedReader();
-                MutableString line = new MutableString();
+                BufferedReader in  = new BufferedReader(new FileReader(f));  //FastBufferedReader in = new FastBufferedReader(new FileReader(f));
+                String line;  //MutableString line = new MutableString();
                 int i = 0;
-                while ((line = in.readLine(line)) != null) {
+                while ((line = in.readLine()) != null) {
 
                     if (line==null || line.trim().equals(""))
                         continue;

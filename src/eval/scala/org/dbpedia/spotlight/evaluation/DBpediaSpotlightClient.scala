@@ -1,6 +1,6 @@
 package org.dbpedia.spotlight.evaluation
 
-import com.sun.org.apache.commons.logging.LogFactory
+import org.apache.commons.logging.LogFactory
 import java.io.{PrintStream, File}
 import io.Source
 import org.dbpedia.spotlight.annotate.DefaultAnnotator

@@ -224,7 +224,7 @@ object WebOccurrenceSource
         while (resourceCount < resourceCountLimit)
         {
             val line = linesIterator.next.trim
-            val targetResource = new DBpediaResource(line.split("\t")(0))
+            val targetResource = new DBpediaResource(line)
 
             if (collect) {
                 LOG.info("** Resource: "+targetResource)
