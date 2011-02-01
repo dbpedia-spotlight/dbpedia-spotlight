@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.ScoreDoc;
 import org.dbpedia.spotlight.disambiguate.Disambiguator;
+import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
 import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher;
@@ -69,12 +70,12 @@ public class MergedOccurrencesDisambiguator implements Disambiguator {
     }
 
 
-    public DBpediaResourceOccurrence disambiguate(SurfaceFormOccurrence sfOcc) throws SearchException, ItemNotFoundException {
+    public DBpediaResourceOccurrence disambiguate(SurfaceFormOccurrence sfOcc) throws SearchException, ItemNotFoundException, InputException {
         //LOG.debug("Disambiguating occurrence: "+sfOcc);
 
         // search index for surface form
         LOG.info("Getting hits for "+sfOcc.surfaceForm()+" and the context...");
-        ScoreDoc[] hits = mMergedSearcher.getHits(sfOcc.surfaceForm(), sfOcc.context());
+        ScoreDoc[] hits = mMergedSearcher.getHits(sfOcc);
  
         if (hits.length == 0)
             throw new ItemNotFoundException("Not found in index: "+sfOcc);
@@ -104,7 +105,7 @@ public class MergedOccurrencesDisambiguator implements Disambiguator {
                 sfOcc.spotProb());         // percentage of the second ranked entity in relation to the first ranked entity
     }
 
-    public List<DBpediaResourceOccurrence> bestK(SurfaceFormOccurrence sfOccurrence, int k) throws SearchException, ItemNotFoundException {
+    public List<DBpediaResourceOccurrence> bestK(SurfaceFormOccurrence sfOccurrence, int k) throws SearchException, ItemNotFoundException, InputException {
         LOG.debug("Disambiguating "+sfOccurrence.surfaceForm());
 
         //TODO test with narrow context to see if it's faster, better, worse
@@ -113,7 +114,7 @@ public class MergedOccurrencesDisambiguator implements Disambiguator {
         //LOG.trace(String.format("Narrowed from: \n\t %s t0 \n\t %s", sfOccurrence.context(), narrowContext));
         
         // search index for surface form
-        ScoreDoc[] hits = mMergedSearcher.getHits(sfOccurrence.surfaceForm(), sfOccurrence.context());
+        ScoreDoc[] hits = mMergedSearcher.getHits(sfOccurrence);
 
         if (hits.length == 0)
             throw new ItemNotFoundException("Not found in index: "+sfOccurrence);
@@ -146,35 +147,20 @@ public class MergedOccurrencesDisambiguator implements Disambiguator {
         return rankedOccs;
     }
 
-    public List<DBpediaResourceOccurrence> disambiguate(List<SurfaceFormOccurrence> sfOccs) {
+    public List<DBpediaResourceOccurrence> disambiguate(List<SurfaceFormOccurrence> sfOccs) throws InputException {
         long startTime = System.currentTimeMillis();
 
         List<DBpediaResourceOccurrence> results = new LinkedList<DBpediaResourceOccurrence>();
 
-        // careful! Cache only makes sense if all SurfaceFormOccurrences in the list have the same context!!!
-        Text previousContext = new Text("");
-        Map<String,DBpediaResourceOccurrence> cache = new HashMap<String,DBpediaResourceOccurrence>();
-
         for (SurfaceFormOccurrence sfOcc : sfOccs) {
-            if (!previousContext.equals(sfOcc.context())) {
-                cache = new HashMap<String,DBpediaResourceOccurrence>();
-            }
-            if (cache.containsKey(sfOcc.surfaceForm().name())) {
-                LOG.info("Adding disambiguation for "+sfOcc.surfaceForm()+" from cache...");
-                results.add(cache.get(sfOcc.surfaceForm().name()));
-                continue;
-            }
             try {
                 LOG.info("Disambiguating "+sfOcc.surfaceForm()+" ...");
-                DBpediaResourceOccurrence disambiguatedOcc = disambiguate(sfOcc);
-                results.add(disambiguatedOcc);
-                cache.put(sfOcc.surfaceForm().name(), disambiguatedOcc);
+                results.add(disambiguate(sfOcc));
             } catch (ItemNotFoundException e) {
                 LOG.error("Could not disambiguate "+sfOcc.surfaceForm()+": "+e);
             } catch (SearchException e) {
                 LOG.error("Could not disambiguate "+sfOcc.surfaceForm()+": "+e);
             }
-            previousContext = sfOcc.context();
         }
 
         double totalSeconds = (System.currentTimeMillis() - startTime) / 1000.0;

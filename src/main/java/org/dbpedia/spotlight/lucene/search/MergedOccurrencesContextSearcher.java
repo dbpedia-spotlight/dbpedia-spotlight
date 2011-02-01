@@ -10,6 +10,7 @@ import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Similarity;
+import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.lucene.LuceneFeatureVector;
 import org.dbpedia.spotlight.lucene.LuceneManager;
@@ -214,20 +215,14 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
         return documents;
     }
 
+    //TODO make this configurable!
+    int minContextWords = 25;
+    int maxContextWords = 100;
+    ContextExtractor contextExtractor = new ContextExtractor(minContextWords, maxContextWords);
 
-    ContextExtractor contextExtractor = new ContextExtractor();
-    public ScoreDoc[] getHits(SurfaceForm sf, Text context) throws SearchException {
-        //FIXME
-        //HACK
-        //TODO We need a better fix for the too many clauses lucene error.
-        // Sometimes we get that error because of funny chars (encoding)
-        Text narrowContext = context;
-//        int queryEstimatedSize = context.text().split("\\W+").length;
-//        if (queryEstimatedSize > 1000) { //too many clauses is 1024
-//            narrowContext = contextExtractor.narrowContext(sf, context);
-//        }
-        ScoreDoc[] hits = getHits(mLucene.getQuery(sf, narrowContext));
-
+    public ScoreDoc[] getHits(SurfaceFormOccurrence sfOcc) throws SearchException, InputException {
+        Text narrowContext = contextExtractor.narrowContext(sfOcc).context();
+        ScoreDoc[] hits = getHits(mLucene.getQuery(sfOcc.surfaceForm(), narrowContext));
         return hits;
     }
 
