@@ -18,7 +18,7 @@ import javax.ws.rs.QueryParam;
 import java.io.File;
 import java.util.List;
 import org.dbpedia.spotlight.annotate.Annotator;
-import org.dbpedia.spotlight.DefaultAnnotator;
+import org.dbpedia.spotlight.annotate.DefaultAnnotator;
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence;
 import org.dbpedia.spotlight.model.DBpediaType;
 import org.dbpedia.spotlight.util.AnnotationFilter;
