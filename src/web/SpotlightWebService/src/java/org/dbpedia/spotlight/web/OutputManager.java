@@ -14,7 +14,7 @@ import javax.xml.transform.*;
 import javax.xml.transform.stream.*;
 import javax.xml.transform.sax.*;
 
-//Jason classes
+//JSON classes
 import net.sf.json.JSON;
 import net.sf.json.xml.XMLSerializer;
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence;
@@ -40,7 +40,7 @@ public class OutputManager {
         return hd;
     }
 
-public String createXMLOutput(String text, List<DBpediaResourceOccurrence> occList, double confidence, int support, String targetTypesString, boolean coreferenceResolution) throws Exception{
+    public String createXMLOutput(String text, List<DBpediaResourceOccurrence> occList, double confidence, int support, String targetTypesString, boolean coreferenceResolution) throws Exception{
         // PrintWriter from a Servlet
         String xmlDoc="";
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -96,6 +96,36 @@ public String createXMLOutput(String text, List<DBpediaResourceOccurrence> occLi
         //System.out.println( "--- Json version ----");
         System.out.println( json.toString(2) );
         return json.toString(2);
+    }
+
+
+    public String createErrorXMLOutput(String message, String text, double confidence, int support, String targetTypesString, boolean coreferenceResolution) throws Exception{
+        // PrintWriter from a Servlet
+        String xmlDoc="";
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        TransformerHandler hd = initXMLDoc(out);
+
+        //Create Annotation element
+        //First create text attribute
+        AttributesImpl atts = new AttributesImpl();
+
+        atts.addAttribute("","","text","CDATA",text);
+        atts.addAttribute("","","confidence","CDATA",String.valueOf(confidence));
+        atts.addAttribute("","","support","CDATA",String.valueOf(support));
+        atts.addAttribute("","","types","CDATA",targetTypesString);
+        //atts.addAttribute("","","coreferenceResolution","CDATA",String.valueOf(coreferenceResolution));
+        hd.startElement("","","Annotation",atts);
+
+        atts.clear();
+        atts.addAttribute("","","error","CDATA",message);
+        hd.startElement("","","Error",atts);
+        hd.endElement("","","Error");
+
+        hd.endElement("","","Annotation");
+        hd.endDocument();
+        xmlDoc = out.toString("utf-8");
+        System.out.println(xmlDoc);
+        return xmlDoc;
     }
 
     
