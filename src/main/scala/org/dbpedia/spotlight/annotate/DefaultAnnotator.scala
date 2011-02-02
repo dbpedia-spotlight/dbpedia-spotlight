@@ -6,6 +6,7 @@ import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.spot.Spotter
 import org.dbpedia.spotlight.disambiguate.{Disambiguator, DefaultDisambiguator}
+import org.dbpedia.spotlight.exceptions.InputException
 
 /**
  * Annotates a text with DBpedia Resources
@@ -17,7 +18,7 @@ class DefaultAnnotator(val spotterFile : File, val indexDir : File) extends Anno
 
     //TODO print nice messages for false input!
 
-    LOG.info("Initializing spotlight object ...")
+    LOG.info("Initializing annotator object ...")
 
     val disambiguator : Disambiguator = new DefaultDisambiguator(indexDir)
 
@@ -27,6 +28,7 @@ class DefaultAnnotator(val spotterFile : File, val indexDir : File) extends Anno
 
     LOG.info("Done.")
 
+    @throws(classOf[InputException])
     def annotate(text : String) : java.util.List[DBpediaResourceOccurrence] = {
         LOG.info("Spotting...")
         val spottedSurfaceForms : java.util.List[SurfaceFormOccurrence] = spotter.extract(new Text(text))

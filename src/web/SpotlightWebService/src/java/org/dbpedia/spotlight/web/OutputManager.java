@@ -69,6 +69,8 @@ public class OutputManager {
           atts.addAttribute("","","types","CDATA",occ.resource().types().mkString(","));
           // support and types should go to resource
 
+          //TODO add SPARQL query
+
           atts.addAttribute("","","surfaceForm","CDATA",occ.surfaceForm().name());
           atts.addAttribute("","","offset","CDATA",String.valueOf(occ.textOffset()));
           atts.addAttribute("","","similarityScore","CDATA",String.valueOf(occ.similarityScore()));

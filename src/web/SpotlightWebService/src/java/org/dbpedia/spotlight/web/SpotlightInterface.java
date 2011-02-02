@@ -37,11 +37,25 @@ public class SpotlightInterface {
      * Retrieves representation of an instance of org.dbpedia.spotlight.web.Annotation
      * @return an instance of java.lang.String
      */
-    public String getXML(String text, double confidence, int support, String targetTypes, boolean coreferenceResolution) throws Exception {
+    public String getXML(String text,
+                         double confidence,
+                         int support,
+                         String targetTypes,
+                         String spqarlQuery,
+                         boolean blacklist,
+                         boolean coreferenceResolution) throws Exception {
         String xml = "";
 
         LOG.info("******************************** Parameters ********************************");
-        LOG.info("API: "+disambiguator.getClass());
+        if(disambiguator == null && annotator != null) {
+            LOG.info("API: "+annotator.getClass());
+        }
+        else if(disambiguator != null && annotator == null) {
+            LOG.info("API: "+disambiguator.getClass());
+        }
+        else {
+            LOG.info("API: not properly set in SpotlightInterface!!!");
+        }
         LOG.info("confidence: "+String.valueOf(confidence));
         LOG.info("support: "+String.valueOf(support));
         LOG.info("coreferenceResolution:" +String.valueOf(coreferenceResolution));
@@ -69,7 +83,7 @@ public class SpotlightInterface {
                     throw new IllegalStateException("both annotator and disambiguator were not initialized");
                 }
 
-                List<DBpediaResourceOccurrence> filteredOccList = AnnotationFilter.filter(occList, confidence, support, targetTypesList, coreferenceResolution);
+                List<DBpediaResourceOccurrence> filteredOccList = AnnotationFilter.filter(occList, confidence, support, targetTypesList, spqarlQuery, blacklist, coreferenceResolution);
                 xml = output.createXMLOutput(text,filteredOccList,confidence,support,targetTypes,coreferenceResolution);
             }
             catch (InputException e) {
@@ -80,13 +94,25 @@ public class SpotlightInterface {
         return xml;
     }
 
-    public String getJSON(String text, double confidence, int support, String targetTypes, boolean coreferenceResolution) throws Exception {
-        String xml = getXML(text, confidence, support, targetTypes, coreferenceResolution);
+    public String getJSON(String text,
+                          double confidence,
+                          int support,
+                          String targetTypes,
+                          String spqarlQuery,
+                          boolean blacklist,
+                          boolean coreferenceResolution) throws Exception {
+        String xml = getXML(text, confidence, support, targetTypes, spqarlQuery, blacklist, coreferenceResolution);
         return output.xmltoJson(xml);
     }
 
     //TODO
-    public String getRDF(String text, double confidence, int support, String targetTypes, boolean coreferenceResolution) throws Exception {
+    public String getRDF(String text,
+                         double confidence,
+                         int support,
+                         String targetTypes,
+                         String spqarlQuery,
+                         boolean blacklist,
+                         boolean coreferenceResolution) throws Exception {
         //String xml = getXML(text, confidence, support, targetTypes, coreferenceResolution);
         return "";
     }

@@ -31,9 +31,11 @@ public class Disambiguate {
                           @DefaultValue("0.3") @QueryParam("confidence") double confidence,
                           @DefaultValue("30") @QueryParam("support") int support,
                           @DefaultValue("") @QueryParam("targetTypes") String targetTypes,
+                          @DefaultValue("") @QueryParam("sparql") String sparqlQuery,
+                          @DefaultValue("") @QueryParam("blacklistSparql") boolean blacklist,
                           @DefaultValue("true") @QueryParam("coreferenceResolution") boolean coreferenceResolution) throws Exception {
 
-        return disambigInterface.getXML(text, confidence, support, targetTypes, coreferenceResolution);
+        return disambigInterface.getXML(text, confidence, support, targetTypes, sparqlQuery, blacklist, coreferenceResolution);
     }
 
     @GET
@@ -42,9 +44,11 @@ public class Disambiguate {
                           @DefaultValue("0.3") @QueryParam("confidence") Double confidence,
                           @DefaultValue("30") @QueryParam("support") int support,
                           @DefaultValue("") @QueryParam("targetTypes") String targetTypes,
+                          @DefaultValue("") @QueryParam("sparql") String sparqlQuery,
+                          @DefaultValue("") @QueryParam("blacklistSparql") boolean blacklist,
                           @DefaultValue("true") @QueryParam("coreferenceResolution") boolean coreferenceResolution) throws Exception {
 
-        return disambigInterface.getJSON(text, confidence, support, targetTypes, coreferenceResolution);
+        return disambigInterface.getJSON(text, confidence, support, targetTypes, sparqlQuery, blacklist, coreferenceResolution);
     }
 
     @GET
@@ -53,9 +57,11 @@ public class Disambiguate {
                           @DefaultValue("0.3") @QueryParam("confidence") Double confidence,
                           @DefaultValue("30") @QueryParam("support") int support,
                           @DefaultValue("") @QueryParam("targetTypes") String targetTypes,
+                          @DefaultValue("") @QueryParam("sparql") String sparqlQuery,
+                          @DefaultValue("") @QueryParam("blacklistSparql") boolean blacklist,
                           @DefaultValue("true") @QueryParam("coreferenceResolution") boolean coreferenceResolution) throws Exception {
 
-        return disambigInterface.getRDF(text, confidence, support, targetTypes, coreferenceResolution);
+        return disambigInterface.getRDF(text, confidence, support, targetTypes, sparqlQuery, blacklist, coreferenceResolution);
     }
 
 }

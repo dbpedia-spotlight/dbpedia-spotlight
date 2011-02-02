@@ -33,7 +33,7 @@ object IndexLingPipeSpotter
         LOG.info("Indexing surface forms of surrogates file "+surrogatesFile+" to "+surrogatesFile)
         if (surrogatesFile.getName.toLowerCase.endsWith(".tsv")) getDictionaryFromTSVSurrogates(surrogatesFile)
         else if (surrogatesFile.getName.toLowerCase.endsWith(".nt")) getDictionaryFromNTSurrogates(surrogatesFile)
-        else throw new IllegalArgumentException("file ending not recognized; must be .tsv or .nt")    
+        else getDictionaryFromList(surrogatesFile)
     }
 
     def writeDictionaryFile(dictionary : MapDictionary[String], targetFile : File) {
@@ -58,6 +58,16 @@ object IndexLingPipeSpotter
         val dictionary = new MapDictionary[String]()
         for (line <- Source.fromFile(surrogatesTSVFile, "UTF-8").getLines) {
             val surfaceForm = line.split("\t")(0)
+            dictionary.addEntry(new DictionaryEntry[String](surfaceForm, ""))  // chunk type undefined
+        }
+        dictionary
+    }
+
+    private def getDictionaryFromList(surrogatesListFile : File) : MapDictionary[String] = {
+        LOG.debug("Indexing dictionary from "+surrogatesListFile.getName+"...")
+        val dictionary = new MapDictionary[String]()
+        for (line <- Source.fromFile(surrogatesListFile, "UTF-8").getLines) {
+            val surfaceForm = line.trim
             dictionary.addEntry(new DictionaryEntry[String](surfaceForm, ""))  // chunk type undefined
         }
         dictionary

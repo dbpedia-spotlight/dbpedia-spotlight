@@ -134,7 +134,7 @@ object DBpediaSpotlightClient
 //      writeAsEntitySetToFile(entitiesByPercentageRank.slice(0,10), new File(baseDir+prefix+".rank.t10.set"))
 
 
-      val filteredOccList : List[DBpediaResourceOccurrence] = AnnotationFilter.filter(occurrences, 0, 0, AnnotationFilter.DEFAULT_TYPES, AnnotationFilter.DEFAULT_COREFERENCE_RESOLUTION);
+      val filteredOccList : List[DBpediaResourceOccurrence] = AnnotationFilter.filter(occurrences, 0, 0, AnnotationFilter.DEFAULT_TYPES, "", false, AnnotationFilter.DEFAULT_COREFERENCE_RESOLUTION);
       //val filteredOccList : List[DBpediaResourceOccurrence] = AnnotationFilter.filter(occurrences, 0, 0, AnnotationFilter.PERLOCPLA, AnnotationFilter.DEFAULT_COREFERENCE_RESOLUTION);
       for (confidence <- EvalParams.confidenceInterval) {
           for(support <- EvalParams.supportInterval) {

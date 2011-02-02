@@ -2,18 +2,13 @@ package org.dbpedia.spotlight.util
 
 import org.apache.commons.logging.LogFactory
 import scala.collection.JavaConversions._
-import io.Source
+import org.dbpedia.spotlight.sparql.SparqlQueryExecuter
 import java.io.File
-import org.dbpedia.spotlight.model.{SurfaceForm, DBpediaResource, DBpediaType, DBpediaResourceOccurrence}
+import org.dbpedia.spotlight.spot.Spotter
+import org.dbpedia.spotlight.model._
+import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter
+import org.dbpedia.spotlight.disambiguate.{DefaultDisambiguator, Disambiguator}
 
-
-/**
- * Created by IntelliJ IDEA.
- * User: Max
- * Date: 08.09.2010
- * Time: 17:35:41
- * To change this template use File | Settings | File Templates.
- */
 
 object AnnotationFilter
 {
@@ -34,34 +29,36 @@ object AnnotationFilter
     //val simThresholdList = scala.io.Source.fromFile(baseDir+"failedTests.simScores").getLines().map(x => x.toDouble).toList.sorted
     //val simThresholdList = List(0.000173042368260212, 0.00437988666817546, 0.014439694583416, 0.0914923325181007, 0.146780446171761, 0.378425091505051, 22.6561012268066)
 
+    object ListColor extends Enumeration {
+        type ListColor = Value
+        val Blacklist, Whitelist = Value
+    }
+    import ListColor._
 
-      def filter(occs : java.util.List[DBpediaResourceOccurrence],
+
+    def filter(occs : java.util.List[DBpediaResourceOccurrence],
                confidence : Double=DEFAULT_CONFIDENCE,
                targetSupport : Int=DEFAULT_SUPPORT,
                targetTypes : java.util.List[DBpediaType]=DEFAULT_TYPES,
-               //showDuplicates : Boolean=DEFAULT_SHOW_DUPLICATES
+               sparqlQuery : String = "",
+               blacklist : Boolean = false,
                coreferenceResolution : Boolean=DEFAULT_COREFERENCE_RESOLUTION) : java.util.List[DBpediaResourceOccurrence] = {
 
-
-        val filteredOccs = filter(occs.toList, confidence, targetSupport, targetTypes, coreferenceResolution)
+        val filteredOccs = filter(occs.toList, confidence, targetSupport, targetTypes, sparqlQuery, blacklist, coreferenceResolution)
         filteredOccs
-      }
+    }
 
     def filter(occs : List[DBpediaResourceOccurrence],
                confidence : Double,
                targetSupport : Int,
                targetTypes : java.util.List[DBpediaType],
-               //showDuplicates : Boolean
+               sparqlQuery : String,
+               blacklist : Boolean,
                coreferenceResolution : Boolean): List[DBpediaResourceOccurrence] = {
 
+        var filteredOccs = occs
 
-        if (confidence < 0 || confidence > 1) {
-
-        }
-
-      var filteredOccs = occs
-
-      if (coreferenceResolution) filteredOccs = buildCoreferents(filteredOccs)
+        if (coreferenceResolution) filteredOccs = buildCoreferents(filteredOccs)
 
         filteredOccs = filterBySupport(filteredOccs, targetSupport)
         if (0 <= confidence || confidence <= 1) {
@@ -73,7 +70,14 @@ object AnnotationFilter
         filteredOccs = filterByType(filteredOccs, targetTypes.toList)
         filteredOccs = filterBySupport(filteredOccs, targetSupport)
 
-        //if (!showDuplicates) filteredOccs = eraseDuplicateUris(filteredOccs)
+        if(sparqlQuery != null && sparqlQuery != "") {
+            if(blacklist) {
+                filteredOccs = filterBySparql(filteredOccs, sparqlQuery, Blacklist)
+            }
+            else {
+                filteredOccs = filterBySparql(filteredOccs, sparqlQuery, Whitelist)
+            }
+        }
 
         filteredOccs = filteredOccs.sortBy(_.textOffset)    // sort by offset (because we observed returning unsorted lists in some cases)
         filteredOccs
@@ -85,8 +89,8 @@ object AnnotationFilter
         ( (laterSFWords.length == 1 &&
                 prevSFWords.filterNot(word => word.substring(0,1) equals word.substring(0,1).toUpperCase).isEmpty &&
                 prevSFWords.contains(laterSFWords.head))
-          //|| (prevSFWords.last equals laterSFWords.last)
-        )    
+                //|| (prevSFWords.last equals laterSFWords.last)
+                )
     }
 
     private def buildCoreferents(occs : List[DBpediaResourceOccurrence]) : List[DBpediaResourceOccurrence] = {
@@ -102,43 +106,33 @@ object AnnotationFilter
             })
             if (coreferentOcc != None) {
                 new DBpediaResourceOccurrence(laterOcc.id,
-                                            coreferentOcc.get.resource,
-                                            laterOcc.surfaceForm,
-                                            laterOcc.context,
-                                            laterOcc.textOffset,
-                                            laterOcc.provenance,
-                                            coreferentOcc.get.similarityScore,           // what to put here?
-                                            coreferentOcc.get.percentageOfSecondRank)    // what to put here?
+                    coreferentOcc.get.resource,
+                    laterOcc.surfaceForm,
+                    laterOcc.context,
+                    laterOcc.textOffset,
+                    laterOcc.provenance,
+                    coreferentOcc.get.similarityScore,           // what to put here?
+                    coreferentOcc.get.percentageOfSecondRank)    // what to put here?
             }
             else {
                 laterOcc
             }
         }).reverse
 
-//        occs.reverse.filterNot(laterOcc => {
-//            val laterSFWords = laterOcc.surfaceForm.name.split(" ")
-//            backwardIdx -= 1
-//            occs.slice(0, backwardIdx).find(prevOcc => {
-//                val prevSFWords = prevOcc.surfaceForm.name.split(" ")
-//                val isCoreferent = ( (laterSFWords.length == 1 && prevSFWords.contains(laterSFWords.head)) ||
-//                                     (prevSFWords.last equals laterSFWords.last) )
-//                if (isCoreferent)
-//                    LOG.info("filtered out as coreferent: "+laterOcc.surfaceForm+" at position "+laterOcc.textOffset+" probably coreferring to "+prevOcc.surfaceForm+" at position "+prevOcc.textOffset)
-//                isCoreferent
-//            }) != None
-//        }).reverse
+        //        occs.reverse.filterNot(laterOcc => {
+        //            val laterSFWords = laterOcc.surfaceForm.name.split(" ")
+        //            backwardIdx -= 1
+        //            occs.slice(0, backwardIdx).find(prevOcc => {
+        //                val prevSFWords = prevOcc.surfaceForm.name.split(" ")
+        //                val isCoreferent = ( (laterSFWords.length == 1 && prevSFWords.contains(laterSFWords.head)) ||
+        //                                     (prevSFWords.last equals laterSFWords.last) )
+        //                if (isCoreferent)
+        //                    LOG.info("filtered out as coreferent: "+laterOcc.surfaceForm+" at position "+laterOcc.textOffset+" probably coreferring to "+prevOcc.surfaceForm+" at position "+prevOcc.textOffset)
+        //                isCoreferent
+        //            }) != None
+        //        }).reverse
     }
 
-    private def eraseDuplicateUris(occs : List[DBpediaResourceOccurrence]) : List[DBpediaResourceOccurrence] = {
-        var seenResources = List[DBpediaResource]()
-        occs.filter( occ => {
-            val alreadySeen = seenResources.find(seenRes => seenRes equals occ.resource) != None
-            seenResources ::= occ.resource
-            if (alreadySeen)
-                LOG.info("filtered out as dubplicate URI: "+occ)
-            !alreadySeen
-        })
-    }
 
     private def ersaseFalsyResources(occs : List[DBpediaResourceOccurrence]) : List[DBpediaResourceOccurrence] = {
         // there are still lists in the index for some reason.
@@ -206,6 +200,102 @@ object AnnotationFilter
                 }
             }
         })
+    }
+
+
+    /**
+     * Deny all except those in whitelist.
+     */
+    def filterByWhitelist(occs : List[DBpediaResourceOccurrence], whitelist: Set[String]) : List[DBpediaResourceOccurrence] = {
+        occs.filter(occ => {
+            if (whitelist.contains(occ.resource)) {
+                true
+            }
+            else {
+                LOG.info("filtered out by whitelist ("+occ.resource+" not in whitelist).")
+                //LOG.trace("filtered out by whitelist ("+occ.resource+" not in "+whitelist+"): "+occ)
+                false
+            }
+        })
+    }
+
+    /**
+     * Accept all except those in blacklist.
+     */
+    def filterByBlacklist(occs : List[DBpediaResourceOccurrence], blacklist: Set[String]) : List[DBpediaResourceOccurrence] = {
+        occs.filter(occ => {
+            if (blacklist.contains(occ.resource)) {
+                LOG.info("filtered out by blacklist ("+occ.resource+" not in blacklist).")
+                false
+            }
+            else {
+                true
+            }
+        })
+    }
+
+    /**
+     * Get list from a SPARQL query and then blacklist or whitelist it.
+     * Will execute the SPARQL query everytime you call this.
+     * Best is to execute the query once and just call filterByBlacklist or filterByWhitelist.
+     * We only leave the option of calling filterBySparql for use cases dealing with dynamic data in the SPARQL endpoint.
+     */
+    def filterBySparql(occs : List[DBpediaResourceOccurrence], sparqlQuery: String, blacklistOrWhitelist: ListColor) : List[DBpediaResourceOccurrence] = {
+
+        val executer = new SparqlQueryExecuter();
+        val set = executer.query(sparqlQuery).toSet;
+        LOG.info("SPARQL "+blacklistOrWhitelist+":"+set);
+
+        blacklistOrWhitelist match {
+            case Blacklist => filterByBlacklist(occs, set);
+            case Whitelist => filterByWhitelist(occs, set);
+        }
+
+    }
+
+
+
+    def main(args: Array[String]) {
+
+        val baseDir: String = "/home/pablo/eval/"
+        val inputFile: File = new File(baseDir+"Test.txt");
+        val plainText = scala.io.Source.fromFile(inputFile).mkString
+
+        val spotterFile    = new File("/home/pablo/web/TitRedDis.spotterDictionary");
+        //val spotterFile    = new File("/home/pablo/eval/manual/Eval.spotterDictionary");
+        val indexDir = new File("/home/pablo/web/DisambigIndex.singleSFs-plusTypes.SnowballAnalyzer.DefaultSimilarity");
+
+        val disambiguator : Disambiguator = new DefaultDisambiguator(indexDir)
+
+        // -- Spotter --
+        val spotter : Spotter = new LingPipeSpotter(spotterFile)
+
+        LOG.info("Spotting...")
+        val spottedSurfaceForms : java.util.List[SurfaceFormOccurrence] = spotter.extract(new Text(plainText))
+
+        //LOG.info("Selecting candidates...");
+        //val selectedSpots = disambiguator.spotProbability(spottedSurfaceForms);
+        val selectedSpots = spottedSurfaceForms;
+
+        import scala.collection.JavaConversions._
+        LOG.info("Disambiguating... ("+disambiguator.name+")")
+        val disambiguatedOccurrences : java.util.List[DBpediaResourceOccurrence] = disambiguator.disambiguate(selectedSpots)
+        val occurrences = asBuffer(disambiguatedOccurrences).toList
+
+        LOG.info("Filtering... ")
+
+        val query = "select distinct ?pol where {?pol a <http://dbpedia.org/ontology/Senator> .   FILTER REGEX(?pol, \"Braun\") }";
+        val filteredOccList : List[DBpediaResourceOccurrence] = AnnotationFilter.filter(occurrences, 0, 0, AnnotationFilter.DEFAULT_TYPES, query, false, AnnotationFilter.DEFAULT_COREFERENCE_RESOLUTION);
+
+        //filteredOccList = AnnotationFilter.filterBySparql(occurrences, query, Whitelist)
+
+        for (occ <- filteredOccList) {
+            System.out.println("Entity:"+occ.resource);
+        }
+        LOG.info("Done.")
+
+        LOG.info(filteredOccList);
+
     }
 
 }

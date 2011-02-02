@@ -6,6 +6,8 @@ import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
 import org.dbpedia.spotlight.model.{DBpediaResource, SurfaceForm, SurfaceFormOccurrence, DBpediaResourceOccurrence}
 import java.io.File
 import org.dbpedia.spotlight.lucene.similarity._
+import org.dbpedia.spotlight.exceptions.InputException
+import org.apache.commons.logging.LogFactory
 
 /**
  * Created by IntelliJ IDEA.
@@ -17,6 +19,10 @@ import org.dbpedia.spotlight.lucene.similarity._
 
 class DefaultDisambiguator(val indexDir : File) extends Disambiguator
 {
+
+    private val LOG = LogFactory.getLog(this.getClass)
+
+    LOG.info("Initializing disambiguator object ...")
 
     // Disambiguator
     val dir = LuceneManager.pickDirectory(indexDir)
@@ -30,11 +36,10 @@ class DefaultDisambiguator(val indexDir : File) extends Disambiguator
     val contextSearcher = new MergedOccurrencesContextSearcher(luceneManager)
     val disambiguator : Disambiguator = new MergedOccurrencesDisambiguator(contextSearcher)
 
+    LOG.info("Done.")
 
-  def spotProbability(sfOccurrences: java.util.List[SurfaceFormOccurrence]): java.util.List[SurfaceFormOccurrence] = {
-      disambiguator.spotProbability(sfOccurrences)
-  }
 
+    @throws(classOf[InputException])
     def disambiguate(sfOccurrences: java.util.List[SurfaceFormOccurrence]): java.util.List[DBpediaResourceOccurrence] = {
         disambiguator.disambiguate(sfOccurrences)
     }
@@ -53,6 +58,10 @@ class DefaultDisambiguator(val indexDir : File) extends Disambiguator
 
     def trainingSetSize(resource : DBpediaResource) : Int = {
         disambiguator.trainingSetSize(resource)
+    }
+
+    def spotProbability(sfOccurrences: java.util.List[SurfaceFormOccurrence]): java.util.List[SurfaceFormOccurrence] = {
+      disambiguator.spotProbability(sfOccurrences)
     }
 
 }

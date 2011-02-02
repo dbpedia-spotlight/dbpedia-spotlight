@@ -26,6 +26,10 @@ class DBpediaResource(var uri : String, var support : Int = 0, var types : List[
         this.uri.equals(that.uri)
     }
 
+    override def hashCode() = {
+        this.uri.hashCode
+    }
+
     def setSupport(s : Int) {
         support = s
     }

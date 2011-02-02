@@ -43,7 +43,7 @@ class ContextExtractor(minContextWords : Int, maxContextWords : Int) {
         }
 
         if(wordCount < minContextWords) {
-            throw new InputException("not enough context: need at least "+minContextWords+" words, found "+wordCount)
+            throw new InputException("not enough context: need at least "+minContextWords+" context words, found "+wordCount)
         }
 
         new SurfaceFormOccurrence(occ.surfaceForm, new Text(sb.toString), scala.math.max(0, occ.textOffset-l-1))
