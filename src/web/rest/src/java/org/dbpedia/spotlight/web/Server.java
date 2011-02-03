@@ -29,7 +29,7 @@ public class Server {
 
     public static void main(String[] args) throws IOException, InterruptedException, URISyntaxException, ClassNotFoundException {
 
-        URI serverURI = new URI("http://localhost:2222/");       // "http://localhost:"+args[0]+"/"
+        URI serverURI = new URI("http://localhost:2222/rest/");       // "http://localhost:"+args[0]+"/"
 
         ResourceConfig resources = new ClassNamesResourceConfig(
                 Class.forName("org.dbpedia.spotlight.web.Annotate"),
@@ -42,7 +42,7 @@ public class Server {
 
         //Open browser
         try {
-            URI example = new URI(serverURI.toString() + "rest/Disambiguate?text=President%20[[Obama]]%20called%20Wednesday%20on%20Congress%20to%20extend%20a%20tax%20break%20for%20students%20included%20in%20last%20year%27s%20economic%20stimulus%20package,%20arguing%20that%20the%20policy%20provides%20more%20generous%20assistance.&confidence=0.2&support=20");
+            URI example = new URI(serverURI.toString() + "Disambiguate?text=President%20[[Obama]]%20called%20Wednesday%20on%20Congress%20to%20extend%20a%20tax%20break%20for%20students%20included%20in%20last%20year%27s%20economic%20stimulus%20package,%20arguing%20that%20the%20policy%20provides%20more%20generous%20assistance.&confidence=0.2&support=20");
             java.awt.Desktop.getDesktop().browse(example);
         }
         catch (Exception e) {

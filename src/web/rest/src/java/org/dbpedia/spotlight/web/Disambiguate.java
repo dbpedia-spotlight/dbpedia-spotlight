@@ -16,7 +16,7 @@ import javax.ws.rs.QueryParam;
  * REST Web Service
  */
 
-@Path("/rest/Disambiguate")
+@Path("/Disambiguate")
 @Consumes("text/plain")
 public class Disambiguate {
     @Context

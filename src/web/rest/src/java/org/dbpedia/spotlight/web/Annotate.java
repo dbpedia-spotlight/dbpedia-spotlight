@@ -16,7 +16,7 @@ import javax.ws.rs.QueryParam;
  * REST Web Service
  */
 
-@Path("/rest/Annotate")
+@Path("/Annotate")
 @Consumes("text/plain")
 public class Annotate {
     @Context
