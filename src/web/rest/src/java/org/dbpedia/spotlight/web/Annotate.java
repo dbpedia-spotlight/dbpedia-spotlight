@@ -28,14 +28,14 @@ public class Annotate {
     @GET
     @Produces("text/xml")
     public String getXML(@QueryParam("text") String text,
-                          @DefaultValue("0.3") @QueryParam("confidence") double confidence,
-                          @DefaultValue("30") @QueryParam("support") int support,
-                          @DefaultValue("") @QueryParam("types") String targetTypes,
-                          @DefaultValue("") @QueryParam("sparql") String sparqlQuery,
-                          @DefaultValue("") @QueryParam("blacklistSparql") boolean blacklist,
-                          @DefaultValue("true") @QueryParam("coreferenceResolution") boolean coreferenceResolution) throws Exception {
+                         @DefaultValue("0.3") @QueryParam("confidence") double confidence,
+                         @DefaultValue("30") @QueryParam("support") int support,
+                         @DefaultValue("") @QueryParam("types") String targetTypes,
+                         @DefaultValue("") @QueryParam("sparql") String sparqlQuery,
+                         @DefaultValue("false") @QueryParam("blacklistSparql") boolean blacklist,
+                         @DefaultValue("true") @QueryParam("coreferenceResolution") boolean coreferenceResolution) throws Exception {
 
-       return annotationInterface.getXML(text, confidence, support, targetTypes, sparqlQuery, blacklist, coreferenceResolution);
+        return annotationInterface.getXML(text, confidence, support, targetTypes, sparqlQuery, blacklist, coreferenceResolution);
     }
 
     @GET
@@ -45,7 +45,7 @@ public class Annotate {
                           @DefaultValue("30") @QueryParam("support") int support,
                           @DefaultValue("") @QueryParam("targetTypes") String targetTypes,
                           @DefaultValue("") @QueryParam("sparql") String sparqlQuery,
-                          @DefaultValue("") @QueryParam("blacklistSparql") boolean blacklist,
+                          @DefaultValue("false") @QueryParam("blacklistSparql") boolean blacklist,
                           @DefaultValue("true") @QueryParam("coreferenceResolution") boolean coreferenceResolution) throws Exception {
 
         return annotationInterface.getJSON(text, confidence, support, targetTypes, sparqlQuery, blacklist, coreferenceResolution);
@@ -54,12 +54,12 @@ public class Annotate {
     @GET
     @Produces("application/rdf+xml")
     public String getRDF(@DefaultValue("") @QueryParam("text") String text,
-                          @DefaultValue("0.3") @QueryParam("confidence") Double confidence,
-                          @DefaultValue("30") @QueryParam("support") int support,
-                          @DefaultValue("") @QueryParam("targetTypes") String targetTypes,
-                          @DefaultValue("") @QueryParam("sparql") String sparqlQuery,
-                          @DefaultValue("") @QueryParam("blacklistSparql") boolean blacklist,
-                          @DefaultValue("true") @QueryParam("coreferenceResolution") boolean coreferenceResolution) throws Exception {
+                         @DefaultValue("0.3") @QueryParam("confidence") Double confidence,
+                         @DefaultValue("30") @QueryParam("support") int support,
+                         @DefaultValue("") @QueryParam("targetTypes") String targetTypes,
+                         @DefaultValue("") @QueryParam("sparql") String sparqlQuery,
+                         @DefaultValue("false") @QueryParam("blacklistSparql") boolean blacklist,
+                         @DefaultValue("true") @QueryParam("coreferenceResolution") boolean coreferenceResolution) throws Exception {
 
         return annotationInterface.getRDF(text, confidence, support, targetTypes, sparqlQuery, blacklist, coreferenceResolution);
     }

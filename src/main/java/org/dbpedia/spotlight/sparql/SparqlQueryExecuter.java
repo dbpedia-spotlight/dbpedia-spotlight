@@ -95,7 +95,7 @@ public class SparqlQueryExecuter {
             JSONObject row = bindings.getJSONObject(i);
             for (int v = 0; v < vars.length(); v++) {
                 JSONObject typeValue = row.getJSONObject((String) vars.get(v));
-                String uri = typeValue.getString("value");
+                String uri = typeValue.getString("value").replace("http://dbpedia.org/resource/", "");
                 results.add(uri);
             }
         }

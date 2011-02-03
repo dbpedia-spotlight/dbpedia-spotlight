@@ -29,7 +29,7 @@ public class Server {
 
     public static void main(String[] args) throws IOException, InterruptedException, URISyntaxException, ClassNotFoundException {
 
-        URI serverURI = new URI("http://localhost:2222/rest/");       // "http://localhost:"+args[0]+"/"
+        URI serverURI = new URI("http://localhost:2222/rest/");       // "http://localhost:"+args[0]+"/rest/"
 
         ResourceConfig resources = new ClassNamesResourceConfig(
                 Class.forName("org.dbpedia.spotlight.web.Annotate"),

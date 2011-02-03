@@ -12,7 +12,7 @@ package org.dbpedia.spotlight.web;
 public class Configuration {
 
         //TODO make this configurable
-    final static String spotterFile    = "e:/dbpa/data/__smallSpotDictList.spotterDictionary";
-    final static String indexDirectory = "E:\\dbpa\\data\\index\\DisambigIndex.restrictedSFs.plusTypes-plusSFs";
+    final static String spotterFile    = "spotterDictionary";
+    final static String indexDirectory = "index";
 
 }

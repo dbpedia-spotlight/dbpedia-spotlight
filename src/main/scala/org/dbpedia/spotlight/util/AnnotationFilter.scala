@@ -8,6 +8,7 @@ import org.dbpedia.spotlight.spot.Spotter
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter
 import org.dbpedia.spotlight.disambiguate.{DefaultDisambiguator, Disambiguator}
+import org.dbpedia.spotlight.string.ParseSurfaceFormText
 
 
 object AnnotationFilter
@@ -208,7 +209,7 @@ object AnnotationFilter
      */
     def filterByWhitelist(occs : List[DBpediaResourceOccurrence], whitelist: Set[String]) : List[DBpediaResourceOccurrence] = {
         occs.filter(occ => {
-            if (whitelist.contains(occ.resource)) {
+            if (whitelist.contains(occ.resource.uri)) {
                 true
             }
             else {
@@ -224,7 +225,7 @@ object AnnotationFilter
      */
     def filterByBlacklist(occs : List[DBpediaResourceOccurrence], blacklist: Set[String]) : List[DBpediaResourceOccurrence] = {
         occs.filter(occ => {
-            if (blacklist.contains(occ.resource)) {
+            if (blacklist.contains(occ.resource.uri)) {
                 LOG.info("filtered out by blacklist ("+occ.resource+" not in blacklist).")
                 false
             }
@@ -257,21 +258,24 @@ object AnnotationFilter
 
     def main(args: Array[String]) {
 
-        val baseDir: String = "/home/pablo/eval/"
-        val inputFile: File = new File(baseDir+"Test.txt");
-        val plainText = scala.io.Source.fromFile(inputFile).mkString
+//        val baseDir: String = "/home/pablo/eval/"
+//        val inputFile: File = new File(baseDir+"Test.txt");
+//        val plainText = scala.io.Source.fromFile(inputFile).mkString
+        val plainText = "Presidents [[Obama]], [[Jim Bacon]] called political philosophy a [[Jackson]], arguing that the policy provides more generous assistance. bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla "
 
-        val spotterFile    = new File("/home/pablo/web/TitRedDis.spotterDictionary");
+        val spotterFile    = new File("e:/dbpa/data/__smallSpotDictList.spotterDictionary");
         //val spotterFile    = new File("/home/pablo/eval/manual/Eval.spotterDictionary");
-        val indexDir = new File("/home/pablo/web/DisambigIndex.singleSFs-plusTypes.SnowballAnalyzer.DefaultSimilarity");
+        val indexDir = new File("E:\\dbpa\\data\\index\\DisambigIndex.restrictedSFs.plusTypes-plusSFs");
 
         val disambiguator : Disambiguator = new DefaultDisambiguator(indexDir)
 
-        // -- Spotter --
-        val spotter : Spotter = new LingPipeSpotter(spotterFile)
+//        // -- Spotter --
+//        val spotter : Spotter = new LingPipeSpotter(spotterFile)
+//
+//        LOG.info("Spotting...")
+//        val spottedSurfaceForms : java.util.List[SurfaceFormOccurrence] = spotter.extract(new Text(plainText))
 
-        LOG.info("Spotting...")
-        val spottedSurfaceForms : java.util.List[SurfaceFormOccurrence] = spotter.extract(new Text(plainText))
+        val spottedSurfaceForms : java.util.List[SurfaceFormOccurrence] = ParseSurfaceFormText.parse(plainText)
 
         //LOG.info("Selecting candidates...");
         //val selectedSpots = disambiguator.spotProbability(spottedSurfaceForms);
@@ -284,7 +288,7 @@ object AnnotationFilter
 
         LOG.info("Filtering... ")
 
-        val query = "select distinct ?pol where {?pol a <http://dbpedia.org/ontology/Senator> .   FILTER REGEX(?pol, \"Braun\") }";
+        val query = "select distinct ?pol where {?pol a <http://dbpedia.org/ontology/President> .   FILTER REGEX(?pol, \"Bacon\") }";
         val filteredOccList : List[DBpediaResourceOccurrence] = AnnotationFilter.filter(occurrences, 0, 0, AnnotationFilter.DEFAULT_TYPES, query, false, AnnotationFilter.DEFAULT_COREFERENCE_RESOLUTION);
 
         //filteredOccList = AnnotationFilter.filterBySparql(occurrences, query, Whitelist)
@@ -294,7 +298,7 @@ object AnnotationFilter
         }
         LOG.info("Done.")
 
-        LOG.info(filteredOccList);
+        LOG.info(filteredOccList.mkString("\n"));
 
     }
 
