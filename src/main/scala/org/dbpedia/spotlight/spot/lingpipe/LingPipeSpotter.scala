@@ -28,13 +28,15 @@ class LingPipeSpotter(val dictionary : Dictionary[String], val overlap : Boolean
 
     def this(dictionaryFile : File, overlap : Boolean, caseSensitive : Boolean) = {
         this(AbstractExternalizable.readObject(dictionaryFile).asInstanceOf[Dictionary[String]], overlap, caseSensitive)
+        LOG.debug("Dictionary: "+dictionaryFile)
     }
 
     def this(dictionaryFile : File) = {
         this(AbstractExternalizable.readObject(dictionaryFile).asInstanceOf[Dictionary[String]])
+        LOG.debug("Dictionary: "+dictionaryFile)
     }
 
-    LOG.debug("Initializing LingPipeSpotter from "+dictionary+"...")
+    LOG.debug("Initializing LingPipeSpotter from ...")
     val dictionaryChunker = new ExactDictionaryChunker(dictionary,
                                                        //IndoEuropeanTokenizerFactory.INSTANCE,  // splits "don't" into "don", "'" and "t"
                                                        AnnotationTokenizerFactory,
