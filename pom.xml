@@ -10,11 +10,14 @@
     <name>DBpedia Spotlight annotation framework</name>
 
     <properties>
+        <heapspace.Xmx.compiler>-Xmx1g</heapspace.Xmx.compiler>
+        <heapspace.Xmx.indexer>-Xmx2g</heapspace.Xmx.indexer>
+        <heapspace.Xmx.server>-Xmx2g</heapspace.Xmx.server>
+
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.compiler.version>1.6</java.compiler.version>
         <maven.scala.plugin.version>2.15.0</maven.scala.plugin.version>
         <scala.compiler.version>2.8.1</scala.compiler.version>
-        <scala.compiler.Xmx>-Xmx1024m</scala.compiler.Xmx>
         <dbpedia.framework.version>2.0-SNAPSHOT</dbpedia.framework.version>
     </properties>
 
@@ -36,8 +39,52 @@
 
                 <configuration>
                     <jvmArgs>
-                        <jvmArg>${scala.compiler.Xmx}</jvmArg>
+                        <jvmArg>${heapspace.Xmx.compiler}</jvmArg>
                     </jvmArgs>
+
+                    <launchers>
+
+                        <launcher>
+                            <id>Server</id>
+                            <mainClass>org.dbpedia.spotlight.web.rest.Server</mainClass>
+                            <jvmArgs>
+                                <jvmArg>${heapspace.Xmx.server}</jvmArg>
+                            </jvmArgs>
+                        </launcher>
+
+                        <launcher>
+                            <id>ProcessDBpedia</id>
+                            <mainClass>org.dbpedia.spotlight.util.SurrogatesUtil</mainClass>
+                            <jvmArgs>
+                                <jvmArg>${heapspace.Xmx.indexer}</jvmArg>
+                            </jvmArgs>
+                        </launcher>
+
+                        <launcher>
+                            <id>SaveDump2Occs</id>
+                            <mainClass>org.dbpedia.spotlight.lucene.index.SaveWikipediaDump2Occs</mainClass>
+                            <jvmArgs>
+                                <jvmArg>${heapspace.Xmx.indexer}</jvmArg>
+                            </jvmArgs>
+                        </launcher>
+
+                        <launcher>
+                            <id>Index</id>
+                            <mainClass>org.dbpedia.spotlight.lucene.index.IndexMergedOccurrences</mainClass>
+                            <jvmArgs>
+                                <jvmArg>${heapspace.Xmx.indexer}</jvmArg>
+                            </jvmArgs>
+                        </launcher>
+
+                        <launcher>
+                            <id>Add2Index</id>
+                            <mainClass>org.dbpedia.spotlight.lucene.index.EnrichIndex</mainClass>
+                            <jvmArgs>
+                                <jvmArg>${heapspace.Xmx.indexer}</jvmArg>
+                            </jvmArgs>
+                        </launcher>
+
+                    </launchers>
                 </configuration>
 
                 <executions>
@@ -107,12 +154,6 @@
             <groupId>org.dbpedia.extraction</groupId>
             <artifactId>core</artifactId>
             <version>2.0-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.16</version>
         </dependency>
 
         <dependency>
@@ -192,6 +233,7 @@
             <version>1.5</version>
         </dependency>
 
+        <!-- web service -->
         <dependency>
             <groupId>xom</groupId>
             <artifactId>xom</artifactId>
@@ -199,22 +241,32 @@
         </dependency>
 
 
-        <!--
-        <dependency>
-            <groupId>xerces</groupId>
-            <artifactId>xerces</artifactId>
-            <version>2.4.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>xerces</groupId>
-            <artifactId>xercesImpl</artifactId>
-            <version>2.9.1</version>
-        </dependency>
+        <!-- must be installed into Maven repository from lib/nxparser-1.1.jar; please run
+        mvn install:install-file -Dfile=lib/nxparser-1.1.jar -Dpackaging=jar -DgroupId=org.semanticweb.yars -DartifactId=nx.parser -Dversion=1.1
         -->
+        <dependency>
+            <groupId>org.semanticweb.yars</groupId>
+            <artifactId>nx.parser</artifactId>
+            <version>1.1</version>
+        </dependency>
 
+        <!-- must be installed into Maven repository from lib/lingpipe-4.0.0.jar; please run
+        mvn install:install-file -Dfile=lib/lingpipe-4.0.0.jar -Dpackaging=jar -DgroupId=com.aliasi -DartifactId=lingpipe -Dversion=4.0.0
+        -->
+        <dependency>
+            <groupId>com.aliasi</groupId>
+            <artifactId>lingpipe</artifactId>
+            <version>4.0.0</version>
+        </dependency>
 
-
+        <!-- must be installed into Maven repository from lib/cloud9.jar; please run
+        mvn install:install-file -Dfile=lib/cloud9.jar -Dpackaging=jar -DgroupId=edu.umd -DartifactId=cloud9 -Dversion=SNAPSHOT
+        -->
+        <dependency>
+            <groupId>edu.umd</groupId>
+            <artifactId>cloud9</artifactId>
+            <version>SNAPSHOT</version>
+        </dependency>
 
 
     </dependencies>
