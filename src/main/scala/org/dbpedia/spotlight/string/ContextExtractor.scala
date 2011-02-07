@@ -1,7 +1,7 @@
 package org.dbpedia.spotlight.string
 
 import org.dbpedia.spotlight.exceptions.InputException
-import org.dbpedia.spotlight.model.{SurfaceFormOccurrence, Text}
+import org.dbpedia.spotlight.model.{DBpediaResourceOccurrence, SurfaceFormOccurrence, Text}
 
 /**
  * Created by IntelliJ IDEA.
@@ -9,11 +9,22 @@ import org.dbpedia.spotlight.model.{SurfaceFormOccurrence, Text}
  * Contains functions to limit the amount of context for disambiguation.
  */
 
-//TODO this narrows context down to *approximately* maxContextWords with an error margin of 2 words
-
 class ContextExtractor(minContextWords : Int, maxContextWords : Int) {
 
     private val spaceChars = Set(' ', '\n', '\t')
+
+        /**
+     * Strips the context of a DBpediaResourceOccurrence
+     */
+    def narrowContext(occ : DBpediaResourceOccurrence) : DBpediaResourceOccurrence = {
+        val sfOcc = new SurfaceFormOccurrence(occ.surfaceForm, occ.context, occ.textOffset)
+        try {
+            val newSfOcc = narrowContext(sfOcc)
+            new DBpediaResourceOccurrence(occ.id, occ.resource, newSfOcc.surfaceForm, newSfOcc.context, newSfOcc.textOffset)
+        } catch {
+            case e: Exception => println(occ.context); throw e
+        }
+    }
 
     /**
      * Strips the context of a SurfaceFormOccurrence
@@ -43,7 +54,7 @@ class ContextExtractor(minContextWords : Int, maxContextWords : Int) {
         }
 
         if(wordCount < minContextWords) {
-            throw new InputException("not enough context: need at least "+minContextWords+" context words, found "+wordCount)
+            throw new InputException("not enough context: need at least "+minContextWords+" context words for each spotted surface form") //, found "+wordCount)
         }
 
         new SurfaceFormOccurrence(occ.surfaceForm, new Text(sb.toString), scala.math.max(0, occ.textOffset-l-1))
