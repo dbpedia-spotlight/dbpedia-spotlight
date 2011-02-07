@@ -40,7 +40,7 @@ public class SpotlightInterface {
     public String getXML(String text,
                          double confidence,
                          int support,
-                         String targetTypes,
+                         String dbpediaTypesString,
                          String spqarlQuery,
                          String policy,
                          boolean coreferenceResolution) throws Exception {
@@ -71,10 +71,10 @@ public class SpotlightInterface {
         LOG.info("policy: " +policy);
         LOG.info("coreferenceResolution: " +String.valueOf(coreferenceResolution));
 
-        List<DBpediaType> targetTypesList = new ArrayList<DBpediaType>();
-        String types[] = targetTypes.split(",");
-        for (String targetType : types){
-            targetTypesList.add(new DBpediaType(targetType.trim()));
+        List<DBpediaType> dbpediaTypes = new ArrayList<DBpediaType>();
+        String types[] = dbpediaTypesString.split(",");
+        for (String t : types){
+            dbpediaTypes.add(new DBpediaType(t.trim()));
             //LOG.info("type:"+targetType.trim());
         }
 
@@ -94,11 +94,11 @@ public class SpotlightInterface {
                     throw new IllegalStateException("both annotator and disambiguator were not initialized");
                 }
 
-                List<DBpediaResourceOccurrence> filteredOccList = AnnotationFilter.filter(occList, confidence, support, targetTypesList, spqarlQuery, blacklist, coreferenceResolution);
-                xml = output.createXMLOutput(text,filteredOccList,confidence,support,targetTypes,spqarlQuery,policy,coreferenceResolution);
+                List<DBpediaResourceOccurrence> filteredOccList = AnnotationFilter.filter(occList, confidence, support, dbpediaTypes, spqarlQuery, blacklist, coreferenceResolution);
+                xml = output.createXMLOutput(text,filteredOccList,confidence,support,dbpediaTypesString,spqarlQuery,policy,coreferenceResolution);
             }
             catch (InputException e) {
-                xml = output.createErrorXMLOutput(e.getMessage(),text,confidence,support,targetTypes,spqarlQuery,policy,coreferenceResolution);
+                xml = output.createErrorXMLOutput(e.getMessage(),text,confidence,support,dbpediaTypesString,spqarlQuery,policy,coreferenceResolution);
             }
         }
 

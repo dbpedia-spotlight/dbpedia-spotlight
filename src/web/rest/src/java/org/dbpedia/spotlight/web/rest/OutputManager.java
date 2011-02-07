@@ -54,6 +54,8 @@ public class OutputManager {
         atts.addAttribute("","","confidence","CDATA",String.valueOf(confidence));
         atts.addAttribute("","","support","CDATA",String.valueOf(support));
         atts.addAttribute("","","types","CDATA",targetTypesString);
+        atts.addAttribute("","","sparql","CDATA",sparqlQuery);
+        atts.addAttribute("","","policy","CDATA",policy);
         //atts.addAttribute("","","coreferenceResolution","CDATA",String.valueOf(coreferenceResolution));
         hd.startElement("","","Annotation",atts);
         int i=0;
@@ -68,9 +70,6 @@ public class OutputManager {
           atts.addAttribute("","","support","CDATA",String.valueOf(occ.resource().support()));
           atts.addAttribute("","","types","CDATA",occ.resource().types().mkString(","));
           // support and types should go to resource
-
-          atts.addAttribute("","","sparql","CDATA",sparqlQuery);
-          atts.addAttribute("","","policy","CDATA",policy);
 
           atts.addAttribute("", "", "surfaceForm", "CDATA", occ.surfaceForm().name());
           atts.addAttribute("","","offset","CDATA",String.valueOf(occ.textOffset()));
@@ -122,7 +121,7 @@ public class OutputManager {
         hd.startElement("","","Annotation",atts);
 
         atts.clear();
-        atts.addAttribute("","","error","CDATA",message);
+        atts.addAttribute("","","message","CDATA",message);
         hd.startElement("","","Error",atts);
         hd.endElement("","","Error");
 

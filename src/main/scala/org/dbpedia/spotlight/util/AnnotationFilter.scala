@@ -40,24 +40,26 @@ object AnnotationFilter
     def filter(occs : java.util.List[DBpediaResourceOccurrence],
                confidence : Double=DEFAULT_CONFIDENCE,
                targetSupport : Int=DEFAULT_SUPPORT,
-               targetTypes : java.util.List[DBpediaType]=DEFAULT_TYPES,
+               dbpediaTypes : java.util.List[DBpediaType]=DEFAULT_TYPES,
                sparqlQuery : String = "",
                blacklist : Boolean = false,
                coreferenceResolution : Boolean=DEFAULT_COREFERENCE_RESOLUTION) : java.util.List[DBpediaResourceOccurrence] = {
 
-        val filteredOccs = filter(occs.toList, confidence, targetSupport, targetTypes, sparqlQuery, blacklist, coreferenceResolution)
+        val filteredOccs = filter(occs.toList, confidence, targetSupport, dbpediaTypes, sparqlQuery, blacklist, coreferenceResolution)
         filteredOccs
     }
 
     def filter(occs : List[DBpediaResourceOccurrence],
                confidence : Double,
                targetSupport : Int,
-               targetTypes : java.util.List[DBpediaType],
+               dbpediaTypes : java.util.List[DBpediaType],
                sparqlQuery : String,
                blacklist : Boolean,
                coreferenceResolution : Boolean): List[DBpediaResourceOccurrence] = {
 
         var filteredOccs = occs
+
+        val listColor = if(blacklist) Blacklist else Whitelist
 
         if (coreferenceResolution) filteredOccs = buildCoreferents(filteredOccs)
 
@@ -68,16 +70,12 @@ object AnnotationFilter
         else {
             LOG.warn("confidence must be between 0 and 1 (is "+confidence+"); setting to 0")
         }
-        filteredOccs = filterByType(filteredOccs, targetTypes.toList)
+
+        filteredOccs = filterByType(filteredOccs, dbpediaTypes.toList, listColor)
         filteredOccs = filterBySupport(filteredOccs, targetSupport)
 
         if(sparqlQuery != null && sparqlQuery != "") {
-            if(blacklist) {
-                filteredOccs = filterBySparql(filteredOccs, sparqlQuery, Blacklist)
-            }
-            else {
-                filteredOccs = filterBySparql(filteredOccs, sparqlQuery, Whitelist)
-            }
+            filteredOccs = filterBySparql(filteredOccs, sparqlQuery, listColor)
         }
 
         filteredOccs = filteredOccs.sortBy(_.textOffset)    // sort by offset (because we observed returning unsorted lists in some cases)
@@ -175,65 +173,43 @@ object AnnotationFilter
     }
 
     // filter by type
-    private def filterByType(occs : List[DBpediaResourceOccurrence], targetTypes : List[DBpediaType]) : List[DBpediaResourceOccurrence] = {
-        if (targetTypes.filter(_.name.trim.nonEmpty).isEmpty) {
-            LOG.info("target types are empty: showing all types")
+    private def filterByType(occs : List[DBpediaResourceOccurrence], dbpediaTypes : List[DBpediaType], blacklistOrWhitelist : ListColor) : List[DBpediaResourceOccurrence] = {
+        if (dbpediaTypes.filter(_.name.trim.nonEmpty).isEmpty) {
+            LOG.info("types are empty: showing all types")
             return occs
         }
-        val showUntyped = targetTypes.find(targetType => "unknown" equals targetType.name) != None
+
+        val acceptable = blacklistOrWhitelist match {
+            case Whitelist => (resource : DBpediaResource) => {
+                resource.types.filter(given => {
+                    dbpediaTypes.find(listed => given equals listed) != None }
+                ).nonEmpty
+            }
+            case Blacklist => (resource : DBpediaResource) => {
+                resource.types.filter(given => {
+                    dbpediaTypes.find(listed => given equals listed) != None }
+                ).isEmpty
+            }
+        }
+
+        val showUntyped = dbpediaTypes.find(t => "unknown" equals t.name) != None
         occs.filter(occ => {
             // if the resource does not have type and the targets contain "unknown": don't filter
             if (showUntyped && occ.resource.types.isEmpty) {
                 true
             }
             else {
-                // is any of the resource types matching a type in the targetTypes
-                val foundTypes = occ.resource.types.filter(givenType => {
-                    targetTypes.find(targetType => givenType equals targetType) != None })
-
-                // if not: filter
-                if (foundTypes.isEmpty) {
-                    LOG.info("filtered out by type: "+occ.resource+" not part of target types "+targetTypes.map(_.name).mkString("List(", ",", ")"))
-                    false
-                }
-                else {
+                if (acceptable(occ.resource)) {
                     true
                 }
+                else {
+                    LOG.info("filtered out by type: "+occ.resource+" not part of "+blacklistOrWhitelist+ "types "+dbpediaTypes.map(_.name).mkString("List(", ",", ")"))
+                    false
+                }
             }
         })
     }
 
-
-    /**
-     * Deny all except those in whitelist.
-     */
-    def filterByWhitelist(occs : List[DBpediaResourceOccurrence], whitelist: Set[String]) : List[DBpediaResourceOccurrence] = {
-        occs.filter(occ => {
-            if (whitelist.contains(occ.resource.uri)) {
-                true
-            }
-            else {
-                LOG.info("filtered out by whitelist ("+occ.resource+" not in whitelist).")
-                //LOG.trace("filtered out by whitelist ("+occ.resource+" not in "+whitelist+"): "+occ)
-                false
-            }
-        })
-    }
-
-    /**
-     * Accept all except those in blacklist.
-     */
-    def filterByBlacklist(occs : List[DBpediaResourceOccurrence], blacklist: Set[String]) : List[DBpediaResourceOccurrence] = {
-        occs.filter(occ => {
-            if (blacklist.contains(occ.resource.uri)) {
-                LOG.info("filtered out by blacklist ("+occ.resource+" not in blacklist).")
-                false
-            }
-            else {
-                true
-            }
-        })
-    }
 
     /**
      * Get list from a SPARQL query and then blacklist or whitelist it.
@@ -241,17 +217,26 @@ object AnnotationFilter
      * Best is to execute the query once and just call filterByBlacklist or filterByWhitelist.
      * We only leave the option of calling filterBySparql for use cases dealing with dynamic data in the SPARQL endpoint.
      */
-    def filterBySparql(occs : List[DBpediaResourceOccurrence], sparqlQuery: String, blacklistOrWhitelist: ListColor) : List[DBpediaResourceOccurrence] = {
+    def filterBySparql(occs : List[DBpediaResourceOccurrence], sparqlQuery: String, blacklistOrWhitelist : ListColor) : List[DBpediaResourceOccurrence] = {
 
         val executer = new SparqlQueryExecuter();
-        val set = executer.query(sparqlQuery).toSet;
-        LOG.info("SPARQL "+blacklistOrWhitelist+":"+set);
+        val uriSet = executer.query(sparqlQuery).toSet;
+        LOG.debug("SPARQL "+blacklistOrWhitelist+":"+uriSet);
 
-        blacklistOrWhitelist match {
-            case Blacklist => filterByBlacklist(occs, set);
-            case Whitelist => filterByWhitelist(occs, set);
+        val acceptable = blacklistOrWhitelist match {
+            case Whitelist => (resource : DBpediaResource) =>  uriSet.contains(resource.uri)
+            case Blacklist => (resource : DBpediaResource) => !uriSet.contains(resource.uri)
         }
 
+        occs.filter(occ => {
+            if (acceptable(occ.resource)) {
+                true
+            }
+            else {
+                LOG.info("filtered out by SPARQL "+blacklistOrWhitelist+": "+occ.resource)
+                false
+            }
+        })
     }
 
 

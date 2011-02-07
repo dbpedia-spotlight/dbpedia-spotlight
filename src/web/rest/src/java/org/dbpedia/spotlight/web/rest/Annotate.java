@@ -27,13 +27,12 @@ public class Annotate {
     public String getXML(@QueryParam("text") String text,
                          @DefaultValue("0.3") @QueryParam("confidence") double confidence,
                          @DefaultValue("30") @QueryParam("support") int support,
-                         @DefaultValue("") @QueryParam("types") String targetTypes,
+                         @DefaultValue("") @QueryParam("types") String dbpediaTypes,
                          @DefaultValue("") @QueryParam("sparql") String sparqlQuery,
                          @DefaultValue("whitelist") @QueryParam("policy") String policy,
                          @DefaultValue("true") @QueryParam("coreferenceResolution") boolean coreferenceResolution) throws Exception {
 
-        System.out.println(policy);
-        return annotationInterface.getXML(text, confidence, support, targetTypes, sparqlQuery, policy, coreferenceResolution);
+        return annotationInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution);
     }
 
     @GET
@@ -41,12 +40,12 @@ public class Annotate {
     public String getJSON(@DefaultValue("") @QueryParam("text") String text,
                           @DefaultValue("0.3") @QueryParam("confidence") Double confidence,
                           @DefaultValue("30") @QueryParam("support") int support,
-                          @DefaultValue("") @QueryParam("targetTypes") String targetTypes,
+                          @DefaultValue("") @QueryParam("types") String dbpediaTypes,
                           @DefaultValue("") @QueryParam("sparql") String sparqlQuery,
                           @DefaultValue("whitelist") @QueryParam("policy") String policy,
                           @DefaultValue("true") @QueryParam("coreferenceResolution") boolean coreferenceResolution) throws Exception {
 
-        return annotationInterface.getJSON(text, confidence, support, targetTypes, sparqlQuery, policy, coreferenceResolution);
+        return annotationInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution);
     }
     
     @GET
@@ -54,12 +53,12 @@ public class Annotate {
     public String getRDF(@DefaultValue("") @QueryParam("text") String text,
                          @DefaultValue("0.3") @QueryParam("confidence") Double confidence,
                          @DefaultValue("30") @QueryParam("support") int support,
-                         @DefaultValue("") @QueryParam("targetTypes") String targetTypes,
+                         @DefaultValue("") @QueryParam("types") String dbpediaTypes,
                          @DefaultValue("") @QueryParam("sparql") String sparqlQuery,
                          @DefaultValue("whitelist") @QueryParam("policy") String policy,
                          @DefaultValue("true") @QueryParam("coreferenceResolution") boolean coreferenceResolution) throws Exception {
 
-        return annotationInterface.getRDF(text, confidence, support, targetTypes, sparqlQuery, policy, coreferenceResolution);
+        return annotationInterface.getRDF(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution);
     }
 
 }
