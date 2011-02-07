@@ -1,4 +1,4 @@
-package org.dbpedia.spotlight.web;
+package org.dbpedia.spotlight.web.rest;
 
 import com.sun.jersey.api.container.httpserver.HttpServerFactory;
 import com.sun.jersey.api.core.ClassNamesResourceConfig;
@@ -32,8 +32,8 @@ public class Server {
         URI serverURI = new URI("http://localhost:2222/rest/");       // "http://localhost:"+args[0]+"/rest/"
 
         ResourceConfig resources = new ClassNamesResourceConfig(
-                Class.forName("org.dbpedia.spotlight.web.Annotate"),
-                Class.forName("org.dbpedia.spotlight.web.Disambiguate"));
+                Class.forName("org.dbpedia.spotlight.web.rest.Annotate"),
+                Class.forName("org.dbpedia.spotlight.web.rest.Disambiguate"));
 
         HttpServer server = HttpServerFactory.create(serverURI, resources);
 

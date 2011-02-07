@@ -1,7 +1,4 @@
-package org.dbpedia.spotlight.web;
-
-import org.dbpedia.spotlight.web.Server;
-import org.dbpedia.spotlight.web.SpotlightInterface;
+package org.dbpedia.spotlight.web.rest;
 
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
@@ -16,26 +13,27 @@ import javax.ws.rs.QueryParam;
  * REST Web Service
  */
 
-@Path("/Disambiguate")
+@Path("/annotate")
 @Consumes("text/plain")
-public class Disambiguate {
+public class Annotate {
     @Context
     private UriInfo context;
 
-    // Disambiguation interface
-    private static SpotlightInterface disambigInterface = new SpotlightInterface(Server.disambiguator);
+    // Annotation interface
+    private static SpotlightInterface annotationInterface = new SpotlightInterface(Server.annotator);
 
     @GET
     @Produces("text/xml")
     public String getXML(@QueryParam("text") String text,
                          @DefaultValue("0.3") @QueryParam("confidence") double confidence,
                          @DefaultValue("30") @QueryParam("support") int support,
-                         @DefaultValue("") @QueryParam("targetTypes") String targetTypes,
+                         @DefaultValue("") @QueryParam("types") String targetTypes,
                          @DefaultValue("") @QueryParam("sparql") String sparqlQuery,
-                         @DefaultValue("false") @QueryParam("blacklistSparql") boolean blacklist,
+                         @DefaultValue("whitelist") @QueryParam("policy") String policy,
                          @DefaultValue("true") @QueryParam("coreferenceResolution") boolean coreferenceResolution) throws Exception {
 
-        return disambigInterface.getXML(text, confidence, support, targetTypes, sparqlQuery, blacklist, coreferenceResolution);
+        System.out.println(policy);
+        return annotationInterface.getXML(text, confidence, support, targetTypes, sparqlQuery, policy, coreferenceResolution);
     }
 
     @GET
@@ -45,12 +43,12 @@ public class Disambiguate {
                           @DefaultValue("30") @QueryParam("support") int support,
                           @DefaultValue("") @QueryParam("targetTypes") String targetTypes,
                           @DefaultValue("") @QueryParam("sparql") String sparqlQuery,
-                          @DefaultValue("false") @QueryParam("blacklistSparql") boolean blacklist,
+                          @DefaultValue("whitelist") @QueryParam("policy") String policy,
                           @DefaultValue("true") @QueryParam("coreferenceResolution") boolean coreferenceResolution) throws Exception {
 
-        return disambigInterface.getJSON(text, confidence, support, targetTypes, sparqlQuery, blacklist, coreferenceResolution);
+        return annotationInterface.getJSON(text, confidence, support, targetTypes, sparqlQuery, policy, coreferenceResolution);
     }
-
+    
     @GET
     @Produces("application/rdf+xml")
     public String getRDF(@DefaultValue("") @QueryParam("text") String text,
@@ -58,10 +56,10 @@ public class Disambiguate {
                          @DefaultValue("30") @QueryParam("support") int support,
                          @DefaultValue("") @QueryParam("targetTypes") String targetTypes,
                          @DefaultValue("") @QueryParam("sparql") String sparqlQuery,
-                         @DefaultValue("false") @QueryParam("blacklistSparql") boolean blacklist,
+                         @DefaultValue("whitelist") @QueryParam("policy") String policy,
                          @DefaultValue("true") @QueryParam("coreferenceResolution") boolean coreferenceResolution) throws Exception {
 
-        return disambigInterface.getRDF(text, confidence, support, targetTypes, sparqlQuery, blacklist, coreferenceResolution);
+        return annotationInterface.getRDF(text, confidence, support, targetTypes, sparqlQuery, policy, coreferenceResolution);
     }
 
 }

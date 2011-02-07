@@ -1,4 +1,4 @@
-package org.dbpedia.spotlight.web;
+package org.dbpedia.spotlight.web.rest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +42,7 @@ public class SpotlightInterface {
                          int support,
                          String targetTypes,
                          String spqarlQuery,
-                         boolean blacklist,
+                         String policy,
                          boolean coreferenceResolution) throws Exception {
         String xml = "";
 
@@ -56,9 +56,20 @@ public class SpotlightInterface {
         else {
             LOG.info("API: not properly set in SpotlightInterface!!!");
         }
+
+        boolean blacklist = false;
+        if(policy.trim().equalsIgnoreCase("blacklist")) {
+            blacklist = true;
+            policy = "blacklist";
+        }
+        else {
+            policy = "whitelist";
+        }
+
         LOG.info("confidence: "+String.valueOf(confidence));
         LOG.info("support: "+String.valueOf(support));
-        LOG.info("coreferenceResolution:" +String.valueOf(coreferenceResolution));
+        LOG.info("policy: " +policy);
+        LOG.info("coreferenceResolution: " +String.valueOf(coreferenceResolution));
 
         List<DBpediaType> targetTypesList = new ArrayList<DBpediaType>();
         String types[] = targetTypes.split(",");
@@ -84,10 +95,10 @@ public class SpotlightInterface {
                 }
 
                 List<DBpediaResourceOccurrence> filteredOccList = AnnotationFilter.filter(occList, confidence, support, targetTypesList, spqarlQuery, blacklist, coreferenceResolution);
-                xml = output.createXMLOutput(text,filteredOccList,confidence,support,targetTypes,coreferenceResolution);
+                xml = output.createXMLOutput(text,filteredOccList,confidence,support,targetTypes,spqarlQuery,policy,coreferenceResolution);
             }
             catch (InputException e) {
-                xml = output.createErrorXMLOutput(e.getMessage(),text,confidence,support,targetTypes,coreferenceResolution);
+                xml = output.createErrorXMLOutput(e.getMessage(),text,confidence,support,targetTypes,spqarlQuery,policy,coreferenceResolution);
             }
         }
 
@@ -99,10 +110,10 @@ public class SpotlightInterface {
                           int support,
                           String targetTypes,
                           String spqarlQuery,
-                          boolean blacklist,
+                          String policy,
                           boolean coreferenceResolution) throws Exception {
-        String xml = getXML(text, confidence, support, targetTypes, spqarlQuery, blacklist, coreferenceResolution);
-        return output.xmltoJson(xml);
+        String xml = getXML(text, confidence, support, targetTypes, spqarlQuery, policy, coreferenceResolution);
+        return output.xml2json(xml);
     }
 
     //TODO
@@ -111,10 +122,10 @@ public class SpotlightInterface {
                          int support,
                          String targetTypes,
                          String spqarlQuery,
-                         boolean blacklist,
+                         String policy,
                          boolean coreferenceResolution) throws Exception {
         //String xml = getXML(text, confidence, support, targetTypes, coreferenceResolution);
-        return "";
+        return "ERROR: RDF output not implemented yet.";
     }
 
 }

@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.dbpedia.spotlight.web;
+package org.dbpedia.spotlight.web.rest;
 
 import java.io.*;
 // SAX classes.
@@ -26,7 +26,7 @@ import org.dbpedia.spotlight.model.DBpediaResourceOccurrence;
  */
 public class OutputManager {
 
-    public TransformerHandler initXMLDoc(ByteArrayOutputStream out) throws Exception{
+    private TransformerHandler initXMLDoc(ByteArrayOutputStream out) throws Exception{
         StreamResult streamResult = new StreamResult(out);
         SAXTransformerFactory tf = (SAXTransformerFactory) SAXTransformerFactory.newInstance();
         // SAX2.0 ContentHandler.
@@ -40,7 +40,7 @@ public class OutputManager {
         return hd;
     }
 
-    public String createXMLOutput(String text, List<DBpediaResourceOccurrence> occList, double confidence, int support, String targetTypesString, boolean coreferenceResolution) throws Exception{
+    protected String createXMLOutput(String text, List<DBpediaResourceOccurrence> occList, double confidence, int support, String targetTypesString, String sparqlQuery, String policy, boolean coreferenceResolution) throws Exception{
         // PrintWriter from a Servlet
         String xmlDoc="";
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -69,11 +69,12 @@ public class OutputManager {
           atts.addAttribute("","","types","CDATA",occ.resource().types().mkString(","));
           // support and types should go to resource
 
-          //TODO add SPARQL query
+          atts.addAttribute("","","sparql","CDATA",sparqlQuery);
+          atts.addAttribute("","","policy","CDATA",policy);
 
-          atts.addAttribute("","","surfaceForm","CDATA",occ.surfaceForm().name());
+          atts.addAttribute("", "", "surfaceForm", "CDATA", occ.surfaceForm().name());
           atts.addAttribute("","","offset","CDATA",String.valueOf(occ.textOffset()));
-          atts.addAttribute("","","similarityScore","CDATA",String.valueOf(occ.similarityScore()));
+          atts.addAttribute("", "", "similarityScore", "CDATA", String.valueOf(occ.similarityScore()));
           atts.addAttribute("","","percentageOfSecondRank","CDATA",String.valueOf(occ.percentageOfSecondRank()));
           
           hd.startElement("","","Resource",atts);
@@ -91,7 +92,7 @@ public class OutputManager {
     }
 
 
-    public String xmltoJson(String xmlDoc) throws Exception{
+    protected String xml2json(String xmlDoc) throws Exception{
 
         XMLSerializer xmlSerializer = new XMLSerializer();
         JSON json = xmlSerializer.read( xmlDoc );
@@ -101,7 +102,7 @@ public class OutputManager {
     }
 
 
-    public String createErrorXMLOutput(String message, String text, double confidence, int support, String targetTypesString, boolean coreferenceResolution) throws Exception{
+    protected String createErrorXMLOutput(String message, String text, double confidence, int support, String targetTypesString, String sparqlQuery, String policy, boolean coreferenceResolution) throws Exception{
         // PrintWriter from a Servlet
         String xmlDoc="";
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -116,6 +117,8 @@ public class OutputManager {
         atts.addAttribute("","","support","CDATA",String.valueOf(support));
         atts.addAttribute("","","types","CDATA",targetTypesString);
         //atts.addAttribute("","","coreferenceResolution","CDATA",String.valueOf(coreferenceResolution));
+        atts.addAttribute("","","sparql","CDATA",sparqlQuery);
+        atts.addAttribute("","","policy","CDATA",policy);
         hd.startElement("","","Annotation",atts);
 
         atts.clear();
@@ -130,5 +133,4 @@ public class OutputManager {
         return xmlDoc;
     }
 
-    
 }
