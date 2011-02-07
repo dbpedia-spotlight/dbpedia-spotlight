@@ -13,7 +13,9 @@ import org.dbpedia.spotlight.lucene.LuceneManager;
 import java.io.IOException;
 
 /**
- * Attempting to optimize time performance.
+ * ICF - Inverse Candidate Frequency
+ * Caching -> Attempting to optimize time performance, since some context terms are likely to occur with many surface forms.
+ *
  * @author pablomendes
  */
 public class CachedInvCandFreqSimilarity extends DefaultSimilarity implements CachedSimilarity {
@@ -29,7 +31,7 @@ public class CachedInvCandFreqSimilarity extends DefaultSimilarity implements Ca
 //    public CachedInvSenseFreqSimilarity(boolean warmUp) { this.warmUp = true; }
 
     /*
-    These terms have to be here so that they are visible across multiple executions of idfExplain
+    These terms have to be here so that they are visible across multiple executions of idfExplain  (NOT THREAD SAFE?)
      */
     Term surfaceFormTerm;
     long maxSf = 1;
@@ -39,6 +41,64 @@ public class CachedInvCandFreqSimilarity extends DefaultSimilarity implements Ca
 //        return (float) (freq>0 ? 1.0 : 0.0);
 //    }
 
+    public Explanation.IDFExplanation idfExplain(final Term surfaceFormTerm, final Term term, final Searcher searcher) throws IOException {
+        final int df = searcher.docFreq(term);
+        final int max = searcher.maxDoc();
+        final float idf = idf(df, max);
+        final long maxCf = termCache.cardinality(((IndexSearcher) searcher).getIndexReader(), surfaceFormTerm); // This is the number of documents that contain the surface form (size of surrogate set)
+        float surfaceFormIDF = idf(df, max);
+
+        return new Explanation.IDFExplanation() {
+
+            long cf = 0; // candidate frequency: with how many candidate resources this context term appears
+
+            private long cf() {
+
+                IndexReader reader = ((IndexSearcher) searcher).getIndexReader();
+
+                try {
+                        if (surfaceFormTerm==null) {  //TODO may not need this anymore
+                            cf = termCache.cardinality(reader, term); // This is the number of docs containing term
+                            LOG.debug("Surface form is null:"+term);
+                        } else {
+                            cf = termCache.cardinality(reader, surfaceFormTerm, term); // This is the number of docs containing surface form + term (candidates)
+                        }
+
+                } catch (IOException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+
+                return cf;
+            }
+
+            /**
+             * Inverse Candidate Frequency calculation
+             * @param candidateFreq
+             * @param maxCandidateFreq
+             * @return
+             */
+            public float icf(long candidateFreq, long maxCandidateFreq) {
+                return candidateFreq==0 ? 0 : (float) (Math.log(new Float(maxCandidateFreq) / new Float(candidateFreq)) + 1.0);
+            }
+
+            @Override
+            public String explain() {
+                    return  "idf(docFreq=" + df +
+                            ", maxDocs="+ max + ")" +
+                            "icf(docFreq=" + cf +
+                            ", maxDocs="+ maxCf + ")";
+            }
+
+            @Override
+            public float getIdf() {
+                    cf = cf(); // sense frequency
+                    float icf = icf(cf, maxCf); // inverse sense frequency
+                    return icf;
+            }};
+
+    }
+
+    //FIXME this is not thread-safe
     @Override
     public Explanation.IDFExplanation idfExplain(final Term term, final Searcher searcher) throws IOException {
         final int df = searcher.docFreq(term);
@@ -92,7 +152,7 @@ public class CachedInvCandFreqSimilarity extends DefaultSimilarity implements Ca
                     return  "idf(docFreq=" + df +
                             ", maxDocs="+ max + ")";
                 } else {
-                    return  "isf(docFreq=" + sf +
+                    return  "icf(docFreq=" + sf +
                             ", maxDocs="+ maxSf + ")";
                 }
 

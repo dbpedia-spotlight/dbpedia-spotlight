@@ -13,6 +13,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.NIOFSDirectory;
 import org.apache.lucene.util.Version;
 import org.dbpedia.spotlight.exceptions.SearchException;
+import org.dbpedia.spotlight.lucene.search.CandidateResourceQuery;
 import org.dbpedia.spotlight.model.*;
 import org.dbpedia.spotlight.util.MemUtil;
 
@@ -224,10 +225,12 @@ public class LuceneManager {
         Query orQuery = getQuery(context);
         orQuery.extractTerms(terms);
         System.out.println(String.format("Terms: %s",terms));
-        Set<Term> qTerms = new HashSet<Term>();
-        orQuery.extractTerms(qTerms);        
-        return getMustQuery(qTerms);
+        //Set<Term> qTerms = new HashSet<Term>(); //DUPLICATED CODE?
+        //orQuery.extractTerms(qTerms);
+        //return getMustQuery(qTerms);
+        return getMustQuery(terms);
     }
+
 
     public Query getMustQuery(Set<Term> qTerms) {
         BooleanQuery andQuery = new BooleanQuery();
@@ -250,11 +253,16 @@ public class LuceneManager {
         try {
             ctxQuery = parser.parse(queryText);
         } catch (ParseException e) {
+            StringBuffer msg = new StringBuffer();
+            msg.append("Error parsing context. ");
             if (e.getMessage().contains("too many boolean clauses")) {
-                System.out.printf("Broke with %s tokens.", queryText.split("\\W+").length);
+                msg.append(String.format("QueryParser broke with %s tokens.",queryText.split("\\W+").length));
             }
+            msg.append("\n");
+            msg.append(context);
+            msg.append("\n");
             e.printStackTrace();
-            throw new SearchException("Error parsing context in "+context,e);
+            throw new SearchException(msg.toString(),e);
         }
         return ctxQuery;
     }
@@ -302,15 +310,30 @@ public class LuceneManager {
     }
 
 
-    /*---------- Composed methods for querying the index correctly (they use the basic methods) ----------*/
-    //TODO Move to LuceneQueryFactory
-    public Query getQuery(SurfaceForm sf, Text context) throws SearchException {
-        BooleanQuery query = new BooleanQuery(); //TODO look closer at the behavior of BooleanQuery
-        BooleanClause sfClause = new BooleanClause(getQuery(sf), BooleanClause.Occur.MUST);
-        BooleanClause ctxClause = new BooleanClause(getQuery(context), BooleanClause.Occur.SHOULD);
-        query.add(sfClause);
-        query.add(ctxClause);
-        return query;
+    /*---------- Composed methods for querying the index correctly (they use the basic methods) ----------*/ //TODO Move to LuceneQueryFactory
+
+//    public Query getQuery(SurfaceForm sf, Text context) throws SearchException {  //PABLO add specific query for sf+context case
+//        BooleanQuery query = new BooleanQuery(); //TODO look closer at the behavior of BooleanQuery
+//        BooleanClause sfClause = new BooleanClause(getQuery(sf), BooleanClause.Occur.MUST);
+//        BooleanClause ctxClause = new BooleanClause(getQuery(context), BooleanClause.Occur.SHOULD);
+//        query.add(sfClause);
+//        query.add(ctxClause);
+//        return query;
+//    }
+
+    public BooleanQuery getQuery(SurfaceForm sf, Text context) throws SearchException {
+        Set<Term> terms = new HashSet<Term>();
+        Query contextQuery = getQuery(context);
+        contextQuery.extractTerms(terms);
+
+        Term sfTerm = new Term(DBpediaResourceField.SURFACE_FORM.toString(),sf.name());
+
+        BooleanQuery orQuery = new BooleanQuery();
+        orQuery.add(new BooleanClause(new TermQuery(sfTerm), BooleanClause.Occur.MUST)); //TODO do we need this?
+        for (Term t: terms) {
+            orQuery.add(new CandidateResourceQuery(sfTerm, t), BooleanClause.Occur.SHOULD);
+        }
+        return orQuery;
     }
 
     public Query getQuery(DBpediaResource resource, Text context) throws SearchException {

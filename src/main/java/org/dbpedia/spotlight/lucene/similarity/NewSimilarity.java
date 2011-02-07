@@ -51,6 +51,10 @@ public class NewSimilarity extends DefaultSimilarity implements CachedSimilarity
 	    return result;
     }
 
+    public Explanation.IDFExplanation idfExplain(final Term sfTerm, final Term term, final Searcher searcher) throws IOException {
+        throw new IOException("Not implemented yet.");
+    }
+
     @Override
     public Explanation.IDFExplanation idfExplain(final Term term, final Searcher searcher) throws IOException {
         //final int df = searcher.docFreq(term);

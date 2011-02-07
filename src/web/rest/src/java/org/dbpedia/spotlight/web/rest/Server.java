@@ -21,9 +21,9 @@ import java.net.URISyntaxException;
 
 public class Server {
 
-    protected static final Annotator annotator = new DefaultAnnotator(new File(Configuration.spotterFile), new File(Configuration.indexDirectory));
-
     protected static final Disambiguator disambiguator = new DefaultDisambiguator(new File(Configuration.indexDirectory));
+
+    protected static final Annotator annotator = new DefaultAnnotator(new File(Configuration.spotterFile), disambiguator);
 
     private static volatile Boolean running = true;
 

@@ -12,15 +12,17 @@ import org.dbpedia.spotlight.exceptions.InputException
  * Annotates a text with DBpedia Resources
  */
 
-class DefaultAnnotator(val spotterFile : File, val indexDir : File) extends Annotator {
+class DefaultAnnotator(val spotterFile : File, val disambiguator: Disambiguator) extends Annotator {
+
+    def this(spotterFile: File, indexDir : File) {
+        this(spotterFile, new DefaultDisambiguator(indexDir))
+    }
 
     private val LOG = LogFactory.getLog(this.getClass)
 
     //TODO print nice messages for false input!
 
     LOG.info("Initializing annotator object ...")
-
-    val disambiguator : Disambiguator = new DefaultDisambiguator(indexDir)
 
     // -- Spotter --
     //val spotter : Spotter = new TrieSpotter(spotterFile)
