@@ -36,7 +36,7 @@ class LingPipeSpotter(val dictionary : Dictionary[String], val overlap : Boolean
         LOG.debug("Dictionary: "+dictionaryFile)
     }
 
-    LOG.debug("Initializing LingPipeSpotter from ...")
+    LOG.debug("Initializing LingPipeSpotter ...")
     val dictionaryChunker = new ExactDictionaryChunker(dictionary,
                                                        //IndoEuropeanTokenizerFactory.INSTANCE,  // splits "don't" into "don", "'" and "t"
                                                        AnnotationTokenizerFactory,

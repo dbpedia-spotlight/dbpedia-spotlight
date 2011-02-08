@@ -116,7 +116,7 @@ public class LuceneManager {
 
 
     public enum DBpediaResourceField {
-        URI("URI"), SURFACE_FORM("SURFACE_FORM"), CONTEXT("CONTEXT"), TYPE("TYPE");
+        URI("URI"), URI_COUNT("URI_COUNT"), SURFACE_FORM("SURFACE_FORM"), CONTEXT("CONTEXT"), TYPE("TYPE");
         private String name;
         DBpediaResourceField(String name) {
             this.name = name;
@@ -147,7 +147,51 @@ public class LuceneManager {
         return doc;
     }
 
+    private int getUriCount(Document doc) {
+        Field uriCountField = doc.getField(DBpediaResourceField.URI_COUNT.toString());
+        if(uriCountField == null) {
+            return 0;
+        }
+        return Integer.parseInt(uriCountField.stringValue());
+    }
+
+    /**
+     * Updates the URI_COUNT count of doc2 with the URI_COUNT of doc1.
+     * @param doc1
+     * @param doc2
+     * @return doc2 with updated URI_COUNT field
+     */
+    private Document updateUriCount(Document doc1, Document doc2) {
+        Field f = getUriCountField(0);
+        f.setValue(Integer.toString(getUriCount(doc1)+getUriCount(doc2)));
+        doc2.removeField(DBpediaResourceField.URI_COUNT.toString());
+        doc2.add(f);
+        return doc2;
+    }
+
+    /**
+     * Index URIs only once. Aggregate URI_COUNT. Merge rest.
+     */
     public Document merge(Document doc1, Document doc2) {
+        for (DBpediaResourceField fieldName: DBpediaResourceField.values()) {
+            if(fieldName == DBpediaResourceField.URI_COUNT) {
+                doc2 = updateUriCount(doc1, doc2);
+                continue;
+            }
+            Field[] fields = doc1.getFields(fieldName.toString());
+            for(Field f : fields) {
+                if (f != null) {
+                    if(fieldName == DBpediaResourceField.URI && doc2.getField(fieldName.toString()) != null) {
+                        break;
+                    }
+                    doc2.add(f);
+                }
+            }
+        }
+        return doc2;
+    }
+
+    public Document merge_multiUris(Document doc1, Document doc2) {
         //Document doc = new Document();
         for (DBpediaResourceField f: DBpediaResourceField.values()) {
             Field f1 = doc1.getField(f.toString());
@@ -231,7 +275,6 @@ public class LuceneManager {
         return getMustQuery(terms);
     }
 
-
     public Query getMustQuery(Set<Term> qTerms) {
         BooleanQuery andQuery = new BooleanQuery();
         for (Term t: qTerms) {
@@ -309,6 +352,12 @@ public class LuceneManager {
                                     Field.Index.NOT_ANALYZED_NO_NORMS);
     }
 
+    public Field getUriCountField(int startCount) {
+        return new Field(DBpediaResourceField.URI_COUNT.toString(),
+                                    Integer.toString(startCount),
+                                    Field.Store.YES,
+                                    Field.Index.NOT_ANALYZED_NO_NORMS);
+    }
 
     /*---------- Composed methods for querying the index correctly (they use the basic methods) ----------*/ //TODO Move to LuceneQueryFactory
 
@@ -367,8 +416,10 @@ public class LuceneManager {
     public Document getDocument(DBpediaResourceOccurrence resourceOccurrence) {
         Document doc = new Document();
         doc.add(getField(resourceOccurrence.resource()));
-        //doc.add(getField(resourceOccurrence.surfaceForm()));  //TODO uncomment, was just a test!!!!!!!!
+        //doc.add(getField(resourceOccurrence.surfaceForm()));  //uncomment this if you want anchor texts as surface forms; otherwise index surface forms in a second run together with types
         doc.add(getField(resourceOccurrence.context()));
+        doc.add(getUriCountField(1));
+
         return doc;
     }
 

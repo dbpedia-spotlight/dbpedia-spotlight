@@ -13,7 +13,7 @@ class ContextExtractor(minContextWords : Int, maxContextWords : Int) {
 
     private val spaceChars = Set(' ', '\n', '\t')
 
-        /**
+    /**
      * Strips the context of a DBpediaResourceOccurrence
      */
     def narrowContext(occ : DBpediaResourceOccurrence) : DBpediaResourceOccurrence = {
