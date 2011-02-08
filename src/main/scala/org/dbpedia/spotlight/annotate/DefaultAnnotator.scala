@@ -35,8 +35,10 @@ class DefaultAnnotator(val spotterFile : File, val disambiguator: Disambiguator)
         LOG.info("Spotting...")
         val spottedSurfaceForms : java.util.List[SurfaceFormOccurrence] = spotter.extract(new Text(text))
 
-        LOG.info("Selecting candidates...");
-        val selectedSpots = disambiguator.spotProbability(spottedSurfaceForms);
+        //LOG.info("Selecting candidates...");
+        //val selectedSpots = disambiguator.spotProbability(spottedSurfaceForms);
+        LOG.info("Skipping candidate selection.");
+        val selectedSpots = spottedSurfaceForms
 
         LOG.info("Disambiguating... ("+disambiguator.name+")")
         val disambiguatedOccurrences : java.util.List[DBpediaResourceOccurrence] = disambiguator.disambiguate(selectedSpots)

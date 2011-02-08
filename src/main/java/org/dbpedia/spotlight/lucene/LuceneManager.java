@@ -127,26 +127,6 @@ public class LuceneManager {
         }
     }
 
-    /**
-     * THIS IMPLEMENTATION DOENT WORK AS INITIALLY EXPECTED
-     * The document can have no fields, because we test for not null.
-     * @param doc1
-     * @param doc2
-     * @return
-     */
-    public Document merge1(Document doc1, Document doc2) {
-        Document doc = new Document();
-        for (DBpediaResourceField f: DBpediaResourceField.values()) {
-            Field f1 = doc1.getField(f.toString());
-            Field f2 = doc2.getField(f.toString());
-            if (f1!=null)
-                doc.add(f1);
-            if (f2!=null)
-                doc.add(f2);
-        }
-        return doc;
-    }
-
     private int getUriCount(Document doc) {
         Field uriCountField = doc.getField(DBpediaResourceField.URI_COUNT.toString());
         if(uriCountField == null) {
@@ -275,6 +255,7 @@ public class LuceneManager {
         return getMustQuery(terms);
     }
 
+
     public Query getMustQuery(Set<Term> qTerms) {
         BooleanQuery andQuery = new BooleanQuery();
         for (Term t: qTerms) {
@@ -311,8 +292,8 @@ public class LuceneManager {
     }
 
     public Query getQuery(SurfaceForm sf) {
-        return new TermQuery(new Term(DBpediaResourceField.SURFACE_FORM.toString(),
-                sf.name()));
+        Term sfTerm = new Term(DBpediaResourceField.SURFACE_FORM.toString(),sf.name());
+        return new CandidateResourceQuery(sfTerm, sfTerm);
     }
 
     public Query getQuery(DBpediaResource resource) {
@@ -371,16 +352,20 @@ public class LuceneManager {
 //    }
 
     public BooleanQuery getQuery(SurfaceForm sf, Text context) throws SearchException {
-        Set<Term> terms = new HashSet<Term>();
+        Set<Term> ctxTerms = new HashSet<Term>();
         Query contextQuery = getQuery(context);
-        contextQuery.extractTerms(terms);
+        contextQuery.extractTerms(ctxTerms);
 
-        Term sfTerm = new Term(DBpediaResourceField.SURFACE_FORM.toString(),sf.name());
+        Query sfQuery = getQuery(sf);
+        Set<Term> sfTerms = new HashSet<Term>();
+        sfQuery.extractTerms(sfTerms);   //TODO FUTURE if we have an ngram analyzer for SF, passing this set down to the similarity class enables its usage. For now we have only one term.
 
         BooleanQuery orQuery = new BooleanQuery();
-        orQuery.add(new BooleanClause(new TermQuery(sfTerm), BooleanClause.Occur.MUST)); //TODO do we need this?
-        for (Term t: terms) {
-            orQuery.add(new CandidateResourceQuery(sfTerm, t), BooleanClause.Occur.SHOULD);
+        orQuery.add(new BooleanClause(sfQuery, BooleanClause.Occur.MUST)); //TODO do we need this?
+        for (Term sfTerm: sfTerms) { //FIXME this is not correct in the context of the ICF similarity. better to pass the full set downstream and let they handle it there. but for now, we have only one term..
+            for (Term t: ctxTerms) {
+                orQuery.add(new CandidateResourceQuery(sfTerm, t), BooleanClause.Occur.SHOULD);
+            }
         }
         return orQuery;
     }

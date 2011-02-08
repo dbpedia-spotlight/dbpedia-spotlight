@@ -57,12 +57,12 @@ public class CachedInvCandFreqSimilarity extends DefaultSimilarity implements Ca
                 IndexReader reader = ((IndexSearcher) searcher).getIndexReader();
 
                 try {
-                        if (surfaceFormTerm==null) {  //TODO may not need this anymore
-                            cf = termCache.cardinality(reader, term); // This is the number of docs containing term
-                            LOG.debug("Surface form is null:"+term);
-                        } else {
+                        //if (surfaceFormTerm==null) {  //TODO may not need this anymore
+                        //    cf = termCache.cardinality(reader, term); // This is the number of docs containing term
+                        //    LOG.debug("Surface form is null:"+term);
+                        //} else {
                             cf = termCache.cardinality(reader, surfaceFormTerm, term); // This is the number of docs containing surface form + term (candidates)
-                        }
+                        //}
 
                 } catch (IOException e) {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -124,7 +124,7 @@ public class CachedInvCandFreqSimilarity extends DefaultSimilarity implements Ca
                     } else {
                         if (surfaceFormTerm==null) {
                             sf = termCache.cardinality(reader, term); // This is the number of docs containing term
-                            LOG.debug("Surface form is null:"+term);
+                            LOG.debug("[OLD] Surface form is null:"+term);
                         } else {
                             sf = termCache.cardinality(reader, surfaceFormTerm, term); // This is the number of docs containing sf + term
                         }

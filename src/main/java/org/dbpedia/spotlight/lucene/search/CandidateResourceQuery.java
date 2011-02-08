@@ -28,6 +28,7 @@ public class CandidateResourceQuery extends TermQuery {
     public CandidateResourceQuery(Term surfaceFormTerm, Term t) {
         super(t);
         this.surfaceFormTerm = surfaceFormTerm;
+        this.term = t;
     }
 
     private class CandidateResourceWeight extends Weight {
@@ -42,9 +43,10 @@ public class CandidateResourceQuery extends TermQuery {
         public CandidateResourceWeight(Searcher searcher) throws IOException {
             this.similarity = getSimilarity(searcher);
 
-            if (this.similarity instanceof CachedSimilarity) // this guy has a pointer to the cache and can benefit from explicit surface form
+            if (this.similarity instanceof CachedSimilarity) { // this guy has a pointer to the cache and can benefit from explicit surface form
+                //System.err.println(surfaceFormTerm +","+ term);
                 idfExp = ((CachedSimilarity) similarity).idfExplain(surfaceFormTerm, term, searcher);
-            else {
+            } else {
                 idfExp = similarity.idfExplain(term, searcher); // otherwise it will have to decide inside which term is the surface form
             }
             idf = idfExp.getIdf();
@@ -137,5 +139,10 @@ public class CandidateResourceQuery extends TermQuery {
             return result;
         }
     }
+
+    public Weight createWeight(Searcher searcher) throws IOException {
+      return new CandidateResourceWeight(searcher);
+    }
+
 
 }
