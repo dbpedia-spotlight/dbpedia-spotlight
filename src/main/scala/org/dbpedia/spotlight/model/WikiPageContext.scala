@@ -11,6 +11,8 @@ package org.dbpedia.spotlight.model
 class WikiPageContext (val resource : DBpediaResource, val context : Text)
 {
 
+    def toTsvString = resource.uri + "\t" + context.text
+
     override def toString = resource + ":\n" + context
 
 }

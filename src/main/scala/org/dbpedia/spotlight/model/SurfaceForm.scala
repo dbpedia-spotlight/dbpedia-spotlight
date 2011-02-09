@@ -5,6 +5,8 @@ import org.dbpedia.spotlight.string.ModifiedWikiUtil
 
 class SurfaceForm(var name : String)
 {
+    name = name.replace("’", "'")
+
     name = if (ModifiedWikiUtil.isEncoded(name)) {
                ModifiedWikiUtil.wikiDecode(name)
            }

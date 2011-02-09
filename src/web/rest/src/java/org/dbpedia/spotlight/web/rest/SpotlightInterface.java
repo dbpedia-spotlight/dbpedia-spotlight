@@ -114,6 +114,44 @@ public class SpotlightInterface {
         return occList;
     }
 
+    public String getHTML(String text,
+                          double confidence,
+                          int support,
+                          String dbpediaTypesString,
+                          String spqarlQuery,
+                          String policy,
+                          boolean coreferenceResolution) throws Exception {
+        String result;
+        try {
+            List<DBpediaResourceOccurrence> occs = getOccurrences(text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
+            result = output.makeHTML(text, occs);
+        }
+        catch (InputException e) {
+            result = "<html><body><b>ERROR:</b> <i>"+e.getMessage()+"</i></body></html>";
+        }
+        System.out.println(result);
+        return result;
+    }
+
+    public String getRDFa(String text,
+                          double confidence,
+                          int support,
+                          String dbpediaTypesString,
+                          String spqarlQuery,
+                          String policy,
+                          boolean coreferenceResolution) throws Exception {
+        String result;
+        try {
+            List<DBpediaResourceOccurrence> occs = getOccurrences(text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
+            result = output.makeRDFa(text, occs);
+        }
+        catch (InputException e) {
+            result = "<html><body><b>ERROR:</b> <i>"+e.getMessage()+"</i></body></html>";
+        }
+        System.out.println(result);
+        return result;
+    }
+
     public String getXML(String text,
                          double confidence,
                          int support,
@@ -121,13 +159,16 @@ public class SpotlightInterface {
                          String spqarlQuery,
                          String policy,
                          boolean coreferenceResolution) throws Exception {
+        String result;
         try {
             List<DBpediaResourceOccurrence> occs = getOccurrences(text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
-            return output.makeXML(text, occs, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
+            result = output.makeXML(text, occs, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
         }
         catch (InputException e) {
-            return output.makeErrorXML(e.getMessage(), text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
+            result = output.makeErrorXML(e.getMessage(), text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
         }
+        System.out.println(result);
+        return result;
     }
 
     public String getJSON(String text,
@@ -137,25 +178,11 @@ public class SpotlightInterface {
                           String spqarlQuery,
                           String policy,
                           boolean coreferenceResolution) throws Exception {
+        String result;
         String xml = getXML(text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
-        return output.xml2json(xml);
-    }
-
-    public String getHTML(String text,
-                          double confidence,
-                          int support,
-                          String dbpediaTypesString,
-                          String spqarlQuery,
-                          String policy,
-                          boolean coreferenceResolution) throws Exception {
-        try {
-            List<DBpediaResourceOccurrence> occs = getOccurrences(text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
-            return output.makeHTML(text, occs);
-        }
-        catch (InputException e) {
-            return "<html><body><b>ERROR:</b> <i>"+e.getMessage()+"</i></body></html>";
-        }
-
+        result = output.xml2json(xml);
+        System.out.println(result);
+        return result;
     }
 
 }

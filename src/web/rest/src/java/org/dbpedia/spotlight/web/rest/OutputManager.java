@@ -24,6 +24,8 @@ package org.dbpedia.spotlight.web.rest;
 import java.io.*;
 // SAX classes.
 import java.util.List;
+
+import org.dbpedia.spotlight.model.DBpediaType;
 import org.xml.sax.helpers.*;
 //JAXP 1.1
 import javax.xml.transform.*;
@@ -31,7 +33,6 @@ import javax.xml.transform.stream.*;
 import javax.xml.transform.sax.*;
 
 //JSON classes
-import net.sf.json.JSON;
 import net.sf.json.xml.XMLSerializer;
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence;
 
@@ -113,7 +114,6 @@ public class OutputManager {
         hd.endElement("","","Annotation");
         hd.endDocument();
         xml = out.toString("utf-8");
-        System.out.println(xml);
         return xml;
     }
 
@@ -146,42 +146,84 @@ public class OutputManager {
         hd.endElement("","","Annotation");
         hd.endDocument();
         xmlDoc = out.toString("utf-8");
-        System.out.println(xmlDoc);
         return xmlDoc;
     }
 
+    private XMLSerializer xmlSerializer = new XMLSerializer();
     protected String xml2json(String xmlDoc) throws Exception{
-        XMLSerializer xmlSerializer = new XMLSerializer();
-        String json = xmlSerializer.read(xmlDoc).toString(2);
-        System.out.println(json);
-        return json;
+        return xmlSerializer.read(xmlDoc).toString(2);
+    }
+
+    private WebCodeFormatter htmlFormat = new HTMLFormatter();
+    protected String makeHTML(String text, List<DBpediaResourceOccurrence> occList) {
+        return makeWebRepresentation(text, occList, htmlFormat);
+    }
+
+    private WebCodeFormatter rdfaFormat = new RDFaFormatter();
+    protected String makeRDFa(String text, List<DBpediaResourceOccurrence> occList) {
+        return makeWebRepresentation(text, occList, rdfaFormat);
     }
 
 
-    private final String htmlTemplate = "<html>\n<body>\n%s\n</body>\n</html>";
-
-    private final String htmlLinkTemplate = "<a href=\"%s\" title=\"%s\" target=\"_blank\">%s</a>";
-
-    protected String makeHTML(String text, List<DBpediaResourceOccurrence> occList) {
+    private String makeWebRepresentation(String text, List<DBpediaResourceOccurrence> occList, WebCodeFormatter formatter) {
         text = getText(text, occList);
 
         if(occList.isEmpty()) {
-            return String.format(htmlTemplate, text);
+            return formatter.getMain(text);
         }
-
         int lengthAdded = 0;
         String modifiedText = text;
         String startText;
         for (DBpediaResourceOccurrence occ : occList){
             int endOfSurfaceform = occ.textOffset() + lengthAdded + occ.surfaceForm().name().length();
             startText = modifiedText.substring(0, occ.textOffset() + lengthAdded);
-            String annotationAdd = String.format(htmlLinkTemplate, occ.resource().getFullUri(), occ.resource().getFullUri(), occ.surfaceForm().name());
+            String fullUri = occ.resource().getFullUri();
+            String annotationAdd = formatter.getLink(fullUri, occ.surfaceForm().name(), occ.resource().getTypes());
             modifiedText = startText + annotationAdd + modifiedText.substring(endOfSurfaceform);
             lengthAdded = lengthAdded + (annotationAdd.length()-occ.surfaceForm().name().length());
         }
-        return String.format(htmlTemplate, modifiedText.replaceAll("\\n", "<br/>"));
+        return formatter.getMain(modifiedText.replaceAll("\\n", "<br/>"));
     }
 
+    private interface WebCodeFormatter {
+        // surrounds the marked-up text with main tags
+        public String getMain(String content);
 
+        // produces an HTML link, potentially with semantic markup
+        public String getLink(String uri, String surfaceForm, List<DBpediaType> types);
+    }
+
+    private class HTMLFormatter implements WebCodeFormatter {
+        private final static String main = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n<html>\n<head>\n<title>DBpedia Spotlight annotation</title>\n<meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\">\n</head>\n<body>\n<div>\n%s\n</div>\n</body>\n</html>";
+        private final static String link = "<a href=\"%s\" title=\"%s\" target=\"_blank\">%s</a>";
+
+        public String getLink(String uri, String surfaceForm, List<DBpediaType> types) {
+            return String.format(link, uri, uri, surfaceForm);
+        }
+
+        public String getMain(String content) {
+            return String.format(main, content.replaceAll("\\n", "<br/>"));
+        }
+    }
+
+    private class RDFaFormatter implements WebCodeFormatter {
+        private final static String main = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML+RDFa 1.0//EN\" \"http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\n<head>\n<title>DBpedia Spotlight annotation</title>\n</head>\n<body>\n<div>\n%s\n</div>\n</body>\n</html>";
+        private final static String link = "<a about=\"%s\" href=\"%s\" title=\"%s\" target=\"_blank\">%s</a>";
+        private final static String typeLink= "<a about=\"%s\" typeof=\"%s\" href=\"%s\" title=\"%s\">%s</a>";
+
+        public String getLink(String uri, String surfaceForm, List<DBpediaType> types) {
+            if(types == null || types.isEmpty()) {
+                return String.format(link, uri, uri, uri, surfaceForm);
+            }
+            else {
+                String mostSpecificType = types.get(types.size()-1).getFullUri();
+                return String.format(typeLink, uri, mostSpecificType, uri, uri, surfaceForm);
+            }
+        }
+
+        public String getMain(String content) {
+            return String.format(main, content.replaceAll("\\n", "<br/>"));
+        }
+    }
 
 }

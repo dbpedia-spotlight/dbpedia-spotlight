@@ -9,12 +9,20 @@ package org.dbpedia.spotlight.model
 
 class DBpediaType(var name : String) {
 
-    name = name.replace("http://dbpedia.org/ontology/", "")
+    name = name.replace(DBpediaType.DBPEDIA_ONTOLOGY_PREFIX, "")
+
+    name = name.capitalize
 
     def equals(that : DBpediaType) : Boolean = {
         name.equalsIgnoreCase(that.name)
     }
 
+    def getFullUri = DBpediaType.DBPEDIA_ONTOLOGY_PREFIX + name
+
     override def toString = name
 
+}
+
+object DBpediaType {
+    val DBPEDIA_ONTOLOGY_PREFIX = "http://dbpedia.org/ontology/"
 }
