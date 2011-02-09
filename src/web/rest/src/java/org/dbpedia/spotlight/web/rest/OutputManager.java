@@ -56,11 +56,22 @@ public class OutputManager {
         return hd;
     }
 
-    protected String createXMLOutput(String text, List<DBpediaResourceOccurrence> occList, double confidence, int support, String targetTypesString, String sparqlQuery, String policy, boolean coreferenceResolution) throws Exception{
+    private String getText(String t, List<DBpediaResourceOccurrence> occList) {
+        if(occList == null || occList.isEmpty()) {
+            return t.replaceAll("\\[\\[(.*?)\\]\\]", "$1");
+        }
+        else {
+            return occList.get(0).context().text();
+        }
+    }
+
+    protected String makeXML(String text, List<DBpediaResourceOccurrence> occList, double confidence, int support, String targetTypesString, String sparqlQuery, String policy, boolean coreferenceResolution) throws Exception{
         // PrintWriter from a Servlet
-        String xmlDoc="";
+        String xml = "";
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         TransformerHandler hd = initXMLDoc(out);
+
+        text = getText(text, occList);
 
         //Create Annotation element
         //First create text attribute
@@ -101,27 +112,18 @@ public class OutputManager {
 
         hd.endElement("","","Annotation");
         hd.endDocument();
-        xmlDoc = out.toString("utf-8");
-        System.out.println(xmlDoc);
-        return xmlDoc;
+        xml = out.toString("utf-8");
+        System.out.println(xml);
+        return xml;
     }
 
-
-    protected String xml2json(String xmlDoc) throws Exception{
-
-        XMLSerializer xmlSerializer = new XMLSerializer();
-        JSON json = xmlSerializer.read( xmlDoc );
-        //System.out.println( "--- Json version ----");
-        System.out.println( json.toString(2) );
-        return json.toString(2);
-    }
-
-
-    protected String createErrorXMLOutput(String message, String text, double confidence, int support, String targetTypesString, String sparqlQuery, String policy, boolean coreferenceResolution) throws Exception{
+    protected String makeErrorXML(String message, String text, double confidence, int support, String targetTypesString, String sparqlQuery, String policy, boolean coreferenceResolution) throws Exception{
         // PrintWriter from a Servlet
         String xmlDoc="";
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         TransformerHandler hd = initXMLDoc(out);
+
+        text = getText(text, null);
 
         //Create Annotation element
         //First create text attribute
@@ -147,5 +149,39 @@ public class OutputManager {
         System.out.println(xmlDoc);
         return xmlDoc;
     }
+
+    protected String xml2json(String xmlDoc) throws Exception{
+        XMLSerializer xmlSerializer = new XMLSerializer();
+        String json = xmlSerializer.read(xmlDoc).toString(2);
+        System.out.println(json);
+        return json;
+    }
+
+
+    private final String htmlTemplate = "<html>\n<body>\n%s\n</body>\n</html>";
+
+    private final String htmlLinkTemplate = "<a href=\"%s\" title=\"%s\" target=\"_blank\">%s</a>";
+
+    protected String makeHTML(String text, List<DBpediaResourceOccurrence> occList) {
+        text = getText(text, occList);
+
+        if(occList.isEmpty()) {
+            return String.format(htmlTemplate, text);
+        }
+
+        int lengthAdded = 0;
+        String modifiedText = text;
+        String startText;
+        for (DBpediaResourceOccurrence occ : occList){
+            int endOfSurfaceform = occ.textOffset() + lengthAdded + occ.surfaceForm().name().length();
+            startText = modifiedText.substring(0, occ.textOffset() + lengthAdded);
+            String annotationAdd = String.format(htmlLinkTemplate, occ.resource().getFullUri(), occ.resource().getFullUri(), occ.surfaceForm().name());
+            modifiedText = startText + annotationAdd + modifiedText.substring(endOfSurfaceform);
+            lengthAdded = lengthAdded + (annotationAdd.length()-occ.surfaceForm().name().length());
+        }
+        return String.format(htmlTemplate, modifiedText.replaceAll("\\n", "<br/>"));
+    }
+
+
 
 }

@@ -28,7 +28,15 @@ package org.dbpedia.spotlight.web.rest;
 public class Configuration {
 
         //TODO make this configurable
-    final static String spotterFile    = "e:\\dbpa\\data\\__smallSpotDictList.spotterDictionary";
-    final static String indexDirectory = "e:\\dbpa\\data\\index\\DisambigIndex.restrictedSFs.plusTypes-plusSFs\\";
+    final static String spotterFile    = "please-specify-spotter-dictionary-file";
+    final static String indexDirectory = "please-specify-disambiguation-index-directory";
+
+    final static String DEFAULT_TEXT = "";
+    final static String DEFAULT_CONFIDENCE = "0.3";
+    final static String DEFAULT_SUPPORT = "30";
+    final static String DEFAULT_TYPES = "";
+    final static String DEFAULT_SPARQL = "";
+    final static String DEFAULT_POLICY = "whitelist";
+    final static String DEFAULT_COREFERENCE_RESOLUTION = "true";
 
 }

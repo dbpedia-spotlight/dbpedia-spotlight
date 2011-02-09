@@ -16,9 +16,6 @@
 
 package org.dbpedia.spotlight.web.rest;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.annotate.Annotator;
@@ -29,6 +26,9 @@ import org.dbpedia.spotlight.model.DBpediaType;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 import org.dbpedia.spotlight.string.ParseSurfaceFormText;
 import org.dbpedia.spotlight.util.AnnotationFilter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SpotlightInterface {
 
@@ -53,14 +53,13 @@ public class SpotlightInterface {
      * Retrieves representation of an instance of org.dbpedia.spotlight.web.Annotation
      * @return an instance of java.lang.String
      */
-    public String getXML(String text,
-                         double confidence,
-                         int support,
-                         String dbpediaTypesString,
-                         String spqarlQuery,
-                         String policy,
-                         boolean coreferenceResolution) throws Exception {
-        String xml = "";
+    public List<DBpediaResourceOccurrence> getOccurrences(String text,
+                                                          double confidence,
+                                                          int support,
+                                                          String dbpediaTypesString,
+                                                          String spqarlQuery,
+                                                          String policy,
+                                                          boolean coreferenceResolution) throws Exception {
 
         LOG.info("******************************** Parameters ********************************");
         if(disambiguator == null && annotator != null) {
@@ -94,54 +93,69 @@ public class SpotlightInterface {
             //LOG.info("type:"+targetType.trim());
         }
 
+        List<DBpediaResourceOccurrence> occList = new ArrayList<DBpediaResourceOccurrence>(0);
         if (text != null){
-            try {
-                List<DBpediaResourceOccurrence> occList;
 
-                // use API that was given to the constructor
-                if(disambiguator == null && annotator != null) {
-                    occList = annotator.annotate(text);
-                }
-                else if(disambiguator != null && annotator == null) {
-                    List<SurfaceFormOccurrence> sfOccList = ParseSurfaceFormText.parse(text);
-                    occList = disambiguator.disambiguate(sfOccList);
-                }
-                else {
-                    throw new IllegalStateException("both annotator and disambiguator were not initialized");
-                }
+            // use API that was given to the constructor
+            if(disambiguator == null && annotator != null) {
+                occList = annotator.annotate(text);
+            }
+            else if(disambiguator != null && annotator == null) {
+                List<SurfaceFormOccurrence> sfOccList = ParseSurfaceFormText.parse(text);
+                occList = disambiguator.disambiguate(sfOccList);
+            }
+            else {
+                throw new IllegalStateException("both annotator and disambiguator were not initialized");
+            }
 
-                List<DBpediaResourceOccurrence> filteredOccList = AnnotationFilter.filter(occList, confidence, support, dbpediaTypes, spqarlQuery, blacklist, coreferenceResolution);
-                xml = output.createXMLOutput(text,filteredOccList,confidence,support,dbpediaTypesString,spqarlQuery,policy,coreferenceResolution);
-            }
-            catch (InputException e) {
-                xml = output.createErrorXMLOutput(e.getMessage(),text,confidence,support,dbpediaTypesString,spqarlQuery,policy,coreferenceResolution);
-            }
+            return AnnotationFilter.filter(occList, confidence, support, dbpediaTypes, spqarlQuery, blacklist, coreferenceResolution);
         }
 
-        return xml;
+        return occList;
+    }
+
+    public String getXML(String text,
+                         double confidence,
+                         int support,
+                         String dbpediaTypesString,
+                         String spqarlQuery,
+                         String policy,
+                         boolean coreferenceResolution) throws Exception {
+        try {
+            List<DBpediaResourceOccurrence> occs = getOccurrences(text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
+            return output.makeXML(text, occs, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
+        }
+        catch (InputException e) {
+            return output.makeErrorXML(e.getMessage(), text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
+        }
     }
 
     public String getJSON(String text,
                           double confidence,
                           int support,
-                          String targetTypes,
+                          String dbpediaTypesString,
                           String spqarlQuery,
                           String policy,
                           boolean coreferenceResolution) throws Exception {
-        String xml = getXML(text, confidence, support, targetTypes, spqarlQuery, policy, coreferenceResolution);
+        String xml = getXML(text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
         return output.xml2json(xml);
     }
 
-    //TODO
-    public String getRDF(String text,
-                         double confidence,
-                         int support,
-                         String targetTypes,
-                         String spqarlQuery,
-                         String policy,
-                         boolean coreferenceResolution) throws Exception {
-        //String xml = getXML(text, confidence, support, targetTypes, coreferenceResolution);
-        return "ERROR: RDF output not implemented yet.";
+    public String getHTML(String text,
+                          double confidence,
+                          int support,
+                          String dbpediaTypesString,
+                          String spqarlQuery,
+                          String policy,
+                          boolean coreferenceResolution) throws Exception {
+        try {
+            List<DBpediaResourceOccurrence> occs = getOccurrences(text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
+            return output.makeHTML(text, occs);
+        }
+        catch (InputException e) {
+            return "<html><body><b>ERROR:</b> <i>"+e.getMessage()+"</i></body></html>";
+        }
+
     }
 
 }
