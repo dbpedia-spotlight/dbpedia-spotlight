@@ -213,6 +213,12 @@
         </dependency>
 
         <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.16</version>
+        </dependency>
+
+        <dependency>
             <groupId>xml-apis</groupId>
             <artifactId>xml-apis</artifactId>
             <version>1.0.b2</version>
@@ -257,6 +263,26 @@
             <version>1.2.5</version>
         </dependency>
 
+        <!--
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xerces</artifactId>
+            <version>2.4.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <version>2.9.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xmlParserAPIs</artifactId>
+            <version>2.6.2</version>
+        </dependency>
+        -->
+
 
         <!-- library JARs -->
         <dependency>
@@ -281,14 +307,6 @@
             <version>SNAPSHOT</version>
             <scope>system</scope>
             <systemPath>${basedir}/lib/cloud9.jar</systemPath>
-        </dependency>
-
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.16</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/lib/log4j-1.2.16.jar</systemPath>
         </dependency>
 
     </dependencies>
