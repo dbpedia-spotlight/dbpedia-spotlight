@@ -217,9 +217,8 @@ object AnnotationFilter
      * Best is to execute the query once and just call filterByBlacklist or filterByWhitelist.
      * We only leave the option of calling filterBySparql for use cases dealing with dynamic data in the SPARQL endpoint.
      */
-    def filterBySparql(occs : List[DBpediaResourceOccurrence], sparqlQuery: String, blacklistOrWhitelist : ListColor) : List[DBpediaResourceOccurrence] = {
+    def filterBySparql(occs : List[DBpediaResourceOccurrence], sparqlQuery: String, blacklistOrWhitelist : ListColor, executer : SparqlQueryExecuter = new SparqlQueryExecuter) : List[DBpediaResourceOccurrence] = {
 
-        val executer = new SparqlQueryExecuter();
         val uriSet = executer.query(sparqlQuery).toSet;
         LOG.debug("SPARQL "+blacklistOrWhitelist+":"+uriSet);
 

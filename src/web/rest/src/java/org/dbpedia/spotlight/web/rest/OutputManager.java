@@ -207,9 +207,27 @@ public class OutputManager {
     }
 
     private class RDFaFormatter implements WebCodeFormatter {
-        private final static String main = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML+RDFa 1.0//EN\" \"http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\n<head>\n<title>DBpedia Spotlight annotation</title>\n</head>\n<body>\n<div>\n%s\n</div>\n</body>\n</html>";
-        private final static String link = "<a about=\"%s\" href=\"%s\" title=\"%s\" target=\"_blank\">%s</a>";
-        private final static String typeLink= "<a about=\"%s\" typeof=\"%s\" href=\"%s\" title=\"%s\">%s</a>";
+        /**
+         * <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN" "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:foaf="http://xmlns.com/foaf/0.1/"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:vcard="http://www.w3.org/2006/03/hcard/"
+        xmlns:lexvo="http://lexvo.org/ontology#" xmlns:dbpedia="http://dbpedia.org/resource/" xmlns:dbpo="http://dbpedia.org/ontology/"
+>
+<head>
+<title>DBpedia Spotlight annotation</title>
+</head>
+<body>
+<div>
+<a about="http://dbpedia.org/resource/Barack_Obama" instanceof="http://dbpedia.org/ontology/President" href="http://dbpedia.org/resource/Barack_Obama" title="http://dbpedia.org/resource/Barack_Obama" property="lexvo:label">President Obama</a> called Wednesday on <a about="http://dbpedia.org/resource/United_States_Congress" typeof="http://dbpedia.org/ontology/Legislature" href="http://dbpedia.org/resource/United_States_Congress" title="http://dbpedia.org/resource/United_States_Congress">Congress</a> to extend a <a about="http://dbpedia.org/resource/Tax_break" href="http://dbpedia.org/resource/Tax_break" title="http://dbpedia.org/resource/Tax_break" target="_blank">tax break</a> for <a about="http://dbpedia.org/resource/Student" href="http://dbpedia.org/resource/Student" title="http://dbpedia.org/resource/Student" target="_blank">students</a> included in last year's economic stimulus package, arguing that the <a about="http://dbpedia.org/resource/Policy" href="http://dbpedia.org/resource/Policy" title="http://dbpedia.org/resource/Policy" target="_blank">policy</a> provides more generous assistance.
+</div>
+</body>
+</html>
+         */
+        private final static String main = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML+RDFa 1.0//EN\" \"http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:lexvo=\"http://lexvo.org/ontology#\" xmlns:dbpedia=\"http://dbpedia.org/resource/\" xmlns:dbpo=\"http://dbpedia.org/ontology/\">\n<head>\n<title>DBpedia Spotlight annotation</title>\n</head>\n<body>\n<div rel=\"rdfs:seeAlso\">\n%s\n</div>\n</body>\n</html>";
+        private final static String link = "<a about=\"%s\" href=\"%s\" title=\"%s\" target=\"_blank\" property=\"lexvo:label\">%s</a>";
+        private final static String typeLink= "<a about=\"%s\" typeof=\"%s\" href=\"%s\" title=\"%s\" property=\"lexvo:label\">%s</a>";
 
         public String getLink(String uri, String surfaceForm, List<DBpediaType> types) {
             if(types == null || types.isEmpty()) {
