@@ -172,6 +172,8 @@ object AnnotationFilter
         })
     }
 
+    private val unknownType = new DBpediaType("unknown")
+
     // filter by type
     private def filterByType(occs : List[DBpediaResourceOccurrence], dbpediaTypes : List[DBpediaType], blacklistOrWhitelist : ListColor) : List[DBpediaResourceOccurrence] = {
         if (dbpediaTypes.filter(_.name.trim.nonEmpty).isEmpty) {
@@ -192,7 +194,7 @@ object AnnotationFilter
             }
         }
 
-        val showUntyped = dbpediaTypes.find(t => "unknown" equals t.name) != None
+        val showUntyped = dbpediaTypes.find(t => unknownType equals t) != None
         occs.filter(occ => {
             // if the resource does not have type and the targets contain "unknown": don't filter
             if (showUntyped && occ.resource.types.isEmpty) {
