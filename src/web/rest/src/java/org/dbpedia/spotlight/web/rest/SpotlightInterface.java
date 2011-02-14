@@ -35,8 +35,8 @@ public class SpotlightInterface {
     Log LOG = LogFactory.getLog(this.getClass());
 
     // only one of those two APIs can be set
-    Annotator annotator;
-    Disambiguator disambiguator;
+    private Annotator annotator;
+    private Disambiguator disambiguator;
 
     public SpotlightInterface(Annotator a) {
         annotator = a;
@@ -129,7 +129,7 @@ public class SpotlightInterface {
         catch (InputException e) {
             result = "<html><body><b>ERROR:</b> <i>"+e.getMessage()+"</i></body></html>";
         }
-        System.out.println(result);
+        System.out.println(result+"\n");
         return result;
     }
 
@@ -148,7 +148,7 @@ public class SpotlightInterface {
         catch (InputException e) {
             result = "<html><body><b>ERROR:</b> <i>"+e.getMessage()+"</i></body></html>";
         }
-        System.out.println(result);
+        System.out.println(result+"\n");
         return result;
     }
 
@@ -167,7 +167,7 @@ public class SpotlightInterface {
         catch (InputException e) {
             result = output.makeErrorXML(e.getMessage(), text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
         }
-        System.out.println(result);
+        System.out.println(result+"\n");
         return result;
     }
 
@@ -181,7 +181,7 @@ public class SpotlightInterface {
         String result;
         String xml = getXML(text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
         result = output.xml2json(xml);
-        System.out.println(result);
+        System.out.println(result+"\n");
         return result;
     }
 

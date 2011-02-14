@@ -48,7 +48,6 @@ public class Disambiguate {
                           @DefaultValue(Configuration.DEFAULT_POLICY) @QueryParam("policy") String policy,
                           @DefaultValue(Configuration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution) throws Exception {
 
-        System.out.println("HTML!!!");
         return disambigInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution);
     }
 
