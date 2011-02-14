@@ -14,6 +14,9 @@ import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
  * Date: 24.08.2010
  * Time: 15:28:51
  * Index surface forms to a spotter dictionary.
+ * - from TSV: surface forms must be in the first column.
+ * - from NT: surface forms must be literals of URIs.
+ * - from list
  */
 
 object IndexLingPipeSpotter
@@ -30,7 +33,7 @@ object IndexLingPipeSpotter
     }
 
     def getDictionary(surrogatesFile : File) : MapDictionary[String] = {
-        LOG.info("Indexing surface forms of surrogates file "+surrogatesFile+" to "+surrogatesFile)
+        LOG.info("Reading surface forms from "+surrogatesFile+"...")
         if (surrogatesFile.getName.toLowerCase.endsWith(".tsv")) getDictionaryFromTSVSurrogates(surrogatesFile)
         else if (surrogatesFile.getName.toLowerCase.endsWith(".nt")) getDictionaryFromNTSurrogates(surrogatesFile)
         else getDictionaryFromList(surrogatesFile)
@@ -42,7 +45,6 @@ object IndexLingPipeSpotter
     }
 
     private def getDictionaryFromNTSurrogates(surrogatesNTFile : File) : MapDictionary[String] = {
-        LOG.debug("Indexing dictionary from "+surrogatesNTFile.getName+"...")
         val dictionary = new MapDictionary[String]()
         val nxParser = new NxParser(new FileInputStream(surrogatesNTFile), false)
         while (nxParser.hasNext) {
@@ -54,7 +56,6 @@ object IndexLingPipeSpotter
     }
 
     private def getDictionaryFromTSVSurrogates(surrogatesTSVFile : File) : MapDictionary[String] = {
-        LOG.debug("Indexing dictionary from "+surrogatesTSVFile.getName+"...")
         val dictionary = new MapDictionary[String]()
         for (line <- Source.fromFile(surrogatesTSVFile, "UTF-8").getLines) {
             val surfaceForm = line.split("\t")(0)
@@ -64,7 +65,6 @@ object IndexLingPipeSpotter
     }
 
     private def getDictionaryFromList(surrogatesListFile : File) : MapDictionary[String] = {
-        LOG.debug("Indexing dictionary from "+surrogatesListFile.getName+"...")
         val dictionary = new MapDictionary[String]()
         for (line <- Source.fromFile(surrogatesListFile, "UTF-8").getLines) {
             val surfaceForm = line.trim
@@ -76,8 +76,7 @@ object IndexLingPipeSpotter
 
     def main(args : Array[String]) {
         val surrogatesFile = new File(args(0))
-        val dictFile = if (args.length > 1) new File(args(1))
-                       else new File(surrogatesFile.getAbsolutePath+".spotterDictionary")
+        val dictFile = if (args.length > 1) new File(args(1)) else new File(surrogatesFile.getAbsolutePath+".spotterDictionary")
 
         val dictionary = getDictionary(surrogatesFile)
         writeDictionaryFile(dictionary, dictFile)

@@ -36,13 +36,13 @@ class LingPipeSpotter(val dictionary : Dictionary[String], val overlap : Boolean
         LOG.debug("Dictionary: "+dictionaryFile)
     }
 
-    LOG.debug("Initializing LingPipeSpotter ...")
+    LOG.info("Initializing LingPipeSpotter ...")
     val dictionaryChunker = new ExactDictionaryChunker(dictionary,
                                                        //IndoEuropeanTokenizerFactory.INSTANCE,  // splits "don't" into "don", "'" and "t"
                                                        AnnotationTokenizerFactory,
                                                        overlap,        // find all matches, including overlapping ones?
                                                        caseSensitive)  // case-sensitive matching?
-    LOG.debug("Done.")
+    LOG.info("Done.")
 
     /**
      * Extracts a set of surface form occurrences from text.
