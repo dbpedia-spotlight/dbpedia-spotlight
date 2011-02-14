@@ -199,7 +199,7 @@ public class MergedOccurrencesDisambiguator implements Disambiguator {
     public int trainingSetSize(DBpediaResource res) throws SearchException {
         int n = 0;
         try {
-         n = mMergedSearcher.getNumberOfOccurrences(res);
+         n = mMergedSearcher.getSupport(res);
         } catch (SearchException e) {
             if (!e.getCause().getMessage().equals("read past EOF"))
                 throw e;

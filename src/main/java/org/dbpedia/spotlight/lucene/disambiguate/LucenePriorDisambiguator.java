@@ -131,7 +131,7 @@ public class LucenePriorDisambiguator implements Disambiguator {
     
     @Override
     public int trainingSetSize(DBpediaResource res) throws SearchException {
-        return mSearcher.getNumberOfOccurrences(res);
+        return mSearcher.getSupport(res);
     }
 
 }

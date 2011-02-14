@@ -46,8 +46,12 @@ import java.util.*;
  */
 public class MergedOccurrencesContextSearcher extends BaseSearcher implements ContextSearcher {
 
+    String[] onlyUriCount = {LuceneManager.DBpediaResourceField.URI_COUNT.toString()};
+    String[] uriAndCount = {LuceneManager.DBpediaResourceField.URI.toString(),
+                            LuceneManager.DBpediaResourceField.URI_COUNT.toString()};
     String[] onlyUri = {LuceneManager.DBpediaResourceField.URI.toString()};
     private String[] onlyUriAndTypes = {LuceneManager.DBpediaResourceField.URI.toString(),
+                                        LuceneManager.DBpediaResourceField.URI_COUNT.toString(),
                                         LuceneManager.DBpediaResourceField.TYPE.toString()};
 
     public MergedOccurrencesContextSearcher(LuceneManager lucene) throws IOException {
@@ -252,15 +256,69 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
         return hits.length;
     }
 
-    public int getNumberOfOccurrences(DBpediaResource res) throws SearchException {
-        FieldSelector fieldSelector = new MapFieldSelector(onlyUri);
-        int numUris = 0;
-        for (Document doc: getDocuments(res, fieldSelector)) {
-            String[] fields = doc.getValues(LuceneManager.DBpediaResourceField.URI.toString());
-            numUris += fields.length;
+    /**
+     * Gets number of occurrences (support) for DBpediaResource.
+     * Will issue a search. If you have a document, prefer using getSupport(Document).
+     * @param res
+     * @return
+     * @throws SearchException
+     */
+    public int getSupport(DBpediaResource res) throws SearchException {
+        FieldSelector fieldSelector = new MapFieldSelector(uriAndCount);
+        int support = 0;
+
+        List<Document> uris = getDocuments(res, fieldSelector);
+        if (uris.size()>1)
+            LOG.error("Found the same URI twice in the index: "+res);
+
+        for (Document doc: uris) { //TODO should only return one.
+            String value = doc.get(LuceneManager.DBpediaResourceField.URI_COUNT.toString());
+            if (value==null) { //backwards compatibility
+                support = doc.getValues(LuceneManager.DBpediaResourceField.URI.toString()).length;
+            } else {
+                support = new Integer(value);
+            }
         }
-        return numUris;
+        return support;
     }
+    //ATTENTION depends on how to store URI counts
+    //@Deprecated
+//    public int getSupport(DBpediaResource res) throws SearchException {
+//        FieldSelector fieldSelector = new MapFieldSelector(onlyUri);
+//        int numUris = 0;
+//        for (Document doc: getDocuments(res, fieldSelector)) {
+//            String[] fields = doc.getValues(LuceneManager.DBpediaResourceField.URI.toString());
+//            numUris += fields.length;
+//        }
+//        return numUris;
+//    }
+
+    /**
+     * Returns the number of URIs in document number docNo:
+     * Represents the number of times the URI was seen in the training data
+     *
+     * @param document
+     * @return
+     * @throws SearchException
+     */
+    public int getSupport(Document document) throws SearchException {
+        String fieldValue = document.get(LuceneManager.DBpediaResourceField.URI_COUNT.toString());
+
+        int support = 0;
+        if (fieldValue==null) { // backwards compatibility
+            support = document.getFields(LuceneManager.DBpediaResourceField.URI.toString()).length;  // number of URI fields in this document;
+        } else {
+            support = new Integer(fieldValue); // from URI_COUNT field
+        }
+
+        return support;
+    }
+    //ATTENTION depends on how to store URI counts
+    //@Deprecated
+//    public int getSupport(Document document) throws SearchException {
+//        //TODO can this be optimized for time performance by adding a support field?
+//        return document.getFields(LuceneManager.DBpediaResourceField.URI.toString()).length;  // number of URI fields in this document;
+//    }
 
     /**
      *
@@ -335,12 +393,7 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
         return resource;
     }
 
-    // Returns the number of URIs in document number docNo:
-    // represents the number of times the URI was seen in the training data
-    public int getSupport(Document document) throws SearchException {
-         //TODO can this be optimized for time performance by adding a support field?
-        return document.getFields(LuceneManager.DBpediaResourceField.URI.toString()).length;  // number of URI fields in this document;
-    }
+
 
     // Returns a list of DBpediaTypes that are registered in the index in document number docNo.
     // Duplicates are not removed.
