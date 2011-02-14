@@ -13,6 +13,8 @@ class DBpediaType(var name : String) {
 
     name = name.capitalize
 
+    name = name.replaceAll(" ([a-zA-Z])", "$1".toUpperCase).trim
+
     def equals(that : DBpediaType) : Boolean = {
         name.equalsIgnoreCase(that.name)
     }

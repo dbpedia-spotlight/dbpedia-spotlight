@@ -51,50 +51,29 @@ public class IndexEnricher extends BaseIndexer<Object> {
         searcher = new MergedOccurrencesContextSearcher(this.mLucene);
     }
 
-    /**
-     * Enrich index with surface forms and/or types.
-     *
-     * @param sfMap: Map from URI to set of surface forms.
-     * @param typeMap: Map from URI to list of DBpedia types.
-     * @param priored: If true, adds surface forms as many times as the URI was indexed.
-     * @throws SearchException: inherited from searcher.getFullDocument
-     * @throws IOException: inherited from mWriter.updateDocument
-     */
-    public void enrich(Map<String,LinkedHashSet<SurfaceForm>> sfMap, Map<String,LinkedHashSet<DBpediaType>> typeMap, Boolean priored) throws SearchException, IOException {
+
+    public void enrichWithSurfaceForms(Map<String,LinkedHashSet<SurfaceForm>> sfMap) throws SearchException, IOException {
         long indexSize = searcher.getNumberOfEntries();
         if (indexSize == 0) {
             throw new IllegalArgumentException("index in "+mLucene.directory()+" contains no entries; this method can only add surface forms to an existing index");
         }
-        LOG.info("Enriching index "+mLucene.directory()+"...");
+        LOG.info("Adding surface forms to index "+mLucene.directory()+"...");
 
         if (sfMap == null) {
             sfMap = new HashMap<String,LinkedHashSet<SurfaceForm>>();
-        }
-        if (typeMap == null) {
-            typeMap = new HashMap<String,LinkedHashSet<DBpediaType>>();
         }
 
         for (int i=0; i<indexSize; i++) {
             Document doc = searcher.getFullDocument(i);
             String uri = doc.getField(LuceneManager.DBpediaResourceField.URI.toString()).stringValue();
 
-            LinkedHashSet<SurfaceForm> extraSfs = sfMap.get(uri);
+            LinkedHashSet<SurfaceForm> extraSfs = sfMap.remove(uri);
             if (extraSfs != null) {
                 for (SurfaceForm sf : extraSfs) {
                     int numberOfAdds = 1;
-                    if (priored) {
-                        numberOfAdds += searcher.getSupport(doc) / PRIOR_DEVIDER;  //TODO this is a hack for performance (big document don't fit in memory otherwise) and for smoothing
-                    }
                     for (int j=0; j<numberOfAdds; j++) {
                         doc = mLucene.add(doc, sf);
                     }
-                }
-            }
-
-            LinkedHashSet<DBpediaType> extraTypes = typeMap.get(uri);
-            if (extraTypes != null) {
-                for (DBpediaType t : extraTypes) {
-                    doc = mLucene.add(doc, t);
                 }
             }
 
@@ -115,8 +94,46 @@ public class IndexEnricher extends BaseIndexer<Object> {
         LOG.info("Done.");
     }
 
-    public void enrich(Map<String,LinkedHashSet<SurfaceForm>> map1, Map<String,LinkedHashSet<DBpediaType>> map2) throws SearchException, IOException {
-        enrich(map1, map2, false);
+    public void enrichWithTypes(Map<String,LinkedHashSet<DBpediaType>> typesMap) throws SearchException, IOException {
+        long indexSize = searcher.getNumberOfEntries();
+        if (indexSize == 0) {
+            throw new IllegalArgumentException("index in "+mLucene.directory()+" contains no entries; this method can only add types to an existing index");
+        }
+        LOG.info("Adding types to  index "+mLucene.directory()+"...");
+
+        if (typesMap == null) {
+            typesMap = new HashMap<String,LinkedHashSet<DBpediaType>>();
+        }
+
+        for (int i=0; i<indexSize; i++) {
+            Document doc = searcher.getFullDocument(i);
+            String uri = doc.getField(LuceneManager.DBpediaResourceField.URI.toString()).stringValue();
+
+            LinkedHashSet<DBpediaType> types = typesMap.get(uri);
+            if (types != null) {
+                for (DBpediaType t : types) {
+                    int numberOfAdds = 1;
+                    for (int j=0; j<numberOfAdds; j++) {
+                        doc = mLucene.add(doc, t);
+                    }
+                }
+            }
+
+            Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
+            mWriter.updateDocument(uriTerm, doc);  //deletes everything with this uri and writes a new doc
+
+            if (i%DOCS_BEFORE_FLUSH==0) {
+                LOG.info("  processed "+i+" documents. committing...");
+                mWriter.commit();
+                LOG.info("  done.");
+            }
+        }
+
+        LOG.info("Processed "+indexSize+" documents. Final commit...");
+        mWriter.commit();
+        //LOG.info("Optimizing...");
+        //mWriter.optimize();
+        LOG.info("Done.");
     }
 
     /**
@@ -125,10 +142,8 @@ public class IndexEnricher extends BaseIndexer<Object> {
      * @throws SearchException: inherited from searcher.getFullDocument
      * @throws IOException: inherited from mWriter.updateDocument
      */
-    public void unstore() throws SearchException, IOException {
-        List<LuceneManager.DBpediaResourceField> unstoreFields = new LinkedList<LuceneManager.DBpediaResourceField>();
-        unstoreFields.add(LuceneManager.DBpediaResourceField.SURFACE_FORM);
-        unstoreFields.add(LuceneManager.DBpediaResourceField.CONTEXT);
+    public void unstore(List<LuceneManager.DBpediaResourceField> unstoreFields, int optimizeSegments) throws SearchException, IOException {
+        //List<LuceneManager.DBpediaResourceField> unstoreFields = new LinkedList<LuceneManager.DBpediaResourceField>();
 
         long indexSize = searcher.getNumberOfEntries();
         if (indexSize == 0) {
@@ -138,7 +153,7 @@ public class IndexEnricher extends BaseIndexer<Object> {
         for (int i=0; i<indexSize; i++) {
             Document doc = searcher.getFullDocument(i);
             String uri = doc.getField(LuceneManager.DBpediaResourceField.URI.toString()).stringValue();
-            doc = mLucene.unstore(doc, unstoreFields);    //TODO see if this works and how fast
+            doc = mLucene.unstore(doc, unstoreFields);
             Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
             mWriter.updateDocument(uriTerm, doc); //deletes everything with this uri and writes a new doc
 
@@ -151,180 +166,20 @@ public class IndexEnricher extends BaseIndexer<Object> {
 
         LOG.info("Processed "+indexSize+" documents. Final commit...");
         mWriter.commit();
-        LOG.info("Optimizing...");
-        mWriter.optimize();
+        if(optimizeSegments > 0) {
+            LOG.info("Optimizing...");
+            mWriter.optimize(optimizeSegments);
+            mWriter.commit();
+        }
         LOG.info("Done.");
     }
 
-    public void add(Object o) {
-        //TODO implement something sensible here. only created because BaseIndexer requires it.
+    public void unstore(List<LuceneManager.DBpediaResourceField> unstoreFields) throws SearchException, IOException {
+        unstore(unstoreFields, 0);
     }
 
-    
-//    public void addTypesForAll(File typesMapTSVFile) throws IOException, SearchException {
-//        long indexSize = searcher.getNumberOfEntries();
-//        if (indexSize == 0) {
-//            throw new IllegalArgumentException("index in "+mLucene.directory()+" contains no entries; this method can only add types to an existing index");
-//        }
-//        LOG.info("Adding types to all documents in the index"+mLucene.directory()+"...");
-//        Map<String,List<DBpediaType>> typesMap = TypesLoader.getTypesMap_java(typesMapTSVFile);
-//        for (int i=0; i<indexSize; i++) {
-//            Document doc = searcher.getFullDocument(i);
-//            String uri = doc.getField(LuceneManager.DBpediaResourceField.URI.toString()).stringValue();
-//            List<DBpediaType> typesList = typesMap.get(uri);
-//            if (typesList != null) {
-//                doc = mLucene.addTypes(doc, typesList);
-//            }
-//            Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
-//            mWriter.updateDocument(uriTerm, doc); //deletes everything with this uri and writes a new doc
-//            if (i%100000==0) {
-//                LOG.info("  processed "+i+" documents. committing...");
-//                mWriter.commit();
-//                LOG.info("  done.");
-//            }
-//        }
-//        LOG.info("Processed "+indexSize+" documents. Final commit...");
-//        mWriter.commit();
-//        LOG.info("Optimizing...");
-//        mWriter.optimize();
-//        LOG.info("Done.");
-//    }
-//
-//    /**
-//     * Call this for merged indeces. (probably only with the surrogate set consisting of titles, redirects
-//     * and disambiguations because the occurrence surface forms are already in there)
-//     *
-//     * @param surrogatesTSVFile
-//     * @throws IOException
-//     */
-//    public void addSurfaceFormsForAll(File surrogatesTSVFile, Boolean lowerCased) throws IOException, SearchException {
-//        long indexSize = searcher.getNumberOfEntries();
-//        if (indexSize == 0) {
-//            throw new IllegalArgumentException("index in "+mLucene.directory()+" contains no entries; this method can only add surface forms to an existing index");
-//        }
-//        LOG.info("Adding surface forms to all documents in the index"+mLucene.directory()+"...");
-//        Map<String,List<SurfaceForm>> reverseSurrogatesMap = SurrogatesUtil.getReverseSurrogatesMap_java(surrogatesTSVFile, lowerCased);
-//        for (int i=0; i<indexSize; i++) {
-//            Document doc = searcher.getFullDocument(i);
-//            String uri = doc.getField(LuceneManager.DBpediaResourceField.URI.toString()).stringValue();
-//            List<SurfaceForm> surfaceForms = reverseSurrogatesMap.get(uri);
-//            if (surfaceForms != null) {
-//                doc = mLucene.addSurfaceForms(doc, surfaceForms);
-//            }
-//            Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
-//            mWriter.updateDocument(uriTerm, doc); //deletes everything with this uri and writes a new doc
-//            if (i%100000==0) {
-//                LOG.info("  processed "+i+" documents. committing...");
-//                mWriter.commit();
-//                LOG.info("  done.");
-//            }
-//        }
-//        LOG.info("Processed "+indexSize+" documents. Final commit...");
-//        mWriter.commit();
-//        LOG.info("Optimizing...");
-//        mWriter.optimize();
-//        LOG.info("Done.");
-//    }
-//
-//    public void addSurfaceFormsAndTypes(File typesMapTSVFile, File surrogatesTSVFile, Boolean lowerCased) throws IOException, SearchException {
-//        long indexSize = searcher.getNumberOfEntries();
-//        if (indexSize == 0) {
-//            throw new IllegalArgumentException("index in "+mLucene.directory()+" contains no entries; this method can only add surface forms to an existing index");
-//        }
-//        LOG.info("Adding surface forms to all documents in the index"+mLucene.directory()+"...");
-//        Map<String,List<DBpediaType>> typesMap = TypesLoader.getTypesMap_java(typesMapTSVFile);
-//        Map<String,List<SurfaceForm>> reverseSurrogatesMap = SurrogatesUtil.getReverseSurrogatesMap_java(surrogatesTSVFile, lowerCased);
-//        for (int i=0; i<indexSize; i++) {
-//            Document doc = searcher.getFullDocument(i);
-//            String uri = doc.getField(LuceneManager.DBpediaResourceField.URI.toString()).stringValue();
-//            List<SurfaceForm> surfaceForms = reverseSurrogatesMap.get(uri);
-//            if (surfaceForms != null) {
-//                doc = mLucene.addSurfaceForms(doc, surfaceForms);
-//            }
-//            List<DBpediaType> typesList = typesMap.get(uri);
-//            if (typesList != null) {
-//                doc = mLucene.addTypes(doc, typesList);
-//            }
-//            Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
-//            mWriter.updateDocument(uriTerm, doc); //deletes everything with this uri and writes a new doc
-//            if (i%100000==0) {
-//                LOG.info("  processed "+i+" documents. committing...");
-//                mWriter.commit();
-//                LOG.info("  done.");
-//            }
-//        }
-//        LOG.info("Processed "+indexSize+" documents. Final commit...");
-//        mWriter.commit();
-//        LOG.info("Optimizing...");
-//        mWriter.optimize();
-//        LOG.info("Done.");
-//    }
-//
-//    public void addSurfaceFormsPrioredForAll(File surrogatesTSVFile, Boolean lowerCased) throws IOException, SearchException {
-//        long indexSize = searcher.getNumberOfEntries();
-//        if (indexSize == 0) {
-//            throw new IllegalArgumentException("index in "+mLucene.directory()+" contains no entries; this method can only add surface forms to an existing index");
-//        }
-//        LOG.info("Adding surface forms to all documents in the index"+mLucene.directory()+"...");
-//        Map<String,List<SurfaceForm>> reverseSurrogatesMap = SurrogatesUtil.getReverseSurrogatesMap_java(surrogatesTSVFile, lowerCased);
-//        for (int i=0; i<indexSize; i++) {
-//            Document doc = searcher.getFullDocument(i);
-//            String uri = doc.getField(LuceneManager.DBpediaResourceField.URI.toString()).stringValue();
-//            List<SurfaceForm> surfaceForms = reverseSurrogatesMap.get(uri);
-//            if (surfaceForms != null) {
-//                int support = searcher.getSupport(doc) - 1;   //TODO remove -1 if dealing with fresh indexes
-//                for (int j=0; j<support; j++) {
-//                    doc = mLucene.addSurfaceForms(doc, surfaceForms);
-//                }
-//            }
-//            Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
-//            mWriter.updateDocument(uriTerm, doc); //deletes everything with this uri and writes a new doc
-//            if (i%100000==0) {
-//                LOG.info("  processed "+i+" documents. committing...");
-//                mWriter.commit();
-//                LOG.info("  done.");
-//            }
-//        }
-//        LOG.info("Processed "+indexSize+" documents. Final commit...");
-//        mWriter.commit();
-//        LOG.info("Optimizing...");
-//        mWriter.optimize();
-//        LOG.info("Done.");
-//    }
-//
-//
-//
-//    public void addSurfaceFormsPrioredAndTypes(File surrogatesTSVFile, Boolean lowerCased) throws IOException, SearchException {
-//        long indexSize = searcher.getNumberOfEntries();
-//        if (indexSize == 0) {
-//            throw new IllegalArgumentException("index in "+mLucene.directory()+" contains no entries; this method can only add surface forms to an existing index");
-//        }
-//        LOG.info("Adding surface forms to all documents in the index"+mLucene.directory()+"...");
-//        Map<String,List<SurfaceForm>> reverseSurrogatesMap = SurrogatesUtil.getReverseSurrogatesMap_java(surrogatesTSVFile, lowerCased);
-//        for (int i=0; i<indexSize; i++) {
-//            Document doc = searcher.getFullDocument(i);
-//            String uri = doc.getField(LuceneManager.DBpediaResourceField.URI.toString()).stringValue();
-//            List<SurfaceForm> surfaceForms = reverseSurrogatesMap.get(uri);
-//            for (SurfaceForm sf : surfaceForms) {
-//                int support = searcher.getSupport(doc);
-//                for (int j=0; j<support; j++) {
-//                    doc = mLucene.add(doc, sf);
-//                }
-//            }
-//
-//            Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
-//            mWriter.updateDocument(uriTerm, doc); //deletes everything with this uri and writes a new doc
-//            if (i%100000==0) {
-//                LOG.info("  processed "+i+" documents. committing...");
-//                mWriter.commit();
-//                LOG.info("  done.");
-//            }
-//        }
-//        LOG.info("Processed "+indexSize+" documents. Final commit...");
-//        mWriter.commit();
-//        LOG.info("Optimizing...");
-//        mWriter.optimize();
-//        LOG.info("Done.");
-//    }
-    
+    public void add(Object o) {
+        //TODO re-factoring to make this an
+    }
+
 }

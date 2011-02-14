@@ -4,6 +4,8 @@ import org.dbpedia.spotlight.lucene.LuceneManager
 import org.apache.lucene.store.FSDirectory
 import java.io.File
 import org.dbpedia.spotlight.util.SurrogatesUtil
+import scala.collection.JavaConversions._
+import org.dbpedia.spotlight.model.SurfaceForm
 
 /**
  * Created by IntelliJ IDEA.
@@ -28,8 +30,8 @@ object AddSurfaceFormsToIndex
         val luceneManager = new LuceneManager.BufferedMerging(FSDirectory.open(indexFile))
 
         val sfIndexer = new IndexEnricher(luceneManager)
-        val reverseSurrogatesMap = SurrogatesUtil.getReverseSurrogatesMap_java(new File(surrogatesFileName), lowerCased)
-        sfIndexer.enrich(reverseSurrogatesMap, null, false)
+        val sfMap = SurrogatesUtil.getSurfaceFormsMap_java(new File(surrogatesFileName), lowerCased)
+        sfIndexer.enrich(sfMap, null, false)
         sfIndexer.close
     }
 

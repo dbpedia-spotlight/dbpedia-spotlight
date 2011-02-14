@@ -225,13 +225,16 @@ public class LuceneManager {
             if (enumField.equals(DBpediaResourceField.CONTEXT)) {
                 index = Field.Index.ANALYZED;
             }
+            else if(enumField.equals(DBpediaResourceField.SURFACE_FORM)) {
+                index = Field.Index.NOT_ANALYZED;
+            }
 
             String fieldString = enumField.toString();
             for (Field luceneField : doc.getFields(fieldString)) {
                 Field newField = new Field(fieldString,
-                                            luceneField.stringValue(),
-                                            store,
-                                            index);
+                                           luceneField.stringValue(),
+                                           store,
+                                           index);
                 newDoc.add(newField);
             }
         }

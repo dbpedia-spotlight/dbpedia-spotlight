@@ -2,10 +2,10 @@ package org.dbpedia.spotlight.lucene.index
 
 import org.dbpedia.spotlight.lucene.LuceneManager
 import org.apache.lucene.store.FSDirectory
-import java.io.File
 import org.dbpedia.spotlight.io.{TypeAdder, FileOccurrenceSource}
-import org.dbpedia.spotlight.util.TypesLoader
 import org.dbpedia.spotlight.model.{DBpediaType, DBpediaResource}
+import java.io.{FileInputStream, File}
+import org.dbpedia.spotlight.util.{ConfigProperties, TypesLoader}
 
 /**
  * Created by IntelliJ IDEA.
@@ -17,19 +17,21 @@ import org.dbpedia.spotlight.model.{DBpediaType, DBpediaResource}
 
 object AddTypesToIndex
 {
+    val instanceTypesFileName = ConfigProperties.get("InstanceTypesDataset")
 
     def main(args : Array[String]) {
         val indexFileName = args(0)
-        val typesMappingTSVFileName = args(1)
 
         val indexFile = new File(indexFileName)
-        if (!indexFile.exists)
+        if (!indexFile.exists) {
             throw new IllegalArgumentException("index dir "+indexFile+" does not exists; can't add types")
-        val luceneManager = new LuceneManager.BufferedMerging(FSDirectory.open(indexFile))  //TODO buffered mergind right here?
+        }
+        val luceneManager = new LuceneManager.BufferedMerging(FSDirectory.open(indexFile))
 
         val typesIndexer = new IndexEnricher(luceneManager)
-        val typesMap = TypesLoader.getTypesMap_java(new File(typesMappingTSVFileName));
-        typesIndexer.enrich(null, typesMap)
+
+        val typesMap = TypesLoader.getTypesMap_java(new FileInputStream(instanceTypesFileName));
+        typesIndexer.enrichWithTypes(typesMap)
         typesIndexer.close
     }
 
