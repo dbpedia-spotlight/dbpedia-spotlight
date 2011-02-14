@@ -1,17 +1,11 @@
 package org.dbpedia.spotlight.lucene.index
 
 import java.io.File
-import org.dbpedia.spotlight.io.{FileOccurrenceSource, LuceneIndexWriter, WikiOccurrenceSource}
+import org.dbpedia.spotlight.io.{FileOccurrenceSource, LuceneIndexWriter}
 import org.apache.commons.logging.LogFactory
 import org.apache.lucene.store.FSDirectory
-import org.dbpedia.spotlight.lucene.{LuceneManager}
-import org.apache.lucene.util.Version
-import org.apache.lucene.analysis.{StopAnalyzer, StopFilter, Analyzer}
-import org.apache.lucene.misc.SweetSpotSimilarity
-import org.apache.lucene.search.{DefaultSimilarity, Similarity}
-import org.dbpedia.spotlight.lucene.similarity.InvCandFreqSimilarity
-import org.apache.lucene.analysis.snowball.SnowballAnalyzer
-import org.apache.lucene.analysis.standard.StandardAnalyzer
+import org.dbpedia.spotlight.lucene.LuceneManager
+import org.dbpedia.spotlight.util.ConfigProperties
 
 /**
  * Indexes all Occurrences in Wikipedia separately in a Lucene index.
@@ -22,41 +16,11 @@ object IndexMergedOccurrences
     private val LOG = LogFactory.getLog(this.getClass)
 
     def index(trainingInputFile : String, vectorBuilder: OccurrenceContextIndexer ) {
-        //val wpDumpFileName = ConfigProperties.properties.getProperty("WikipediaXMLDump")
         val wpOccurrences = FileOccurrenceSource.fromFile(new File(trainingInputFile))
-
-        //wpOccurrences.view(0,100).foreach(println(_))
         LuceneIndexWriter.writeLuceneIndex(vectorBuilder, wpOccurrences)
-    }
-    //TODO Move to factory class (Maybe ConfigProperties?)
-    def getSimilarity(similarityName : String) : Similarity = {
-        val validSimilarities = List[Similarity](new InvCandFreqSimilarity, new SweetSpotSimilarity, new DefaultSimilarity);
-        
-        validSimilarities.find(s => s.getClass.getSimpleName equals similarityName) match {
-            case Some(similarity) => { similarity }
-            case None => {
-                println("Unknown Similarity: "+similarityName)
-                exit();
-            }
-        }
-    }
-    //TODO Move to factory class (Maybe ConfigProperties?)
-    def getAnalyzer(analyzerName : String) : Analyzer = {
-        val validAnalyzers = List[Analyzer](new StandardAnalyzer(Version.LUCENE_29), new SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET))
-
-        validAnalyzers.find(a => a.getClass.getSimpleName equals analyzerName) match {
-            case Some(analyzer) => { analyzer }
-            case None => {
-                println("Unknown Analyzer: "+analyzerName)
-                exit();
-            }
-        }
     }
 
     def getBaseDir(baseDirName : String) : String = {
-        //var baseDir: String = "C:\\Users\\Pablo\\workspace\\dbpa\\data\\Company\\"
-        //var baseDir: String = "C:\\Users\\Pablo\\workspace\\dbpa\\data\\PopulatedPlace\\"
-        //var baseDir: String = "e:/dbpa/data/Person/"
         if (! new File(baseDirName).exists) {
             println("Base directory not found! "+baseDirName);
             exit();
@@ -66,11 +30,10 @@ object IndexMergedOccurrences
 
     def main(args : Array[String])
     {
-
         // Command line options
         val baseDir = getBaseDir(args(0))
-        val similarity = getSimilarity(args(1))
-        val analyzer = getAnalyzer(args(2))
+        val similarity = ConfigProperties.getSimilarity(args(1))
+        val analyzer = ConfigProperties.getAnalyzer(args(2))
 
         LOG.info("Using dataset under: "+baseDir);
         LOG.info("Similarity class: "+similarity.getClass);
@@ -92,7 +55,7 @@ object IndexMergedOccurrences
 
         val vectorBuilder = new MergedOccurrencesContextIndexer(lucene)
 
-        var freeMemGB : Double = Runtime.getRuntime.freeMemory / 1073741824
+        val freeMemGB : Double = Runtime.getRuntime.freeMemory / 1073741824
         if (Runtime.getRuntime.freeMemory < minNumDocsBeforeFlush) LOG.error("Your available memory "+freeMemGB+"GB is less than minNumDocsBeforeFlush. This setting is known to give OutOfMemoryError.");
         LOG.info("Available memory: "+freeMemGB+"GB")
         LOG.info("Max memory: "+Runtime.getRuntime.maxMemory / 1073741824.0 +"GB")
