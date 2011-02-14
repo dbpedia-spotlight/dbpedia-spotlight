@@ -111,7 +111,13 @@ public class SpotlightInterface {
             occList = disambiguator.disambiguate(sfOccList);
         }
 
-        return AnnotationFilter.filter(occList, confidence, support, dbpediaTypes, spqarlQuery, blacklist, coreferenceResolution);
+        occList = AnnotationFilter.filter(occList, confidence, support, dbpediaTypes, spqarlQuery, blacklist, coreferenceResolution);
+
+        for(DBpediaResourceOccurrence occ : occList) {
+            LOG.debug(occ.resource());
+        }
+
+        return occList;
     }
 
     public String getHTML(String text,
