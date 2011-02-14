@@ -2,6 +2,8 @@ package org.dbpedia.spotlight.util
 
 import org.dbpedia.spotlight.io.OccurrenceSource
 import org.dbpedia.spotlight.model.{Text, DBpediaResource, SurfaceForm, DBpediaResourceOccurrence}
+import org.dbpedia.spotlight.string.ContextExtractor
+
 /**
  * Filters sources of occurrences and WikiPageContext so that they contain only "good" data.
  *
@@ -16,8 +18,10 @@ import org.dbpedia.spotlight.model.{Text, DBpediaResource, SurfaceForm, DBpediaR
 class OccurrenceFilter(val maximumSurfaceFormLength : Int = Integer.MAX_VALUE,
                        val minimumParagraphLength : Int = 0,
                        val maximumParagraphLength : Int = Integer.MAX_VALUE,
-                       val preferredURIsMap : Map[String,String] = Map[String,String](),
-                       var surfaceForms : Map[String,List[String]] = Map[String,List[String]](),  // uri -> List(Sfs)
+                       val redirectsTC : Map[String,String] = Map.empty,
+                       val conceptURIs : Set[String] = Set.empty,
+                       //var surfaceForms : Map[String,List[String]] = Map[String,List[String]](),  // uri -> List(Sfs)
+                       val contextExtractor : ContextExtractor = null,
                        val lowerCaseSurfaceForms : Boolean = false)
 {
 
@@ -29,31 +33,31 @@ class OccurrenceFilter(val maximumSurfaceFormLength : Int = Integer.MAX_VALUE,
         new FilteredOccurrenceSource(occurrenceSource)
     }
 
-    /**
-      * Disregard surface forms that do not obey the configuration constraints.
-      */
-    def isGoodSurfaceFormForResource(sf : String, uri : String) : Boolean =
-    {
-        var sfString = sf
-        var validSurfaceForms = surfaceForms.get(uri).getOrElse(List[String]())
-        if (lowerCaseSurfaceForms) {
-            sfString = sf.toLowerCase
-            validSurfaceForms = validSurfaceForms.map(_.toLowerCase)
-        }
-        (sf.length <= maximumSurfaceFormLength) && (surfaceForms.nonEmpty && (validSurfaceForms contains sfString))
-    }
-
-    def isGoodSurfaceFormForResource(sf : SurfaceForm, res : DBpediaResource) : Boolean =
-    {
-        isGoodSurfaceFormForResource(sf.name, res.uri)
-    }
+//    /**
+//      * Disregard surface forms that do not obey the configuration constraints.
+//      */
+//    def isGoodSurfaceFormForResource(sf : String, uri : String) : Boolean =
+//    {
+//        var sfString = sf
+//        var validSurfaceForms = surfaceForms.get(uri).getOrElse(List[String]())
+//        if (lowerCaseSurfaceForms) {
+//            sfString = sf.toLowerCase
+//            validSurfaceForms = validSurfaceForms.map(_.toLowerCase)
+//        }
+//        (sf.length <= maximumSurfaceFormLength) && (surfaceForms.nonEmpty && (validSurfaceForms contains sfString))
+//    }
+//
+//    def isGoodSurfaceFormForResource(sf : SurfaceForm, res : DBpediaResource) : Boolean =
+//    {
+//        isGoodSurfaceFormForResource(sf.name, res.uri)
+//    }
 
     /**
       * Disregard links to URIs that do not obey the configuration constraints.
       */
     def isGoodURI(uri : String) : Boolean =
     {
-        surfaceForms.nonEmpty && (surfaceForms contains uri)
+        conceptURIs.nonEmpty && (conceptURIs contains uri)
     }
 
     def isGoodResource(res : DBpediaResource) : Boolean =
@@ -87,8 +91,8 @@ class OccurrenceFilter(val maximumSurfaceFormLength : Int = Integer.MAX_VALUE,
         if (!isGoodResource(occ.resource))
             return false
 
-        if (!isGoodSurfaceFormForResource(occ.surfaceForm, occ.resource))
-            return false
+//        if (!isGoodSurfaceFormForResource(occ.surfaceForm, occ.resource))
+//            return false
 
         //if (occ.textOffset < 0)
         //   return false
@@ -101,7 +105,7 @@ class OccurrenceFilter(val maximumSurfaceFormLength : Int = Integer.MAX_VALUE,
      * and return a new DBpediaResourceOccurrence.
      */
     def resolveRedirects(occ : DBpediaResourceOccurrence) : DBpediaResourceOccurrence = {
-        preferredURIsMap.get(occ.resource.uri) match {
+        redirectsTC.get(occ.resource.uri) match {
             case Some(uri) => {
                 val resolvedResource = new DBpediaResource(uri)
                 new DBpediaResourceOccurrence(occ.id, resolvedResource, occ.surfaceForm, occ.context, occ.textOffset, occ.provenance)
@@ -114,24 +118,23 @@ class OccurrenceFilter(val maximumSurfaceFormLength : Int = Integer.MAX_VALUE,
     /**
      * Wrapper class that applies all filters when iterating.
      */
-    private class FilteredOccurrenceSource(occurrenceSource : OccurrenceSource) extends OccurrenceSource
-    {
-        override def foreach[U](f : DBpediaResourceOccurrence => U) : Unit =
-        {
+    private class FilteredOccurrenceSource(occurrenceSource : OccurrenceSource) extends OccurrenceSource {
+
+        override def foreach[U](f : DBpediaResourceOccurrence => U) {
+
             for (occ <- occurrenceSource) {
-                //map resource to preferred URI
+
                 var thisOcc = resolveRedirects(occ)
 
-                if (thisOcc.surfaceForm.name equals "wrote") {
-                    val x = 1  // stop
-                }
+//                // make title surface form if the found surface form is not allowed (too noisy) for this URI
+//                if (!isGoodSurfaceFormForResource(thisOcc.surfaceForm, thisOcc.resource)) {
+//                    val titleAsSurfaceForm = SurrogatesUtil.getSurfaceForm(thisOcc.resource)
+//                    thisOcc = new DBpediaResourceOccurrence(occ.id, occ.resource, titleAsSurfaceForm, occ.context, -1, occ.provenance)
+//                }
 
-                // make title surface form if the found surface form is not allowed (too noisy) for this URI
-                if (!isGoodSurfaceFormForResource(thisOcc.surfaceForm, thisOcc.resource)) {
-                    val titleAsSurfaceForm = SurrogatesUtil.getSurfaceForm(thisOcc.resource)
-                    thisOcc = new DBpediaResourceOccurrence(occ.id, occ.resource, titleAsSurfaceForm, occ.context, -1, occ.provenance)
+                if (contextExtractor != null) {
+                    thisOcc = contextExtractor.narrowContext(thisOcc)
                 }
-
 
                 if (isGoodOccurrence(thisOcc)) {
                     if (lowerCaseSurfaceForms) {

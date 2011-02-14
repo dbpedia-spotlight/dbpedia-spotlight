@@ -205,7 +205,7 @@ object AnnotationFilter
                     true
                 }
                 else {
-                    LOG.info("filtered out by type: "+occ.resource+" not part of "+blacklistOrWhitelist+ "types "+dbpediaTypes.map(_.name).mkString("List(", ",", ")"))
+                    LOG.info("filtered out by "+blacklistOrWhitelist+": "+occ.resource+"; list="+dbpediaTypes.map(_.name).mkString("List(", ",", ")"))
                     false
                 }
             }

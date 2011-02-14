@@ -4,6 +4,14 @@ import org.apache.commons.logging.LogFactory
 import java.util.Properties
 import io.Source
 import java.io.{PrintStream, FileOutputStream, FileInputStream, File}
+import scala.collection.JavaConversions._
+import org.apache.lucene.search.{DefaultSimilarity, Similarity}
+import org.dbpedia.spotlight.lucene.similarity.InvCandFreqSimilarity
+import org.apache.lucene.misc.SweetSpotSimilarity
+import org.apache.lucene.analysis.snowball.SnowballAnalyzer
+import org.apache.lucene.util.Version
+import org.apache.lucene.analysis.standard.StandardAnalyzer
+import org.apache.lucene.analysis.{Analyzer, StopAnalyzer}
 
 /**
  * Class that holds configurations of the project.
@@ -70,5 +78,33 @@ object ConfigProperties
         out.print(sb.toString)
         out.close
     }
-    
+
+    def getStopWords : Set[String] = {
+        val f = new File(get("StopWordList", ""))
+        if(f.isFile) {
+            Source.fromFile(f, "UTF-8").getLines.toSet
+        }
+        else {
+            StopAnalyzer.ENGLISH_STOP_WORDS_SET.asInstanceOf[Set[String]]
+        }
+    }
+
+    def getAnalyzer(analyzerName : String) : Analyzer = {
+        val stopWords = ConfigProperties.getStopWords
+
+        (new StandardAnalyzer(Version.LUCENE_29, stopWords) :: new SnowballAnalyzer(Version.LUCENE_29, "English", stopWords) :: Nil)
+                .map(a => (a.getClass.getSimpleName, a))
+                .toMap
+                .get(analyzerName)
+                .getOrElse(throw new IllegalArgumentException("Unknown Analyzer: "+analyzerName))
+    }
+
+    def getSimilarity(similarityName : String) : Similarity = {
+        (new InvCandFreqSimilarity :: new SweetSpotSimilarity :: new DefaultSimilarity :: Nil)
+                .map(sim => (sim.getClass.getSimpleName, sim))
+                .toMap
+                .get(similarityName)
+                .getOrElse(throw new IllegalArgumentException("Unknown Similarity: "+similarityName))
+    }
+
 }

@@ -1,11 +1,12 @@
 package org.dbpedia.spotlight.util
 
-import java.io.File
 import io.Source
 import scala.collection.JavaConversions._
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.model.{DBpediaResource, DBpediaType}
 import java.util.{LinkedHashSet, LinkedList}
+import java.io.{InputStream, File}
+import org.semanticweb.yars.nx.parser.NxParser
 
 /**
  * Created by IntelliJ IDEA.
@@ -36,19 +37,21 @@ object TypesLoader
         typesMap
     }
 
-    def getTypesMap_java(typeDictFile : File) : java.util.Map[String,java.util.LinkedHashSet[DBpediaType]] = {
+    def getTypesMap_java(instanceTypesStream : InputStream) : java.util.Map[String,java.util.LinkedHashSet[DBpediaType]] = {
         LOG.info("Loading types map...")
-        if (!(typeDictFile.getName.toLowerCase endsWith ".tsv"))
-            throw new IllegalArgumentException("types mapping only accepted in tsv format so far! can't parse "+typeDictFile)
-        // CAUTION: this assumes that the most specific type is listed last
         var typesMap = Map[String,java.util.LinkedHashSet[DBpediaType]]()
-        for (line <- Source.fromFile(typeDictFile, "UTF-8").getLines) {
-            val elements = line.split("\t")
-            val uri = elements(0)
-            val t = new DBpediaType(elements(1))
-            val typesList : java.util.LinkedHashSet[DBpediaType] = typesMap.get(uri).getOrElse(new LinkedHashSet[DBpediaType]())
-            typesList.add(t)
-            typesMap = typesMap.updated(uri, typesList)
+
+        // CAUTION: this assumes that the most specific type is listed last
+        val parser = new NxParser(instanceTypesStream)
+        while (parser.hasNext) {
+            val triple = parser.next
+            if(!triple(2).toString.endsWith("owl#Thing")) {
+                val resource = new DBpediaResource(triple(0).toString)
+                val t = new DBpediaType(triple(2).toString)
+                val typesList : java.util.LinkedHashSet[DBpediaType] = typesMap.get(resource.uri).getOrElse(new LinkedHashSet[DBpediaType]())
+                typesList.add(t)
+                typesMap = typesMap.updated(resource.uri, typesList)
+            }
         }
         LOG.info("Done.")
         typesMap

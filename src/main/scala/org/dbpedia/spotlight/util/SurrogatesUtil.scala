@@ -5,9 +5,10 @@ import org.apache.commons.logging.LogFactory
 import java.io._
 import org.dbpedia.spotlight.model.{SurfaceForm, DBpediaResource}
 import java.util.Scanner
-import org.semanticweb.yars.nx.{Literal, Resource, Triple}
 import org.semanticweb.yars.nx.parser.NxParser
 import org.dbpedia.spotlight.string.ModifiedWikiUtil
+import org.semanticweb.yars.nx.{Node, Literal, Resource, Triple}
+import collection.JavaConversions._
 
 /**
  * Created by IntelliJ IDEA.
@@ -15,7 +16,7 @@ import org.dbpedia.spotlight.string.ModifiedWikiUtil
  * Date: 11.08.2010
  * Time: 15:55:38
  * Functions to create Concept URIs (possible targets of disambiguations)
- *                     preferred URI mappings (i.e. transitive closure of redirects that end at Concept URIs)
+ *                     transitive closure of redirects that end at Concept URIs
  *                     surface forms for Concept URIs
  * from DBpedia data sets and Wikipedia.
  */
@@ -27,38 +28,36 @@ object SurrogatesUtil
 
     val MAXIMUM_SURFACE_FORM_LENGTH = 50
 
-
-    //TODO make these files configurable in config file
-
     // DBpedia input
-    var titlesFileName          = ConfigProperties.get("labelsDataset")
-    var redirectsFileName       = ConfigProperties.get("redirectsDataset")
-    var disambiguationsFileName = ConfigProperties.get("disambiguationsDataset")
+    var titlesFileName          = ConfigProperties.get("LabelsDataset")
+    var redirectsFileName       = ConfigProperties.get("RedirectsDataset")
+    var disambiguationsFileName = ConfigProperties.get("DisambiguationsDataset")
 
     // output
-    var conceptURIsFileName     = ConfigProperties.get("conceptURIs")
-    var preferredURIsFileName   = ConfigProperties.get("preferredURIs")
-    var surfaceFormsFileName    = ConfigProperties.get("surfaceForms")
+    var conceptURIsFileName     = ConfigProperties.get("ConceptURIs")
+    var redirectTCFileName      = ConfigProperties.get("Redirects")
+    var surfaceFormsFileName    = ConfigProperties.get("SurfaceForms")
 
 
-    def saveConceptURIs(conceptURIsFile : File) {
+    def saveConceptURIs {
         if (!new File(titlesFileName).isFile || !new File(redirectsFileName).isFile || !new File(disambiguationsFileName).isFile) {
             throw new IllegalStateException("labels, redirects or disambiguations file not set")
         }
         
-        val badURIsFile = conceptURIsFile+".NOT"
-        LOG.info("Creating concept URIs file "+conceptURIsFile+" ...")
+        val badURIsFile = conceptURIsFileName+".NOT"
+        LOG.info("Creating concept URIs file "+conceptURIsFileName+" ...")
 
-        val conceptURIStream = new PrintStream(conceptURIsFile, "UTF-8")
+        val conceptURIStream = new PrintStream(conceptURIsFileName, "UTF-8")
         val badURIStream = new PrintStream(badURIsFile, "UTF-8")
         var badURIs = Set[String]()
 
         LOG.info("  collecting bad URIs from redirects in "+redirectsFileName+" and disambiguations in "+disambiguationsFileName+" ...")
         // redirects and disambiguations are bad URIs
         for (fileName <- List(redirectsFileName, disambiguationsFileName)) {
-            val parser = new NxParser(new FileInputStream(fileName))
-            while (parser.hasNext) {
-                val triple = parser.next
+            //val parser = new NxParser(new FileInputStream(fileName))
+            //while (parser.hasNext) {
+            //    val triple = parser.next
+            for(triple <- new NxParser(new FileInputStream(fileName))) {
                 val badUri = triple(0).toString.replace("http://dbpedia.org/resource/", "")
                 badURIs += badUri
                 badURIStream.println(badUri)
@@ -78,8 +77,8 @@ object SurrogatesUtil
         conceptURIStream.close
 
         LOG.info("Done.")
-        this.conceptURIsFileName = conceptURIsFile.getAbsolutePath
-        ConfigProperties.set("conceptURIs", this.conceptURIsFileName)
+//        conceptURIsFileName = conceptURIsFile.getAbsolutePath
+//        ConfigProperties.set("conceptURIs", conceptURIsFileName)
     }
 
     private def looksLikeAGoodURI(uri : String) : Boolean = {
@@ -97,14 +96,14 @@ object SurrogatesUtil
 
 
 
-    def savePreferredURIs(preferredURIsFile : File) {
+    def saveRedirectsTransitiveClosure {
         if (!new File(redirectsFileName).isFile) {
             throw new IllegalStateException("redirects file not set")
         }
         if (!new File(conceptURIsFileName).isFile) {
             throw new IllegalStateException("concept URIs not created yet; call saveConceptURIs first or set concept URIs file")
         }
-        LOG.info("Creating preferred URIs map file "+preferredURIsFile+" ...")
+        LOG.info("Creating redirects transitive closure file "+redirectsFileName+" ...")
 
         LOG.info("  loading concept URIs from "+conceptURIsFileName+"...")
         val conceptURIs = Source.fromFile(conceptURIsFileName, "UTF-8").getLines.toSet
@@ -114,24 +113,25 @@ object SurrogatesUtil
         val parser = new NxParser(new FileInputStream(redirectsFileName))
         while (parser.hasNext) {
             val triple = parser.next
-            val subj = triple(0).toString.replace("http://dbpedia.org/resource/", "")
-            val obj = triple(2).toString.replace("http://dbpedia.org/resource/", "")
+            val subj = triple(0).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
+            val obj = triple(2).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
             linkMap = linkMap.updated(subj, obj)
         }
 
-        val preferredURIsStream = new PrintStream(preferredURIsFile, "UTF-8")
+        val redURIstream = new PrintStream(redirectTCFileName, "UTF-8")
 
-        LOG.info("  collecting preferred URIs...")
+        LOG.info("  collecting redirects transitive closure...")
         for (redirectUri <- linkMap.keys) {
             val endUri = getEndOfChainUri(linkMap, redirectUri)
-            if (conceptURIs contains endUri)
-                preferredURIsStream.println(redirectUri+"\t"+endUri)
+            if (conceptURIs contains endUri) {
+                redURIstream.println(redirectUri+"\t"+endUri)
+            }
         }
 
-        preferredURIsStream.close
+        redURIstream.close
         LOG.info("Done.")
-        this.preferredURIsFileName = preferredURIsFile.getAbsolutePath
-        ConfigProperties.set("preferredURIs", this.preferredURIsFileName)
+//        redirectTCFileName = redirectTCFileName.getAbsolutePath
+//        ConfigProperties.set("preferredURIs", redirectTCFileName)
     }
 
     private def getEndOfChainUri(m : Map[String,String], k : String) : String = {
@@ -145,25 +145,27 @@ object SurrogatesUtil
 
     def isGoodSurfaceForm(surfaceForm : String, stopWords : Set[String]) : Boolean = {
         // not longer than limit
-        if (surfaceForm.length > MAXIMUM_SURFACE_FORM_LENGTH)
+        if (surfaceForm.length > MAXIMUM_SURFACE_FORM_LENGTH) {
             return false
+        }
         // contains a letter
-        if ("""^[\W\d]+$""".r.findFirstIn(surfaceForm) != None)
+        if ("""^[\W\d]+$""".r.findFirstIn(surfaceForm) != None) {
             return false
+        }
         // contains a non-stopWord
         if (stopWords.nonEmpty
                 && surfaceForm.split(" ").filterNot(
                     sfWord => stopWords.map(stopWord => stopWord.toLowerCase)
                               contains
                               sfWord.toLowerCase
-                ).isEmpty)
+                ).isEmpty) {
             return false
+        }
         true
     }
 
 
-
-    def saveSurfaceForms(surfaceFormsFile : File, stopWords : Set[String], lowerCased : Boolean=false) {
+    def saveSurfaceForms(stopWords : Set[String], lowerCased : Boolean=false) {
         if (!new File(redirectsFileName).isFile || !new File(disambiguationsFileName).isFile) {
             throw new IllegalStateException("redirects or disambiguations file not set")
         }
@@ -171,12 +173,58 @@ object SurrogatesUtil
             throw new IllegalStateException("concept URIs not created yet; call saveConceptURIs first or set concept URIs file")
         }
 
-        LOG.info("Creating surface forms file "+surfaceFormsFile+" ...")
+        LOG.info("Creating surface forms file "+surfaceFormsFileName+" ...")
+
+        LOG.info("  storing titles of concept URIs...")
+        var conceptURIs = Set[String]()
+        val surfaceFormsStream = new PrintStream(surfaceFormsFileName, "UTF-8")
+        // all titles of concept URIs are surface forms
+        for (conceptUri <- Source.fromFile(conceptURIsFileName, "UTF-8").getLines) {
+            getCleanSurfaceForm(conceptUri, stopWords, lowerCased) match {
+                case Some(sf : String) => surfaceFormsStream.println(sf+"\t"+conceptUri)
+                case None => LOG.debug("    concept URI "+conceptUri+"' does not decode to a good surface form")
+            }
+            conceptURIs += conceptUri
+        }
+
+        LOG.info("  storing titles of redirect and disambiguation URIs...")
+        for (fileName <- List(redirectsFileName, disambiguationsFileName)) {
+            val parser = new NxParser(new FileInputStream(fileName))
+            while (parser.hasNext) {
+                val triple = parser.next
+                val surfaceFormUri = triple(0).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
+                val uri = triple(2).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
+
+                if (conceptURIs contains uri) {
+                    getCleanSurfaceForm(surfaceFormUri, stopWords, lowerCased) match {
+                        case Some(sf : String) => surfaceFormsStream.println(sf+"\t"+uri)
+                        case None =>
+                    }
+                }
+            }
+        }
+
+        surfaceFormsStream.close
+        LOG.info("Done.")
+//        surfaceFormsFileName = surfaceFormsFile.getAbsolutePath
+//        ConfigProperties.set("surfaceForms", surfaceFormsFileName)
+    }
+
+
+    def saveSurfaceForms_fromGraph(stopWords : Set[String], lowerCased : Boolean=false) {
+        if (!new File(redirectsFileName).isFile || !new File(disambiguationsFileName).isFile) {
+            throw new IllegalStateException("redirects or disambiguations file not set")
+        }
+        if (!new File(conceptURIsFileName).isFile) {
+            throw new IllegalStateException("concept URIs not created yet; call saveConceptURIs first or set concept URIs file")
+        }
+
+        LOG.info("Creating surface forms file "+surfaceFormsFileName+" ...")
         LOG.info("  loading concept URIs from "+conceptURIsFileName+"...")
         val conceptURIs = Source.fromFile(conceptURIsFileName, "UTF-8").getLines.toSet
 
         LOG.info("  storing titles of concept URIs...")
-        val surfaceFormsStream = new PrintStream(surfaceFormsFile, "UTF-8")
+        val surfaceFormsStream = new PrintStream(surfaceFormsFileName, "UTF-8")
         // all titles of concept URIs are surface forms
         for (conceptUri <- conceptURIs) {
             getCleanSurfaceForm(conceptUri, stopWords, lowerCased) match {
@@ -192,8 +240,8 @@ object SurrogatesUtil
             val parser = new NxParser(new FileInputStream(fileName))
             while (parser.hasNext) {
                 val triple = parser.next
-                val subj = triple(0).toString.replace("http://dbpedia.org/resource/", "")
-                val obj = triple(2).toString.replace("http://dbpedia.org/resource/", "")
+                val subj = triple(0).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
+                val obj = triple(2).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
                 linkMap = linkMap.updated(obj, linkMap.get(obj).getOrElse(List[String]()) ::: List(subj))
             }
         }
@@ -224,8 +272,8 @@ object SurrogatesUtil
 
         surfaceFormsStream.close
         LOG.info("Done.")
-        this.surfaceFormsFileName = surfaceFormsFile.getAbsolutePath
-        ConfigProperties.set("surfaceForms", this.surfaceFormsFileName)
+//        surfaceFormsFileName = surfaceFormsFile.getAbsolutePath
+//        ConfigProperties.set("surfaceForms", surfaceFormsFileName)
     }
 
     // Returns a cleaned surface form if it is considered to be worth keeping
@@ -234,12 +282,15 @@ object SurrogatesUtil
         cleanedSurfaceForm = cleanedSurfaceForm.replaceAll(""" \(.+?\)$""", "")
         cleanedSurfaceForm = cleanedSurfaceForm.replaceAll("""^(The|THE|A) """, "")
         //TODO also clean quotation marks??
-        if (lowerCased)
+        if (lowerCased) {
             cleanedSurfaceForm = cleanedSurfaceForm.toLowerCase
-        if (isGoodSurfaceForm(cleanedSurfaceForm, stopWords))
+        }
+        if (isGoodSurfaceForm(cleanedSurfaceForm, stopWords)) {
             Some(cleanedSurfaceForm)
-        else
+        }
+        else {
             None
+        }
     }
 
     def getCleanSurfaceForm(surfaceForm : String, lowerCased : Boolean) : Option[String] = {
@@ -259,8 +310,9 @@ object SurrogatesUtil
 
     // map from URI to list of surface forms
     // used by IndexEnricher
-    def getReverseSurrogatesMap_java(surrogatesFile : File, lowerCased : Boolean=false) : java.util.Map[String, java.util.LinkedHashSet[SurfaceForm]] = {
-        LOG.info("Getting reverse surrogate mapping...")
+    // uri -> list(sf1, sf2)
+    def getSurfaceFormsMap_java(surrogatesFile : File, lowerCased : Boolean=false) : java.util.Map[String, java.util.LinkedHashSet[SurfaceForm]] = {
+        LOG.info("Getting surface form map...")
         val reverseMap : java.util.Map[String, java.util.LinkedHashSet[SurfaceForm]] = new java.util.HashMap[String, java.util.LinkedHashSet[SurfaceForm]]()
         val separator = "\t"
         val tsvScanner = new Scanner(new FileInputStream(surrogatesFile), "UTF-8")
@@ -279,6 +331,24 @@ object SurrogatesUtil
         reverseMap
     }
 
+    // map from URI to list of surface forms
+    // used by IndexEnricher
+    def getSurfaceFormsMap(surrogatesFile : File, lowerCased : Boolean=false) : Map[String, List[SurfaceForm]] = {
+        LOG.info("Getting reverse surrogate mapping...")
+        var reverseMap = Map[String, List[SurfaceForm]]()
+        val separator = "\t"
+
+        val tsvScanner = new Scanner(new FileInputStream(surrogatesFile), "UTF-8")
+        for(line <- Source.fromFile(surrogatesFile, "UTF-8").getLines) {
+            val el = tsvScanner.nextLine.split(separator)
+            val sf = if (lowerCased) new SurfaceForm(el(0).toLowerCase) else new SurfaceForm(el(0))
+            val uri = el(1)
+            val sfList : List[SurfaceForm] = sf :: reverseMap.get(uri).getOrElse(List[SurfaceForm]())
+            reverseMap = reverseMap.updated(uri, sfList)
+        }
+        LOG.info("Done.")
+        reverseMap
+    }
 
     def exportSurfaceFormsTsvToDBpediaNt(ntFile : File) {
         if (!new File(surfaceFormsFileName).isFile) {
@@ -293,7 +363,7 @@ object SurrogatesUtil
 
         for (line <- Source.fromFile(surfaceFormsFileName, "UTF-8").getLines) {
             val elements = line.split("\t")
-            val subj = new Resource("http://dbpedia.org/resource/"+elements(1))
+            val subj = new Resource(DBpediaResource.DBPEDIA_RESOURCE_PREFIX+elements(1))
             val obj = new Literal(elements(0), langString, Literal.STRING)
             val triple = new Triple(subj, predicate, obj)
             ntStream.println(triple.toN3)
@@ -316,7 +386,7 @@ object SurrogatesUtil
 
         for (line <- Source.fromFile(surfaceFormsFileName, "UTF-8").getLines) {
             val elements = line.split("\t")
-            val subj = new Resource("http://dbpedia.org/resource/"+elements(1))
+            val subj = new Resource(DBpediaResource.DBPEDIA_RESOURCE_PREFIX+elements(1))
             val obj = new Resource("http://lexvo.org/id/term/"+langString+"/"+ModifiedWikiUtil.wikiEncode(elements(0)))
             val triple = new Triple(subj, predicate, obj)
             ntStream.println(triple.toN3)
@@ -327,28 +397,23 @@ object SurrogatesUtil
 
 
     def main(args : Array[String]) {
-        // output
-        val conceptURIsFile = new File("e:/dbpa/data/conceptURIs.list")
-        val preferredURIsFile = new File("e:/dbpa/data/preferredURIs.tsv")
-        val surfaceFormsTSVFile = new File("e:/dbpa/data/surface_forms/surface_forms-Wikipedia-TitRedDis.tsv")
-
         // get concept URIs
-        saveConceptURIs(conceptURIsFile)
+        //saveConceptURIs
 
-        // get preferred URIs
-        savePreferredURIs(preferredURIsFile)
+        // get redirects
+        //saveRedirectsTransitiveClosure
 
         // get surface forms 
-        val stopWordsFileName = new File("e:/dbpa/data/surface_forms/stopwords.list")
+        val stopWordsFileName = ConfigProperties.get("StopWordList")
         val stopWords = Source.fromFile(stopWordsFileName, "UTF-8").getLines.toSet
-        saveSurfaceForms(surfaceFormsTSVFile, stopWords)
+        saveSurfaceForms(stopWords)
 
 
         // export to NT format (DBpedia and Lexvo.org)
         val dbpediaSurfaceFormsNTFileName = new File("e:/dbpa/data/surface_forms/surface_forms-Wikipedia-TitRedDis.nt")
         val lexvoSurfaceFormsNTFileName   = new File("e:/dbpa/data/surface_forms/lexicalizations-Wikipedia-TitRedDis.nt")
-        exportSurfaceFormsTsvToDBpediaNt(dbpediaSurfaceFormsNTFileName)
-        exportSurfaceFormsTsvToLexvoNt(lexvoSurfaceFormsNTFileName)
+        //exportSurfaceFormsTsvToDBpediaNt(dbpediaSurfaceFormsNTFileName)
+        //exportSurfaceFormsTsvToLexvoNt(lexvoSurfaceFormsNTFileName)
     }
 
 }
