@@ -69,7 +69,7 @@ public class SpotlightInterface {
             LOG.info("API: "+disambiguator.getClass());
         }
         else {
-            LOG.info("API: not properly set in SpotlightInterface!!!");
+            throw new IllegalStateException("either neither or both of annotator and disambiguator were initialized");
         }
 
         boolean blacklist = false;
@@ -81,10 +81,18 @@ public class SpotlightInterface {
             policy = "whitelist";
         }
 
+        LOG.debug("text: "+text);
+        LOG.info("text length in chars: "+text.length());
         LOG.info("confidence: "+String.valueOf(confidence));
         LOG.info("support: "+String.valueOf(support));
-        LOG.info("policy: " +policy);
-        LOG.info("coreferenceResolution: " +String.valueOf(coreferenceResolution));
+        LOG.info("types: "+dbpediaTypesString);
+        LOG.info("spqarlQuery: "+spqarlQuery);
+        LOG.info("policy: "+policy);
+        LOG.info("coreferenceResolution: "+String.valueOf(coreferenceResolution));
+
+        if (text.trim().equals("")) {
+            throw new InputException("did not find any text");
+        }
 
         List<DBpediaType> dbpediaTypes = new ArrayList<DBpediaType>();
         String types[] = dbpediaTypesString.split(",");
@@ -94,24 +102,16 @@ public class SpotlightInterface {
         }
 
         List<DBpediaResourceOccurrence> occList = new ArrayList<DBpediaResourceOccurrence>(0);
-        if (text != null){
-
-            // use API that was given to the constructor
-            if(disambiguator == null && annotator != null) {
-                occList = annotator.annotate(text);
-            }
-            else if(disambiguator != null && annotator == null) {
-                List<SurfaceFormOccurrence> sfOccList = ParseSurfaceFormText.parse(text);
-                occList = disambiguator.disambiguate(sfOccList);
-            }
-            else {
-                throw new IllegalStateException("both annotator and disambiguator were not initialized");
-            }
-
-            return AnnotationFilter.filter(occList, confidence, support, dbpediaTypes, spqarlQuery, blacklist, coreferenceResolution);
+        // use API that was given to the constructor
+        if(disambiguator == null && annotator != null) {
+            occList = annotator.annotate(text);
+        }
+        else if(disambiguator != null && annotator == null) {
+            List<SurfaceFormOccurrence> sfOccList = ParseSurfaceFormText.parse(text);
+            occList = disambiguator.disambiguate(sfOccList);
         }
 
-        return occList;
+        return AnnotationFilter.filter(occList, confidence, support, dbpediaTypes, spqarlQuery, blacklist, coreferenceResolution);
     }
 
     public String getHTML(String text,
@@ -127,9 +127,10 @@ public class SpotlightInterface {
             result = output.makeHTML(text, occs);
         }
         catch (InputException e) {
+            LOG.info("ERROR: "+e.getMessage());
             result = "<html><body><b>ERROR:</b> <i>"+e.getMessage()+"</i></body></html>";
         }
-        System.out.println(result+"\n");
+        LOG.info("HTML format");
         return result;
     }
 
@@ -146,9 +147,10 @@ public class SpotlightInterface {
             result = output.makeRDFa(text, occs);
         }
         catch (InputException e) {
+            LOG.info("ERROR: "+e.getMessage());
             result = "<html><body><b>ERROR:</b> <i>"+e.getMessage()+"</i></body></html>";
         }
-        System.out.println(result+"\n");
+        LOG.info("RDFa format");
         return result;
     }
 
@@ -165,9 +167,10 @@ public class SpotlightInterface {
             result = output.makeXML(text, occs, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
         }
         catch (InputException e) {
+            LOG.info("ERROR: "+e.getMessage());
             result = output.makeErrorXML(e.getMessage(), text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
         }
-        System.out.println(result+"\n");
+        LOG.info("XML format");
         return result;
     }
 
@@ -181,7 +184,7 @@ public class SpotlightInterface {
         String result;
         String xml = getXML(text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
         result = output.xml2json(xml);
-        System.out.println(result+"\n");
+        LOG.info("JSON format");
         return result;
     }
 
