@@ -105,8 +105,7 @@ object AllOccurrenceSource
                     // split the page node into paragraphs
                     val paragraphs = NodeUtil.splitNodes(pageNode.children, splitParagraphsRegex)
                     var paragraphCount = 0
-                    for (paragraph <- paragraphs)
-                    {
+                    for (paragraph <- paragraphs) {
                         paragraphCount += 1
                         val idBase = pageNode.title.encoded+"-p"+paragraphCount
                         WikiOccurrenceSource.getOccurrences(paragraph, idBase).foreach{occ =>

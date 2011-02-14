@@ -230,7 +230,7 @@ object WebOccurrenceSource
                 LOG.info("** Resource: "+targetResource)
                 try {
                     val occSource = forResources(List(targetResource), sampleNumber)
-                    FileOccurrenceSource.addToFile(occSource, new File(outputFileName))
+                    FileOccurrenceSource.writeToFile(occSource, new File(outputFileName))
                 }
                 catch {
                     case e : Exception => LOG.warn("AN EXCEPTION OCCURRED!!! Ignoring: "+e)

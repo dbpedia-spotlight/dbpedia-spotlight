@@ -124,8 +124,7 @@ object DisambiguationContextSource
                     if (uri.isEmpty && isDisambiguationUri(internalLink.destination, surfaceForm)) {
                         uri = internalLink.destination.encoded
                     }
-                    disambiguationText += internalLink.children.collect{ case TextNode(text, _)
-                                                                         => WikiMarkupStripper.stripMultiPipe(text)}
+                    disambiguationText += internalLink.children.collect{ case TextNode(text, _) => WikiMarkupStripper.stripMultiPipe(text) }.mkString("")
                 }
                 case _ =>
             }
@@ -135,7 +134,7 @@ object DisambiguationContextSource
         {
             disambiguationText = disambiguationText.replaceFirst("""^[\*\s]+""", "")
             val cutoff = math.max(disambiguationText.indexOf("""\n"""), disambiguationText.length)
-            val textInstance = new Text(disambiguationText.slice(0, cutoff).replaceAll("""\s+""", " "))
+            val textInstance = new Text(disambiguationText.slice(0, cutoff).replaceAll("""\s""", " "))
             val offset = textInstance.text.toLowerCase.indexOf(surfaceForm.name.toLowerCase)
             Some(new DBpediaResourceOccurrence(id, new DBpediaResource(uri), surfaceForm, textInstance, offset))
         }
@@ -170,7 +169,7 @@ object DisambiguationContextSource
     //test
     def main(args : Array[String]) {
         val disambiguationSource = fromXMLDumpFile(new File("c:\\wikipediaDump\\en\\20100312\\enwiki-20100312-pages-articles.xml"))
-        FileOccurrenceSource.addToFile(disambiguationSource, new File("data/disambiguationOccurrences.tsv"))
+        FileOccurrenceSource.writeToFile(disambiguationSource, new File("data/disambiguationOccurrences.tsv"))
     }
 
 

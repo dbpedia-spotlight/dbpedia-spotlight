@@ -71,7 +71,7 @@ object WikiPageContextSource
                 case internalLink : InternalLinkNode => { getPageText(internalLink) }
                 case _ => ""
             }
-        }.mkString(" ").replaceAll("""\n""", " ").replaceAll("""\s\s+""", " ")
+        }.mkString(" ").replaceAll("""\n""", " ").replaceAll("""\s""", " ")
     }
         
 

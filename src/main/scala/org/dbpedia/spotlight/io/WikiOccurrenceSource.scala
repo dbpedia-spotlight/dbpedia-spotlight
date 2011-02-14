@@ -96,10 +96,9 @@ object WikiOccurrenceSource
         var paragraphText = ""
 
         // collect URIs, surface forms and their offset in this paragraph
-        var occurrenceTriples = List[Tuple3[String, String, Int]]()
+        var occurrenceTriples = List[(String, String, Int)]()
 
-        for (node <- paragraph)
-        {
+        for (node <- paragraph) {
             node match {
                 // for text nodes, collect the paragraph text
                 case textNode : TextNode => paragraphText += textNode.text
@@ -108,16 +107,16 @@ object WikiOccurrenceSource
                 // if the link points to a page in the Main namespace
                 case internalLink : InternalLinkNode => {
                     val surfaceFormOffset = paragraphText.length
-                    val surfaceForm = internalLink.children.collect {
-                                   case TextNode(text, _) => {
-                                       val t = WikiMarkupStripper.stripMultiPipe(text)
-                                       paragraphText += t
-                                       t
-                                   }
-                    }.mkString("").trim.replaceAll(""" \(.+?\)$""", "").replaceAll("""^(The|A) """, "")
-                        if (internalLink.destination.namespace == WikiTitle.Namespace.Main && surfaceForm.nonEmpty)
-                            occurrenceTriples ::= new Tuple3(internalLink.destination.encoded, surfaceForm, surfaceFormOffset)
+
+                    var surfaceForm = internalLink.children.collect { case TextNode(text, _) => WikiMarkupStripper.stripMultiPipe(text) }.mkString("")
+                    surfaceForm = surfaceForm.trim.replaceAll(""" \(.+?\)$""", "").replaceAll("""^(The|A) """, "")
+
+                    paragraphText += surfaceForm
+
+                    if (internalLink.destination.namespace == WikiTitle.Namespace.Main && surfaceForm.nonEmpty) {
+                        occurrenceTriples ::= new Tuple3(internalLink.destination.encoded, surfaceForm, surfaceFormOffset)
                     }
+                }
                 case _ =>
             }
         }
