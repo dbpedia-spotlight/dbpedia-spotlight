@@ -31,7 +31,7 @@ object AddSurfaceFormsToIndex
 
         val sfIndexer = new IndexEnricher(luceneManager)
         val sfMap = SurrogatesUtil.getSurfaceFormsMap_java(new File(surrogatesFileName), lowerCased)
-        sfIndexer.enrich(sfMap, null, false)
+        sfIndexer.enrichWithSurfaceForms(sfMap)
         sfIndexer.close
     }
 

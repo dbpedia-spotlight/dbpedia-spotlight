@@ -81,7 +81,7 @@ public class SpotlightInterface {
             policy = "whitelist";
         }
 
-        LOG.debug("text: "+text);
+        LOG.info("text: "+text);
         LOG.info("text length in chars: "+text.length());
         LOG.info("confidence: "+String.valueOf(confidence));
         LOG.info("support: "+String.valueOf(support));
