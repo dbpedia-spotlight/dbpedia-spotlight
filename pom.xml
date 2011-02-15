@@ -142,18 +142,20 @@
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
-                    <assembly>
-                        <fileSets>
-                            <fileSet>
-                                <directory>${basedir}</directory>
-                                <includes>
-                                    <include>*.txt</include>
-                                </includes>
-                             </fileSet>
-                        </fileSets>
-                    </assembly>
-                </configuration>
 
+                </configuration>
+                <!--
+                <assembly>
+                    <fileSets>
+                        <fileSet>
+                            <directory>${basedir}</directory>
+                            <includes>
+                                <include>*.txt</include>
+                            </includes>
+                         </fileSet>
+                    </fileSets>
+                </assembly>
+                -->
 
                 <!--
                 <executions>
@@ -242,6 +244,12 @@
             <groupId>jcs</groupId>
             <artifactId>jcs</artifactId>
             <version>1.3</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>xerces</groupId>
+                    <artifactId>xerces</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
