@@ -28,11 +28,14 @@ package org.dbpedia.spotlight.web.rest;
 public class Configuration {
 
         //TODO make this configurable
-    final static String spotterFile    = "please-specify-spotter-dictionary-file";
-    final static String indexDirectory = "please-specify-disambiguation-index-directory";
+    final static String spotterFile    = "/home/pablo/web/TitRedDis.spotterDictionary";
+    final static String indexDirectory = "/home/pablo/web/DisambigIndex.singleSFs-plusTypes.SnowballAnalyzer.DefaultSimilarity";
+
+    //final static String spotterFile= "/home/pablo/web/dbpedia36data/2.9.3/surface_forms-Wikipedia-TitRedDis.thresh3.spotterDictionary";
+    //final static String indexDirectory = "/home/pablo/web/dbpedia36data/2.9.3/Index.wikipediaTraining.Merged.SnowballAnalyzer.DefaultSimilarity";
 
     final static String DEFAULT_TEXT = "";
-    final static String DEFAULT_CONFIDENCE = "0.3";
+    final static String DEFAULT_CONFIDENCE = "0.5";
     final static String DEFAULT_SUPPORT = "30";
     final static String DEFAULT_TYPES = "";
     final static String DEFAULT_SPARQL = "";

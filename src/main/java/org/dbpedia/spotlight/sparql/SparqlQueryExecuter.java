@@ -26,7 +26,12 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.*;
 
+import org.apache.commons.httpclient.*;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.log4j.Logger;
+import org.dbpedia.spotlight.exceptions.OutputException;
+import org.dbpedia.spotlight.exceptions.SparqlExecutionException;
 import org.dbpedia.spotlight.model.DBpediaResource;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -44,6 +49,8 @@ public class SparqlQueryExecuter {
 
 	private final static Logger LOG = Logger.getLogger(SparqlQueryExecuter.class);
 
+       // Create an instance of HttpClient.
+    private static HttpClient client = new HttpClient();
 
     //http://dbpedia.org/sparql?default-graph-uri=http://dbpedia.org&query=select+distinct+%3Fpol+where+{%3Fpol+a+%3Chttp://dbpedia.org/ontology/Politician%3E+}&debug=on&timeout=&format=text/html&save=display&fname=
 
@@ -57,8 +64,9 @@ public class SparqlQueryExecuter {
         this.sparqlUrl = sparqlUrl;
     }
 
-	public Set<String> query(String query) throws IOException{
-		LOG.info("--SPARQL QUERY: "+query);
+	public Set<String> query(String query) throws IOException, OutputException, SparqlExecutionException {
+        if (query==null) return new HashSet<String>();
+		LOG.info("--SPARQL QUERY: "+query.replace("\n", " "));
 
 		String graphEncoded = URLEncoder.encode(mainGraph, "UTF-8");
 		String formatEncoded = URLEncoder.encode("application/sparql-results+json", "UTF-8");
@@ -69,29 +77,55 @@ public class SparqlQueryExecuter {
 		//FIXME Do some test with the returned results to see if there actually are results.
         Set<String> uris = null;
         try {
-            uris = parse(readOutput(get(url)));
+//            uris = parse(readOutput(get(url)));
+            uris = parse(request(url));
         } catch (JSONException e) {
-            throw new IOException(e);
+            throw new OutputException(e);
         }
         return uris;
 	}
 
-	public URLConnection get(String sparqlCommand) throws IOException {
-		URL queryURL = new URL(sparqlUrl+"?"+sparqlCommand);
-		URLConnection urlConn = queryURL.openConnection();
-		((HttpURLConnection) urlConn).setRequestMethod("GET");
-		urlConn.setDoOutput(true);
-		urlConn.setDoInput(true);
-		urlConn.setUseCaches(false);
 
-		OutputStream oStream = urlConn.getOutputStream();
+    public String request(String sparqlCommand) throws SparqlExecutionException {
+        GetMethod method = new GetMethod(sparqlUrl+"?"+sparqlCommand);
+        String response = null;
 
-		oStream.write(sparqlCommand.getBytes());
-		oStream.flush();
-		oStream.close();
+        // Provide custom retry handler is necessary
+        method.getParams().setParameter(HttpMethodParams.RETRY_HANDLER,
+                new DefaultHttpMethodRetryHandler(3, false));
 
-		return urlConn;
-	}
+        try {
+            // Execute the method.
+            int statusCode = client.executeMethod(method);
+
+            if (statusCode != HttpStatus.SC_OK) {
+                LOG.error("SparqlQuery failed: " + method.getStatusLine());
+                throw new SparqlExecutionException(String.format("%s (%s). %s",
+                                                                 method.getStatusLine(),
+                                                                 method.getURI(),
+                                                                 method.getResponseBodyAsString()));
+            }
+
+            // Read the response body.
+            byte[] responseBody = method.getResponseBody();
+
+            // Deal with the response.
+            // Use caution: ensure correct character encoding and is not binary data
+            response = new String(responseBody);
+
+        } catch (HttpException e) {
+            System.err.println("Fatal protocol violation: " + e.getMessage());
+            throw new SparqlExecutionException(e);
+        } catch (IOException e) {
+            System.err.println("Fatal transport error: " + e.getMessage());
+            throw new SparqlExecutionException(e);
+        } finally {
+            // Release the connection.
+            method.releaseConnection();
+        }
+        return response;
+
+    }
 
     /**
      * Parses SPARQL+JSON output, getting a list of DBpedia URIs returned in *any* variable in the query.
@@ -119,17 +153,8 @@ public class SparqlQueryExecuter {
         return results;
     }
 
-	//TODO PABLO there is probably a better way to do this.
-	private static String readOutput(URLConnection urlConn) throws IOException{
-		BufferedReader in = new BufferedReader(new InputStreamReader(urlConn.getInputStream()));
-		StringBuilder response = new StringBuilder(); String aLine;
-		while ((aLine = in.readLine()) != null) {
-			response.append(aLine);
-		}
-		return response.toString();
-	}
 
-    public static void main(String[] args) throws IOException, JSONException {
+    public static void main(String[] args) throws Exception {
 
         String example = "SELECT ?resource ?label ?score WHERE {\n" +
                 "?resource ?relation <http://dbpedia.org/resource/India> .\n" +

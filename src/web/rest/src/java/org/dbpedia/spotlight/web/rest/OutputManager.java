@@ -25,7 +25,10 @@ import java.io.*;
 // SAX classes.
 import java.util.List;
 
+import org.apache.commons.lang.SerializationException;
+import org.dbpedia.spotlight.exceptions.OutputException;
 import org.dbpedia.spotlight.model.DBpediaType;
+import org.xml.sax.SAXException;
 import org.xml.sax.helpers.*;
 //JAXP 1.1
 import javax.xml.transform.*;
@@ -43,7 +46,7 @@ import org.dbpedia.spotlight.model.DBpediaResourceOccurrence;
  */
 public class OutputManager {
 
-    private TransformerHandler initXMLDoc(ByteArrayOutputStream out) throws Exception{
+    private TransformerHandler initXMLDoc(ByteArrayOutputStream out) throws SAXException, TransformerConfigurationException {
         StreamResult streamResult = new StreamResult(out);
         SAXTransformerFactory tf = (SAXTransformerFactory) SAXTransformerFactory.newInstance();
         // SAX2.0 ContentHandler.
@@ -66,20 +69,10 @@ public class OutputManager {
         }
     }
 
-    private String getTypesString(List<DBpediaType> ts) {
-        if(ts.isEmpty()) {
-            return "";
-        }
-        String s = "";
-        for(DBpediaType t : ts) {
-            s += t.name() + ",";
-        }
-        return s.substring(0, s.length()-2);
-    }
-
-    protected String makeXML(String text, List<DBpediaResourceOccurrence> occList, double confidence, int support, String dbpediaTypesString, String sparqlQuery, String policy, boolean coreferenceResolution) throws Exception{
+    protected String makeXML(String text, List<DBpediaResourceOccurrence> occList, double confidence, int support, String targetTypesString, String sparqlQuery, String policy, boolean coreferenceResolution) throws OutputException {
         // PrintWriter from a Servlet
         String xml = "";
+        try {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         TransformerHandler hd = initXMLDoc(out);
 
@@ -92,7 +85,7 @@ public class OutputManager {
         atts.addAttribute("","","text","CDATA",text);
         atts.addAttribute("","","confidence","CDATA",String.valueOf(confidence));
         atts.addAttribute("","","support","CDATA",String.valueOf(support));
-        atts.addAttribute("","","types","CDATA",dbpediaTypesString);
+        atts.addAttribute("","","types","CDATA",targetTypesString);
         atts.addAttribute("","","sparql","CDATA",sparqlQuery);
         atts.addAttribute("","","policy","CDATA",policy);
         //atts.addAttribute("","","coreferenceResolution","CDATA",String.valueOf(coreferenceResolution));
@@ -107,14 +100,14 @@ public class OutputManager {
 
           atts.addAttribute("","","URI","CDATA",dbpediaPrefix+occ.resource().uri());
           atts.addAttribute("","","support","CDATA",String.valueOf(occ.resource().support()));
-          atts.addAttribute("","","types","CDATA",getTypesString(occ.resource().getTypes()));
+          atts.addAttribute("","","types","CDATA",occ.resource().types().mkString(","));
           // support and types should go to resource
 
           atts.addAttribute("", "", "surfaceForm", "CDATA", occ.surfaceForm().name());
           atts.addAttribute("","","offset","CDATA",String.valueOf(occ.textOffset()));
           atts.addAttribute("", "", "similarityScore", "CDATA", String.valueOf(occ.similarityScore()));
           atts.addAttribute("","","percentageOfSecondRank","CDATA",String.valueOf(occ.percentageOfSecondRank()));
-          
+
           hd.startElement("","","Resource",atts);
           hd.endElement("","","Resource");
           i++;
@@ -125,53 +118,67 @@ public class OutputManager {
         hd.endElement("","","Annotation");
         hd.endDocument();
         xml = out.toString("utf-8");
+        } catch (Exception e) {
+            throw new OutputException("Error creating XML output.", e);
+
+        }
         return xml;
     }
 
-    protected String makeErrorXML(String message, String text, double confidence, int support, String targetTypesString, String sparqlQuery, String policy, boolean coreferenceResolution) throws Exception{
+    protected String makeErrorXML(String message, String text, double confidence, int support, String targetTypesString, String sparqlQuery, String policy, boolean coreferenceResolution) throws OutputException {
         // PrintWriter from a Servlet
         String xmlDoc="";
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        TransformerHandler hd = initXMLDoc(out);
+        try {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            TransformerHandler hd = initXMLDoc(out);
 
-        text = getText(text, null);
+            text = getText(text, null);
 
-        //Create Annotation element
-        //First create text attribute
-        AttributesImpl atts = new AttributesImpl();
+            //Create Annotation element
+            //First create text attribute
+            AttributesImpl atts = new AttributesImpl();
 
-        atts.addAttribute("","","text","CDATA",text);
-        atts.addAttribute("","","confidence","CDATA",String.valueOf(confidence));
-        atts.addAttribute("","","support","CDATA",String.valueOf(support));
-        atts.addAttribute("","","types","CDATA",targetTypesString);
-        //atts.addAttribute("","","coreferenceResolution","CDATA",String.valueOf(coreferenceResolution));
-        atts.addAttribute("","","sparql","CDATA",sparqlQuery);
-        atts.addAttribute("","","policy","CDATA",policy);
-        hd.startElement("","","Annotation",atts);
+            atts.addAttribute("","","text","CDATA",text);
+            atts.addAttribute("","","confidence","CDATA",String.valueOf(confidence));
+            atts.addAttribute("","","support","CDATA",String.valueOf(support));
+            atts.addAttribute("","","types","CDATA",targetTypesString);
+            //atts.addAttribute("","","coreferenceResolution","CDATA",String.valueOf(coreferenceResolution));
+            atts.addAttribute("","","sparql","CDATA",sparqlQuery);
+            atts.addAttribute("","","policy","CDATA",policy);
+            hd.startElement("","","Annotation",atts);
 
-        atts.clear();
-        atts.addAttribute("","","message","CDATA",message);
-        hd.startElement("","","Error",atts);
-        hd.endElement("","","Error");
+            atts.clear();
+            atts.addAttribute("","","message","CDATA",message);
+            hd.startElement("","","Error",atts);
+            hd.endElement("","","Error");
 
-        hd.endElement("","","Annotation");
-        hd.endDocument();
-        xmlDoc = out.toString("utf-8");
+            hd.endElement("","","Annotation");
+            hd.endDocument();
+            xmlDoc = out.toString("utf-8");
+        } catch (Exception e) {
+            throw new OutputException("Error creating XML output.",e);
+        }
         return xmlDoc;
     }
 
     private XMLSerializer xmlSerializer = new XMLSerializer();
-    protected String xml2json(String xmlDoc) throws Exception{
-        return xmlSerializer.read(xmlDoc).toString(2);
+    protected String xml2json(String xmlDoc) throws OutputException {
+        String json = "";
+        try {
+            json = xmlSerializer.read(xmlDoc).toString(2);
+        } catch (Exception e) {
+            throw new OutputException("Error converting XML to JSON.", e);
+        }
+        return json;
     }
 
     private WebCodeFormatter htmlFormat = new HTMLFormatter();
-    protected String makeHTML(String text, List<DBpediaResourceOccurrence> occList) {
+    protected String makeHTML(String text, List<DBpediaResourceOccurrence> occList) {  //TODO throws OutputException
         return makeWebRepresentation(text, occList, htmlFormat);
     }
 
     private WebCodeFormatter rdfaFormat = new RDFaFormatter();
-    protected String makeRDFa(String text, List<DBpediaResourceOccurrence> occList) {
+    protected String makeRDFa(String text, List<DBpediaResourceOccurrence> occList) {  //TODO throws OutputException
         return makeWebRepresentation(text, occList, rdfaFormat);
     }
 
@@ -219,30 +226,27 @@ public class OutputManager {
 
     private class RDFaFormatter implements WebCodeFormatter {
         /**
-         *   <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN" "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
-         *   <html xmlns="http://www.w3.org/1999/xhtml"
-         *         xmlns:foaf="http://xmlns.com/foaf/0.1/"
-         *         xmlns:dc="http://purl.org/dc/elements/1.1/"
-         *         xmlns:vcard="http://www.w3.org/2006/03/hcard/"
-         *         xmlns:lexvo="http://lexvo.org/ontology#"
-         *         xmlns:dbpedia="http://dbpedia.org/resource/"
-         *         xmlns:dbpo="http://dbpedia.org/ontology/" >
-         *   <head>
-         *   <title>DBpedia Spotlight annotation</title>
-         *   </head>
-         *   <body>
-         *   <div>
-         *   <a about="http://dbpedia.org/resource/Barack_Obama" instanceof="http://dbpedia.org/ontology/President" href="http://dbpedia.org/resource/Barack_Obama" title="http://dbpedia.org/resource/Barack_Obama" property="lexvo:label">President Obama</a> called Wednesday on <a about="http://dbpedia.org/resource/United_States_Congress" typeof="http://dbpedia.org/ontology/Legislature" href="http://dbpedia.org/resource/United_States_Congress" title="http://dbpedia.org/resource/United_States_Congress">Congress</a> to extend a <a about="http://dbpedia.org/resource/Tax_break" href="http://dbpedia.org/resource/Tax_break" title="http://dbpedia.org/resource/Tax_break" target="_blank">tax break</a> for <a about="http://dbpedia.org/resource/Student" href="http://dbpedia.org/resource/Student" title="http://dbpedia.org/resource/Student" target="_blank">students</a> included in last year's economic stimulus package, arguing that the <a about="http://dbpedia.org/resource/Policy" href="http://dbpedia.org/resource/Policy" title="http://dbpedia.org/resource/Policy" target="_blank">policy</a> provides more generous assistance.
-         *   </div>
-         *   </body>
-         *   </html>
+         * <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN" "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:foaf="http://xmlns.com/foaf/0.1/"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:vcard="http://www.w3.org/2006/03/hcard/"
+        xmlns:lexvo="http://lexvo.org/ontology#" xmlns:dbpedia="http://dbpedia.org/resource/" xmlns:dbpo="http://dbpedia.org/ontology/"
+>
+<head>
+<title>DBpedia Spotlight annotation</title>
+</head>
+<body>
+<div>
+<a about="http://dbpedia.org/resource/Barack_Obama" instanceof="http://dbpedia.org/ontology/President" href="http://dbpedia.org/resource/Barack_Obama" title="http://dbpedia.org/resource/Barack_Obama" property="lexvo:label">President Obama</a> called Wednesday on <a about="http://dbpedia.org/resource/United_States_Congress" typeof="http://dbpedia.org/ontology/Legislature" href="http://dbpedia.org/resource/United_States_Congress" title="http://dbpedia.org/resource/United_States_Congress">Congress</a> to extend a <a about="http://dbpedia.org/resource/Tax_break" href="http://dbpedia.org/resource/Tax_break" title="http://dbpedia.org/resource/Tax_break" target="_blank">tax break</a> for <a about="http://dbpedia.org/resource/Student" href="http://dbpedia.org/resource/Student" title="http://dbpedia.org/resource/Student" target="_blank">students</a> included in last year's economic stimulus package, arguing that the <a about="http://dbpedia.org/resource/Policy" href="http://dbpedia.org/resource/Policy" title="http://dbpedia.org/resource/Policy" target="_blank">policy</a> provides more generous assistance.
+</div>
+</body>
+</html>
          */
+        private final static String main = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML+RDFa 1.0//EN\" \"http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:lexvo=\"http://lexvo.org/ontology#\" xmlns:dbpedia=\"http://dbpedia.org/resource/\" xmlns:dbpo=\"http://dbpedia.org/ontology/\">\n<head>\n<title>DBpedia Spotlight annotation</title>\n</head>\n<body>\n<div>\n%s\n</div>\n</body>\n</html>";
+        private final static String link = "<a about=\"%s\" href=\"%s\" title=\"%s\" target=\"_blank\" >%s</a>";
+        private final static String typeLink= "<a about=\"%s\" typeof=\"%s\" href=\"%s\" title=\"%s\">%s</a>";
 
-        // maybe specify encoding at the very beginning: <?xml version="1.0" encoding="UTF-8"?>  (RDFa distiller does not like it)
-        private final static String main = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML+RDFa 1.0//EN\" \"http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:lexvo=\"http://lexvo.org/ontology#\" xmlns:dbpedia=\"http://dbpedia.org/resource/\" xmlns:dbpo=\"http://dbpedia.org/ontology/\">\n<head>\n<title>DBpedia Spotlight annotation</title>\n</head>\n<body>\n<div rel=\"rdfs:seeAlso\">\n%s\n</div>\n</body>\n</html>";
-        private final static String link = "<a about=\"%s\" href=\"%s\" title=\"%s\" target=\"_blank\" property=\"lexvo:label\">%s</a>";
-        private final static String typeLink= "<a about=\"%s\" typeof=\"%s\" href=\"%s\" title=\"%s\" property=\"lexvo:label\">%s</a>";
-        
         public String getLink(String uri, String surfaceForm, List<DBpediaType> types) {
             if(types == null || types.isEmpty()) {
                 return String.format(link, uri, uri, uri, surfaceForm);

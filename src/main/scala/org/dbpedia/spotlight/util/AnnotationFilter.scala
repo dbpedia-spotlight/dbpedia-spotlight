@@ -31,12 +31,6 @@ object AnnotationFilter
 {
     private val LOG = LogFactory.getLog(this.getClass)
 
-    val DEFAULT_CONFIDENCE : Double = 0.5
-    val DEFAULT_SUPPORT : Int = 100
-    val DEFAULT_TYPES : java.util.List[DBpediaType] = new java.util.LinkedList[DBpediaType]()
-    val DEFAULT_SHOW_DUPLICATES = true
-    val DEFAULT_COREFERENCE_RESOLUTION = true
-
     // set from a test run //TODO document this!
     val simThresholdList = List(0,
         0.1155594, 0.1413648, 0.1555880, 0.1666082, 0.1769609, 0.1866261, 0.1957517, 0.20482580, 0.2138903, 0.2237287,
@@ -54,12 +48,12 @@ object AnnotationFilter
 
 
     def filter(occs : java.util.List[DBpediaResourceOccurrence],
-               confidence : Double=DEFAULT_CONFIDENCE,
-               targetSupport : Int=DEFAULT_SUPPORT,
-               dbpediaTypes : java.util.List[DBpediaType]=DEFAULT_TYPES,
-               sparqlQuery : String = "",
-               blacklist : Boolean = false,
-               coreferenceResolution : Boolean=DEFAULT_COREFERENCE_RESOLUTION) : java.util.List[DBpediaResourceOccurrence] = {
+               confidence : Double,
+               targetSupport : Int,
+               dbpediaTypes : java.util.List[DBpediaType],
+               sparqlQuery : String,
+               blacklist : Boolean,
+               coreferenceResolution : Boolean) : java.util.List[DBpediaResourceOccurrence] = {
 
         val filteredOccs = filter(occs.toList, confidence, targetSupport, dbpediaTypes, sparqlQuery, blacklist, coreferenceResolution)
         filteredOccs
@@ -291,7 +285,7 @@ object AnnotationFilter
         LOG.info("Filtering... ")
 
         val query = "select distinct ?pol where {?pol a <http://dbpedia.org/ontology/President> .   FILTER REGEX(?pol, \"Bacon\") }";
-        val filteredOccList : List[DBpediaResourceOccurrence] = AnnotationFilter.filter(occurrences, 0, 0, AnnotationFilter.DEFAULT_TYPES, query, false, AnnotationFilter.DEFAULT_COREFERENCE_RESOLUTION);
+        val filteredOccList : List[DBpediaResourceOccurrence] = AnnotationFilter.filter(occurrences, 0, 0, List(), query, false, true);
 
         //filteredOccList = AnnotationFilter.filterBySparql(occurrences, query, Whitelist)
 

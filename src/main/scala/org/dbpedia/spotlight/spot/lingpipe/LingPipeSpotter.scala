@@ -41,18 +41,21 @@ class LingPipeSpotter(val dictionary : Dictionary[String], val overlap : Boolean
         extends Spotter
 {
     private val LOG = LogFactory.getLog(this.getClass)
+    var fileName = "Dictionary[String]";
 
     def this(dictionaryFile : File, overlap : Boolean, caseSensitive : Boolean) = {
         this(AbstractExternalizable.readObject(dictionaryFile).asInstanceOf[Dictionary[String]], overlap, caseSensitive)
+        fileName = dictionaryFile.getAbsolutePath
         LOG.debug("Dictionary: "+dictionaryFile)
     }
 
     def this(dictionaryFile : File) = {
         this(AbstractExternalizable.readObject(dictionaryFile).asInstanceOf[Dictionary[String]])
+        fileName = dictionaryFile.getAbsolutePath
         LOG.debug("Dictionary: "+dictionaryFile)
     }
 
-    LOG.info("Initializing LingPipeSpotter ...")
+    LOG.info("Initializing LingPipeSpotter ... ("+fileName+")")
     val dictionaryChunker = new ExactDictionaryChunker(dictionary,
                                                        //IndoEuropeanTokenizerFactory.INSTANCE,  // splits "don't" into "don", "'" and "t"
                                                        AnnotationTokenizerFactory,

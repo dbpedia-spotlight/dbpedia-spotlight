@@ -16,14 +16,13 @@
 
 package org.dbpedia.spotlight.web.rest;
 
+import org.dbpedia.spotlight.exceptions.OutputException;
+
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.Path;
-import javax.ws.rs.GET;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 
 /**
  * REST Web Service
@@ -32,6 +31,7 @@ import javax.ws.rs.QueryParam;
 @Path("/annotate")
 @Consumes("text/plain")
 public class Annotate {
+
     @Context
     private UriInfo context;
 
@@ -39,55 +39,71 @@ public class Annotate {
     private static SpotlightInterface annotationInterface = new SpotlightInterface(Server.annotator);
 
     @GET
-    @Produces("text/html")
+    @Produces(MediaType.TEXT_HTML)
     public String getRDF(@DefaultValue(Configuration.DEFAULT_TEXT) @QueryParam("text") String text,
                          @DefaultValue(Configuration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
                          @DefaultValue(Configuration.DEFAULT_SUPPORT) @QueryParam("support") int support,
                          @DefaultValue(Configuration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
                          @DefaultValue(Configuration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
                          @DefaultValue(Configuration.DEFAULT_POLICY) @QueryParam("policy") String policy,
-                         @DefaultValue(Configuration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution) throws Exception {
-
-        return annotationInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution);
+                         @DefaultValue(Configuration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution) {
+        try {
+            return annotationInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution);
+        } catch (Exception e) {
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(e.getMessage()).type(MediaType.TEXT_HTML).build());
+        }
     }
 
+
     @GET
-    @Produces("application/xhtml+xml")
+    @Produces(MediaType.APPLICATION_XHTML_XML)
     public String getRDFa(@DefaultValue(Configuration.DEFAULT_TEXT) @QueryParam("text") String text,
                           @DefaultValue(Configuration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
                           @DefaultValue(Configuration.DEFAULT_SUPPORT) @QueryParam("support") int support,
                           @DefaultValue(Configuration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
                           @DefaultValue(Configuration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
                           @DefaultValue(Configuration.DEFAULT_POLICY) @QueryParam("policy") String policy,
-                          @DefaultValue(Configuration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution) throws Exception {
+                          @DefaultValue(Configuration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution) {
 
-        return annotationInterface.getRDFa(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution);
+        try {
+            return annotationInterface.getRDFa(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution);
+        } catch (Exception e) {
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(e.getMessage()).type(MediaType.APPLICATION_XHTML_XML).build());
+        }
     }
 
     @GET
-    @Produces("text/xml")
+    @Produces(MediaType.TEXT_XML)
     public String getXML(@DefaultValue(Configuration.DEFAULT_TEXT) @QueryParam("text") String text,
                          @DefaultValue(Configuration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
                          @DefaultValue(Configuration.DEFAULT_SUPPORT) @QueryParam("support") int support,
                          @DefaultValue(Configuration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
                          @DefaultValue(Configuration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
                          @DefaultValue(Configuration.DEFAULT_POLICY) @QueryParam("policy") String policy,
-                         @DefaultValue(Configuration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution) throws Exception {
+                         @DefaultValue(Configuration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution) {
 
-        return annotationInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution);
+        try {
+            return annotationInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution);
+       } catch (Exception e) {
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(e.getMessage()).type(MediaType.TEXT_XML).build());
+        }
     }
 
     @GET
-    @Produces("application/json")
+    @Produces(MediaType.APPLICATION_JSON)
     public String getJSON(@DefaultValue(Configuration.DEFAULT_TEXT) @QueryParam("text") String text,
                           @DefaultValue(Configuration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
                           @DefaultValue(Configuration.DEFAULT_SUPPORT) @QueryParam("support") int support,
                           @DefaultValue(Configuration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
                           @DefaultValue(Configuration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
                           @DefaultValue(Configuration.DEFAULT_POLICY) @QueryParam("policy") String policy,
-                          @DefaultValue(Configuration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution) throws Exception {
+                          @DefaultValue(Configuration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution) {
 
-        return annotationInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution);
+        try {
+            return annotationInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution);
+       } catch (Exception e) {
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(e.getMessage()).type(MediaType.APPLICATION_JSON).build());
+        }
     }
     
 }

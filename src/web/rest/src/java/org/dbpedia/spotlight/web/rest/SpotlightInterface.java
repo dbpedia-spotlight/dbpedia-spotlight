@@ -21,6 +21,8 @@ import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.annotate.Annotator;
 import org.dbpedia.spotlight.disambiguate.Disambiguator;
 import org.dbpedia.spotlight.exceptions.InputException;
+import org.dbpedia.spotlight.exceptions.OutputException;
+import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence;
 import org.dbpedia.spotlight.model.DBpediaType;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
@@ -57,9 +59,9 @@ public class SpotlightInterface {
                                                           double confidence,
                                                           int support,
                                                           String dbpediaTypesString,
-                                                          String spqarlQuery,
+                                                          String sparqlQuery,
                                                           String policy,
-                                                          boolean coreferenceResolution) throws Exception {
+                                                          boolean coreferenceResolution) throws SearchException, InputException {
 
         LOG.info("******************************** Parameters ********************************");
         if(disambiguator == null && annotator != null) {
@@ -81,12 +83,12 @@ public class SpotlightInterface {
             policy = "whitelist";
         }
 
-        LOG.info("text: "+text);
+        LOG.info("text: " + text);
         LOG.info("text length in chars: "+text.length());
         LOG.info("confidence: "+String.valueOf(confidence));
         LOG.info("support: "+String.valueOf(support));
         LOG.info("types: "+dbpediaTypesString);
-        LOG.info("spqarlQuery: "+spqarlQuery);
+        LOG.info("sparqlQuery: "+ sparqlQuery);
         LOG.info("policy: "+policy);
         LOG.info("coreferenceResolution: "+String.valueOf(coreferenceResolution));
 
@@ -111,10 +113,11 @@ public class SpotlightInterface {
             occList = disambiguator.disambiguate(sfOccList);
         }
 
-        occList = AnnotationFilter.filter(occList, confidence, support, dbpediaTypes, spqarlQuery, blacklist, coreferenceResolution);
+        occList = AnnotationFilter.filter(occList, confidence, support, dbpediaTypes, sparqlQuery, blacklist, coreferenceResolution);
 
+        LOG.info("Shown:");
         for(DBpediaResourceOccurrence occ : occList) {
-            LOG.debug(occ.resource());
+            LOG.info(occ.resource());
         }
 
         return occList;
@@ -166,13 +169,13 @@ public class SpotlightInterface {
                          String dbpediaTypesString,
                          String spqarlQuery,
                          String policy,
-                         boolean coreferenceResolution) throws Exception {
+                         boolean coreferenceResolution) throws OutputException {
         String result;
         try {
             List<DBpediaResourceOccurrence> occs = getOccurrences(text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
             result = output.makeXML(text, occs, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
         }
-        catch (InputException e) {
+        catch (Exception e) {
             LOG.info("ERROR: "+e.getMessage());
             result = output.makeErrorXML(e.getMessage(), text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
         }
