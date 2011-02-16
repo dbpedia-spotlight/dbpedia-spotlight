@@ -57,7 +57,7 @@ public class JCSTermCache extends TermCache {
         props.put("jcs.default","");
         props.put("jcs.default.cacheattributes","org.apache.jcs.engine.CompositeCacheAttributes");
         props.put("jcs.default.cacheattributes.MemoryCacheName","org.apache.jcs.engine.memory.lru.LRUMemoryCache");
-        props.put("jcs.default.cacheattributes.MaxObjects","10000");
+        props.put("jcs.default.cacheattributes.MaxObjects","5000");
         ccm.configure(props);
 
         termCache = JCS.getInstance("termCache");
