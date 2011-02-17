@@ -24,6 +24,8 @@ import org.dbpedia.spotlight.util.AnnotationFilter
 import org.dbpedia.spotlight.string.WikiLinkParser
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.model.{DBpediaResource, DBpediaResourceOccurrence}
+import org.dbpedia.spotlight.web.rest.ServerConfiguration
+
 /**
  * Reads in manually annotated paragraphs, computes the inter-annotator agreement, then compares
  * our system against the union or intersection of the manual annotators.
@@ -34,18 +36,20 @@ import org.dbpedia.spotlight.model.{DBpediaResource, DBpediaResourceOccurrence}
  */
 object DBpediaSpotlightClient
 {
-  private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LogFactory.getLog(this.getClass)
 
-  val spotterFile    = "/home/pablo/web/TitRedDis.spotterDictionary";
-  //val spotterFile    = "/home/pablo/eval/manual/Eval.spotterDictionary";
-  val indexDirectory = "/home/pablo/web/DisambigIndex.singleSFs-plusTypes.SnowballAnalyzer.DefaultSimilarity";
-  //val indexDirectory = "/home/pablo/web/DisambigIndex.restrictedSFs.plusTypes-plusSFs.SnowballAnalyzer.DefaultSimilarity"
-  val confidence = 0.0;
-  val support = 0;
+    val configuration = new ServerConfiguration("conf/eval.properties");
+    val spotterFile    = configuration.getSpotterFile //"/home/pablo/web/TitRedDis.spotterDictionary";
+    //val spotterFile    = "/home/pablo/eval/manual/Eval.spotterDictionary";
+    val indexDirectory = configuration.getIndexDirectory //"/home/pablo/web/DisambigIndex.singleSFs-plusTypes.SnowballAnalyzer.DefaultSimilarity";
+    //val indexDirectory = "/home/pablo/web/DisambigIndex.restrictedSFs.plusTypes-plusSFs.SnowballAnalyzer.DefaultSimilarity"
+    val confidence = 0.0;
+    val support = 0;
 
-  val targetTypesList = null;
-  val coreferenceResolution = true;
-  val annotator = new DefaultAnnotator(new File(spotterFile), new File(indexDirectory));
+    val targetTypesList = null;
+    val coreferenceResolution = true;
+    val annotator = new DefaultAnnotator(new File(spotterFile), new File(indexDirectory));
+    val filter = new AnnotationFilter(configuration)
 
   def parseToMatrix(occList : List[DBpediaResourceOccurrence]) : String = {
     val buffer = new StringBuffer();
@@ -150,12 +154,12 @@ object DBpediaSpotlightClient
 //      writeAsEntitySetToFile(entitiesByPercentageRank.slice(0,10), new File(baseDir+prefix+".rank.t10.set"))
 
 
-      val filteredOccList : List[DBpediaResourceOccurrence] = AnnotationFilter.filter(occurrences, 0, 0, List(), "", false, true);
+      val filteredOccList : List[DBpediaResourceOccurrence] = filter.filter(occurrences, 0, 0, List(), "", false, true);
       //val filteredOccList : List[DBpediaResourceOccurrence] = AnnotationFilter.filter(occurrences, 0, 0, AnnotationFilter.PERLOCPLA, AnnotationFilter.DEFAULT_COREFERENCE_RESOLUTION);
       for (confidence <- EvalParams.confidenceInterval) {
           for(support <- EvalParams.supportInterval) {
-            var localFiltered = AnnotationFilter.filterBySupport(filteredOccList, support)
-            localFiltered = AnnotationFilter.filterByConfidence(localFiltered, confidence)
+            var localFiltered = filter.filterBySupport(filteredOccList, support)
+            localFiltered = filter.filterByConfidence(localFiltered, confidence)
             val out = new PrintStream(new File(baseDir+prefix+".c"+confidence+"s"+support+".set"))
             out.append(localFiltered.map(occ => occ.resource.uri).toSet.mkString("\n"))
             out.close();

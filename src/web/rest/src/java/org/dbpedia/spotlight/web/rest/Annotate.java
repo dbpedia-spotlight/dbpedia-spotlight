@@ -34,7 +34,7 @@ public class Annotate {
     private UriInfo context;
 
     // Annotation interface
-    private static SpotlightInterface annotationInterface = SpotlightInterface.getInstance(TestServer.getAnnotator(), TestServer.getConfiguration());
+    private static SpotlightInterface annotationInterface = SpotlightInterface.getInstance(Server.getAnnotator(), Server.getConfiguration());
 
     @GET
     @Produces(MediaType.TEXT_HTML)

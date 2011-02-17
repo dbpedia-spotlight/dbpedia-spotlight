@@ -36,7 +36,7 @@ public class Disambiguate {
     private UriInfo context;
 
     // Disambiguation interface
-    private static SpotlightInterface disambigInterface = SpotlightInterface.getInstance(TestServer.getDisambiguator(), TestServer.getConfiguration());
+    private static SpotlightInterface disambigInterface = SpotlightInterface.getInstance(Server.getDisambiguator(), Server.getConfiguration());
 
     @GET
     @Produces("text/html")

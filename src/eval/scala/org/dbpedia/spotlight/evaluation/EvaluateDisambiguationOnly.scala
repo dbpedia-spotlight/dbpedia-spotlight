@@ -156,17 +156,17 @@ object EvaluateDisambiguationOnly
 
 
 
-    def getICFIDFSnowballDisambiguator(outputFileName: String) : Disambiguator = {
-        var analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET);
-        var similarity : Similarity = new ICFIDFSimilarity();
-        createMergedDisambiguator(outputFileName, analyzer, similarity, FSDirectory.open(new File(outputFileName+"."+analyzer.getClass.getSimpleName+".InvSenseFreqSimilarity")))
-    }
-
-    def getICFIDFStandardDisambiguator(outputFileName: String) : Disambiguator = {
-        var analyzer : Analyzer = new org.apache.lucene.analysis.standard.StandardAnalyzer(Version.LUCENE_29, StopAnalyzer.ENGLISH_STOP_WORDS_SET);
-        var similarity : Similarity = new ICFIDFSimilarity();
-        createMergedDisambiguator(outputFileName, analyzer, similarity, FSDirectory.open(new File(outputFileName+"."+analyzer.getClass.getSimpleName+".InvSenseFreqSimilarity")))
-    }
+//    def getICFIDFSnowballDisambiguator(outputFileName: String) : Disambiguator = {
+//        var analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET);
+//        var similarity : Similarity = new ICFIDFSimilarity();
+//        createMergedDisambiguator(outputFileName, analyzer, similarity, FSDirectory.open(new File(outputFileName+"."+analyzer.getClass.getSimpleName+".InvSenseFreqSimilarity")))
+//    }
+//
+//    def getICFIDFStandardDisambiguator(outputFileName: String) : Disambiguator = {
+//        var analyzer : Analyzer = new org.apache.lucene.analysis.standard.StandardAnalyzer(Version.LUCENE_29, StopAnalyzer.ENGLISH_STOP_WORDS_SET);
+//        var similarity : Similarity = new ICFIDFSimilarity();
+//        createMergedDisambiguator(outputFileName, analyzer, similarity, FSDirectory.open(new File(outputFileName+"."+analyzer.getClass.getSimpleName+".InvSenseFreqSimilarity")))
+//    }
 
     def getPriorDisambiguator(outputFileName: String) : Disambiguator = {
         var analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET);

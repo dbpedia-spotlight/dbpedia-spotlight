@@ -50,7 +50,7 @@ public class JCSTermCache extends TermCache {
         init();
     }
 
-    public void init() throws CacheException {           //TODO get these props from dbpa.properties
+    public void init() throws CacheException {           //TODO get these props from jcs.properties or server.properties
         CompositeCacheManager ccm = CompositeCacheManager.getUnconfiguredInstance();
         Properties props = new Properties();
         //props.load(/* load properties from some location defined by your app */);
