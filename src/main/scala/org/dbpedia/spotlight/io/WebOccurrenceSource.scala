@@ -24,7 +24,7 @@ import org.apache.commons.logging.LogFactory
 import java.util.zip.GZIPInputStream
 import java.net.{Socket, URL}
 import org.xml.sax.InputSource
-import org.dbpedia.spotlight.util.{OccurrenceFilter, ConfigProperties}
+import org.dbpedia.spotlight.util.{OccurrenceFilter, IndexConfiguration}
 
 /**
  * Gets Occurrences from the Web using Yahoo! Boss.
@@ -41,11 +41,11 @@ object WebOccurrenceSource
                         "www.beat-wings.com")
 
     // load configured properties
-    val language = ConfigProperties.get("Language", "en")
-    val region = ConfigProperties.get("Region", "us")
-    val yahooBossAppID = ConfigProperties.get("YahooBossAppID", "vwl9D_PV34FEFsrjr_QByFTJfD6ahlU77i3NF8if986Dy2dSzI8eC71XuP6Ui_FAPHBPekqCEXQ-")
-    val yahooBossResults = ConfigProperties.get("YahooBossResults", "50").toInt
-    val yahooBossIterations = ConfigProperties.get("YahooBossIterations", "100").toInt
+    val language = IndexConfiguration.get("Language", "en")
+    val region = IndexConfiguration.get("Region", "us")
+    val yahooBossAppID = IndexConfiguration.get("YahooBossAppID", "vwl9D_PV34FEFsrjr_QByFTJfD6ahlU77i3NF8if986Dy2dSzI8eC71XuP6Ui_FAPHBPekqCEXQ-")
+    val yahooBossResults = IndexConfiguration.get("YahooBossResults", "50").toInt
+    val yahooBossIterations = IndexConfiguration.get("YahooBossIterations", "100").toInt
 
     // define necessary strings for Yahoo! Boss query
     val wikipediaPrefixEn = "http://" + language + ".wikipedia.org/wiki/"
@@ -75,7 +75,7 @@ object WebOccurrenceSource
     private class YahooBossSource(val resources : Iterable[DBpediaResource], val n : Int) extends OccurrenceSource
     {
         val parser = new DOMParser
-        //val occFilter = ConfigProperties.occurrenceFilter
+        //val occFilter = IndexConfiguration.occurrenceFilter
         val occFilter = new OccurrenceFilter(maximumSurfaceFormLength = 40, minimumParagraphLength = 50, maximumParagraphLength = 500)
 
         override def foreach[U](f : DBpediaResourceOccurrence => U) : Unit =

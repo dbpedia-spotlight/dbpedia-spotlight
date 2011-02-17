@@ -45,14 +45,14 @@ object SurrogatesUtil
     val MAXIMUM_SURFACE_FORM_LENGTH = 50
 
     // DBpedia input
-    var titlesFileName          = ConfigProperties.get("LabelsDataset")
-    var redirectsFileName       = ConfigProperties.get("RedirectsDataset")
-    var disambiguationsFileName = ConfigProperties.get("DisambiguationsDataset")
+    var titlesFileName          = IndexConfiguration.get("LabelsDataset")
+    var redirectsFileName       = IndexConfiguration.get("RedirectsDataset")
+    var disambiguationsFileName = IndexConfiguration.get("DisambiguationsDataset")
 
     // output
-    var conceptURIsFileName     = ConfigProperties.get("ConceptURIs")
-    var redirectTCFileName      = ConfigProperties.get("Redirects")
-    var surfaceFormsFileName    = ConfigProperties.get("SurfaceForms")
+    var conceptURIsFileName     = IndexConfiguration.get("ConceptURIs")
+    var redirectTCFileName      = IndexConfiguration.get("Redirects")
+    var surfaceFormsFileName    = IndexConfiguration.get("SurfaceForms")
 
 
     def saveConceptURIs {
@@ -94,7 +94,7 @@ object SurrogatesUtil
 
         LOG.info("Done.")
 //        conceptURIsFileName = conceptURIsFile.getAbsolutePath
-//        ConfigProperties.set("conceptURIs", conceptURIsFileName)
+//        IndexConfiguration.set("conceptURIs", conceptURIsFileName)
     }
 
     private def looksLikeAGoodURI(uri : String) : Boolean = {
@@ -147,7 +147,7 @@ object SurrogatesUtil
         redURIstream.close
         LOG.info("Done.")
 //        redirectTCFileName = redirectTCFileName.getAbsolutePath
-//        ConfigProperties.set("preferredURIs", redirectTCFileName)
+//        IndexConfiguration.set("preferredURIs", redirectTCFileName)
     }
 
     private def getEndOfChainUri(m : Map[String,String], k : String) : String = {
@@ -223,7 +223,7 @@ object SurrogatesUtil
         surfaceFormsStream.close
         LOG.info("Done.")
 //        surfaceFormsFileName = surfaceFormsFile.getAbsolutePath
-//        ConfigProperties.set("surfaceForms", surfaceFormsFileName)
+//        IndexConfiguration.set("surfaceForms", surfaceFormsFileName)
     }
 
 
@@ -289,7 +289,7 @@ object SurrogatesUtil
         surfaceFormsStream.close
         LOG.info("Done.")
 //        surfaceFormsFileName = surfaceFormsFile.getAbsolutePath
-//        ConfigProperties.set("surfaceForms", surfaceFormsFileName)
+//        IndexConfiguration.set("surfaceForms", surfaceFormsFileName)
     }
 
     // Returns a cleaned surface form if it is considered to be worth keeping
@@ -420,7 +420,7 @@ object SurrogatesUtil
         //saveRedirectsTransitiveClosure
 
         // get surface forms 
-        val stopWordsFileName = ConfigProperties.get("StopWordList")
+        val stopWordsFileName = IndexConfiguration.get("StopWordList")
         val stopWords = Source.fromFile(stopWordsFileName, "UTF-8").getLines.toSet
         saveSurfaceForms(stopWords)
 

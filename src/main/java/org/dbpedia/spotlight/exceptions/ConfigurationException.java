@@ -14,26 +14,19 @@
  * limitations under the License.
  */
 
-package org.dbpedia.spotlight.annotate;
-
-import org.dbpedia.spotlight.disambiguate.Disambiguator;
-import org.dbpedia.spotlight.exceptions.InputException;
-import org.dbpedia.spotlight.exceptions.SearchException;
-import org.dbpedia.spotlight.spot.Spotter;
-import org.dbpedia.spotlight.model.DBpediaResourceOccurrence;
-
-import java.util.List;
+package org.dbpedia.spotlight.exceptions;
 
 /**
- * Interface for annotators.
+ * Indicates that an error happen when getting configuration parameters for initializing objects.
+ * @author pablomendes
  */
+public class ConfigurationException extends Exception {
 
-public interface Annotator {
+    public ConfigurationException(String msg, Exception e) {
+        super(msg,e);
+    }
 
-    public List<DBpediaResourceOccurrence> annotate(String text) throws SearchException, InputException;
-
-    public Disambiguator disambiguator();
-
-    public Spotter spotter();
-
+    public ConfigurationException(String msg) {
+        super(msg);
+    }
 }

@@ -21,7 +21,7 @@ import org.dbpedia.spotlight.io.{FileOccurrenceSource, LuceneIndexWriter}
 import org.apache.commons.logging.LogFactory
 import org.apache.lucene.store.FSDirectory
 import org.dbpedia.spotlight.lucene.LuceneManager
-import org.dbpedia.spotlight.util.ConfigProperties
+import org.dbpedia.spotlight.util.IndexConfiguration
 
 /**
  * Indexes all Occurrences in Wikipedia separately in a Lucene index.
@@ -48,8 +48,8 @@ object IndexMergedOccurrences
     {
         // Command line options
         val baseDir = getBaseDir(args(0))
-        val similarity = ConfigProperties.getSimilarity(args(1))
-        val analyzer = ConfigProperties.getAnalyzer(args(2))
+        val similarity = IndexConfiguration.getSimilarity(args(1))
+        val analyzer = IndexConfiguration.getAnalyzer(args(2))
 
         LOG.info("Using dataset under: "+baseDir);
         LOG.info("Similarity class: "+similarity.getClass);
@@ -58,7 +58,7 @@ object IndexMergedOccurrences
         LOG.warn("WARNING: this process will run a lot faster if the occurrences are sorted by URI!");
 
         val trainingInputFile = baseDir+"training.tsv";
-        val minNumDocsBeforeFlush : Int = 200000 //ConfigProperties.properties.getProperty("minNumDocsBeforeFlush").toDouble
+        val minNumDocsBeforeFlush : Int = 200000 //IndexConfiguration.properties.getProperty("minNumDocsBeforeFlush").toDouble
         val lastOptimize = false;
 
         val indexOutputDir = baseDir+"2.9.3/Index.wikipediaTraining.Merged."+analyzer.getClass.getSimpleName+"."+similarity.getClass.getSimpleName;

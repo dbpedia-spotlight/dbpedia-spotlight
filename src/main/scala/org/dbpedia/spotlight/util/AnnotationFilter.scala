@@ -25,9 +25,10 @@ import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter
 import org.dbpedia.spotlight.disambiguate.{DefaultDisambiguator, Disambiguator}
 import org.dbpedia.spotlight.string.ParseSurfaceFormText
+import org.dbpedia.spotlight.web.rest.ServerConfiguration
 
 
-object AnnotationFilter
+class AnnotationFilter(val config: ServerConfiguration)
 {
     private val LOG = LogFactory.getLog(this.getClass)
 
@@ -35,6 +36,9 @@ object AnnotationFilter
     val simThresholdList = List(0,
         0.1155594, 0.1413648, 0.1555880, 0.1666082, 0.1769609, 0.1866261, 0.1957517, 0.20482580, 0.2138903, 0.2237287,
         0.2335491, 0.2442384, 0.2560859, 0.2693643, 0.2848305, 0.3033198, 0.3288046, 0.36692468, 0.449684 , 0.5)
+
+    // Responsible for sending SPARQL queries to the endpoint (results will be used for filtering)
+    val sparqlExecuter = new SparqlQueryExecuter(config.getSparqlEndpoint(), config.getSparqlMainGraph());
 
     val baseDir = "/home/pablo/data/" //TODO get this from config file
     //val simThresholdList = scala.io.Source.fromFile(baseDir+"failedTests.simScores").getLines().map(x => x.toDouble).toList.sorted
@@ -85,7 +89,7 @@ object AnnotationFilter
         filteredOccs = filterBySupport(filteredOccs, targetSupport)
 
         if(sparqlQuery != null && sparqlQuery != "") {
-            filteredOccs = filterBySparql(filteredOccs, sparqlQuery, listColor)
+            filteredOccs = filterBySparql(filteredOccs, sparqlQuery, listColor, sparqlExecuter)
         }
 
         filteredOccs = filteredOccs.sortBy(_.textOffset)    // sort by offset (because we observed returning unsorted lists in some cases)
@@ -182,7 +186,7 @@ object AnnotationFilter
         })
     }
 
-    private val unknownType = new DBpediaType("unknown")
+
 
     // filter by type
     private def filterByType(occs : List[DBpediaResourceOccurrence], dbpediaTypes : List[DBpediaType], blacklistOrWhitelist : ListColor) : List[DBpediaResourceOccurrence] = {
@@ -204,7 +208,7 @@ object AnnotationFilter
             }
         }
 
-        val showUntyped = dbpediaTypes.find(t => unknownType equals t) != None
+        val showUntyped = dbpediaTypes.find(t => DBpediaType.UNKNOWN equals t) != None
         occs.filter(occ => {
             // if the resource does not have type and the targets contain "unknown": don't filter
             if (showUntyped && occ.resource.types.isEmpty) {
@@ -229,7 +233,7 @@ object AnnotationFilter
      * Best is to execute the query once and just call filterByBlacklist or filterByWhitelist.
      * We only leave the option of calling filterBySparql for use cases dealing with dynamic data in the SPARQL endpoint.
      */
-    def filterBySparql(occs : List[DBpediaResourceOccurrence], sparqlQuery: String, blacklistOrWhitelist : ListColor, executer : SparqlQueryExecuter = new SparqlQueryExecuter) : List[DBpediaResourceOccurrence] = {
+    def filterBySparql(occs : List[DBpediaResourceOccurrence], sparqlQuery: String, blacklistOrWhitelist : ListColor, executer : SparqlQueryExecuter) : List[DBpediaResourceOccurrence] = {
 
         val uriSet = executer.query(sparqlQuery).toSet;
         LOG.debug("SPARQL "+blacklistOrWhitelist+":"+uriSet);
@@ -259,11 +263,12 @@ object AnnotationFilter
 //        val plainText = scala.io.Source.fromFile(inputFile).mkString
         val plainText = "Presidents [[Obama]], [[Jim Bacon]] called political philosophy a [[Jackson]], arguing that the policy provides more generous assistance. bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla "
 
-        val spotterFile    = new File("e:/dbpa/data/__smallSpotDictList.spotterDictionary");
-        //val spotterFile    = new File("/home/pablo/eval/manual/Eval.spotterDictionary");
-        val indexDir = new File("E:\\dbpa\\data\\index\\DisambigIndex.restrictedSFs.plusTypes-plusSFs");
+        var config = new ServerConfiguration("conf/server.properties");
 
-        val disambiguator : Disambiguator = new DefaultDisambiguator(indexDir)
+        val spotterFile    = config.getSpotterFile;
+        val indexDir = config.getIndexDirectory
+
+        val disambiguator : Disambiguator = new DefaultDisambiguator(new File(indexDir))
 
 //        // -- Spotter --
 //        val spotter : Spotter = new LingPipeSpotter(spotterFile)
@@ -285,7 +290,9 @@ object AnnotationFilter
         LOG.info("Filtering... ")
 
         val query = "select distinct ?pol where {?pol a <http://dbpedia.org/ontology/President> .   FILTER REGEX(?pol, \"Bacon\") }";
-        val filteredOccList : List[DBpediaResourceOccurrence] = AnnotationFilter.filter(occurrences, 0, 0, List(), query, false, true);
+
+        val filter = new AnnotationFilter(config);
+        val filteredOccList : List[DBpediaResourceOccurrence] = filter.filter(occurrences, 0, 0, List(), query, false, true);
 
         //filteredOccList = AnnotationFilter.filterBySparql(occurrences, query, Whitelist)
 

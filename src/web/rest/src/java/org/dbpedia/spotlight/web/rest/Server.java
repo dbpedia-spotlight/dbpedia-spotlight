@@ -34,12 +34,13 @@ import java.net.URISyntaxException;
  * Created by IntelliJ IDEA.
  * User: Max
  */
+/*
 
 public class Server {
 
-    protected static final Disambiguator disambiguator = new DefaultDisambiguator(new File(Configuration.indexDirectory));
+    protected static final Disambiguator disambiguator = new DefaultDisambiguator(new File(ServerConfiguration.getIndexDirectory()));
 
-    protected static final Annotator annotator = new DefaultAnnotator(new File(Configuration.spotterFile), disambiguator);
+    protected static final Annotator annotator = new DefaultAnnotator(new File(ServerConfiguration.spotterFile), disambiguator);
 
     private static volatile Boolean running = true;
 
@@ -74,3 +75,4 @@ public class Server {
     }
 
 }
+*/

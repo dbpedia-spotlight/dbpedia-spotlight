@@ -54,10 +54,8 @@ public class SparqlQueryExecuter {
 
     //http://dbpedia.org/sparql?default-graph-uri=http://dbpedia.org&query=select+distinct+%3Fpol+where+{%3Fpol+a+%3Chttp://dbpedia.org/ontology/Politician%3E+}&debug=on&timeout=&format=text/html&save=display&fname=
 
-    String mainGraph = "http://dbpedia.org";
-    String sparqlUrl = "http://dbpedia.org/sparql";
-
-	public SparqlQueryExecuter() {}
+    String mainGraph;
+    String sparqlUrl;
 
     public SparqlQueryExecuter(String mainGraph, String sparqlUrl) {
         this.mainGraph = mainGraph;
@@ -168,7 +166,7 @@ public class SparqlQueryExecuter {
         String example2 = "select distinct ?pol where {?pol a <http://dbpedia.org/ontology/Politician> }";
 
         String url = "http://dbpedia.org/sparql?default-graph-uri=http://dbpedia.org&query=select+distinct+%3Fpol+where+{%3Fpol+a+%3Chttp://dbpedia.org/ontology/Politician%3E+}&debug=on&timeout=&format=text/html&save=display&fname=";
-        SparqlQueryExecuter e = new SparqlQueryExecuter();
+        SparqlQueryExecuter e = new SparqlQueryExecuter("http://dbpedia.org", "http://dbpedia.org/sparql");
 
         Set<String> uris = e.query(example2);
         System.out.println(uris);

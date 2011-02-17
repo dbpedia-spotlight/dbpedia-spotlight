@@ -24,7 +24,7 @@ import org.dbpedia.spotlight.string.ContextExtractor
  * Filters sources of occurrences and WikiPageContext so that they contain only "good" data.
  *
  * Usage:
- * val occFilter = ConfigProperties.occurrenceFilter
+ * val occFilter = IndexConfiguration.occurrenceFilter
  * for (cleanOccurrence <- occFilter.filter(someOccurrenceSource)) {
  *     // process
  * }

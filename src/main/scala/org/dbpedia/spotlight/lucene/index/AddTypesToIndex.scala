@@ -21,7 +21,7 @@ import org.apache.lucene.store.FSDirectory
 import org.dbpedia.spotlight.io.{TypeAdder, FileOccurrenceSource}
 import org.dbpedia.spotlight.model.{DBpediaType, DBpediaResource}
 import java.io.{FileInputStream, File}
-import org.dbpedia.spotlight.util.{ConfigProperties, TypesLoader}
+import org.dbpedia.spotlight.util.{IndexConfiguration, TypesLoader}
 
 /**
  * Created by IntelliJ IDEA.
@@ -33,7 +33,7 @@ import org.dbpedia.spotlight.util.{ConfigProperties, TypesLoader}
 
 object AddTypesToIndex
 {
-    val instanceTypesFileName = ConfigProperties.get("InstanceTypesDataset")
+    val instanceTypesFileName = IndexConfiguration.get("InstanceTypesDataset")
 
     def main(args : Array[String]) {
         val indexFileName = args(0)

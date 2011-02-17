@@ -16,8 +16,6 @@
 
 package org.dbpedia.spotlight.web.rest;
 
-import org.dbpedia.spotlight.exceptions.OutputException;
-
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -36,17 +34,17 @@ public class Annotate {
     private UriInfo context;
 
     // Annotation interface
-    private static SpotlightInterface annotationInterface = new SpotlightInterface(Server.annotator);
+    private static SpotlightInterface annotationInterface = SpotlightInterface.getInstance(TestServer.getAnnotator(), TestServer.getConfiguration());
 
     @GET
     @Produces(MediaType.TEXT_HTML)
-    public String getRDF(@DefaultValue(Configuration.DEFAULT_TEXT) @QueryParam("text") String text,
-                         @DefaultValue(Configuration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
-                         @DefaultValue(Configuration.DEFAULT_SUPPORT) @QueryParam("support") int support,
-                         @DefaultValue(Configuration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
-                         @DefaultValue(Configuration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
-                         @DefaultValue(Configuration.DEFAULT_POLICY) @QueryParam("policy") String policy,
-                         @DefaultValue(Configuration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution) {
+    public String getRDF(@DefaultValue(ServerConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
+                         @DefaultValue(ServerConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
+                         @DefaultValue(ServerConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
+                         @DefaultValue(ServerConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
+                         @DefaultValue(ServerConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
+                         @DefaultValue(ServerConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
+                         @DefaultValue(ServerConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution) {
         try {
             return annotationInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution);
         } catch (Exception e) {
@@ -57,13 +55,13 @@ public class Annotate {
 
     @GET
     @Produces(MediaType.APPLICATION_XHTML_XML)
-    public String getRDFa(@DefaultValue(Configuration.DEFAULT_TEXT) @QueryParam("text") String text,
-                          @DefaultValue(Configuration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
-                          @DefaultValue(Configuration.DEFAULT_SUPPORT) @QueryParam("support") int support,
-                          @DefaultValue(Configuration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
-                          @DefaultValue(Configuration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
-                          @DefaultValue(Configuration.DEFAULT_POLICY) @QueryParam("policy") String policy,
-                          @DefaultValue(Configuration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution) {
+    public String getRDFa(@DefaultValue(ServerConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
+                          @DefaultValue(ServerConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
+                          @DefaultValue(ServerConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
+                          @DefaultValue(ServerConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
+                          @DefaultValue(ServerConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
+                          @DefaultValue(ServerConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
+                          @DefaultValue(ServerConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution) {
 
         try {
             return annotationInterface.getRDFa(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution);
@@ -74,13 +72,13 @@ public class Annotate {
 
     @GET
     @Produces(MediaType.TEXT_XML)
-    public String getXML(@DefaultValue(Configuration.DEFAULT_TEXT) @QueryParam("text") String text,
-                         @DefaultValue(Configuration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
-                         @DefaultValue(Configuration.DEFAULT_SUPPORT) @QueryParam("support") int support,
-                         @DefaultValue(Configuration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
-                         @DefaultValue(Configuration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
-                         @DefaultValue(Configuration.DEFAULT_POLICY) @QueryParam("policy") String policy,
-                         @DefaultValue(Configuration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution) {
+    public String getXML(@DefaultValue(ServerConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
+                         @DefaultValue(ServerConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
+                         @DefaultValue(ServerConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
+                         @DefaultValue(ServerConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
+                         @DefaultValue(ServerConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
+                         @DefaultValue(ServerConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
+                         @DefaultValue(ServerConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution) {
 
         try {
             return annotationInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution);
@@ -91,13 +89,13 @@ public class Annotate {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public String getJSON(@DefaultValue(Configuration.DEFAULT_TEXT) @QueryParam("text") String text,
-                          @DefaultValue(Configuration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
-                          @DefaultValue(Configuration.DEFAULT_SUPPORT) @QueryParam("support") int support,
-                          @DefaultValue(Configuration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
-                          @DefaultValue(Configuration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
-                          @DefaultValue(Configuration.DEFAULT_POLICY) @QueryParam("policy") String policy,
-                          @DefaultValue(Configuration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution) {
+    public String getJSON(@DefaultValue(ServerConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
+                          @DefaultValue(ServerConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
+                          @DefaultValue(ServerConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
+                          @DefaultValue(ServerConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
+                          @DefaultValue(ServerConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
+                          @DefaultValue(ServerConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
+                          @DefaultValue(ServerConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution) {
 
         try {
             return annotationInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution);

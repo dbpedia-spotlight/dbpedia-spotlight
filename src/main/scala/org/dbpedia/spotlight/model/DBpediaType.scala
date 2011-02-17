@@ -43,4 +43,5 @@ class DBpediaType(var name : String) {
 
 object DBpediaType {
     val DBPEDIA_ONTOLOGY_PREFIX = "http://dbpedia.org/ontology/"
+    val UNKNOWN = new DBpediaType("unknown")
 }

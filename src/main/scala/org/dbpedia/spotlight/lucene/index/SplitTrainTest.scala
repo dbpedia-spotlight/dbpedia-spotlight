@@ -53,7 +53,7 @@ object SplitTrainTest
 //        val wikiSource = WikiOccurrenceSource.fromXMLDumpFile(new File(wikipediaFileName))
 //        val typeDictFileName = "data/dbpedia/instance_types_en.tsv"
 //        val typedOccSource = new TypeAdder(wikiSource, new File(typeDictFileName))
-//        val occurrenceSource = ConfigProperties.occurrenceFilter.filter(typedOccSource)
+//        val occurrenceSource = IndexConfiguration.occurrenceFilter.filter(typedOccSource)
 
         val trainingStream = new PrintStream(baseDir+"training.sfSorted.tsv", "UTF-8")
         val testingStream  = new PrintStream(baseDir+"testing.tsv", "UTF-8")

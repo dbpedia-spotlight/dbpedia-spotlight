@@ -38,11 +38,11 @@ import org.apache.lucene.analysis.{Analyzer, StopAnalyzer}
 
 //TODO: validate configuration file
 
-object ConfigProperties
+object IndexConfiguration
 {
     private val LOG = LogFactory.getLog(this.getClass)
 
-    var configFileName = "spotlight.config"
+    var configFileName = "spotlight.config" //TODO add this to constructor, call from main method, fail early if can't find.
 
     private val properties : Properties = new Properties()
 
@@ -106,7 +106,7 @@ object ConfigProperties
     }
 
     def getAnalyzer(analyzerName : String) : Analyzer = {
-        val stopWords = ConfigProperties.getStopWords
+        val stopWords = IndexConfiguration.getStopWords
 
         (new StandardAnalyzer(Version.LUCENE_29, stopWords) :: new SnowballAnalyzer(Version.LUCENE_29, "English", stopWords) :: Nil)
                 .map(a => (a.getClass.getSimpleName, a))
