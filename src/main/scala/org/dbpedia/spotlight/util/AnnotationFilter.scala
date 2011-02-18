@@ -18,13 +18,11 @@ package org.dbpedia.spotlight.util
 
 import org.apache.commons.logging.LogFactory
 import scala.collection.JavaConversions._
-import org.dbpedia.spotlight.sparql.SparqlQueryExecuter
 import java.io.File
-import org.dbpedia.spotlight.spot.Spotter
 import org.dbpedia.spotlight.model._
-import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter
 import org.dbpedia.spotlight.disambiguate.{DefaultDisambiguator, Disambiguator}
 import org.dbpedia.spotlight.string.ParseSurfaceFormText
+import org.dbpedia.spotlight.sparql.SparqlQueryExecuter
 import org.dbpedia.spotlight.web.rest.ServerConfiguration
 
 
@@ -32,17 +30,11 @@ class AnnotationFilter(val config: ServerConfiguration)
 {
     private val LOG = LogFactory.getLog(this.getClass)
 
-    // set from a test run //TODO document this!
-    val simThresholdList = List(0,
-        0.1155594, 0.1413648, 0.1555880, 0.1666082, 0.1769609, 0.1866261, 0.1957517, 0.20482580, 0.2138903, 0.2237287,
-        0.2335491, 0.2442384, 0.2560859, 0.2693643, 0.2848305, 0.3033198, 0.3288046, 0.36692468, 0.449684 , 0.5)
+    // List of similarity scores from a development test run. Used to map confidence onto similarity score thresholds
+    val simThresholdList = config.getSimilarityThresholds.map(_.doubleValue)
 
     // Responsible for sending SPARQL queries to the endpoint (results will be used for filtering)
     val sparqlExecuter = new SparqlQueryExecuter(config.getSparqlEndpoint(), config.getSparqlMainGraph());
-
-    val baseDir = "/home/pablo/data/" //TODO get this from config file
-    //val simThresholdList = scala.io.Source.fromFile(baseDir+"failedTests.simScores").getLines().map(x => x.toDouble).toList.sorted
-    //val simThresholdList = List(0.000173042368260212, 0.00437988666817546, 0.014439694583416, 0.0914923325181007, 0.146780446171761, 0.378425091505051, 22.6561012268066)
 
     object ListColor extends Enumeration {
         type ListColor = Value

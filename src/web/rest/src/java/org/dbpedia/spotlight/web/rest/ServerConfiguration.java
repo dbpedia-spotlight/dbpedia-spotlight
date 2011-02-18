@@ -23,11 +23,13 @@ package org.dbpedia.spotlight.web.rest;
 
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
+import java.util.Scanner;
 
 /**
  * Holds all configuration parameters needed to run the DBpedia Spotlight Server
@@ -46,11 +48,14 @@ public class ServerConfiguration {
     public final static String DEFAULT_POLICY = "whitelist";
     public final static String DEFAULT_COREFERENCE_RESOLUTION = "true";
 
-    protected String serverURI = "http://localhost:2222/rest/";
-    protected String spotterFile    = "/home/pablo/web/TitRedDis.spotterDictionary";
-    protected String indexDirectory = "/home/pablo/web/DisambigIndex.singleSFs-plusTypes.SnowballAnalyzer.DefaultSimilarity";
-    protected String sparqlMainGraph = "http://dbpedia.org";
-    protected String sparqlEndpoint = "http://dbpedia.org/sparql";
+    protected String spotterFile    = "";
+    protected String indexDirectory = "";
+    protected List<Double> similarityThresholds;
+    protected String similarityThresholdsFile = "similarity-thresholds.txt";
+
+    protected String serverURI       = "http://localhost:2222/rest/";
+    protected String sparqlMainGraph = "";
+    protected String sparqlEndpoint  = "";
 
 
     public String getServerURI() {
@@ -63,6 +68,10 @@ public class ServerConfiguration {
 
     public String getIndexDirectory() {
         return indexDirectory;
+    }
+
+    public List<Double> getSimilarityThresholds() {
+        return similarityThresholds;
     }
 
     public String getSparqlMainGraph() {
@@ -82,16 +91,47 @@ public class ServerConfiguration {
         try {
             config.load(new FileInputStream(new File(fileName)));
         } catch (IOException e) {
-            throw new ConfigurationException("Cannot find configuration file.",e);
+            throw new ConfigurationException("Cannot find configuration file "+fileName,e);
         }
         //set spotterFile, indexDir...
         /*
         jcs.default.cacheattributes.MaxObjects = 5000
          */
         indexDirectory = config.getProperty("org.dbpedia.spotlight.index.dir");
+        if(!new File(indexDirectory).isDirectory()) {
+            throw new ConfigurationException("Cannot find index directory "+indexDirectory);
+        }
+
+        try {
+            BufferedReader r = new BufferedReader(new FileReader(new File(indexDirectory, similarityThresholdsFile)));
+            String line;
+            similarityThresholds = new ArrayList<Double>();
+            while((line = r.readLine()) != null) {
+                similarityThresholds.add(Double.parseDouble(line));
+            }
+        } catch (FileNotFoundException e) {
+            throw new ConfigurationException("Similarity threshold file '"+similarityThresholdsFile+"' not found in index directory "+indexDirectory,e);
+        } catch (NumberFormatException e) {
+            throw new ConfigurationException("Error parsing similarity value in '"+indexDirectory+"/"+similarityThresholdsFile,e);
+        } catch (IOException e) {
+            throw new ConfigurationException("Error reading '"+indexDirectory+"/"+similarityThresholdsFile,e);
+        }
+
         spotterFile = config.getProperty("org.dbpedia.spotlight.spot.dictionary");
+        if(!new File(spotterFile).isFile()) {
+            throw new ConfigurationException("Cannot find spotter file "+spotterFile);
+        }
+
         serverURI = config.getProperty("org.dbpedia.spotlight.web.rest.uri");
-        if (!serverURI.endsWith("/")) serverURI = serverURI.concat("/");
+        if (!serverURI.endsWith("/")) {
+            serverURI = serverURI.concat("/");
+        }
+        try {
+            new URI(serverURI);
+        } catch (URISyntaxException e) {
+            throw new ConfigurationException("Server URI not valid.",e);
+        }
+
         //...
 
     }

@@ -1,3 +1,19 @@
+/**
+ * Copyright 2011 Pablo Mendes, Max Jakob
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.dbpedia.spotlight.web.rest;
 
 import com.sun.jersey.api.container.httpserver.HttpServerFactory;
@@ -28,18 +44,18 @@ public class Server {
 
     private static volatile Boolean running = true;
 
-    static String usage = "java -jar dbpedia-spotlight.jar org.dbpedia.spotlight.web.rest.Server [config file]";
-    //\n or \n mvn scala:run -D ...";
+    static String usage = "usage: java -jar dbpedia-spotlight.jar org.dbpedia.spotlight.web.rest.Server [config file]"
+                        + "   or: mvn scala:run \"-DaddArgs=[config file]\"";
 
     public static void main(String[] args) throws IOException, InterruptedException, URISyntaxException, ClassNotFoundException, ConfigurationException {
-
 
         //Initialization, check values
         try {
             String configFileName = args[0];
             configuration = new ServerConfiguration(configFileName);
         } catch (Exception e) {
-            System.err.println(usage);
+            e.printStackTrace();
+            System.err.println("\n"+usage);
             System.exit(1);
         }
 
