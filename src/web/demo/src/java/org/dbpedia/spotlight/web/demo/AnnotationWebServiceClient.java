@@ -14,59 +14,72 @@
  * limitations under the License.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-package org.dbpedia.spotlight.web.client;
+package org.dbpedia.spotlight.web.demo;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
 
 
-/** Jersey REST client generated for REST resource:Annotation [Annotate]<br>
- *  USAGE:<pre>
- *        AnnotationWebServiceClient client = new AnnotationWebServiceClient();
- *        Object response = client.XXX(...);
- *        // do whatever with response
- *        client.close();
- *  </pre>
+/**
  * @author Andrés
  */
 public class AnnotationWebServiceClient {
     private WebResource webResource;
     private Client client;
-    private static final String BASE_URI = "http://160.45.137.71:9090/SpotlightWebService";
+
+    //TODO make this configurable
+    private static final String BASE_URI = "http://spotlight.dbpedia.org/rest/";
+
 
     public AnnotationWebServiceClient() {
         com.sun.jersey.api.client.config.ClientConfig config = new com.sun.jersey.api.client.config.DefaultClientConfig();
         client = Client.create(config);
-        webResource = client.resource(BASE_URI).path("Annotate");
-        //webResource = webResource.queryParam("text", "Barak Obama.");
+        webResource = client.resource(BASE_URI).path("annotate");
     }
 
+    public String getAnnotationHTML(String text, double conf, int support, String types) throws UniformInterfaceException {
+        webResource = client.resource(BASE_URI).path("annotate");
+        return getHTML(text, conf, support, types);
+    }
+
+    public String getDisambiguationHTML(String text, double conf, int support, String types) throws UniformInterfaceException {
+        webResource = client.resource(BASE_URI).path("disambiguate");
+        return getHTML(text, conf, support, types);
+    }
+
+    public String getHTML(String text, double conf, int support, String types) throws UniformInterfaceException {
+        webResource=webResource.queryParam("text", text);
+        webResource=webResource.queryParam("confidence", String.valueOf(conf));
+        webResource=webResource.queryParam("support", String.valueOf(support));
+        webResource=webResource.queryParam("types", String.valueOf(types));
+        return webResource.accept(javax.ws.rs.core.MediaType.TEXT_HTML).get(String.class);
+    }
+
+    public void close() {
+        client.destroy();
+    }
+
+    /*
     public String getAnnotationXML(String text, double conf, int support, String types, boolean coreferenceResolution) throws UniformInterfaceException {
-        webResource = client.resource(BASE_URI).path("Annotate");
+        webResource = client.resource(BASE_URI).path("annotate");
         return getXML(text, conf, support, types, coreferenceResolution);
     }
 
     public String getDisambiguationXML(String text, double conf, int support, String types, boolean coreferenceResolution) throws UniformInterfaceException {
-        webResource = client.resource(BASE_URI).path("Disambiguate");
+        webResource = client.resource(BASE_URI).path("disambiguate");
         return getXML(text, conf, support, types, coreferenceResolution);
     }
-    
+
     public String getAnnotationJSON(String text, double conf, int support, String types, boolean coreferenceResolution) throws UniformInterfaceException {
-        webResource = client.resource(BASE_URI).path("Annotate");
+        webResource = client.resource(BASE_URI).path("annotate");
         return getJSON(text, conf, support, types, coreferenceResolution);
     }
 
     public String getDisambiguationJSON(String text, double conf, int support, String types, boolean coreferenceResolution) throws UniformInterfaceException {
-        webResource = client.resource(BASE_URI).path("Disambiguate");
+        webResource = client.resource(BASE_URI).path("disambiguate");
         return getJSON(text, conf, support, types, coreferenceResolution);
     }
-
 
     public void putJSON(Object requestEntity) throws UniformInterfaceException {
         webResource.type(javax.ws.rs.core.MediaType.APPLICATION_JSON).put(requestEntity);
@@ -77,7 +90,7 @@ public class AnnotationWebServiceClient {
         webResource=webResource.queryParam("confidence", String.valueOf(conf));
         webResource=webResource.queryParam("support", String.valueOf(support));
         webResource=webResource.queryParam("types", String.valueOf(types));
-        webResource=webResource.queryParam("coreferenceResolution", String.valueOf(coreferenceResolution));
+        //webResource=webResource.queryParam("coreferenceResolution", String.valueOf(coreferenceResolution));
         return webResource.accept(javax.ws.rs.core.MediaType.TEXT_XML).get(String.class);
     }
 
@@ -86,18 +99,9 @@ public class AnnotationWebServiceClient {
         webResource=webResource.queryParam("confidence", String.valueOf(conf));
         webResource=webResource.queryParam("support", String.valueOf(support));
         webResource=webResource.queryParam("types", String.valueOf(types));
-        webResource=webResource.queryParam("coreferenceResolution", String.valueOf(coreferenceResolution));
+        //webResource=webResource.queryParam("coreferenceResolution", String.valueOf(coreferenceResolution));
         return webResource.accept(javax.ws.rs.core.MediaType.APPLICATION_JSON).get(String.class);
     }
-
-    public void close() {
-        client.destroy();
-    }
-
-    public static void main(String [ ] args)throws Exception{
-        AnnotationWebServiceClient client = new AnnotationWebServiceClient();
-        //Object response = client.getXML("Barak Obama.");
-        client.close();
-    }
+    */
 
 }
