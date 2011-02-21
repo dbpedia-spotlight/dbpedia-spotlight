@@ -265,6 +265,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-client</artifactId>
+            <version>1.5</version>
+        </dependency>
+
+        <dependency>
             <groupId>xom</groupId>
             <artifactId>xom</artifactId>
             <version>1.2.5</version>
@@ -280,6 +286,31 @@
             <groupId>xerces</groupId>
             <artifactId>xmlParserAPIs</artifactId>
             <version>2.6.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.faces</groupId>
+            <artifactId>jsf-api</artifactId>
+            <version>1.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.faces</groupId>
+            <artifactId>jsf-impl</artifactId>
+            <version>1.2-b19</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-web-api</artifactId>
+            <version>6.0</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.icefaces</groupId>
+            <artifactId>icefaces</artifactId>
+            <version>1.8.2</version>
         </dependency>
 
 
@@ -328,6 +359,11 @@
         <repository>
             <id>json-lib</id>
             <url>http://json-lib.sourceforge.net</url>
+        </repository>
+
+        <repository>
+            <id>anonsvn</id>
+            <url>http://anonsvn.icefaces.org/repo/maven2/releases/</url>
         </repository>
     </repositories>
 
