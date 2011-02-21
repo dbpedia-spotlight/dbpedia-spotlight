@@ -32,14 +32,17 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 /**
+ * Instantiates Web Service that will execute annotation and disambiguation tasks.
  *
- * @author pablomendes
+ * @author maxjakob, pablomendes
  */
 
 public class Server {
 
+    // Server reads configuration parameters into this static configuration object that will be used by other classes downstream
     protected static ServerConfiguration configuration;
 
+    // Server will hold a singleton annotator that will be used by all Annotate and Disambiguate objects
     protected static Annotator annotator;
 
     private static volatile Boolean running = true;
@@ -62,7 +65,9 @@ public class Server {
         URI serverURI = new URI(configuration.getServerURI());       // "http://localhost:"+args[0]+"/rest/"
         File indexDir = new File(configuration.getIndexDirectory()); //"/home/pablo/web/dbpedia36data/2.9.3/small/Index.wikipediaTraining.Merged.SnowballAnalyzer.DefaultSimilarity"
         File spotterFile = new File(configuration.getSpotterFile()); //"/home/pablo/eval/manual/Eval.spotterDictionary"
-        annotator = new DefaultAnnotator(spotterFile, indexDir);
+
+        // Set static annotator that will be used by Annotate and Disambiguate
+        setAnnotator(new DefaultAnnotator(spotterFile, indexDir));
 
         ResourceConfig resources = new ClassNamesResourceConfig(
                 Class.forName("org.dbpedia.spotlight.web.rest.Annotate"),
@@ -88,6 +93,13 @@ public class Server {
 
         //Stop the HTTP server
         server.stop(0);
+    }
+
+    private static void setAnnotator(Annotator a) throws ConfigurationException {
+        if (annotator == null)
+            annotator = a;
+        else
+            throw new ConfigurationException("Trying to overwrite singleton Server.annotator. Something fishy happened!");
     }
 
     public static Annotator getAnnotator() {

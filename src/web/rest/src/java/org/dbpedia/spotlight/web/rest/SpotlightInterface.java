@@ -136,7 +136,7 @@ public abstract class SpotlightInterface  {
         LOG.info("coreferenceResolution: "+String.valueOf(coreferenceResolution));
 
         if (text.trim().equals("")) {
-            throw new InputException("No text was specified iDisambiguatorn the &text parameter.");
+            throw new InputException("No text was specified in the &text parameter.");
         }
 
         List<DBpediaType> dbpediaTypes = new ArrayList<DBpediaType>();

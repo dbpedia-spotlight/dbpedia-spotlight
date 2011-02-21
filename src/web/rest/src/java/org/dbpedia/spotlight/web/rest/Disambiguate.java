@@ -17,6 +17,7 @@
 package org.dbpedia.spotlight.web.rest;
 
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -27,6 +28,7 @@ import javax.ws.rs.QueryParam;
 
 /**
  * REST Web Service
+ * TODO Merge with Annotate (only difference is the SpotlightInterface object, which can be given in constructor)
  */
 
 @Path("/disambiguate")
@@ -38,9 +40,14 @@ public class Disambiguate {
     // Disambiguation interface
     private static SpotlightInterface disambigInterface = SpotlightInterface.getInstance(Server.getDisambiguator(), Server.getConfiguration());
 
+    // Sets the necessary headers in order to enable CORS
+    private Response ok(String response) {
+        return Response.ok().entity(response).header("Access-Control-Allow-Origin","*").build();
+    }
+
     @GET
     @Produces("text/html")
-    public String getHTML(@DefaultValue(ServerConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
+    public Response getHTML(@DefaultValue(ServerConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
                           @DefaultValue(ServerConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
                           @DefaultValue(ServerConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
                           @DefaultValue(ServerConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
@@ -48,12 +55,12 @@ public class Disambiguate {
                           @DefaultValue(ServerConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
                           @DefaultValue(ServerConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution) throws Exception {
 
-        return disambigInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution);
+        return ok(disambigInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution));
     }
 
     @GET
     @Produces("application/xhtml+xml")
-    public String getRDFa(@DefaultValue(ServerConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
+    public Response getRDFa(@DefaultValue(ServerConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
                           @DefaultValue(ServerConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
                           @DefaultValue(ServerConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
                           @DefaultValue(ServerConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
@@ -61,12 +68,12 @@ public class Disambiguate {
                           @DefaultValue(ServerConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
                           @DefaultValue(ServerConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution) throws Exception {
 
-        return disambigInterface.getRDFa(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution);
+        return ok(disambigInterface.getRDFa(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution));
     }
 
     @GET
     @Produces("text/xml")
-    public String getXML(@DefaultValue(ServerConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
+    public Response getXML(@DefaultValue(ServerConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
                          @DefaultValue(ServerConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
                          @DefaultValue(ServerConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
                          @DefaultValue(ServerConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
@@ -74,12 +81,12 @@ public class Disambiguate {
                          @DefaultValue(ServerConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
                          @DefaultValue(ServerConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution) throws Exception {
 
-        return disambigInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution);
+        return ok(disambigInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution));
     }
 
     @GET
     @Produces("application/json")
-    public String getJSON(@DefaultValue(ServerConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
+    public Response getJSON(@DefaultValue(ServerConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
                           @DefaultValue(ServerConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
                           @DefaultValue(ServerConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
                           @DefaultValue(ServerConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
@@ -87,7 +94,7 @@ public class Disambiguate {
                           @DefaultValue(ServerConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
                           @DefaultValue(ServerConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution) throws Exception {
 
-        return disambigInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution);
+        return ok(disambigInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution));
     }
 
 }

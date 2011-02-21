@@ -24,6 +24,7 @@ import javax.ws.rs.core.UriInfo;
 
 /**
  * REST Web Service
+ * TODO Merge with Disambiguate (only difference is the SpotlightInterface object, which can be given in constructor)
  */
 
 @Path("/annotate")
@@ -36,17 +37,24 @@ public class Annotate {
     // Annotation interface
     private static SpotlightInterface annotationInterface = SpotlightInterface.getInstance(Server.getAnnotator(), Server.getConfiguration());
 
+    // Sets the necessary headers in order to enable CORS
+    private Response ok(String response) {
+        return Response.ok().entity(response).header("Access-Control-Allow-Origin","*").build();
+    }
+
     @GET
     @Produces(MediaType.TEXT_HTML)
-    public String getRDF(@DefaultValue(ServerConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
-                         @DefaultValue(ServerConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
-                         @DefaultValue(ServerConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
-                         @DefaultValue(ServerConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
-                         @DefaultValue(ServerConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
-                         @DefaultValue(ServerConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
-                         @DefaultValue(ServerConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution) {
+    public Response getHTML(@DefaultValue(ServerConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
+                            @DefaultValue(ServerConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
+                            @DefaultValue(ServerConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
+                            @DefaultValue(ServerConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
+                            @DefaultValue(ServerConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
+                            @DefaultValue(ServerConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
+                            @DefaultValue(ServerConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution) {
+
         try {
-            return annotationInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution);
+            String response = annotationInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution);
+            return ok(response);
         } catch (Exception e) {
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(e.getMessage()).type(MediaType.TEXT_HTML).build());
         }
@@ -55,7 +63,7 @@ public class Annotate {
 
     @GET
     @Produces(MediaType.APPLICATION_XHTML_XML)
-    public String getRDFa(@DefaultValue(ServerConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
+    public Response getRDFa(@DefaultValue(ServerConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
                           @DefaultValue(ServerConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
                           @DefaultValue(ServerConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
                           @DefaultValue(ServerConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
@@ -64,7 +72,7 @@ public class Annotate {
                           @DefaultValue(ServerConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution) {
 
         try {
-            return annotationInterface.getRDFa(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution);
+            return ok(annotationInterface.getRDFa(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution));
         } catch (Exception e) {
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(e.getMessage()).type(MediaType.APPLICATION_XHTML_XML).build());
         }
@@ -72,7 +80,7 @@ public class Annotate {
 
     @GET
     @Produces(MediaType.TEXT_XML)
-    public String getXML(@DefaultValue(ServerConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
+    public Response getXML(@DefaultValue(ServerConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
                          @DefaultValue(ServerConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
                          @DefaultValue(ServerConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
                          @DefaultValue(ServerConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
@@ -81,7 +89,7 @@ public class Annotate {
                          @DefaultValue(ServerConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution) {
 
         try {
-            return annotationInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution);
+            return ok(annotationInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution));
        } catch (Exception e) {
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(e.getMessage()).type(MediaType.TEXT_XML).build());
         }
@@ -89,7 +97,7 @@ public class Annotate {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public String getJSON(@DefaultValue(ServerConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
+    public Response getJSON(@DefaultValue(ServerConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
                           @DefaultValue(ServerConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
                           @DefaultValue(ServerConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
                           @DefaultValue(ServerConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
@@ -98,7 +106,7 @@ public class Annotate {
                           @DefaultValue(ServerConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution) {
 
         try {
-            return annotationInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution);
+            return ok(annotationInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution));
        } catch (Exception e) {
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(e.getMessage()).type(MediaType.APPLICATION_JSON).build());
         }
