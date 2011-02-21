@@ -22,7 +22,6 @@ import com.sun.jersey.api.core.ResourceConfig;
 import com.sun.net.httpserver.HttpServer;
 import org.dbpedia.spotlight.annotate.Annotator;
 import org.dbpedia.spotlight.annotate.DefaultAnnotator;
-import org.dbpedia.spotlight.disambiguate.DefaultDisambiguator;
 import org.dbpedia.spotlight.disambiguate.Disambiguator;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 

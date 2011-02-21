@@ -26,7 +26,6 @@ import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence;
 import org.dbpedia.spotlight.model.DBpediaType;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
-import org.dbpedia.spotlight.model.Text;
 import org.dbpedia.spotlight.string.ParseSurfaceFormText;
 import org.dbpedia.spotlight.util.AnnotationFilter;
 
