@@ -21,6 +21,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.document.MapFieldSelector;
+import org.apache.lucene.search.Explanation;
 import org.dbpedia.spotlight.disambiguate.Disambiguator;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
 import org.dbpedia.spotlight.exceptions.SearchException;
@@ -132,6 +133,11 @@ public class LucenePriorDisambiguator implements Disambiguator {
     @Override
     public int trainingSetSize(DBpediaResource res) throws SearchException {
         return mSearcher.getSupport(res);
+    }
+
+    @Override
+    public List<Explanation> explain(DBpediaResourceOccurrence goldStandardOccurrence, int nExplanations) throws SearchException {
+        return mSearcher.explain(goldStandardOccurrence,nExplanations);
     }
 
 }

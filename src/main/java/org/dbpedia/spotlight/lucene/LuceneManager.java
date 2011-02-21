@@ -83,7 +83,7 @@ public class LuceneManager {
 
     // this value specifies how many top results Lucene should return
     // 
-    public int topResultsLimit = 3;  //TODO be careful with SurrogateSearchers!!!
+    public int topResultsLimit = 50;  //TODO be careful with SurrogateSearchers!!!
 
     public LuceneManager(Directory directory) throws IOException {
         this.mContextIndexDir = directory;
@@ -312,7 +312,7 @@ public class LuceneManager {
 
     public Query getQuery(SurfaceForm sf) {
         Term sfTerm = new Term(DBpediaResourceField.SURFACE_FORM.toString(),sf.name());
-        return new CandidateResourceQuery(sfTerm, sfTerm);
+        return new TermQuery(sfTerm); //TODO FIXME PABLO CandidateResourceQuery
     }
 
     public Query getQuery(DBpediaResource resource) {

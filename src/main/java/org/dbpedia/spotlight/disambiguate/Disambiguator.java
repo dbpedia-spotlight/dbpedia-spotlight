@@ -16,6 +16,7 @@
 
 package org.dbpedia.spotlight.disambiguate;
 
+import org.apache.lucene.search.Explanation;
 import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
 import org.dbpedia.spotlight.exceptions.SearchException;
@@ -55,4 +56,6 @@ public interface Disambiguator {
      * @throws SearchException
      */
     public int trainingSetSize(DBpediaResource resource) throws SearchException;
+
+    public List<Explanation> explain(DBpediaResourceOccurrence goldStandardOccurrence, int nExplanations) throws SearchException;
 }

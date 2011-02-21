@@ -18,6 +18,7 @@ package org.dbpedia.spotlight.disambiguate;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.lucene.search.Explanation;
 import org.apache.lucene.store.FSDirectory;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
 import org.dbpedia.spotlight.exceptions.SearchException;
@@ -141,6 +142,11 @@ public class PriorDisambiguator implements Disambiguator {
     public int trainingSetSize(DBpediaResource resource) throws SearchException {
         // for the WikiPageContext, the training size is always 1 page per resource
         return 1;
+    }
+
+    @Override
+    public List<Explanation> explain(DBpediaResourceOccurrence goldStandardOccurrence, int nExplanations) throws SearchException {
+        throw new SearchException("Not implemented yet.");
     }
 
     @Override

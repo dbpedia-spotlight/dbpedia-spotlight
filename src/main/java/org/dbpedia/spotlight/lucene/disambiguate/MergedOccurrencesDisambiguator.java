@@ -215,7 +215,7 @@ public class MergedOccurrencesDisambiguator implements Disambiguator {
      * @throws SearchException
      */
     public List<Explanation> explain(DBpediaResourceOccurrence goldStandardOccurrence, int nExplanations) throws SearchException {
-        return explain(goldStandardOccurrence, nExplanations);
+        return mMergedSearcher.explain(goldStandardOccurrence, nExplanations);
     }
 
 }

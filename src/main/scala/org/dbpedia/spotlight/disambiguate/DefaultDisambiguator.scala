@@ -22,8 +22,9 @@ import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
 import org.dbpedia.spotlight.model.{DBpediaResource, SurfaceForm, SurfaceFormOccurrence, DBpediaResourceOccurrence}
 import java.io.File
 import org.dbpedia.spotlight.lucene.similarity._
-import org.dbpedia.spotlight.exceptions.InputException
 import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.exceptions.{SearchException, InputException}
+import org.apache.lucene.search.Explanation
 
 /**
  * Created by IntelliJ IDEA.
@@ -33,8 +34,7 @@ import org.apache.commons.logging.LogFactory
  * To change this template use File | Settings | File Templates.
  */
 
-class DefaultDisambiguator(val indexDir : File) extends Disambiguator
-{
+class DefaultDisambiguator(val indexDir : File) extends Disambiguator  {
 
     private val LOG = LogFactory.getLog(this.getClass)
 
@@ -78,6 +78,11 @@ class DefaultDisambiguator(val indexDir : File) extends Disambiguator
 
     def spotProbability(sfOccurrences: java.util.List[SurfaceFormOccurrence]): java.util.List[SurfaceFormOccurrence] = {
       disambiguator.spotProbability(sfOccurrences)
+    }
+
+    @throws(classOf[SearchException])
+    def explain(goldStandardOccurrence: DBpediaResourceOccurrence, nExplanations: Int) : java.util.List[Explanation] = {
+        disambiguator.explain(goldStandardOccurrence, nExplanations)
     }
 
 }
