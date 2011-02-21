@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--~
+  ~ Copyright 2011 Pablo Mendes, Max Jakob
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.dbpedia.spotlight</groupId>
+        <artifactId>spotlight</artifactId>
+        <version>0.1</version>
+    </parent>
+
+    <groupId>org.dbpedia.spotlight</groupId>
+    <artifactId>demo</artifactId>
+    <packaging>war</packaging>
+    <version>0.1</version>
+    <name>DBpedia Spotlight demo</name>
+
+    <!--
+    <build>
+        <plugins>
+
+            <plugin>
+                <groupId>org.scala-tools</groupId>
+                <artifactId>maven-scala-plugin</artifactId>
+                <version>${maven.scala.plugin.version}</version>
+
+                <executions>
+                    <execution>
+                        <id>scala-compile-first</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+
+                <configuration>
+                    <jvmArgs>
+                        <jvmArg>${heapspace.Xmx.compiler}</jvmArg>
+                    </jvmArgs>
+
+                    <launchers>
+
+                        <launcher>
+                            <id>Server</id>
+                            <mainClass>org.dbpedia.spotlight.web.rest.Server</mainClass>
+                            <jvmArgs>
+                                <jvmArg>${heapspace.Xmx.server}</jvmArg>
+                            </jvmArgs>
+                        </launcher>
+
+                        <launcher>
+                            <id>ProcessDBpedia</id>
+                            <mainClass>org.dbpedia.spotlight.util.SurrogatesUtil</mainClass>
+                            <jvmArgs>
+                                <jvmArg>${heapspace.Xmx.indexer}</jvmArg>
+                            </jvmArgs>
+                        </launcher>
+
+                        <launcher>
+                            <id>SaveDump2Occs</id>
+                            <mainClass>org.dbpedia.spotlight.lucene.index.SaveWikipediaDump2Occs</mainClass>
+                            <jvmArgs>
+                                <jvmArg>${heapspace.Xmx.indexer}</jvmArg>
+                            </jvmArgs>
+                        </launcher>
+
+                        <launcher>
+                            <id>Index</id>
+                            <mainClass>org.dbpedia.spotlight.lucene.index.IndexMergedOccurrences</mainClass>
+                            <jvmArgs>
+                                <jvmArg>${heapspace.Xmx.indexer}</jvmArg>
+                            </jvmArgs>
+                        </launcher>
+
+                        <launcher>
+                            <id>AddSurfaceForms2Index</id>
+                            <mainClass>org.dbpedia.spotlight.lucene.index.AddSurfaceFormsToIndex</mainClass>
+                            <jvmArgs>
+                                <jvmArg>${heapspace.Xmx.indexer}</jvmArg>
+                            </jvmArgs>
+                        </launcher>
+
+                        <launcher>
+                            <id>AddTypes2Index</id>
+                            <mainClass>org.dbpedia.spotlight.lucene.index.AddTypesToIndex</mainClass>
+                            <jvmArgs>
+                                <jvmArg>${heapspace.Xmx.indexer}</jvmArg>
+                            </jvmArgs>
+                        </launcher>
+
+                    </launchers>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>${java.compiler.version}</source>
+                    <target>${java.compiler.version}</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+
+    -->
+
+    <dependencies>
+        <dependency>
+            <groupId>org.dbpedia.spotlight</groupId>
+            <artifactId>spotlight</artifactId>
+            <version>0.1</version>
+        </dependency>
+    </dependencies>
+
+
+    <repositories>
+        <repository>
+            <id>maven2-repository.dev.java.net</id>
+            <name>Java.net Repository for Maven</name>
+            <url>http://download.java.net/maven/2/</url>
+            <layout>default</layout>
+        </repository>
+
+        <repository>
+            <id>scala-tools.org</id>
+            <name>Scala-tools Maven2 Repository</name>
+            <url>http://scala-tools.org/repo-releases/</url>
+        </repository>
+
+        <repository>
+            <id>json-lib</id>
+            <url>http://json-lib.sourceforge.net</url>
+        </repository>
+
+        <repository>
+            <id>anonsvn</id>
+            <url>http://anonsvn.icefaces.org/repo/maven2/releases/</url>
+        </repository>
+    </repositories>
+
+</project>

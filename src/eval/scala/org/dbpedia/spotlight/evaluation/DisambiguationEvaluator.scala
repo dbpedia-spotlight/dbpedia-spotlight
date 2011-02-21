@@ -19,12 +19,12 @@ package org.dbpedia.spotlight.evaluation
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.model._
 import scala.collection.JavaConversions._
-import org.dbpedia.spotlight.exceptions.SearchException
 import java.io.PrintStream
 
 import org.dbpedia.spotlight.evaluation.Profiling._
 import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
 import org.dbpedia.spotlight.disambiguate.Disambiguator
+import org.dbpedia.spotlight.exceptions.{InputException, SearchException}
 
 /**
  * Evaluation class. 
@@ -35,7 +35,7 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
     var totalOccurrenceCount = 0
     var totalCorrectResourceMatches = 0
 
-    val outputTopK = 3  // CAUTION cannot be larger than LuceneManager.topResultsLimit
+    val outputTopK = 10  // CAUTION cannot be larger than LuceneManager.topResultsLimit
 
     var disambiguationCounters = Map[String,Int]()
     var unambiguityCounters    = Map[String,Int]()
@@ -72,8 +72,8 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
                         //print to file
                     }
                     case None => {
-                        LOG.info("  WRONG: _REAL_:"+g.surfaceForm+" -> "+g.resource);
-                        LOG.info("          _GOT_: "+g.surfaceForm+" -> "+found.map(_.resource).mkString(", "));                        
+                        LOG.info("  WRONG: correct: "+g.surfaceForm+" -> "+g.resource);
+                        LOG.info("       spotlight: "+g.surfaceForm+" -> "+found.map(_.resource).mkString(", "));
                     }
                 }
             }
@@ -101,106 +101,119 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
     }
 
     def evaluate()
-        {
-            //header
-            output.append("occId\t"+
-                          "disambAccuracy\t"+
-                          "ambiguity\t"+
-                          "trainingSetSize\t"+
-                          "score\t"+                                                                  
-                          "disambiguator\t"+
-                          "correct\t"+              //TODO print type?
-                          "decision\t"+
-                          "percentageOfSecond\t"+
-                          "spotProb\n")
+    {
+        //header
+        output.append("occId\t"+
+                      "disambAccuracy\t"+
+                      "ambiguity\t"+
+                      "trainingSetSize\t"+
+                      "score\t"+
+                      "disambiguator\t"+
+                      "correct\t"+              //TODO print type?
+                      "decision\t"+
+                      "percentageOfSecond\t"+
+                      "spotProb\n")
 
-            for (testOcc <- testSource) //TODO it sounds like ultimately we'd need to get paragraphs with occurrences instead. Think if graph disamb
-            {
-                totalOccurrenceCount += 1
-                LOG.info("=="+totalOccurrenceCount)
+        for (testOcc <- testSource) //TODO it sounds like ultimately we'd need to get paragraphs with occurrences instead. Think if graph disamb
+        {
+            totalOccurrenceCount += 1
+            LOG.info("=="+totalOccurrenceCount)
 //                  LOG.trace("Processed "+totalOccurrenceCount+" occurrences. Current text: ["+testOcc.context.text.substring(0,scala.math.min(current.length, 100))+"...]")
 
-                for (disambiguator <- disambiguatorSet)
-                {
-                    val occId = if (testOcc.id.isEmpty) totalOccurrenceCount.toString else testOcc.id
+            for (disambiguator <- disambiguatorSet)
+            {
 
-                    val ambiguity = disambiguator.ambiguity(testOcc.surfaceForm)
+                val occId = if (testOcc.id.isEmpty) totalOccurrenceCount.toString else testOcc.id
 
-                    val spotProb : java.lang.Double = disambiguator match {
-                        case d: MergedOccurrencesDisambiguator => d.spotProbability(testOcc.surfaceForm);
-                        case _ => 1.0; //TODO implement for other disambiguators 
-                    }
-                    LOG.info("Spot probability for "+testOcc.surfaceForm+"="+spotProb)
+                val ambiguity = disambiguator.ambiguity(testOcc.surfaceForm)
 
-                    var disambAccuracy = 0
-                    var unambiguous = 0
-                    var sfNotFound = 0
-                    var score = "NA"
-                    val correctAnswer = testOcc.resource
-                    var decision = ""
-                    var precentagOfSecond = "-1"
-                    if (ambiguity > 0) //(ambiguity > 1)
-                    {
-                        try
-                        {
-                            LOG.debug("Ambiguity for "+testOcc.surfaceForm+"="+ambiguity)
-
-                            //val sfOccWrapped = List(new SurfaceFormOccurrence(testOcc.surfaceForm, testOcc.context, testOcc.textOffset, testOcc.provenance))
-                            //val resList = disambiguate(disambiguator, sfOccWrapped)
-
-                            val sfOcc = new SurfaceFormOccurrence(testOcc.surfaceForm, testOcc.context, testOcc.textOffset, testOcc.provenance)
-
-                            val sortedOccs = timed(storeTime(disambiguator)) {
-                              bestK(disambiguator, sfOcc)
-                            }
-
-                            val resultOcc = sortedOccs.head
-                            score = resultOcc.similarityScore.toString
-                            precentagOfSecond = resultOcc.percentageOfSecondRank.toString
-                            decision = resultOcc.resource.uri      
-                            val disambiguatedResource = resultOcc.resource
-
-                            disambAccuracy = compare(List(testOcc), List(resultOcc))  // why do we have to wrap the occurrences here?
-
-                            //givenAnswers = sortedOccs.map(annotatedResOcc => annotatedResOcc.resource.uri+"("+annotatedResOcc.similarityScore.toString+")").mkString("")
-                        }
-                        catch
-                        {
-                            case err : SearchException => LOG.error("Disambiguation error in "+disambiguator.name+ "; " + err.getMessage)
-                        }
-                    } else {
-                        if (ambiguity==0) {  // ambiguity of zero means that the surface form was not found
-                            sfNotFound = 1
-                            LOG.debug("Nothing to disambiguate. Surface Form not found ("+testOcc.surfaceForm+"). Skipping.");
-                        }
-                        if (ambiguity==1) {
-                            unambiguous = 1
-                            LOG.debug("Nothing to disambiguate. Unambiguous occurrence. Skipping.");
-                        }
-                    }
-                    disambiguationCounters = disambiguationCounters.updated(disambiguator.name, disambiguationCounters.get(disambiguator.name).getOrElse(0) + disambAccuracy)
-                    unambiguityCounters = unambiguityCounters.updated(disambiguator.name, unambiguityCounters.get(disambiguator.name).getOrElse(0) + unambiguous)
-                    sfNotFoundCounters = sfNotFoundCounters.updated(disambiguator.name, sfNotFoundCounters.get(disambiguator.name).getOrElse(0) + sfNotFound)
-
-                    // write stats for this disambiguator
-                    output.append(occId+"\t"+
-                                  disambAccuracy+"\t"+
-                                  ambiguity+"\t"+              
-                                  disambiguator.trainingSetSize(testOcc.resource)+"\t"+
-                                  score+"\t"+
-                                  disambiguator.name+"\t"+
-                                  correctAnswer.uri+"\t"+
-                                  decision+"\t"+
-                                  precentagOfSecond+"\t"+
-                                  spotProb+"\n")
+                val spotProb : java.lang.Double = disambiguator match {
+                    //case d: MergedOccurrencesDisambiguator => d.spotProbability(testOcc.surfaceForm);
+                    case _ => 1.0; //TODO implement for other disambiguators
                 }
-                // update logger only each 100 occurrences.
-                if (totalOccurrenceCount % 100 == 0) stats();
+                //LOG.info("Spot probability for "+testOcc.surfaceForm+"="+spotProb)
+
+                var disambAccuracy = 0
+                var unambiguous = 0
+                var sfNotFound = 0
+                var score = "NA"
+                val correctAnswer = testOcc.resource
+                var decision = ""
+                var precentagOfSecond = "-1"
+                if (ambiguity > 1)
+                {
+                    try
+                    {
+                        LOG.debug("Ambiguity for "+testOcc.surfaceForm+"="+ambiguity)
+
+                        //val sfOccWrapped = List(new SurfaceFormOccurrence(testOcc.surfaceForm, testOcc.context, testOcc.textOffset, testOcc.provenance))
+                        //val resList = disambiguate(disambiguator, sfOccWrapped)
+
+                        val sfOcc = new SurfaceFormOccurrence(testOcc.surfaceForm, testOcc.context, testOcc.textOffset, testOcc.provenance)
+
+                        val sortedOccs = timed(storeTime(disambiguator)) {
+                            bestK(disambiguator, sfOcc)
+                        }
+
+                        val sptlResultOcc = sortedOccs.head
+                        score = sptlResultOcc.similarityScore.toString
+                        precentagOfSecond = sptlResultOcc.percentageOfSecondRank.toString
+                        decision = sptlResultOcc.resource.uri
+                        val disambiguatedResource = sptlResultOcc.resource
+
+                        if(testOcc.resource equals sptlResultOcc.resource) {
+                            disambAccuracy = 1
+                            //correctScores ::= score.toDouble
+                            LOG.debug("  Correct: "+sptlResultOcc.surfaceForm + " -> " + sptlResultOcc.resource)
+                        }
+                        else {
+                            //incorrectScores ::= score.toDouble
+                            LOG.debug("  WRONG: correct: "+testOcc.surfaceForm+" -> "+testOcc.resource);
+                            LOG.debug("       spotlight: "+sptlResultOcc.surfaceForm+" -> "+sptlResultOcc.resource);
+                            //println(disambiguator.explain(testOcc, 100))
+                        }
+
+                        //givenAnswers = sortedOccs.map(annotatedResOcc => annotatedResOcc.resource.uri+"("+annotatedResOcc.similarityScore.toString+")").mkString("")
+                    }
+                    catch
+                    {
+                        case err : SearchException => LOG.error("Disambiguation error in "+disambiguator.name+ "; " + err.getMessage)
+                        case err : InputException => LOG.error("Disambiguation error in "+disambiguator.name+ "; " + err.getMessage)
+                    }
+                } else {
+                    if (ambiguity==0) {  // ambiguity of zero means that the surface form was not found
+                        sfNotFound = 1
+                        LOG.debug("Nothing to disambiguate. Surface Form not found ("+testOcc.surfaceForm+"). Skipping.");
+                    }
+                    if (ambiguity==1) {
+                        unambiguous = 1
+                        LOG.debug("Nothing to disambiguate. Unambiguous occurrence. Skipping.");
+                    }
+                }
+                disambiguationCounters = disambiguationCounters.updated(disambiguator.name, disambiguationCounters.get(disambiguator.name).getOrElse(0) + disambAccuracy)
+                unambiguityCounters = unambiguityCounters.updated(disambiguator.name, unambiguityCounters.get(disambiguator.name).getOrElse(0) + unambiguous)
+                sfNotFoundCounters = sfNotFoundCounters.updated(disambiguator.name, sfNotFoundCounters.get(disambiguator.name).getOrElse(0) + sfNotFound)
+
+                // write stats for this disambiguator
+                output.append(occId+"\t"+
+                              disambAccuracy+"\t"+
+                              ambiguity+"\t"+
+                              disambiguator.trainingSetSize(testOcc.resource)+"\t"+
+                              score+"\t"+
+                              disambiguator.name+"\t"+
+                              correctAnswer.uri+"\t"+
+                              decision+"\t"+
+                              precentagOfSecond+"\t"+
+                              spotProb+"\n")
             }
 
-            LOG.info("===== TOTAL RESULTS:");
-            stats();
+            // update logger only each 100 occurrences.
+            if (totalOccurrenceCount % 100 == 0) stats();
         }
+
+        LOG.info("===== TOTAL RESULTS:");
+        stats()
+    }
 
     def storeTime(disambiguator: Disambiguator) = (delta:Long) => {
       timeCounters = timeCounters.updated(disambiguator.name, timeCounters.get(disambiguator.name).getOrElse(0.toLong) + delta)

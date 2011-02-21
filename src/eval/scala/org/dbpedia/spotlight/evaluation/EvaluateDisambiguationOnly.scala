@@ -32,6 +32,8 @@ import org.dbpedia.spotlight.lucene.similarity._
 import  org.dbpedia.spotlight.evaluation.Profiling._
 import org.apache.lucene.store.{NIOFSDirectory, Directory, FSDirectory}
 import org.dbpedia.spotlight.disambiguate.Disambiguator
+import io.Source
+import scala.collection.JavaConversions._
 
 /**
  * This class is evolving to be the main disambiguation class that takes parameters for which dataset to run.
@@ -66,13 +68,23 @@ object EvaluateDisambiguationOnly
         //  queryTimeAnalyzer.addStopWords(contextSearcher.getIndexReader, DBpediaResourceField.CONTEXT.toString, 0.5f);
         //}
 
-        timed(printTime("Warm up took ")) {
-          //contextSearcher.warmUp(10000);
-        }
+        //timed(printTime("Warm up took ")) {
+        //  contextSearcher.warmUp(10000);
+        //}
 
         LOG.info("Number of entries in merged resource index ("+contextSearcher.getClass()+"): "+ contextSearcher.getNumberOfEntries());
         // The Disambiguator chooses the best URI for a surface form
         new MergedOccurrencesDisambiguator(contextSearcher)
+    }
+
+    def getNewStopwordedDisambiguator(outputFileName: String) : Disambiguator = {
+        val f = new File("e:\\dbpa\\data\\surface_forms\\stopwords.list")
+        val stopwords = Source.fromFile(f, "UTF-8").getLines.toSet
+        println("Stopwords loaded: "+stopwords.size);
+        val analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", stopwords);
+        val similarity : Similarity = new InvCandFreqSimilarity();
+        val directory =  LuceneManager.pickDirectory(new File(outputFileName+"."+analyzer.getClass.getSimpleName+".DefaultSimilarity"));
+        createMergedDisambiguator(outputFileName, analyzer, similarity, directory)
     }
 
     def getICFSnowballDisambiguator(outputFileName: String) : Disambiguator = {
@@ -82,21 +94,21 @@ object EvaluateDisambiguationOnly
         createMergedDisambiguator(outputFileName, analyzer, similarity, directory)
     }
 
-  def getICF2Disambiguator(outputFileName: String) : Disambiguator = {
+    def getICFCachedDisambiguator(outputFileName: String) : Disambiguator = {
       val analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET);
       val directory = LuceneManager.pickDirectory(new File(outputFileName+"."+analyzer.getClass.getSimpleName+".DefaultSimilarity"));
       val cache = new JCSTermCache(new LuceneManager.BufferedMerging(directory));
       val similarity : Similarity = new CachedInvCandFreqSimilarity(cache);
       createMergedDisambiguator(outputFileName, analyzer, similarity, directory)
-  }
+    }
 
-  def getNewDisambiguator(outputFileName: String) : Disambiguator = {
+    def getNewDisambiguator(outputFileName: String) : Disambiguator = {
       val analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET);
       val directory = LuceneManager.pickDirectory(new File(outputFileName+"."+analyzer.getClass.getSimpleName+".DefaultSimilarity"));
       val cache = new JCSTermCache(new LuceneManager.BufferedMerging(directory));
       val similarity : Similarity = new NewSimilarity(cache);
       createMergedDisambiguator(outputFileName, analyzer, similarity, directory)
-  }
+    }
 
 
     def getICFStandardDisambiguator(outputFileName: String) : Disambiguator = {
@@ -169,8 +181,8 @@ object EvaluateDisambiguationOnly
 //    }
 
     def getPriorDisambiguator(outputFileName: String) : Disambiguator = {
-        var analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET);
-        var similarity : Similarity = new DefaultSimilarity
+        val analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET);
+        val similarity : Similarity = new DefaultSimilarity
         val directory = new NIOFSDirectory(new File(outputFileName+"."+analyzer.getClass.getSimpleName+"."+similarity.getClass.getSimpleName));
         //val luceneManager = new LuceneManager.BufferedMerging(directory)
         val luceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(directory)
@@ -203,97 +215,91 @@ object EvaluateDisambiguationOnly
     }
 
     def exists(fileName: String) {
-            if (!new File(fileName).exists) {
-                System.err.println("Important directory does not exist. "+fileName);
-                exit();
-            }
+        if (!new File(fileName).exists) {
+            System.err.println("Important directory does not exist. "+fileName);
+            exit(1);
+        }
     }
 
     def main(args : Array[String])
-        {
-            //val baseDir = "e:/dbpa/data/Person/";
-            //val baseDir = "e:/dbpa/data/All-50-50/";
-            //val baseDir = "e:/dbpa/data/RelaxedApple/";
-            //val baseDir = "e:/dbpa/data/StrictApple/";
-            //var baseDir: String = "C:\\Users\\Pablo\\workspace\\dbpa\\data\\Company\\"
+    {
+        val indexDir: String = args(0)  //"e:\\dbpa\\data\\index\\index-that-works\\Index.wikipediaTraining.Merged."
 
-            val indexDir: String = "/home/pablo/web/DisambigIndex.singleSFs-plusTypes"; // args(0)
-            //val indexDir: String = "/home/pablo/web/DisambigIndex.allSFsAllowed.plusTypes-plusSFs";
-            //val indexDir: String = "/home/pablo/web/DisambigIndex.restrictedSFs.plusTypes-plusSFs"
+        val simScoresFileName: String = ""
 
-            //val indexDir: String = "/home/pablo/web/DisambigIndex.allSFsAllowed.plusTypes-plusSFs.SnowballAnalyzer.DefaultSimilarity"
-            val testFileName: String = "/home/pablo/eval/cucerzan/cucerzan-occs.tsv"; // "/home/pablo/data/split.train-98.amb/wikipediaTest.amb.tsv" // args(1)
-            val resultsFileName: String = "/home/pablo/eval/cucerzan/disambiguation.results"; //"/home/pablo/data/split.train-98.amb/disambiguation.results"
-
-            val out = new PrintStream(resultsFileName, "UTF-8");
-
-          //exists(indexDir);
-          exists(testFileName);
-          //exists(resultsFileName);
-
-            val osName : String = System.getProperty("os.name");
-            LOG.info("Your operating system is: "+osName);
-
-//            val trainingFile = new File(baseDir+"wikipediaTraining.50.amb.tsv")
-//            if (!trainingFile.exists) {
-//                System.err.println("Training file does not exist. "+trainingFile);
-//                exit();
-//            }
+        val testFileName: String = args(1)  //"e:\\dbpa\\data\\index\\dbpedia36data\\test\\test100k.tsv"
+        val resultsFileName: String = testFileName+".log"
 
 
-//            val trainingFileName = baseDir+"wikipediaAppleTraining.50.amb.tsv"
-//            val luceneIndexFileName = baseDir+"2.9.3/MergedIndex.wikipediaAppleTraining.a50"
-//            val testFileName = baseDir+"wikipediaAppleTest.50.amb.tsv"
+        val out = new PrintStream(resultsFileName, "UTF-8");
 
-            // For merged disambiguators
-            //val outputFileName = baseDir+"/2.9.3/Index.wikipediaTraining.Merged";
+        //exists(indexDir);
+        exists(testFileName);
+        //exists(resultsFileName);
+
+        val osName : String = System.getProperty("os.name");
+        LOG.info("Your operating system is: "+osName);
+
+        //            val trainingFile = new File(baseDir+"wikipediaTraining.50.amb.tsv")
+        //            if (!trainingFile.exists) {
+        //                System.err.println("Training file does not exist. "+trainingFile);
+        //                exit();
+        //            }
 
 
-            val disSet = Set(// Snowball analyzer
-                                //getDefaultSnowballDisambiguator(indexDir),
-                                //getNewDisambiguator(indexDir),
-                                getICF2Disambiguator(indexDir)
-                                //getICFSnowballDisambiguator(indexDir)
-                                //getSweetSpotSnowballDisambiguator(indexDir)
-                                //getICFWithPriorSnowballDisambiguator(indexDir),
-                                //getICFIDFSnowballDisambiguator(indexDir),
+        //            val trainingFileName = baseDir+"wikipediaAppleTraining.50.amb.tsv"
+        //            val luceneIndexFileName = baseDir+"2.9.3/MergedIndex.wikipediaAppleTraining.a50"
+        //            val testFileName = baseDir+"wikipediaAppleTest.50.amb.tsv"
 
-                                //getDefaultScorePlusPriorSnowballDisambiguator(indexDir)
+        // For merged disambiguators
+        //val outputFileName = baseDir+"/2.9.3/Index.wikipediaTraining.Merged";
+
+
+        val disSet = Set(// Snowball analyzer
+                            //getDefaultSnowballDisambiguator(indexDir),
+                            //getNewDisambiguator(indexDir),
+                            //getICFCachedDisambiguator(indexDir)
+                            getNewStopwordedDisambiguator(indexDir)
+                            //getICFSnowballDisambiguator(indexDir)
+                            //getSweetSpotSnowballDisambiguator(indexDir)
+                            //getICFWithPriorSnowballDisambiguator(indexDir),
+                            //getICFIDFSnowballDisambiguator(indexDir),
+
+                            //getDefaultScorePlusPriorSnowballDisambiguator(indexDir)
 //                                getDefaultScorePlusConditionalSnowballDisambiguator(indexDir),
 //                                getProbPlusPriorSnowballDisambiguator(indexDir),
 //                                getProbPlusConditionalSnowballDisambiguator(indexDir)
 
-                             // Standard analyzer
-                                //getDefaultStandardDisambiguator(outputFileName),
-                                //getICFStandardDisambiguator(outputFileName),
-                                //getSweetSpotStandardDisambiguator(outputFileName),
-                                //getICFWithPriorStandardDisambiguator(outputFileName),
-                                //getICFIDFStandardDisambiguator(outputFileName),
-                                //getICFIDFStandardDisambiguator,
+                         // Standard analyzer
+                            //getDefaultStandardDisambiguator(outputFileName),
+                            //getICFStandardDisambiguator(outputFileName),
+                            //getSweetSpotStandardDisambiguator(outputFileName),
+                            //getICFWithPriorStandardDisambiguator(outputFileName),
+                            //getICFIDFStandardDisambiguator(outputFileName),
+                            //getICFIDFStandardDisambiguator,
 
-                             // no analyzer
-                                //getPriorDisambiguator(indexDir)
-            )
+                         // no analyzer
+                            //getPriorDisambiguator(indexDir)
+        )
 
-            // Read some text to test.
-            val testSource = FileOccurrenceSource.fromFile(new File(testFileName))
+        // Read some text to test.
+        val testSource = FileOccurrenceSource.fromFile(new File(testFileName))
 
-            //      // Now with most common amongst top K most similar contexts
-            //      var disambiguator2 : Disambiguator = new MergedOccurrencesDisambiguator(resourceSearcher, new RankingStrategy.MostCommonAmongTopK(contextSearcher))
-            //      // Now with most common URI by usage (prior) -- reading from file
-            //      //var disambiguator3 : Disambiguator = new PriorDisambiguator(surrogateSearcher, new DataLoader(new DataLoader.TSVParser(), new File(resourcePriorsFileName)));
-            //      // Now with most common URI by usage (prior) -- reading from lucene
-            //      var disambiguator4 : Disambiguator = new LucenePriorDisambiguator(resourceSearcher);
+        //      // Now with most common amongst top K most similar contexts
+        //      var disambiguator2 : Disambiguator = new MergedOccurrencesDisambiguator(resourceSearcher, new RankingStrategy.MostCommonAmongTopK(contextSearcher))
+        //      // Now with most common URI by usage (prior) -- reading from file
+        //      //var disambiguator3 : Disambiguator = new PriorDisambiguator(surrogateSearcher, new DataLoader(new DataLoader.TSVParser(), new File(resourcePriorsFileName)));
+        //      // Now with most common URI by usage (prior) -- reading from lucene
+        //      var disambiguator4 : Disambiguator = new LucenePriorDisambiguator(resourceSearcher);
 
 
-            //        LOG.info("=================================");
+        //        LOG.info("=================================");
 
           //testSource.view(10000,15000)
           val evaluator = new DisambiguationEvaluator(testSource, disSet, out);
           evaluator.evaluate()
           out.close();
 
-
-        }
+    }
 
 }
