@@ -19,7 +19,6 @@ package org.dbpedia.spotlight.util
 import org.apache.commons.logging.LogFactory
 import java.util.Properties
 import io.Source
-import java.io.{PrintStream, FileOutputStream, FileInputStream, File}
 import scala.collection.JavaConversions._
 import org.apache.lucene.search.{DefaultSimilarity, Similarity}
 import org.dbpedia.spotlight.lucene.similarity.InvCandFreqSimilarity
@@ -28,6 +27,8 @@ import org.apache.lucene.analysis.snowball.SnowballAnalyzer
 import org.apache.lucene.util.Version
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.analysis.{Analyzer, StopAnalyzer}
+import org.dbpedia.spotlight.exceptions.ConfigurationException
+import java.io._
 
 /**
  * Class that holds configurations of the project.
@@ -97,11 +98,11 @@ object IndexConfiguration
 
     def getStopWords : Set[String] = {
         val f = new File(get("StopWordList", ""))
-        if(f.isFile) {
+        try {
             Source.fromFile(f, "UTF-8").getLines.toSet
         }
-        else {
-            StopAnalyzer.ENGLISH_STOP_WORDS_SET.asInstanceOf[Set[String]]
+        catch {
+            case e: FileNotFoundException => throw new ConfigurationException("stop words file not found: "+f, e)
         }
     }
 
@@ -112,7 +113,7 @@ object IndexConfiguration
                 .map(a => (a.getClass.getSimpleName, a))
                 .toMap
                 .get(analyzerName)
-                .getOrElse(throw new IllegalArgumentException("Unknown Analyzer: "+analyzerName))
+                .getOrElse(throw new ConfigurationException("Unknown Analyzer: "+analyzerName))
     }
 
     def getSimilarity(similarityName : String) : Similarity = {
@@ -120,7 +121,7 @@ object IndexConfiguration
                 .map(sim => (sim.getClass.getSimpleName, sim))
                 .toMap
                 .get(similarityName)
-                .getOrElse(throw new IllegalArgumentException("Unknown Similarity: "+similarityName))
+                .getOrElse(throw new ConfigurationException("Unknown Similarity: "+similarityName))
     }
 
 }

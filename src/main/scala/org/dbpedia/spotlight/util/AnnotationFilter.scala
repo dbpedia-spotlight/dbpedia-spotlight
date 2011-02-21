@@ -77,7 +77,7 @@ class AnnotationFilter(val config: ServerConfiguration)
             LOG.warn("confidence must be between 0 and 1 (is "+confidence+"); setting to 0")
         }
 
-        filteredOccs = filterByType(filteredOccs, dbpediaTypes.toList, listColor)
+        filteredOccs = filterByType(filteredOccs, if(dbpediaTypes == null) List() else dbpediaTypes.toList, listColor)
         filteredOccs = filterBySupport(filteredOccs, targetSupport)
 
         if(sparqlQuery != null && sparqlQuery != "") {
