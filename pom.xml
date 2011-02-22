@@ -23,7 +23,15 @@
     <groupId>org.dbpedia.spotlight</groupId>
     <artifactId>spotlight</artifactId>
     <version>0.1</version>
-    <name>DBpedia Spotlight annotation framework</name>
+    <packaging>pom</packaging>
+    <name>DBpedia Spotlight annotation framework (parent POM)</name>
+
+    <modules>
+        <module>core</module>
+        <module>rest</module>
+        <module>demo</module>
+        <module>eval</module>
+    </modules>
 
     <properties>
         <heapspace.Xmx.compiler>-Xmx1g</heapspace.Xmx.compiler>
@@ -34,7 +42,7 @@
         <java.compiler.version>1.6</java.compiler.version>
         <maven.scala.plugin.version>2.15.0</maven.scala.plugin.version>
         <scala.compiler.version>2.8.1</scala.compiler.version>
-        <dbpedia.framework.version>2.0-SNAPSHOT</dbpedia.framework.version>
+        <dbpedia.spotlight.version>0.1</dbpedia.spotlight.version>
     </properties>
 
 
@@ -61,62 +69,11 @@
                     <jvmArgs>
                         <jvmArg>${heapspace.Xmx.compiler}</jvmArg>
                     </jvmArgs>
-
-                    <launchers>
-
-                        <launcher>
-                            <id>Server</id>
-                            <mainClass>org.dbpedia.spotlight.web.rest.Server</mainClass>
-                            <jvmArgs>
-                                <jvmArg>${heapspace.Xmx.server}</jvmArg>
-                            </jvmArgs>
-                        </launcher>
-
-                        <launcher>
-                            <id>ProcessDBpedia</id>
-                            <mainClass>org.dbpedia.spotlight.util.SurrogatesUtil</mainClass>
-                            <jvmArgs>
-                                <jvmArg>${heapspace.Xmx.indexer}</jvmArg>
-                            </jvmArgs>
-                        </launcher>
-
-                        <launcher>
-                            <id>SaveDump2Occs</id>
-                            <mainClass>org.dbpedia.spotlight.lucene.index.SaveWikipediaDump2Occs</mainClass>
-                            <jvmArgs>
-                                <jvmArg>${heapspace.Xmx.indexer}</jvmArg>
-                            </jvmArgs>
-                        </launcher>
-
-                        <launcher>
-                            <id>Index</id>
-                            <mainClass>org.dbpedia.spotlight.lucene.index.IndexMergedOccurrences</mainClass>
-                            <jvmArgs>
-                                <jvmArg>${heapspace.Xmx.indexer}</jvmArg>
-                            </jvmArgs>
-                        </launcher>
-
-                        <launcher>
-                            <id>AddSurfaceForms2Index</id>
-                            <mainClass>org.dbpedia.spotlight.lucene.index.AddSurfaceFormsToIndex</mainClass>
-                            <jvmArgs>
-                                <jvmArg>${heapspace.Xmx.indexer}</jvmArg>
-                            </jvmArgs>
-                        </launcher>
-
-                        <launcher>
-                            <id>AddTypes2Index</id>
-                            <mainClass>org.dbpedia.spotlight.lucene.index.AddTypesToIndex</mainClass>
-                            <jvmArgs>
-                                <jvmArg>${heapspace.Xmx.indexer}</jvmArg>
-                            </jvmArgs>
-                        </launcher>
-
-                    </launchers>
                 </configuration>
             </plugin>
 
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <source>${java.compiler.version}</source>
@@ -136,210 +93,244 @@
     </build>
 
 
-    <dependencyManagement>
-        <dependencies>
-
-            <dependency>
-                <groupId>org.scala-lang</groupId>
-                <artifactId>scala-compiler</artifactId>
-                <version>${scala.compiler.version}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.scala-lang</groupId>
-                <artifactId>scala-library</artifactId>
-                <version>${scala.compiler.version}</version>
-            </dependency>
-
-        </dependencies>
-    </dependencyManagement>
-
-
     <dependencies>
-
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-compiler</artifactId>
+            <version>${scala.compiler.version}</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
+            <version>${scala.compiler.version}</version>
         </dependency>
-
-
-        <dependency>
-            <groupId>org.dbpedia.extraction</groupId>
-            <artifactId>core</artifactId>
-            <version>2.0-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-core</artifactId>
-            <version>2.9.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-analyzers</artifactId>
-            <version>2.9.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-snowball</artifactId>
-            <version>2.9.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-misc</artifactId>
-            <version>2.9.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-highlighter</artifactId>
-            <version>2.9.3</version>
-        </dependency>
-
-        <dependency>
-            <groupId>jcs</groupId>
-            <artifactId>jcs</artifactId>
-            <version>1.3</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>xerces</groupId>
-                    <artifactId>xerces</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>2.5</version>
-        </dependency>
-
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.16</version>
-        </dependency>
-
-        <dependency>
-            <groupId>xml-apis</groupId>
-            <artifactId>xml-apis</artifactId>
-            <version>1.0.b2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.0.3</version>
-        </dependency>
-
-        <dependency>
-            <groupId>net.sf.json-lib</groupId>
-            <artifactId>json-lib</artifactId>
-            <version>2.3</version>
-            <classifier>jdk15</classifier>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>r07</version>
-        </dependency>
-
-        <dependency>
-            <groupId>nekohtml</groupId>
-            <artifactId>nekohtml</artifactId>
-            <version>0.9.5</version>
-        </dependency>
-
-
-        <!-- web service -->
-        <dependency>
-            <groupId>com.sun.jersey</groupId>
-            <artifactId>jersey-server</artifactId>
-            <version>1.5</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.sun.jersey</groupId>
-            <artifactId>jersey-client</artifactId>
-            <version>1.5</version>
-        </dependency>
-
-        <dependency>
-            <groupId>xom</groupId>
-            <artifactId>xom</artifactId>
-            <version>1.2.5</version>
-        </dependency>
-
-        <dependency>
-            <groupId>xerces</groupId>
-            <artifactId>xercesImpl</artifactId>
-            <version>2.9.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>xerces</groupId>
-            <artifactId>xmlParserAPIs</artifactId>
-            <version>2.6.2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.faces</groupId>
-            <artifactId>jsf-api</artifactId>
-            <version>1.2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.faces</groupId>
-            <artifactId>jsf-impl</artifactId>
-            <version>1.2-b19</version>
-        </dependency>
-
-        <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-web-api</artifactId>
-            <version>6.0</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>org.icefaces</groupId>
-            <artifactId>icefaces</artifactId>
-            <version>1.8.2</version>
-        </dependency>
-
-
-        <!-- library JARs -->
-        <dependency>
-            <groupId>org.semanticweb.yars</groupId>
-            <artifactId>nx-parser</artifactId>
-            <version>1.1</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/lib/nxparser-1.1.jar</systemPath>
-        </dependency>
-
-        <dependency>
-            <groupId>com.aliasi</groupId>
-            <artifactId>lingpipe</artifactId>
-            <version>4.0.0</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/lib/lingpipe-4.0.0.jar</systemPath>
-        </dependency>
-
-        <dependency>
-            <groupId>edu.umd</groupId>
-            <artifactId>cloud9</artifactId>
-            <version>SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/lib/cloud9.jar</systemPath>
-        </dependency>
-
     </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+
+            <dependency>
+                <groupId>org.dbpedia.spotlight</groupId>
+                <artifactId>core</artifactId>
+                <version>${dbpedia.spotlight.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.dbpedia.spotlight</groupId>
+                <artifactId>rest</artifactId>
+                <version>${dbpedia.spotlight.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.dbpedia.spotlight</groupId>
+                <artifactId>demo</artifactId>
+                <version>${dbpedia.spotlight.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.dbpedia.extraction</groupId>
+                <artifactId>core</artifactId>
+                <version>2.0-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
+                <groupId>log4j</groupId>
+                <artifactId>log4j</artifactId>
+                <version>1.2.16</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-core</artifactId>
+                <version>2.9.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-analyzers</artifactId>
+                <version>2.9.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-snowball</artifactId>
+                <version>2.9.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-misc</artifactId>
+                <version>2.9.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-highlighter</artifactId>
+                <version>2.9.3</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-lang</groupId>
+                <artifactId>commons-lang</artifactId>
+                <version>2.5</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>r07</version>
+            </dependency>
+
+            <dependency>
+                <groupId>nekohtml</groupId>
+                <artifactId>nekohtml</artifactId>
+                <version>0.9.5</version>
+            </dependency>
+
+            <dependency>
+                <groupId>jcs</groupId>
+                <artifactId>jcs</artifactId>
+                <version>1.3</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>xerces</groupId>
+                        <artifactId>xerces</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+
+            <dependency>
+                <groupId>xerces</groupId>
+                <artifactId>xercesImpl</artifactId>
+                <version>2.9.1</version>
+            </dependency>
+
+            <dependency>
+                <groupId>xerces</groupId>
+                <artifactId>xmlParserAPIs</artifactId>
+                <version>2.6.2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>xml-apis</groupId>
+                <artifactId>xml-apis</artifactId>
+                <version>1.0.b2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>xom</groupId>
+                <artifactId>xom</artifactId>
+                <version>1.2.5</version>
+            </dependency>
+
+            <dependency>
+                <groupId>net.sf.json-lib</groupId>
+                <artifactId>json-lib</artifactId>
+                <version>2.3</version>
+                <classifier>jdk15</classifier>
+            </dependency>
+
+
+            <dependency>
+                <groupId>com.sun.jersey</groupId>
+                <artifactId>jersey-server</artifactId>
+                <version>1.5</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sun.jersey</groupId>
+                <artifactId>jersey-client</artifactId>
+                <version>1.5</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>4.0.3</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-httpclient</groupId>
+                <artifactId>commons-httpclient</artifactId>
+                <version>3.1</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>javax.faces</groupId>
+                <artifactId>jsf-api</artifactId>
+                <version>1.2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.faces</groupId>
+                <artifactId>jsf-impl</artifactId>
+                <version>1.2-b19</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax</groupId>
+                <artifactId>javaee-web-api</artifactId>
+                <version>6.0</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>org.icefaces</groupId>
+                <artifactId>icefaces</artifactId>
+                <version>2.0.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.icefaces</groupId>
+                <artifactId>icefaces-ace</artifactId>
+                <version>2.0.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.icefaces</groupId>
+                <artifactId>icefaces-comps</artifactId>
+                <version>1.8.2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.icefaces</groupId>
+                <artifactId>icefaces-compat</artifactId>
+                <version>2.0.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.icepush</groupId>
+                <artifactId>icepush</artifactId>
+                <version>2.0.0</version>
+            </dependency>
+
+            <!--
+
+            <dependency>
+                <groupId>org.semanticweb.yars</groupId>
+                <artifactId>nx-parser</artifactId>
+                <version>1.1</version>
+                <scope>system</scope>
+                <systemPath>${basedir}/lib/nxparser-1.1.jar</systemPath>
+            </dependency>
+
+            <dependency>
+                <groupId>com.aliasi</groupId>
+                <artifactId>lingpipe</artifactId>
+                <version>4.0.0</version>
+                <scope>system</scope>
+                <systemPath>${basedir}/lib/lingpipe-4.0.0.jar</systemPath>
+            </dependency>
+
+            <dependency>
+                <groupId>edu.umd</groupId>
+                <artifactId>cloud9</artifactId>
+                <version>SNAPSHOT</version>
+                <scope>system</scope>
+                <systemPath>${basedir}/lib/cloud9.jar</systemPath>
+            </dependency>
+            -->
+
+        </dependencies>
+    </dependencyManagement>
 
 
     <repositories>
@@ -374,7 +365,21 @@
             <name>Scala-tools Maven2 Repository</name>
             <url>http://scala-tools.org/repo-releases/</url>
         </pluginRepository>
+
+        <pluginRepository>
+            <id>central</id>
+            <name>Maven Plugin Repository</name>
+            <url>http://repo1.maven.org/maven2</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+        </pluginRepository>
     </pluginRepositories>
+
 
 
 </project>
