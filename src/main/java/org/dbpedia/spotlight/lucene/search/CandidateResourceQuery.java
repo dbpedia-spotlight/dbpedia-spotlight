@@ -156,7 +156,7 @@ public class CandidateResourceQuery extends TermQuery {
         }
     }
 
-    public Weight createWeight(Searcher searcher) throws IOException {
+    public Weight createWeight(Searcher searcher) throws IOException {  // Make Weight initialize our subclass instead
       return new CandidateResourceWeight(searcher);
     }
 

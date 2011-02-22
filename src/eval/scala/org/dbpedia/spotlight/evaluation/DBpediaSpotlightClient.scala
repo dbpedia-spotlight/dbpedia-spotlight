@@ -77,8 +77,12 @@ object DBpediaSpotlightClient
 //      val baseDir: String = "/home/pablo/eval/cucerzan/"
 //      val inputFile: File = new File(baseDir+"cucerzan.txt");
 
-      val baseDir: String = "/home/pablo/eval/manual/"
-      val inputFile: File = new File(baseDir+"AnnotationText.txt");
+      //  val baseDir: String = "/home/pablo/eval/manual/"
+      //  val inputFile: File = new File(baseDir+"AnnotationText.txt");
+
+      val baseDir: String = "/home/pablo/eval/wikify/"
+      val inputFile: File = new File(baseDir+"gold/WikifyAllInOne.txt");
+
 
       val prefix = "spotlight/Spotlight";
       val setOutputFile: File = new File(baseDir+prefix+"NoFilter.set");

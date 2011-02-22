@@ -125,7 +125,7 @@ object WikiOccurrenceSource
                     val surfaceFormOffset = paragraphText.length
 
                     var surfaceForm = internalLink.children.collect { case TextNode(text, _) => WikiMarkupStripper.stripMultiPipe(text) }.mkString("")
-                    surfaceForm = surfaceForm.trim.replaceAll(""" \(.+?\)$""", "").replaceAll("""^(The|A) """, "")
+                    surfaceForm = surfaceForm.trim.replaceAll(""" \(.+?\)$""", "").replaceAll("""^(The|A) """, "") //TODO should be a filter/transformer instead of hardcoded?
 
                     paragraphText += surfaceForm
 

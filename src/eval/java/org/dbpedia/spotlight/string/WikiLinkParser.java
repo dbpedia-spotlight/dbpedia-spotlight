@@ -23,6 +23,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+
 /**
  * Parses text annotated with wiki links [[uri|surface form]].
  * Used in evaluation to read manually generated annotations.
@@ -33,10 +37,21 @@ public class WikiLinkParser {
 
     public final static String NoTag = "NoTag";
 
+        /*
+         Matches:
+           [[Baghdad]]
+           [[Iran-Iraq War|eight-year war]]
+           [[Sabotage|acts of sabotage|0.4]]
+          */
+    public final static Pattern anyWikiLink = Pattern.compile("\\[+([^\\|\\]]+?)(\\|([^\\|\\]]+?))?(\\|([^\\|\\]]+?))?\\]+");
+    public final static Pattern singleWikiLink = Pattern.compile("\\[+([^\\|\\]]+?)\\]+");
+
+
     /*
      * TODO PABLO This has problems if the markup is wrong (e.g. contains three brackets instead of two.) Would like to do this with regular expression matching instead, grabbing the URI, SF and counting the length all at once.
      */
-    public static List<DBpediaResourceOccurrence> parse(String textWithWikiAnnotation) {
+    @Deprecated
+    public static List<DBpediaResourceOccurrence> parseOld(String textWithWikiAnnotation) {
         List<DBpediaResourceOccurrence> occs = new ArrayList<DBpediaResourceOccurrence>();
         Text unMarkedUpText = new Text(eraseMarkup(textWithWikiAnnotation));
         int accumulatedRemovedCharsLength = 0;
@@ -65,6 +80,40 @@ public class WikiLinkParser {
         }
         return occs;
     }
+
+    public static List<DBpediaResourceOccurrence> parse(String textWithWikiAnnotation) {
+
+        String cleanText = eraseMarkup(textWithWikiAnnotation);
+        List<DBpediaResourceOccurrence> occs = new ArrayList<DBpediaResourceOccurrence>();
+
+        Matcher matcher = anyWikiLink.matcher(textWithWikiAnnotation);
+
+        int i=0;
+        int accumulatedTrash = 0;
+        while (matcher.find()) {
+            i++;
+            String sfName = matcher.group(3);
+            String uri = matcher.group(1);
+            if (sfName==null) sfName =uri;
+
+            int sfLength = sfName.length();
+            int start = matcher.start();
+            int end = matcher.end();
+            int offset = start - accumulatedTrash;
+            accumulatedTrash += (end - start - sfLength);
+            //double score = new Double(matcher.group(5)); // some training data comes with scores
+
+            //System.err.println(cleanText.substring(offset,offset+sfName.length()));
+
+            DBpediaResourceOccurrence occ = new DBpediaResourceOccurrence(new DBpediaResource(uri), new SurfaceForm(sfName), new Text(cleanText), offset);
+            occs.add(occ);
+            System.out.println(occ);
+        }
+
+        return occs;
+    }
+
+    
 
     public static String parseToMatrix(String textWithWikiAnnotation) {
         textWithWikiAnnotation = textWithWikiAnnotation.replace("\n"," ");
@@ -134,7 +183,9 @@ public class WikiLinkParser {
     }
 
     public static String eraseMarkup(String textWithWikiAnnotation) {
-        return textWithWikiAnnotation.replaceAll("(\\[+\\S+\\||\\]+)", "");
+        String cleanText = textWithWikiAnnotation.replaceAll(singleWikiLink.pattern(),"$1");
+        cleanText = cleanText.replaceAll(anyWikiLink.pattern(),"$3");
+        return cleanText;
     }
 
     public static void testParse(String[] args) {
@@ -172,14 +223,17 @@ public class WikiLinkParser {
     }
 
     public static void main(String[] args) {
-        String t = "IF you can't say something good about someone, sit right here by me, [[Alice_Roosevelt_Longworth|Alice Roosevelt Longworth]], a self-proclaimed [[Hedonism|hedonist]], used to say. But it seems the greater pleasure comes from more temperate [[Gossip|gossip]].\n" +
-                "New research finds that gossiping can be good for you as long as you have something nice to say.\n" +
-                "In a presentation in [[September|September]], Jennifer Cole, a [[Social_psychology|social psychologist]], and Hannah Scrivener reported results from two related studies, both of which demonstrate that it's in one's self-interest to say So-and-so's second husband is adorable rather than \"She married that lout?\"\n" +
-                "In the first study, intended to measure a person's short-term emotional reaction to gossiping, 140 men and women, primarily  [[Undergraduate_education|undergraduates]], were asked to talk about a fictional person either positively or negatively.\n" +
-                "The second study, which looked into the long-term effects of gossiping on well-being, had 160 participants, mostly female [[Undergraduate_education|undergrads]], fill out [[Questionnaire|questionnaires]] about their tendency to [[Gossip|gossip]], their [[Self-esteem|self-esteem]] and their perceived social support.";
+//        String t = "IF you can't say something good about someone, sit right here by me, [[Alice_Roosevelt_Longworth|Alice Roosevelt Longworth]], a self-proclaimed [[Hedonism|hedonist]], used to say. But it seems the greater pleasure comes from more temperate [[Gossip|gossip]].\n" +
+//                "New research finds that gossiping can be good for you as long as you have something nice to say.\n" +
+//                "In a presentation in [[September|September]], Jennifer Cole, a [[Social_psychology|social psychologist]], and Hannah Scrivener reported results from two related studies, both of which demonstrate that it's in one's self-interest to say So-and-so's second husband is adorable rather than \"She married that lout?\"\n" +
+//                "In the first study, intended to measure a person's short-term emotional reaction to gossiping, 140 men and women, primarily  [[Undergraduate_education|undergraduates]], were asked to talk about a fictional person either positively or negatively.\n" +
+//                "The second study, which looked into the long-term effects of gossiping on well-being, had 160 participants, mostly female [[Undergraduate_education|undergrads]], fill out [[Questionnaire|questionnaires]] about their tendency to [[Gossip|gossip]], their [[Self-esteem|self-esteem]] and their perceived social support.";
+
+        String t = "MORE and more people are dying or suffering from fatal diseases such as [[Brain tumor|brain tumours]], mammarian or [[breast cancer]] and brain [[Bleeding|haemorrhage]] due to a lack of proper medical care.However, things may change as the Srisiam Hospital in [[Bangkok|Bangkok|0.6]] has now established the first ever [[Radiosurgery|Radio Surgery|1.0]] Institute in [[Thailand|Thailand|0.4]] -- (there are presently more than 100 radio surgery centres around the world).";
+
         System.out.println(t+"\n\n\n");
         System.out.println(eraseMarkup(t));
 
-        parseToMatrix(t);
+        parse(t);
     }
 }

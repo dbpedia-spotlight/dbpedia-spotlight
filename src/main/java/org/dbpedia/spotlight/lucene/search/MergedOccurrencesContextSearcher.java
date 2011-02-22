@@ -236,8 +236,8 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
     }
 
     //TODO make this configurable!
-    int minContextWords = 25;
-    int maxContextWords = 100;
+    int minContextWords = 0;
+    int maxContextWords = 300;
     ContextExtractor contextExtractor = new ContextExtractor(minContextWords, maxContextWords);
 
     public ScoreDoc[] getHits(SurfaceFormOccurrence sfOcc) throws SearchException, InputException {
