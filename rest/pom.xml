@@ -89,15 +89,6 @@
             <artifactId>json-lib</artifactId>
             <classifier>jdk15</classifier>
         </dependency>
-
-
-        <dependency>
-            <groupId>com.aliasi</groupId>
-            <artifactId>lingpipe</artifactId>
-            <version>4.0.0</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/../lib/lingpipe-4.0.0.jar</systemPath>
-        </dependency>
     </dependencies>
 
 </project>
