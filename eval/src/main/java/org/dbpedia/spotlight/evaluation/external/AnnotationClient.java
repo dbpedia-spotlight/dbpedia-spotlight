@@ -20,6 +20,7 @@ import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 import org.dbpedia.spotlight.exceptions.AnnotationException;
 import org.dbpedia.spotlight.model.DBpediaResource;
 import org.dbpedia.spotlight.model.Text;
@@ -34,7 +35,7 @@ import java.util.List;
  */
 public abstract class AnnotationClient {
 
-    public Log LOG = LogFactory.getLog(this.getClass());
+    public Logger LOG = Logger.getLogger(this.getClass());
     
     // Create an instance of HttpClient.
     private static HttpClient client = new HttpClient();

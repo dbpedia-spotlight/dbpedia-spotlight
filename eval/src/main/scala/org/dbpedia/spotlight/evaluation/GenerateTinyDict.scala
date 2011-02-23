@@ -16,25 +16,26 @@
 
 package org.dbpedia.spotlight.evaluation
 
-import java.io.{PrintStream, File}
 import io.Source
 import org.dbpedia.spotlight.spot.lingpipe.IndexLingPipeSpotter
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.model.{DBpediaResourceOccurrence}
 import org.dbpedia.spotlight.string.WikiLinkParser
+import java.io.{PrintWriter, PrintStream, File}
 
 /**
  * @author pablomendes
  */
 
-class GenerateTinyDict   {
+object GenerateTinyDict   {
 
-  val spotterFile    = "e:\\dbpa\\web\\Eval.spotterDictionary";
+  val spotterFile    = "Eval.spotterDictionary";
   
   def main(args : Array[String])
     {
 
-      val baseDir: String = args(0)+"/"
+      //val baseDir: String = args(0)+"/"
+      val baseDir = "/home/pablo/eval/wikify/gold/"
       if (!new File(baseDir).exists) {
         System.err.println("Base directory does not exist. "+baseDir);
         exit();
@@ -42,18 +43,24 @@ class GenerateTinyDict   {
 
       //EXTRACT OCCURRENCES FROM FILES AND WRITE THEM OUT TO A DICTIONARY FOR TESTING
       var occList = List[DBpediaResourceOccurrence]();
-      val testFileNames = List(
-          baseDir+"AnnotationText-Pablo.txt",
-          baseDir+"AnnotationText-Max.txt",
-          baseDir+"AnnotationText-Andres.txt",
-          baseDir+"AnnotationText-Paul.txt")
+      //val testFileNames = List(
+      //    baseDir+"AnnotationText-Pablo.txt",
+      //    baseDir+"AnnotationText-Max.txt",
+      //    baseDir+"AnnotationText-Andres.txt",
+      //    baseDir+"AnnotationText-Paul.txt")
+      val testFileNames = List(baseDir+"WikifyAllInOne.txt")
+      val out = new PrintWriter(baseDir+"WikifyAllInOne.set")
       for(testFileName <- testFileNames) {
         val text = Source.fromFile(testFileName).mkString
-        occList = occList ::: WikiLinkParser.parse(text).toList;
+        val occs = WikiLinkParser.parse(text).toList;
+        out.println(occs.map(o => o.resource.uri).toSet.mkString("\n"));
+        out.println
+        occList = occList ::: occs
       }
+      out.close
       // WRITE OUT A MINI DICTIONARY FOR TESTING
       val dictionary = IndexLingPipeSpotter.getDictionary(occList);
-      IndexLingPipeSpotter.writeDictionaryFile(dictionary,new File(spotterFile));
+      IndexLingPipeSpotter.writeDictionaryFile(dictionary,new File(baseDir+spotterFile));
 
     }
 }

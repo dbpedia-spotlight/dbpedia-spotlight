@@ -45,6 +45,12 @@ object SetEvaluation {
     cucerzanGold
   }
 
+  def getWikifyGold(baseDir: String) :  Map[String, Set[String]] = {
+    val wikify = Source.fromFile(baseDir+"/gold/WikifyAllInOne.set").getLines.toSet
+    val wikifyGold = Map("wikify"->wikify);
+    wikifyGold
+  }
+
   def getManualSystems(baseDir: String) :  Map[String, Set[String]] = {
     val ontos = Source.fromFile(baseDir+"/systems/AnnotationText-Ontos.txt.set").getLines.toSet
     val ontosHeu = Source.fromFile(baseDir+"/systems/AnnotationText-Ontos.txt.pablo.set").getLines.toSet
@@ -52,6 +58,7 @@ object SetEvaluation {
     val opencalaisHeu = Source.fromFile(baseDir+"/systems/AnnotationText-OpenCalais.txt.set").getLines.toSet
     val wikimachine = Source.fromFile(baseDir+"/systems/AnnotationText-WikiMachine.txt.set").getLines.toSet
     val alchemy = Source.fromFile(baseDir+"/systems/AnnotationText-Alchemy.txt.set").getLines.toSet
+    val wmwikify = Source.fromFile(baseDir+"/systems/AnnotationText-WMWikify.txt.set").getLines.toSet
     val zemanta = Source.fromFile(baseDir+"/systems/AnnotationText-Zemanta.txt.set").getLines.toSet
 
     val spotlightNF = Source.fromFile(baseDir+"/spotlight/SpotlightNoFilter.set").getLines.toSet
@@ -85,6 +92,7 @@ object SetEvaluation {
 //    val opencalaisHeu = Source.fromFile(baseDir+"/systems/OpenCalaisHeu.list").getLines.toSet
 //    val wikimachine = Source.fromFile(baseDir+"/systems/WikiMachine.list").getLines.toSet
     val alchemy = Source.fromFile(baseDir+"/systems/Alchemy.list").getLines.toSet
+    val wmwikify = Source.fromFile(baseDir+"/systems/WMWikify.list").getLines.toSet
     val zemanta = Source.fromFile(baseDir+"/systems/Zemanta.list").getLines.toSet
     val spotlightNF = Source.fromFile(baseDir+"/spotlight/SpotlightNoFilter.set").getLines.toSet
     val spotlightT10S = Source.fromFile(baseDir+"/spotlight/SpotlightTop10Score.set").getLines.toSet
@@ -98,8 +106,40 @@ object SetEvaluation {
 //      "opencalaisHeu"->opencalaisHeu,
 //      "wikimachine"->wikimachine,
       "alchemy"->alchemy,
+      "wmwikify"->wmwikify,
       "zemanta"->zemanta,
       "spotlightNF"->spotlightNF,
+      "spotlightTop10Score"->spotlightT10S,
+      "spotlightTop10Prior"->spotlightT10P,
+      "spotlightTop10Confusion"->spotlightT10C,
+      "spotlightTop10Confidence"->spotlightT10Confidence,
+      "spotlightTop10TrialAndError"->spotlightT10TrialAndError
+      );
+    systems
+  }
+
+     def getWikifySystems(baseDir: String) :  Map[String, Set[String]] = {
+//    val ontos = Source.fromFile(baseDir+"/systems/Ontos.list").getLines.toSet
+//    val ontosHeu = Source.fromFile(baseDir+"/systems/OntosHeu.list").getLines.toSet
+//    val opencalais = Source.fromFile(baseDir+"/systems/OpenCalais.list").getLines.toSet
+//    val opencalaisHeu = Source.fromFile(baseDir+"/systems/OpenCalaisHeu.list").getLines.toSet
+//    val wikimachine = Source.fromFile(baseDir+"/systems/WikiMachine.list").getLines.toSet
+//    val alchemy = Source.fromFile(baseDir+"/systems/Alchemy.list").getLines.toSet
+//    val zemanta = Source.fromFile(baseDir+"/systems/Zemanta.list").getLines.toSet
+//    val spotlightNF = Source.fromFile(baseDir+"/spotlight/SpotlightNoFilter.set").getLines.toSet
+    val spotlightT10S = Source.fromFile(baseDir+"/spotlight/SpotlightTop10Score.set").getLines.toSet
+    val spotlightT10P = Source.fromFile(baseDir+"/spotlight/SpotlightTop10Prior.set").getLines.toSet
+    val spotlightT10C = Source.fromFile(baseDir+"/spotlight/SpotlightTop10Confusion.set").getLines.toSet
+    val spotlightT10Confidence = Source.fromFile(baseDir+"/spotlight/SpotlightTop10Confidence.set").getLines.toSet
+    val spotlightT10TrialAndError = Source.fromFile(baseDir+"/spotlight/SpotlightTop10TrialAndError.set").getLines.toSet
+    val systems = Map(//"ontos"->ontos,
+//      "ontosHeu"->ontosHeu,
+//      "opencalais"->opencalais,
+//      "opencalaisHeu"->opencalaisHeu,
+//      "wikimachine"->wikimachine,
+//      "alchemy"->alchemy,
+//      "zemanta"->zemanta,
+//      "spotlightNF"->spotlightNF,
       "spotlightTop10Score"->spotlightT10S,
       "spotlightTop10Prior"->spotlightT10P,
       "spotlightTop10Confusion"->spotlightT10C,
@@ -193,7 +233,7 @@ object SetEvaluation {
     //      val text = Source.fromFile(wikiMachineFileName).getLines.toSet
   }
 
-  def main(args : Array[String])
+   def main(args : Array[String])
   {
 
     //      val baseDir: String = args(0)+"/";
@@ -205,17 +245,20 @@ object SetEvaluation {
 //    manualEval.printPoints(manualEval.manualGold, manualEval.systems);
 //    manualEval.printLines(manualEval.manualGold);
 
-//    val baseDir = "/home/pablo/eval/cucerzan"
-//    val cucerzanGold = SetEvaluation.getCucerzanGold(baseDir)
-//    val systems = SetEvaluation.getCucerzanSystems(baseDir)
-//    printPoints(baseDir, cucerzanGold, systems);
-//    printLines(baseDir, cucerzanGold);
+    val baseDir = "/home/pablo/eval/cucerzan"
+    val gold = SetEvaluation.getCucerzanGold(baseDir)
+    val systems = SetEvaluation.getCucerzanSystems(baseDir)
 
-    val baseDir = "/home/pablo/eval/manual"
-    val gold = SetEvaluation.getManualGold(baseDir)
-    val systems = SetEvaluation.getManualSystems(baseDir)
-    printPoints(baseDir, gold, systems);
-    printLines(baseDir, gold);
+//    val baseDir = "/home/pablo/eval/manual"
+//    val gold = SetEvaluation.getManualGold(baseDir)
+//    val systems = SetEvaluation.getManualSystems(baseDir)
+
+//      val baseDir = "/home/pablo/eval/wikify"
+//      val gold = SetEvaluation.getWikifyGold(baseDir)
+//      val systems = SetEvaluation.getWikifySystems(baseDir)
+
+      printPoints(baseDir, gold, systems);
+      //printLines(baseDir, gold);
 
   }
 }

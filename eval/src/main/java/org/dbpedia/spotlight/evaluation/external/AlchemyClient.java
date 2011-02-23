@@ -89,14 +89,14 @@ public class AlchemyClient extends AnnotationClient {
                 String value = "";
                 if (n.getNodeType()!=Node.TEXT_NODE) {
                     value = n.getFirstChild().getNodeValue();
-                    LOG.debug(String.format("Name:%s, Value: %s \n",name,value));
+                    LOG.trace(String.format("Name:%s, Value: %s",name,value));
                 }
                 if (name.equals("text")) {
                     entities.add(new DBpediaResource(value)); //TODO could have actually gotten DBpediaResourceOccurrences and set the relevance
                 }
             }
         }
-        
+        LOG.debug(String.format("Extracted: %s",entities));
         return entities;
     }
 
@@ -112,7 +112,7 @@ public class AlchemyClient extends AnnotationClient {
         //client.evaluateManual(manualEvalInput, manualEvalOutput);
 
         File cucerzanEvalInput = new File("/home/pablo/eval/cucerzan/cucerzan.txt");
-        File cucerzanEvalOutput = new File("/home/pablo/eval/cucerzan/systems/cucerzan-Alchemy.set");
+        File cucerzanEvalOutput = new File("/home/pablo/eval/cucerzan/systems/cucerzan-Alchemy2.set");
         client.evaluateManual(cucerzanEvalInput, cucerzanEvalOutput);
     }
 
