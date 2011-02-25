@@ -45,14 +45,14 @@ object SurrogatesUtil
     val MAXIMUM_SURFACE_FORM_LENGTH = 50
 
     // DBpedia input
-    var titlesFileName          = IndexConfiguration.get("LabelsDataset")
-    var redirectsFileName       = IndexConfiguration.get("RedirectsDataset")
-    var disambiguationsFileName = IndexConfiguration.get("DisambiguationsDataset")
+    var titlesFileName          = ""
+    var redirectsFileName       = ""
+    var disambiguationsFileName = ""
 
     // output
-    var conceptURIsFileName     = IndexConfiguration.get("ConceptURIs")
-    var redirectTCFileName      = IndexConfiguration.get("Redirects")
-    var surfaceFormsFileName    = IndexConfiguration.get("SurfaceForms")
+    var conceptURIsFileName     = ""
+    var redirectTCFileName      = ""
+    var surfaceFormsFileName    = ""
 
 
     def saveConceptURIs {
@@ -413,14 +413,28 @@ object SurrogatesUtil
 
 
     def main(args : Array[String]) {
+        val indexingConfigFileName = args(0)
+        val config = new IndexingConfiguration(indexingConfigFileName)
+
+        // DBpedia input
+        titlesFileName          = config.get("org.dbpedia.spotlight.data.labels")
+        redirectsFileName       = config.get("org.dbpedia.spotlight.data.redirects")
+        disambiguationsFileName = config.get("org.dbpedia.spotlight.data.disambiguations")
+
+        // output
+        conceptURIsFileName     = config.get("org.dbpedia.spotlight.data.conceptURIs")
+        redirectTCFileName      = config.get("org.dbpedia.spotlight.data.redirectsTC")
+        surfaceFormsFileName    = config.get("org.dbpedia.spotlight.data.surfaceForms")
+
+
         // get concept URIs
-        //saveConceptURIs
+        saveConceptURIs
 
         // get redirects
-        //saveRedirectsTransitiveClosure
+        saveRedirectsTransitiveClosure
 
         // get surface forms 
-        val stopWordsFileName = IndexConfiguration.get("StopWordList")
+        val stopWordsFileName = config.get("org.dbpedia.spotlight.data.stopWords")
         val stopWords = Source.fromFile(stopWordsFileName, "UTF-8").getLines.toSet
         saveSurfaceForms(stopWords)
 

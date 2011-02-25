@@ -21,7 +21,7 @@ import org.dbpedia.spotlight.io.{FileOccurrenceSource, LuceneIndexWriter}
 import org.apache.commons.logging.LogFactory
 import org.apache.lucene.store.FSDirectory
 import org.dbpedia.spotlight.lucene.LuceneManager
-import org.dbpedia.spotlight.util.IndexConfiguration
+import org.dbpedia.spotlight.util.IndexingConfiguration
 
 /**
  * Indexes all Occurrences in Wikipedia separately in a Lucene index.
@@ -46,10 +46,13 @@ object IndexMergedOccurrences
 
     def main(args : Array[String])
     {
+        val indexingConfigFileName = args(0)
+        val config = new IndexingConfiguration(indexingConfigFileName)
+
         // Command line options
-        val baseDir = getBaseDir(args(0))
-        val similarity = IndexConfiguration.getSimilarity(args(1))
-        val analyzer = IndexConfiguration.getAnalyzer(args(2))
+        val baseDir = getBaseDir(args(1))
+        val similarity = config.getSimilarity(args(2))
+        val analyzer = config.getAnalyzer(args(3))
 
         LOG.info("Using dataset under: "+baseDir);
         LOG.info("Similarity class: "+similarity.getClass);

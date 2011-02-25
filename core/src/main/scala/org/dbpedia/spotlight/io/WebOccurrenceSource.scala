@@ -24,7 +24,7 @@ import org.apache.commons.logging.LogFactory
 import java.util.zip.GZIPInputStream
 import java.net.{Socket, URL}
 import org.xml.sax.InputSource
-import org.dbpedia.spotlight.util.{OccurrenceFilter, IndexConfiguration}
+import org.dbpedia.spotlight.util.{OccurrenceFilter, IndexingConfiguration}
 
 /**
  * Gets Occurrences from the Web using Yahoo! Boss.
@@ -40,20 +40,6 @@ object WebOccurrenceSource
                         "www.biographicon.com",
                         "www.beat-wings.com")
 
-    // load configured properties
-    val language = IndexConfiguration.get("Language", "en")
-    val region = IndexConfiguration.get("Region", "us")
-    val yahooBossAppID = IndexConfiguration.get("YahooBossAppID", "vwl9D_PV34FEFsrjr_QByFTJfD6ahlU77i3NF8if986Dy2dSzI8eC71XuP6Ui_FAPHBPekqCEXQ-")
-    val yahooBossResults = IndexConfiguration.get("YahooBossResults", "50").toInt
-    val yahooBossIterations = IndexConfiguration.get("YahooBossIterations", "100").toInt
-
-    // define necessary strings for Yahoo! Boss query
-    val wikipediaPrefixEn = "http://" + language + ".wikipedia.org/wiki/"
-    val yahooBossDomain = "boss.yahooapis.com"
-    val yahooBossSearchUrl = "/ysearch/se_inlink/v1/"
-    val appID = "?appid=" + yahooBossAppID
-    val options = "&format=xml&type=html&omit_inlinks=domain&strictlang=1&count=" + yahooBossResults + "&lang=" + language + "&Region=" + region
-
     val yahooBossOutLinkUrlRegex = """<url>([^<]+?)</url>""".r
 
     val timeOut = 500  // in milliseconds
@@ -63,17 +49,33 @@ object WebOccurrenceSource
      * Create an DBpediaResourceOccurrence Source for a set of DBpediaResources.
      * Only the first n web occurrences of each resource are produced.
      */
-    def forResources(resources : Iterable[DBpediaResource], n : Int = Integer.MAX_VALUE) : OccurrenceSource =
+    def forResources(indexingConfig: IndexingConfiguration, resources : Iterable[DBpediaResource], n : Int = Integer.MAX_VALUE) : OccurrenceSource =
     {
-        new YahooBossSource(resources, n)
+        new YahooBossSource(indexingConfig, resources, n)
     }
 
     /**
      * DBpediaResourceOccurrence Source which queries Yahoo Boss and retrieves links to Wikipedia pages.
      * Then finds the occurrence of that link in the respective page and paragraph.
      */
-    private class YahooBossSource(val resources : Iterable[DBpediaResource], val n : Int) extends OccurrenceSource
+    private class YahooBossSource(val indexingConfig: IndexingConfiguration, val resources : Iterable[DBpediaResource], val n : Int) extends OccurrenceSource
     {
+
+        // load configured properties
+        val language = indexingConfig.get("org.dbpedia.spotlight.yahoo.language", "en")
+        val region = indexingConfig.get("org.dbpedia.spotlight.yahoo.region", "us")
+        val yahooBossAppID = indexingConfig.get("org.dbpedia.spotlight.yahoo.appID")
+        val yahooBossResults = indexingConfig.get("org.dbpedia.spotlight.yahoo.maxResults", "50").toInt
+        val yahooBossIterations = indexingConfig.get("org.dbpedia.spotlight.yahoo.maxIterations", "100").toInt
+
+        // define necessary strings for Yahoo! Boss query
+        val wikipediaPrefixEn = "http://" + language + ".wikipedia.org/wiki/"
+        val yahooBossDomain = "boss.yahooapis.com"
+        val yahooBossSearchUrl = "/ysearch/se_inlink/v1/"
+        val appID = "?appid=" + yahooBossAppID
+        val options = "&format=xml&type=html&omit_inlinks=domain&strictlang=1&count=" + yahooBossResults + "&lang=" + language + "&Region=" + region
+
+
         val parser = new DOMParser
         //val occFilter = IndexConfiguration.occurrenceFilter
         val occFilter = new OccurrenceFilter(maximumSurfaceFormLength = 40, minimumParagraphLength = 50, maximumParagraphLength = 500)
@@ -222,11 +224,14 @@ object WebOccurrenceSource
 
     def main(args : Array[String])
     {
-        val resourcesFileName = args(0)
-        val outputFileName = args(1)
-        val resourceCountLimit = args(2).toInt
-        val sampleNumber = args(3).toInt    // for each resource
-        val startURI = if (args.length == 5) args(4) else ""   // specify last seen resource befor dying
+        val indexingConfigFileName = args(0)
+        val config = new IndexingConfiguration(indexingConfigFileName)
+
+        val resourcesFileName = args(1)
+        val outputFileName = args(2)
+        val resourceCountLimit = args(3).toInt
+        val sampleNumber = args(4).toInt    // for each resource
+        val startURI = if (args.length == 6) args(5) else ""   // specify last seen resource befor dying
 
         LOG.info("Building occurrences for "+resourceCountLimit+" resources ("+sampleNumber+" samples each)")
         LOG.info("  Getting resources from "+resourcesFileName+" ...")
@@ -245,7 +250,7 @@ object WebOccurrenceSource
             if (collect) {
                 LOG.info("** Resource: "+targetResource)
                 try {
-                    val occSource = forResources(List(targetResource), sampleNumber)
+                    val occSource = forResources(config, List(targetResource), sampleNumber)
                     FileOccurrenceSource.writeToFile(occSource, new File(outputFileName))
                 }
                 catch {

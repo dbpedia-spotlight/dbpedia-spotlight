@@ -37,36 +37,29 @@ import java.io._
  * of the case that a property is not specified in the configuration file.
  */
 
-//TODO: validate configuration file
+class IndexingConfiguration(val configFile: File) {
 
-object IndexConfiguration
-{
     private val LOG = LogFactory.getLog(this.getClass)
 
-    var configFileName = "spotlight.config" //TODO add this to constructor, call from main method, fail early if can't find.
+    def this(fileName: String) {
+        this(new File(fileName))
+    }
 
     private val properties : Properties = new Properties()
 
-    // load properties as soon as they are asked for for the first time
-    load
+    LOG.info("Loading configuration file "+configFile)
+    properties.load(new FileInputStream(configFile))
+    validate
 
-    def load(configFile : File) {
-        properties.load(new FileInputStream(configFile))
-        configFileName = configFile.getAbsolutePath
-        LOG.info("Loaded configuration file '" + configFile.getAbsolutePath + "'.")
-    }
 
-    def load() {
-        load(new File(configFileName))
-    }
 
     def save(configFile : File) {
         properties.store(new FileOutputStream(configFile), "")
-        LOG.info("Saved configuration file '" + configFile.getAbsolutePath + "'.")
+        LOG.info("Saved configuration file"+configFile)
     }
 
     def save() {
-        save(new File(configFileName))
+        save(configFile)
     }
 
     def get(key : String, defaultValue : String) : String = {
@@ -74,7 +67,11 @@ object IndexConfiguration
     }
 
     def get(key : String) : String = {
-        get(key, null)
+        val value = get(key, null)
+        if(value == null) {
+            throw new ConfigurationException(key+" not specified in "+configFile)
+        }
+        value
     }
 
     def set(key : String, value : String) {
@@ -82,7 +79,7 @@ object IndexConfiguration
         //properties.store(new FileOutputStream(configFileName), "changed "+key+" to "+value+" in "+configFileName)
 
         val sb = new StringBuilder
-        for(line <- Source.fromFile(configFileName, "UTF-8").getLines) {
+        for(line <- Source.fromFile(configFile, "UTF-8").getLines) {
             if(line startsWith key+" ") {
                 sb.append(key+"  "+value+"\n")
             }
@@ -91,13 +88,13 @@ object IndexConfiguration
             }
         }
 
-        val out = new PrintStream(configFileName, "UTF-8")
+        val out = new PrintStream(configFile, "UTF-8")
         out.print(sb.toString)
         out.close
     }
 
     def getStopWords : Set[String] = {
-        val f = new File(get("StopWordList", ""))
+        val f = new File(get("org.dbpedia.spotlight.data.stopWords", ""))
         try {
             Source.fromFile(f, "UTF-8").getLines.toSet
         }
@@ -107,7 +104,7 @@ object IndexConfiguration
     }
 
     def getAnalyzer(analyzerName : String) : Analyzer = {
-        val stopWords = IndexConfiguration.getStopWords
+        val stopWords = getStopWords
 
         (new StandardAnalyzer(Version.LUCENE_29, stopWords) :: new SnowballAnalyzer(Version.LUCENE_29, "English", stopWords) :: Nil)
                 .map(a => (a.getClass.getSimpleName, a))
@@ -122,6 +119,43 @@ object IndexConfiguration
                 .toMap
                 .get(similarityName)
                 .getOrElse(throw new ConfigurationException("Unknown Similarity: "+similarityName))
+    }
+
+
+    private def validate {
+
+        val dumpFile = new File(get("org.dbpedia.spotlight.data.wikipediaDump"))
+        if(!dumpFile.isFile) {
+            throw new ConfigurationException("specified Wikipedia dump not found: "+dumpFile)
+        }
+
+        val labelsFile = new File(get("org.dbpedia.spotlight.data.labels"))
+        if(!labelsFile.isFile) {
+            throw new ConfigurationException("specified labels dataset not found: "+labelsFile)
+        }
+
+        val redirectsFile = new File(get("org.dbpedia.spotlight.data.redirects"))
+        if(!redirectsFile.isFile) {
+            throw new ConfigurationException("specified redirects dataset not found: "+redirectsFile)
+        }
+
+        val disambigFile = new File(get("org.dbpedia.spotlight.data.disambiguations"))
+        if(!disambigFile.isFile) {
+            throw new ConfigurationException("specified disambiguations dataset not found: "+disambigFile)
+        }
+
+        val instFile = new File(get("org.dbpedia.spotlight.data.instanceTypes"))
+        if(!instFile.isFile) {
+            throw new ConfigurationException("specified instance types dataset not found: "+instFile)
+        }
+
+
+        val stopwordsFile = new File(get("org.dbpedia.spotlight.data.stopWords"))
+        if(!stopwordsFile.isFile) {
+            throw new ConfigurationException("specified stop words file not found: "+stopwordsFile)
+        }
+
+        //validate yahoo data ...
     }
 
 }
