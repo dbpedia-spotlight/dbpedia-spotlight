@@ -133,8 +133,13 @@ public class WMWikifyClient extends AnnotationClient {
         //client.evaluateManual(manualEvalInput, manualEvalOutput);
 
         File cucerzanEvalInput = new File("/home/pablo/eval/cucerzan/cucerzan.txt");
-        File cucerzanEvalOutput = new File("/home/pablo/eval/cucerzan/systems/cucerzan-WMWikify.set");
-        client.evaluateManual(cucerzanEvalInput, cucerzanEvalOutput);
+        File cucerzanEvalOutput = new File("/home/pablo/eval/cucerzan/systems/cucerzan-WMWikify.list");
+//        client.evaluateManual(cucerzanEvalInput, cucerzanEvalOutput);
+
+        File wikifyEvalInput = new File("/home/pablo/eval/wikify/gold/WikifyAllInOne.txt");
+        File wikifyEvalOutput = new File("/home/pablo/eval/wikify/systems/wikify-WMWikify.list");
+        client.evaluateManual(wikifyEvalInput, wikifyEvalOutput);
+
     }
 
 }
