@@ -30,88 +30,145 @@ import org.dbpedia.spotlight.string.ModifiedWikiUtil
 
 object CreateLexicalizations {
 
-    val MIN_PAIR_COUNT = 20
+    val MIN_PAIR_COUNT = 5
 
-    val scoreRelation = "<http://dbpedia.org/spotlight/pmiScore>"
+
+    val scoresNamedGraph = "<http://dbepdia.org/spotlight/score>"
+
+    val namedGraphPrefix = "<http://dbepdia.org/spotlight/id/"
+
+    val pmiScoreRelation            = "<http://dbpedia.org/spotlight/score#pmi>"
+    val sfGivenUriScoreRelation     = "<http://dbpedia.org/spotlight/score#sfGivenUri>"
+    val uriGivenSfScoreRelation     = "<http://dbpedia.org/spotlight/score#uriGivenSf>"
+    val uriProbabilityScoreRelation = "<http://dbpedia.org/spotlight/score#uriProbability>"
+    val uriCountScoreRelation       = "<http://dbpedia.org/spotlight/score#uriCount>"
 
     val resourcePrefix = "<http://dbpedia.org/resource/"
-    val namedGraphPrefix = "<http://dbepdia.org/spotlight/graph/"
-
-    val scoresNamedGraphPostfix = "surfaceFormScores>"
-
     val lexvoLabelRelation = "<http://lexvo.org/ontology#label>"
-    val xsdDouble = "<http://www.w3.org/2001/XMLSchema#double>"
 
 
-    var denominator = 0.0  // total number of occurrences
-
-
-    def getUriMap(uriCountsFile: File) : Map[String,Double] = {
-        Source.fromFile(uriCountsFile, "UTF-8").getLines.map{ l =>
-            val el = l.split("\\s+", 3)
-            denominator += el(1).toDouble
-            (el(2), el(1).toDouble)
-        }.toMap
+    private def getDataType(value: Any): Option[String] = value match {
+        case v: Double => Some("^^<http://www.w3.org/2001/XMLSchema#double>")
+        case v: Int => Some("^^<http://www.w3.org/2001/XMLSchema#integer>")
+        case v: String => Some("@en")
+        case _ => None
     }
 
-
-    def writeDataset(outFile: File, uriCountsFile: File, sfSortedPairCountsFile: File) {
-        println("Making URI counts map...")
-        var uriCounts = getUriMap(uriCountsFile)
-        println("Done.")
-
-        val out = new PrintStream(outFile, "UTF-8")
-        val readableOut = new PrintStream(outFile+".read", "UTF-8")
-
-        var lastSf = ""
-        var thisSfCount = 0.0
-        var urisForThisSf = Map[String, Double]()
-
-        println("Making dataset...")
-        for(line <- Source.fromFile(sfSortedPairCountsFile, "UTF-8").getLines) {
-        //for(line <- Source.fromFile(countFile).getLines) {
-            val elements = line.split("\\s+", 4)
-            // first element is empty
-            val count = elements(1).toDouble
-            val uri = elements(2)
-            val sf = elements(3)
-
-            if(count >= MIN_PAIR_COUNT && sf.trim != "") {          //&& (conceptURIs contains uri)
-                if(lastSf != sf && lastSf.trim != "") {
-
-                    val pX = thisSfCount/denominator
-                    for((uri, c) <- urisForThisSf) {
-                        val pY = uriCounts(uri)/denominator
-                        val pXY = c/denominator
-
-                        val pmi = scala.math.log( pXY / (pX * pY) )
-
-                        writeQuad(out, uri, lastSf, pmi, scoreRelation)
-                        writeReadable(readableOut, uri, lastSf, pmi)
-                    }
-                    thisSfCount = 0.0
-                    urisForThisSf = Map()
-                }
-                thisSfCount += count
-                urisForThisSf = urisForThisSf.updated(uri, count)
-                lastSf = sf
-            }
-
-        }
-        out.close
-        println("Done.")
-    }
 
 
     def main(args: Array[String]) {
         val outFile = new File(args(0))
-        val uriCountsFile = new File(args(1))
-        val sfSortedPairCountsFile = new File(args(2))
+        val surrogateCountsFile = new File(args(1))
 
-        writeDataset(outFile, uriCountsFile, sfSortedPairCountsFile)
+        val surrogates = getLinkedSurrogatesMap(surrogateCountsFile)
+        val ntOut = new PrintStream(outFile)
+        val readableOut = new PrintStream(outFile+".read")
+
+        writeAll(surrogates, ntOut, readableOut)
+
+        ntOut.close
+        readableOut.close
     }
 
 
+    def getSurrogatesMap(surrogatesFile: File) : Map[(String,String),Int] = {
+        var m = Map[(String,String),Int]()
+        Source.fromFile(surrogatesFile, "UTF-8").getLines.foreach{ line =>
+            val el = line.trim.split("\\s+", 4)
+            val count = el(0).toInt
+            val uri = el(1)
+            val sf = el(2)
+
+            m = m.updated((uri, sf), m.get((uri, sf)).getOrElse(0) + count.toInt)
+        }
+        m
+    }
+
+    /**
+     * (URI -> (SF -> count))
+     */
+    def getLinkedSurrogatesMap(surrogatesFile: File) : Map[String,Map[String,Int]] = {
+        System.err.println("Reading surrogates from "+surrogatesFile+" ...")
+        var m = Map[String,Map[String,Int]]()
+        Source.fromFile(surrogatesFile, "UTF-8").getLines.foreach{ line =>
+            val el = line.trim.split("\\s+", 3)
+
+            if(el.length == 3) {  //  && el(0).toInt >= MIN_PAIR_COUNT
+                val count = el(0).toInt
+                val uri = el(1)
+                val sf = el(2)
+
+                var sfMap = m.get(uri).getOrElse(Map[String,Int]())
+                val updatedCount = sfMap.get(sf).getOrElse(0) + count.toInt
+                sfMap = sfMap.updated(sf, updatedCount)
+
+                m = m.updated(uri, sfMap)
+            }
+        }
+        System.err.println("Done.")
+        m
+    }
+
+    def writeAll(surrogates: Map[String,Map[String,Int]], out: PrintStream, readableOut: PrintStream) {
+        var totalOccCount: Double = 0.0
+        var globalSfMap = Map[String,Int]()
+
+        System.err.println("Getting total occurrence count, making global surface form map...")
+        // get totalOccCount; fill global surface form map
+        for((uri,sfMap) <- surrogates) {
+            for((sf,pairCount) <- sfMap) {
+                globalSfMap = globalSfMap.updated(sf, globalSfMap.get(sf).getOrElse(0) + pairCount)
+                totalOccCount += pairCount
+            }
+        }
+        System.err.println("Done.")
+
+        System.err.println("Writing data...")
+        for((uri,sfMap) <- surrogates) {
+            val uriCount = sfMap.values.sum
+            //writeCount
+            writeTriple(out, uri, uriCount, uriCountScoreRelation)
+            writeReadable(readableOut, uri, uriCount, uriCountScoreRelation)
+
+            val uriProb = uriCount / totalOccCount
+            //writeProb
+            writeTriple(out, uri, uriProb, uriProbabilityScoreRelation)
+            writeReadable(readableOut, uri, uriProb, uriProbabilityScoreRelation)
+
+            for((sf, pairCount) <- sfMap if pairCount >= MIN_PAIR_COUNT) {
+                val sfGivenUri = pairCount.toDouble / uriCount
+                //write sfGivenUri
+                writeQuad(out, uri, sf, sfGivenUri, sfGivenUriScoreRelation)
+                writeReadable(readableOut, uri, sf, sfGivenUri, sfGivenUriScoreRelation)
+
+                val pXY = pairCount / totalOccCount
+                val pX = uriCount / totalOccCount
+                val pY = globalSfMap(sf) / totalOccCount
+                val pmi = scala.math.log( pXY / (pX * pY) )
+                //write pmi
+                writeQuad(out, uri, sf, pmi, pmiScoreRelation)
+                writeReadable(readableOut, uri, sf, pmi, pmiScoreRelation)
+
+                // following the Bayes theorem:
+                val uriGivenSf = (sfGivenUri * pX) / pY
+                //write uriGivenSf
+                writeQuad(out, uri, sf, uriGivenSf, uriGivenSfScoreRelation)
+                writeReadable(readableOut, uri, sf, uriGivenSf, uriGivenSfScoreRelation)
+            }
+        }
+        System.err.println("Done.")
+    }
+
+
+    private def writeTriple(out : PrintStream, uri : String, score : AnyVal, scoreRel : String) {
+        val sb = new StringBuilder()
+        sb append resourcePrefix append uri append "> "
+        sb append " "
+        sb append scoreRel append " \"" append score append "\"" append getDataType(score).get
+        sb append " ."
+
+        out.println(sb.toString)
+    }
 
     private def writeQuad(out : PrintStream, uri : String, sf : String, score : Double, scoreRel : String) {
         val sb = new StringBuilder()
@@ -128,17 +185,20 @@ object CreateLexicalizations {
 
         sb append namedGraphPrefix append uri append "---" append ModifiedWikiUtil.wikiEncode(sf) append ">"
         sb append " "
-        sb append scoreRel append " \"" append score append "\"^^" append xsdDouble
+        sb append scoreRel append " \"" append score append "\"" append getDataType(score).get
         sb append " "
-        sb append namedGraphPrefix append scoresNamedGraphPostfix
+        sb append scoresNamedGraph
         sb append " ."
-        sb append "\n"
 
-        out.print(sb.toString)
+        out.println(sb.toString)
     }
 
-    private def writeReadable(out : PrintStream, uri : String, sf : String, score : Double) {
-        out.println(uri+"\t"+score+"\t"+sf)
+    private def writeReadable(out : PrintStream, uri : String, score : AnyVal, scoreRel : String) {
+        out.println(uri+"\t"+score+"\t"+scoreRel)
+    }
+
+    private def writeReadable(out : PrintStream, uri : String, sf : String, score : Double, scoreRel : String) {
+        out.println(uri+"\t"+score+"\t"+sf+"\t"+scoreRel)
     }
 
     // copied from DBpedia Quad.scala

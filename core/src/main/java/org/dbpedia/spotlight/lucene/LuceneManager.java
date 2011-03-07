@@ -82,8 +82,7 @@ public class LuceneManager {
     public boolean shouldOverride = true;  //BE CAREFUL: indices will be overwritten if true !!!!!
 
     // this value specifies how many top results Lucene should return
-    // 
-    public int topResultsLimit = 50;  //TODO be careful with SurrogateSearchers!!!
+    public int topResultsLimit = 100;
 
     public LuceneManager(Directory directory) throws IOException {
         this.mContextIndexDir = directory;

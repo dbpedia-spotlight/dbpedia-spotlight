@@ -27,7 +27,7 @@ class DBpediaResource(var uri : String, var support : Int = 0, var types : List[
     uri = uri.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
 
     uri = if (ModifiedWikiUtil.isEncoded(uri)) {
-              ModifiedWikiUtil.spaceToUnderscore(uri)
+              ModifiedWikiUtil.spaceToUnderscore(uri).capitalize
           }
           else {
               ModifiedWikiUtil.wikiEncode(uri)
