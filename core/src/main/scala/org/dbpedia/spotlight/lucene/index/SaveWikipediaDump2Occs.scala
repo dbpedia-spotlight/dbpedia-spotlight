@@ -16,12 +16,12 @@
 
 package org.dbpedia.spotlight.lucene.index
 
-import org.dbpedia.spotlight.util.OccurrenceFilter
 import io.Source
 import java.io.File
 import org.dbpedia.spotlight.io.{AllOccurrenceSource, FileOccurrenceSource, DisambiguationContextSource, WikiOccurrenceSource}
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.string.ContextExtractor
+import org.dbpedia.spotlight.util.{IndexingConfiguration, OccurrenceFilter}
 
 /**
  * Saves Occurrences to a TSV file.
@@ -34,11 +34,13 @@ object SaveWikipediaDump2Occs {
     private val LOG = LogFactory.getLog(this.getClass)
 
     def main(args : Array[String]) {
-        val targetFileName = args(0)
-        val wikiDumpFileName = args(1)
-        val conceptURIsFileName = args(2)
-        val redirectTCFileName = args(3)
+        val indexingConfigFileName = args(0)
+        val targetFileName = args(1)
 
+        val config = new IndexingConfiguration(indexingConfigFileName)
+        val wikiDumpFileName    = config.get("org.dbpedia.spotlight.data.wikipediaDump")
+        val conceptURIsFileName = config.get("org.dbpedia.spotlight.data.conceptURIs")
+        val redirectTCFileName  = config.get("org.dbpedia.spotlight.data.redirectsTC")
 
         LOG.info("Loading concept URIs from "+conceptURIsFileName+"...")
         val conceptURIsSet = Source.fromFile(conceptURIsFileName, "UTF-8").getLines.toSet
@@ -56,6 +58,8 @@ object SaveWikipediaDump2Occs {
         val occs = filter.filter(AllOccurrenceSource.fromXMLDumpFile(new File(wikiDumpFileName)))
 
         FileOccurrenceSource.writeToFile(occs, new File(targetFileName))
+
+        config.set("org.dbpedia.spotlight.index.occurrences", targetFileName)
 
     }
 }

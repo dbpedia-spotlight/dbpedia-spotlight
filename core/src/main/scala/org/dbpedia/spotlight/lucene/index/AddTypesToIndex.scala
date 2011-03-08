@@ -35,9 +35,9 @@ object AddTypesToIndex
 {
     def main(args : Array[String]) {
         val indexingConfigFileName = args(0)
-        val indexFileName = args(1)
 
         val config = new IndexingConfiguration(indexingConfigFileName)
+        val indexFileName = config.get("org.dbpedia.spotlight.index.dir")
         val instanceTypesFileName = config.get("org.dbpedia.spotlight.data.instanceTypes")
 
         val indexFile = new File(indexFileName)

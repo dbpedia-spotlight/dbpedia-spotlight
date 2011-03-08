@@ -20,6 +20,7 @@ import org.dbpedia.spotlight.lucene.LuceneManager
 import org.apache.lucene.store.FSDirectory
 import java.io.File
 import scala.collection.JavaConversions._
+import org.dbpedia.spotlight.util.IndexingConfiguration
 
 
 /**
@@ -37,7 +38,10 @@ object CompressIndex
     val optimizeSegments = 4
 
     def main(args : Array[String]) {
-        val indexFileName = args(0)
+        val indexingConfigFileName = args(0)
+
+        val config = new IndexingConfiguration(indexingConfigFileName)
+        val indexFileName = config.get("org.dbpedia.spotlight.index.dir")
         
         val indexFile = new File(indexFileName)
         if (!indexFile.exists) {

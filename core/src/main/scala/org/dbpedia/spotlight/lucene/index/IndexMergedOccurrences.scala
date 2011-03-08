@@ -47,12 +47,14 @@ object IndexMergedOccurrences
     def main(args : Array[String])
     {
         val indexingConfigFileName = args(0)
+        val trainingInputFileName = args(1)
+
         val config = new IndexingConfiguration(indexingConfigFileName)
 
         // Command line options
-        val baseDir = getBaseDir(args(1))
-        val similarity = config.getSimilarity(args(2))
-        val analyzer = config.getAnalyzer(args(3))
+        val baseDir = config.get("org.dbpedia.spotlight.index.dir")   //getBaseDir(args(1))
+        val similarity = config.getSimilarity("InvCandFreqSimilarity")  //config.getSimilarity(args(2))
+        val analyzer = config.getAnalyzer("StandardAnalyzer")  //config.getAnalyzer(args(3))
 
         LOG.info("Using dataset under: "+baseDir);
         LOG.info("Similarity class: "+similarity.getClass);
@@ -60,7 +62,6 @@ object IndexMergedOccurrences
 
         LOG.warn("WARNING: this process will run a lot faster if the occurrences are sorted by URI!");
 
-        val trainingInputFile = baseDir+"training.tsv";
         val minNumDocsBeforeFlush : Int = 200000 //IndexConfiguration.properties.getProperty("minNumDocsBeforeFlush").toDouble
         val lastOptimize = false;
 
@@ -82,7 +83,9 @@ object IndexMergedOccurrences
         LOG.info("Total memory (bytes): " + Runtime.getRuntime.totalMemory / 1073741824 + "GB")
         //LOG.info("MinNumDocsBeforeFlush: "+minNumDocsBeforeFlush)
         
-        index(trainingInputFile, vectorBuilder);
+        index(trainingInputFileName, vectorBuilder);
+
+        config.set("org.dbpedia.spotlight.index.dir", indexOutputDir)
 
         LOG.info("Index saved to: "+indexOutputDir );
         

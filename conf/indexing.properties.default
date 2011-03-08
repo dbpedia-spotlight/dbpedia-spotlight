@@ -1,6 +1,13 @@
+# Maximum heap space for indexing
+# -------------------------------
+org.dbpedia.spotlight.index.heapspace = 2g
+
+
 # Wikipedia Dump
 # --------------
-WikipediaXMLDump  data/enwiki-20100312-pages-articles.xml
+org.dbpedia.spotlight.data.wikipediaDump = data/enwiki-20100312-pages-articles.xml
+org.dbpedia.spotlight.index.occurrences =
+org.dbpedia.spotlight.index.dir =
 
 
 # DBpedia Datasets

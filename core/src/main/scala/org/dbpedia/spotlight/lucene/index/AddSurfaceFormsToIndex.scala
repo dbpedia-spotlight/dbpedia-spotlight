@@ -19,9 +19,9 @@ package org.dbpedia.spotlight.lucene.index
 import org.dbpedia.spotlight.lucene.LuceneManager
 import org.apache.lucene.store.FSDirectory
 import java.io.File
-import org.dbpedia.spotlight.util.SurrogatesUtil
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.model.SurfaceForm
+import org.dbpedia.spotlight.util.{IndexingConfiguration, SurrogatesUtil}
 
 /**
  * Created by IntelliJ IDEA.
@@ -35,8 +35,11 @@ object AddSurfaceFormsToIndex
 {
 
     def main(args : Array[String]) {
-        val indexFileName = args(0)
-        val surrogatesFileName = args(1)
+        val indexingConfigFileName = args(0)
+
+        val config = new IndexingConfiguration(indexingConfigFileName)
+        val indexFileName = config.get("org.dbpedia.spotlight.index.dir")
+        val surfaceFormsFileName = config.get("org.dbpedia.spotlight.data.surfaceForms")
 
         val lowerCased = true
 
@@ -46,7 +49,7 @@ object AddSurfaceFormsToIndex
         val luceneManager = new LuceneManager.BufferedMerging(FSDirectory.open(indexFile))
 
         val sfIndexer = new IndexEnricher(luceneManager)
-        val sfMap = SurrogatesUtil.getSurfaceFormsMap_java(new File(surrogatesFileName), lowerCased)
+        val sfMap = SurrogatesUtil.getSurfaceFormsMap_java(new File(surfaceFormsFileName), lowerCased)
         sfIndexer.enrichWithSurfaceForms(sfMap)
         sfIndexer.close
     }
