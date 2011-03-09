@@ -221,8 +221,10 @@ public class LuceneManager {
             }
             
             Field.Index index = Field.Index.NOT_ANALYZED_NO_NORMS;
+            Field.TermVector termVector = Field.TermVector.NO;
             if (enumField.equals(DBpediaResourceField.CONTEXT)) {
                 index = Field.Index.ANALYZED;
+                termVector = Field.TermVector.YES;
             }
             else if(enumField.equals(DBpediaResourceField.SURFACE_FORM)) {
                 index = Field.Index.NOT_ANALYZED;
@@ -233,7 +235,8 @@ public class LuceneManager {
                 Field newField = new Field(fieldString,
                                            luceneField.stringValue(),
                                            store,
-                                           index);
+                                           index,
+                                           termVector);
                 newDoc.add(newField);
             }
         }
