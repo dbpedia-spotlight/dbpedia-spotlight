@@ -159,4 +159,9 @@ public class PriorDisambiguator implements Disambiguator {
         }
         return s;
     }
+
+    @Override
+    public int contextTermsNumber(DBpediaResource resource) throws SearchException {
+        return 0;  // prior works without context
+    }
 }

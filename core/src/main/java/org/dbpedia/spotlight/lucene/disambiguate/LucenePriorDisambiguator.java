@@ -140,4 +140,9 @@ public class LucenePriorDisambiguator implements Disambiguator {
         return mSearcher.explain(goldStandardOccurrence,nExplanations);
     }
 
+    @Override
+    public int contextTermsNumber(DBpediaResource resource) throws SearchException {
+        return 0;  // prior works without context
+    }
+
 }

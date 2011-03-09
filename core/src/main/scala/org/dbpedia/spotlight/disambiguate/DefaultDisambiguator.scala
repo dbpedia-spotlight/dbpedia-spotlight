@@ -85,4 +85,8 @@ class DefaultDisambiguator(val indexDir : File) extends Disambiguator  {
         disambiguator.explain(goldStandardOccurrence, nExplanations)
     }
 
+    def contextTermsNumber(resource : DBpediaResource) : Int = {
+        disambiguator.contextTermsNumber(resource)
+    }
+
 }

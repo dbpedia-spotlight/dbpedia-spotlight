@@ -38,7 +38,7 @@ import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
 /**
  * This class is evolving to be the main disambiguation class that takes parameters for which dataset to run.
  *
- * @author pablomendes
+ * @author maxjakob
  */
 object EvaluateDisambiguationOnly
 {
@@ -77,78 +77,79 @@ object EvaluateDisambiguationOnly
         new MergedOccurrencesDisambiguator(contextSearcher)
     }
 
-    def getNewStopwordedDisambiguator(outputFileName: String) : Disambiguator = {
+    def getNewStopwordedDisambiguator(indexDir: String) : Disambiguator = {
         val f = new File("e:\\dbpa\\data\\surface_forms\\stopwords.list")
         val stopwords = Source.fromFile(f, "UTF-8").getLines.toSet
         println("Stopwords loaded: "+stopwords.size);
         val analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", stopwords);
         val similarity : Similarity = new InvCandFreqSimilarity();
-        val directory =  LuceneManager.pickDirectory(new File(outputFileName+"."+analyzer.getClass.getSimpleName+".DefaultSimilarity"));
-        createMergedDisambiguator(outputFileName, analyzer, similarity, directory)
+        //val directory =  LuceneManager.pickDirectory(new File(indexDir+"."+analyzer.getClass.getSimpleName+".DefaultSimilarity"));
+        val directory =  LuceneManager.pickDirectory(new File(indexDir));
+        createMergedDisambiguator(indexDir, analyzer, similarity, directory)
     }
 
-    def getICFSnowballDisambiguator(outputFileName: String) : Disambiguator = {
+    def getICFSnowballDisambiguator(indexDir: String) : Disambiguator = {
         val analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET);
         val similarity : Similarity = new InvCandFreqSimilarity();
-        val directory =  LuceneManager.pickDirectory(new File(outputFileName+"."+analyzer.getClass.getSimpleName+".DefaultSimilarity"));
-        createMergedDisambiguator(outputFileName, analyzer, similarity, directory)
+        val directory =  LuceneManager.pickDirectory(new File(indexDir+"."+analyzer.getClass.getSimpleName+".DefaultSimilarity"));
+        createMergedDisambiguator(indexDir, analyzer, similarity, directory)
     }
 
-    def getICFCachedDisambiguator(outputFileName: String) : Disambiguator = {
+    def getICFCachedDisambiguator(indexDir: String) : Disambiguator = {
       val analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET);
-      val directory = LuceneManager.pickDirectory(new File(outputFileName+"."+analyzer.getClass.getSimpleName+".DefaultSimilarity"));
+      val directory = LuceneManager.pickDirectory(new File(indexDir+"."+analyzer.getClass.getSimpleName+".DefaultSimilarity"));
       val cache = new JCSTermCache(new LuceneManager.BufferedMerging(directory));
       val similarity : Similarity = new CachedInvCandFreqSimilarity(cache);
-      createMergedDisambiguator(outputFileName, analyzer, similarity, directory)
+      createMergedDisambiguator(indexDir, analyzer, similarity, directory)
     }
 
-    def getNewDisambiguator(outputFileName: String) : Disambiguator = {
+    def getNewDisambiguator(indexDir: String) : Disambiguator = {
       val analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET);
-      val directory = LuceneManager.pickDirectory(new File(outputFileName+"."+analyzer.getClass.getSimpleName+".DefaultSimilarity"));
+      val directory = LuceneManager.pickDirectory(new File(indexDir+"."+analyzer.getClass.getSimpleName+".DefaultSimilarity"));
       val cache = new JCSTermCache(new LuceneManager.BufferedMerging(directory));
       val similarity : Similarity = new NewSimilarity(cache);
-      createMergedDisambiguator(outputFileName, analyzer, similarity, directory)
+      createMergedDisambiguator(indexDir, analyzer, similarity, directory)
     }
 
 
-    def getICFStandardDisambiguator(outputFileName: String) : Disambiguator = {
+    def getICFStandardDisambiguator(indexDir: String) : Disambiguator = {
         val analyzer : Analyzer = new org.apache.lucene.analysis.standard.StandardAnalyzer(Version.LUCENE_29, StopAnalyzer.ENGLISH_STOP_WORDS_SET);
         val similarity : Similarity = new InvCandFreqSimilarity();
-        val directory = FSDirectory.open(new File(outputFileName+"."+analyzer.getClass.getSimpleName+".DefaultSimilarity"));
-        createMergedDisambiguator(outputFileName, analyzer, similarity, directory)
+        val directory = FSDirectory.open(new File(indexDir+"."+analyzer.getClass.getSimpleName+".DefaultSimilarity"));
+        createMergedDisambiguator(indexDir, analyzer, similarity, directory)
     }
 
-    def getDefaultSnowballDisambiguator(outputFileName: String) : Disambiguator = {
+    def getDefaultSnowballDisambiguator(indexDir: String) : Disambiguator = {
         val analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET);
         val similarity : Similarity = new DefaultSimilarity();
-        createMergedDisambiguator(outputFileName, analyzer, similarity)
+        createMergedDisambiguator(indexDir, analyzer, similarity)
     }
 
-    def getDefaultStandardDisambiguator(outputFileName: String) : Disambiguator = {
+    def getDefaultStandardDisambiguator(indexDir: String) : Disambiguator = {
         val analyzer : Analyzer = new org.apache.lucene.analysis.standard.StandardAnalyzer(Version.LUCENE_29, StopAnalyzer.ENGLISH_STOP_WORDS_SET);
         val similarity : Similarity = new DefaultSimilarity();
-        createMergedDisambiguator(outputFileName, analyzer, similarity)
+        createMergedDisambiguator(indexDir, analyzer, similarity)
     }
 
-    def getSweetSpotSnowballDisambiguator(outputFileName: String) : Disambiguator = {
+    def getSweetSpotSnowballDisambiguator(indexDir: String) : Disambiguator = {
         val analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET);
         val similarity : Similarity = new SweetSpotSimilarity()
-        createMergedDisambiguator(outputFileName, analyzer, similarity)
+        createMergedDisambiguator(indexDir, analyzer, similarity)
     }
 
-    def getSweetSpotStandardDisambiguator(outputFileName: String) : Disambiguator = {
+    def getSweetSpotStandardDisambiguator(indexDir: String) : Disambiguator = {
         val analyzer : Analyzer = new org.apache.lucene.analysis.standard.StandardAnalyzer(Version.LUCENE_29, StopAnalyzer.ENGLISH_STOP_WORDS_SET);
         val similarity : Similarity = new SweetSpotSimilarity()
-        createMergedDisambiguator(outputFileName, analyzer, similarity)
+        createMergedDisambiguator(indexDir, analyzer, similarity)
     }
 
 
     // the next two use an own disambiguator, while the two before just use a different similarity class
 
-//    def getDefaultScorePlusPriorSnowballDisambiguator(outputFileName: String) : Disambiguator = {
+//    def getDefaultScorePlusPriorSnowballDisambiguator(indexDir: String) : Disambiguator = {
 //        var analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET);
 //        var similarity : Similarity = new DefaultSimilarity();
-//        val directory = FSDirectory.open(new File(outputFileName+"."+analyzer.getClass.getSimpleName+"."+similarity.getClass.getSimpleName));
+//        val directory = FSDirectory.open(new File(indexDir+"."+analyzer.getClass.getSimpleName+"."+similarity.getClass.getSimpleName));
 //
 //        ensureExists(directory)
 //        val luceneManager = new LuceneManager.BufferedMerging(directory)
@@ -168,22 +169,22 @@ object EvaluateDisambiguationOnly
 
 
 
-//    def getICFIDFSnowballDisambiguator(outputFileName: String) : Disambiguator = {
+//    def getICFIDFSnowballDisambiguator(indexDir: String) : Disambiguator = {
 //        var analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET);
 //        var similarity : Similarity = new ICFIDFSimilarity();
-//        createMergedDisambiguator(outputFileName, analyzer, similarity, FSDirectory.open(new File(outputFileName+"."+analyzer.getClass.getSimpleName+".InvSenseFreqSimilarity")))
+//        createMergedDisambiguator(indexDir, analyzer, similarity, FSDirectory.open(new File(indexDir+"."+analyzer.getClass.getSimpleName+".InvSenseFreqSimilarity")))
 //    }
 //
-//    def getICFIDFStandardDisambiguator(outputFileName: String) : Disambiguator = {
+//    def getICFIDFStandardDisambiguator(indexDir: String) : Disambiguator = {
 //        var analyzer : Analyzer = new org.apache.lucene.analysis.standard.StandardAnalyzer(Version.LUCENE_29, StopAnalyzer.ENGLISH_STOP_WORDS_SET);
 //        var similarity : Similarity = new ICFIDFSimilarity();
-//        createMergedDisambiguator(outputFileName, analyzer, similarity, FSDirectory.open(new File(outputFileName+"."+analyzer.getClass.getSimpleName+".InvSenseFreqSimilarity")))
+//        createMergedDisambiguator(indexDir, analyzer, similarity, FSDirectory.open(new File(indexDir+"."+analyzer.getClass.getSimpleName+".InvSenseFreqSimilarity")))
 //    }
 
-    def getPriorDisambiguator(outputFileName: String) : Disambiguator = {
+    def getPriorDisambiguator(indexDir: String) : Disambiguator = {
         val analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET);
         val similarity : Similarity = new DefaultSimilarity
-        val directory = new NIOFSDirectory(new File(outputFileName+"."+analyzer.getClass.getSimpleName+"."+similarity.getClass.getSimpleName));
+        val directory = new NIOFSDirectory(new File(indexDir+"."+analyzer.getClass.getSimpleName+"."+similarity.getClass.getSimpleName));
         //val luceneManager = new LuceneManager.BufferedMerging(directory)
         val luceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(directory)
         luceneManager.setContextAnalyzer(analyzer);
@@ -252,7 +253,7 @@ object EvaluateDisambiguationOnly
         //            val testFileName = baseDir+"wikipediaAppleTest.50.amb.tsv"
 
         // For merged disambiguators
-        //val outputFileName = baseDir+"/2.9.3/Index.wikipediaTraining.Merged";
+        //val indexDir = baseDir+"/2.9.3/Index.wikipediaTraining.Merged";
 
 
         val disSet = Set(// Snowball analyzer
@@ -271,11 +272,11 @@ object EvaluateDisambiguationOnly
 //                                getProbPlusConditionalSnowballDisambiguator(indexDir)
 
                          // Standard analyzer
-                            //getDefaultStandardDisambiguator(outputFileName),
-                            //getICFStandardDisambiguator(outputFileName),
-                            //getSweetSpotStandardDisambiguator(outputFileName),
-                            //getICFWithPriorStandardDisambiguator(outputFileName),
-                            //getICFIDFStandardDisambiguator(outputFileName),
+                            //getDefaultStandardDisambiguator(indexDir),
+                            //getICFStandardDisambiguator(indexDir),
+                            //getSweetSpotStandardDisambiguator(indexDir),
+                            //getICFWithPriorStandardDisambiguator(indexDir),
+                            //getICFIDFStandardDisambiguator(indexDir),
                             //getICFIDFStandardDisambiguator,
 
                          // no analyzer

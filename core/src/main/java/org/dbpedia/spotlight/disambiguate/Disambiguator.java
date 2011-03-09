@@ -61,4 +61,7 @@ public interface Disambiguator {
     public int trainingSetSize(DBpediaResource resource) throws SearchException;
 
     public List<Explanation> explain(DBpediaResourceOccurrence goldStandardOccurrence, int nExplanations) throws SearchException;
+
+    public int contextTermsNumber(DBpediaResource resource) throws SearchException;
+
 }

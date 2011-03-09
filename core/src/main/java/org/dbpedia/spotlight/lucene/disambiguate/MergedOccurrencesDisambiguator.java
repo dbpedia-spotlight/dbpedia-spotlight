@@ -18,14 +18,17 @@ package org.dbpedia.spotlight.lucene.disambiguate;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.lucene.index.TermFreqVector;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.ScoreDoc;
 import org.dbpedia.spotlight.disambiguate.Disambiguator;
 import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
 import org.dbpedia.spotlight.exceptions.SearchException;
+import org.dbpedia.spotlight.lucene.LuceneFeatureVector;
 import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher;
 import org.dbpedia.spotlight.model.*;
+import org.dbpedia.spotlight.model.vsm.FeatureVector;
 
 import java.io.IOException;
 import java.util.*;
@@ -216,6 +219,17 @@ public class MergedOccurrencesDisambiguator implements Disambiguator {
      */
     public List<Explanation> explain(DBpediaResourceOccurrence goldStandardOccurrence, int nExplanations) throws SearchException {
         return mMergedSearcher.explain(goldStandardOccurrence, nExplanations);
+    }
+
+
+    @Override
+    public int contextTermsNumber(DBpediaResource resource) throws SearchException {
+        int termsCount = 0;
+        for (ScoreDoc hit : mMergedSearcher.getHits(resource)) {
+            TermFreqVector vector = mMergedSearcher.getVector(hit.doc);
+            termsCount += vector.getTerms().length;
+        }
+        return termsCount;
     }
 
 }

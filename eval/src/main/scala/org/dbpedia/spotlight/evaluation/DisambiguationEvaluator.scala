@@ -31,11 +31,14 @@ import org.dbpedia.spotlight.exceptions._
  */
 class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurrence], val disambiguatorSet : Set[Disambiguator], val output : PrintStream)
 {
+
+    val PRIOR_DENOMINATOR : Double = 69772256.0
+
     private val LOG = LogFactory.getLog(this.getClass)
     var totalOccurrenceCount = 0
     var totalCorrectResourceMatches = 0
 
-    val outputTopK = 10  // CAUTION cannot be larger than LuceneManager.topResultsLimit
+    val outputTopK = 100  // CAUTION cannot be larger than LuceneManager.topResultsLimit
 
     var disambiguationCounters = Map[String,Int]()
     var unambiguityCounters    = Map[String,Int]()
@@ -103,22 +106,29 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
     def evaluate()
     {
         //header
-        output.append("occId\t"+
-                      "disambAccuracy\t"+
-                      "ambiguity\t"+
-                      "trainingSetSize\t"+
-                      "score\t"+
-                      "disambiguator\t"+
-                      "correct\t"+              //TODO print type?
-                      "decision\t"+
-                      "percentageOfSecond\t"+
-                      "spotProb\n")
+        output.append("occId\t"+                // occurrence ID
+                      "disambAccuracy\t"+       // correct: 1, incorrect: 0
+                      "surfaceForm\t"+          // surface form in question
+                      "correctURI\t"+           // correct resource of this occurrence   TODO print type?
+                      "spotlightURI\t"+         // resource given as result by Spotlight
+                      "disambiguator\t"+        // type of disambiguator
+                      "trainingSetSize\t"+      // number of Wikipedia inlinks for this resource
+                      "prior\t"+                // prior probability of seeing the spotlightURI; normalized uriCount
+                      "score\t"+                // context similarity score
+                      "percentageOfSecond\t"+   // context similarity score of second ranked divided by context similarity score of first ranked
+                      "ambiguity\t"+            // number of URIs that the surface form can refer to
+                      "spotProb\t"+             // probability of this being a relevant surface form
+                      "trainingVectorLength\t"+ // terms in the context field
+                      "queryWordTypes\n"            // word types in the query
+        )
 
         for (testOcc <- testSource) //TODO it sounds like ultimately we'd need to get paragraphs with occurrences instead. Think if graph disamb
         {
             totalOccurrenceCount += 1
-            LOG.info("=="+totalOccurrenceCount)
-//                  LOG.trace("Processed "+totalOccurrenceCount+" occurrences. Current text: ["+testOcc.context.text.substring(0,scala.math.min(current.length, 100))+"...]")
+            if(totalOccurrenceCount%10 == 0) {
+                LOG.info("=="+totalOccurrenceCount)
+            }
+            //LOG.trace("Processed "+totalOccurrenceCount+" occurrences. Current text: ["+testOcc.context.text.substring(0,scala.math.min(current.length, 100))+"...]")
 
             for (disambiguator <- disambiguatorSet)
             {
@@ -133,13 +143,9 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
                 }
                 //LOG.info("Spot probability for "+testOcc.surfaceForm+"="+spotProb)
 
-                var disambAccuracy = 0
                 var unambiguous = 0
                 var sfNotFound = 0
-                var score = "NA"
-                val correctAnswer = testOcc.resource
-                var decision = ""
-                var precentagOfSecond = "-1"
+
                 if (ambiguity > 1)
                 {
                     try
@@ -155,25 +161,57 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
                             bestK(disambiguator, sfOcc)
                         }
 
-                        val sptlResultOcc = sortedOccs.head
-                        score = sptlResultOcc.similarityScore.toString
-                        precentagOfSecond = sptlResultOcc.percentageOfSecondRank.toString
-                        decision = sptlResultOcc.resource.uri
-                        val disambiguatedResource = sptlResultOcc.resource
-
-                        if(testOcc.resource equals sptlResultOcc.resource) {
-                            disambAccuracy = 1
-                            //correctScores ::= score.toDouble
-                            LOG.debug("  Correct: "+sptlResultOcc.surfaceForm + " -> " + sptlResultOcc.resource)
-                        }
-                        else {
-                            //incorrectScores ::= score.toDouble
-                            LOG.debug("  WRONG: correct: "+testOcc.surfaceForm+" -> "+testOcc.resource);
-                            LOG.debug("       spotlight: "+sptlResultOcc.surfaceForm+" -> "+sptlResultOcc.resource);
-                            //println(disambiguator.explain(testOcc, 100))
+                        //val sptlDecision = sortedOccs.head
+                        //score = sptlDecision.similarityScore.toString
+                        //precentageOfSecond = sptlDecision.percentageOfSecondRank.toString
+                        //sptlResultURI = sptlDecision.resource.uri
+                        if(testOcc.resource equals sortedOccs.head.resource) {
+                            disambiguationCounters = disambiguationCounters.updated(disambiguator.name, disambiguationCounters.get(disambiguator.name).getOrElse(0) + 1)
                         }
 
-                        //givenAnswers = sortedOccs.map(annotatedResOcc => annotatedResOcc.resource.uri+"("+annotatedResOcc.similarityScore.toString+")").mkString("")
+                        // simple tokenization and counting of terms
+                        val queryWordTypes = testOcc.context.text.split("\\W+").toSet.size
+
+
+                        for(sptlResultOcc <- sortedOccs) {
+
+                            var disambAccuracy = 0
+                            if(testOcc.resource equals sptlResultOcc.resource) {
+                                disambAccuracy = 1
+                                //correctScores ::= score.toDouble
+                                LOG.debug("  Correct: "+sptlResultOcc.surfaceForm + " -> " + sptlResultOcc.resource)
+                            }
+                            else {
+                                //incorrectScores ::= score.toDouble
+                                LOG.debug("  WRONG: correct: "+testOcc.surfaceForm+" -> "+testOcc.resource);
+                                LOG.debug("       spotlight: "+sptlResultOcc.surfaceForm+" -> "+sptlResultOcc.resource);
+                                //println(disambiguator.explain(testOcc, 100))
+                            }
+
+
+                            val trainingSetSize = disambiguator.trainingSetSize(sptlResultOcc.resource)
+                            val prior = trainingSetSize / PRIOR_DENOMINATOR
+                            val trainingVectorLength = "NA" //disambiguator.contextTermsNumber(sptlResultOcc.resource)  //TODO bring this back when TermVectors are stored in the CONTEXT field
+
+                            // write stats for this disambiguator
+                            output.append(occId+"\t"+
+                                          disambAccuracy+"\t"+
+                                          testOcc.surfaceForm.name+"\t"+
+                                          testOcc.resource.uri+"\t"+
+                                          sptlResultOcc.resource.uri+"\t"+
+                                          disambiguator.name+"\t"+
+                                          trainingSetSize+"\t"+
+                                          prior+"\t"+
+                                          sptlResultOcc.similarityScore.toString+"\t"+
+                                          sptlResultOcc.percentageOfSecondRank.toString+"\t"+
+                                          ambiguity+"\t"+
+                                          spotProb+"\t"+
+                                          trainingVectorLength+"\t"+
+                                          queryWordTypes+"\n"
+                            )
+
+                            //givenAnswers = sortedOccs.map(annotatedResOcc => annotatedResOcc.resource.uri+"("+annotatedResOcc.similarityScore.toString+")").mkString("")
+                        }
                     }
                     catch
                     {
@@ -190,21 +228,11 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
                         LOG.debug("Nothing to disambiguate. Unambiguous occurrence. Skipping.");
                     }
                 }
-                disambiguationCounters = disambiguationCounters.updated(disambiguator.name, disambiguationCounters.get(disambiguator.name).getOrElse(0) + disambAccuracy)
+
                 unambiguityCounters = unambiguityCounters.updated(disambiguator.name, unambiguityCounters.get(disambiguator.name).getOrElse(0) + unambiguous)
                 sfNotFoundCounters = sfNotFoundCounters.updated(disambiguator.name, sfNotFoundCounters.get(disambiguator.name).getOrElse(0) + sfNotFound)
 
-                // write stats for this disambiguator
-                output.append(occId+"\t"+
-                              disambAccuracy+"\t"+
-                              ambiguity+"\t"+
-                              disambiguator.trainingSetSize(testOcc.resource)+"\t"+
-                              score+"\t"+
-                              disambiguator.name+"\t"+
-                              correctAnswer.uri+"\t"+
-                              decision+"\t"+
-                              precentagOfSecond+"\t"+
-                              spotProb+"\n")
+
             }
 
             // update logger only each 100 occurrences.
@@ -216,7 +244,7 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
     }
 
     def storeTime(disambiguator: Disambiguator) = (delta:Long) => {
-      timeCounters = timeCounters.updated(disambiguator.name, timeCounters.get(disambiguator.name).getOrElse(0.toLong) + delta)
-      //println(disambiguator.name + "  " + formatTime(delta))
+        timeCounters = timeCounters.updated(disambiguator.name, timeCounters.get(disambiguator.name).getOrElse(0.toLong) + delta)
+        //println(disambiguator.name + "  " + formatTime(delta))
     }
 }

@@ -134,7 +134,7 @@ public class BaseSearcher implements Closeable {
         return getHits(mLucene.getQuery(resources, context));
     }
 
-    protected TermFreqVector getVector(int docNo) throws SearchException {
+    public TermFreqVector getVector(int docNo) throws SearchException {
         TermFreqVector vector = null;
         try {
             vector = mReader.getTermFreqVector(docNo, LuceneManager.DBpediaResourceField.CONTEXT.toString());
