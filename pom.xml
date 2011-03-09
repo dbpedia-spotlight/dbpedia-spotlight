@@ -20,20 +20,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.dbpedia.spotlight</groupId>
-    <artifactId>spotlight</artifactId>
-    <version>0.1.1</version>
-    <packaging>pom</packaging>
-    <name>DBpedia Spotlight annotation framework (parent POM)</name>
-
-    <modules>
-        <module>core</module>
-        <module>rest</module>
-        <module>demo</module>
-        <module>eval</module>
-    </modules>
-
     <properties>
+        <dbpedia.spotlight.version>0.1.1</dbpedia.spotlight.version>
+
         <heapspace.Xmx.compiler>-Xmx1g</heapspace.Xmx.compiler>
         <heapspace.Xmx.indexer>-Xmx2g</heapspace.Xmx.indexer>
         <heapspace.Xmx.server>-Xmx2g</heapspace.Xmx.server>
@@ -44,9 +33,20 @@
         <maven.install.plugin.version>2.3.1</maven.install.plugin.version>
         <maven.assembly.plugin.version>2.2-beta-5</maven.assembly.plugin.version>
         <scala.compiler.version>2.8.1</scala.compiler.version>
-        <dbpedia.spotlight.version>0.1</dbpedia.spotlight.version>
     </properties>
 
+    <groupId>org.dbpedia.spotlight</groupId>
+    <artifactId>spotlight</artifactId>
+    <version>${dbpedia.spotlight.version}</version>
+    <packaging>pom</packaging>
+    <name>DBpedia Spotlight annotation framework (parent POM)</name>
+
+    <modules>
+        <module>core</module>
+        <module>rest</module>
+        <module>demo</module>
+        <module>eval</module>
+    </modules>
 
     <build>
         <plugins>
