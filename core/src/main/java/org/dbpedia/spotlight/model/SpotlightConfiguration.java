@@ -54,8 +54,8 @@ public class SpotlightConfiguration {
     protected String similarityThresholdsFile = "similarity-thresholds.txt";
 
     protected String serverURI       = "http://localhost:2222/rest/";
-    protected String sparqlMainGraph = "";
-    protected String sparqlEndpoint  = "";
+    protected String sparqlMainGraph = "http://dbpedia.org/sparql";
+    protected String sparqlEndpoint  = "http://dbpedia.org";
 
 
     public String getServerURI() {
@@ -131,6 +131,9 @@ public class SpotlightConfiguration {
         } catch (URISyntaxException e) {
             throw new ConfigurationException("Server URI not valid.",e);
         }
+
+        sparqlEndpoint = config.getProperty("org.dbpedia.spotlight.sparql.endpoint"); //TODO how to fail gracefully for endpoint?
+        sparqlMainGraph = config.getProperty("org.dbpedia.spotlight.sparql.graph");
 
         //...
 
