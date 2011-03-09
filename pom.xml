@@ -25,7 +25,6 @@
 
         <heapspace.Xmx.compiler>-Xmx1g</heapspace.Xmx.compiler>
         <heapspace.Xmx.indexer>-Xmx2g</heapspace.Xmx.indexer>
-        <heapspace.Xmx.server>-Xmx2g</heapspace.Xmx.server>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.compiler.version>1.6</java.compiler.version>
