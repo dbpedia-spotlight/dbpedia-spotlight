@@ -97,7 +97,7 @@ public class SpotlightConfiguration {
         /*
         jcs.default.cacheattributes.MaxObjects = 5000
          */
-        indexDirectory = config.getProperty("org.dbpedia.spotlight.index.dir");
+        indexDirectory = config.getProperty("org.dbpedia.spotlight.index.dir").trim();
         if(!new File(indexDirectory).isDirectory()) {
             throw new ConfigurationException("Cannot find index directory "+indexDirectory);
         }
@@ -117,7 +117,7 @@ public class SpotlightConfiguration {
             throw new ConfigurationException("Error reading '"+indexDirectory+"/"+similarityThresholdsFile,e);
         }
 
-        spotterFile = config.getProperty("org.dbpedia.spotlight.spot.dictionary");
+        spotterFile = config.getProperty("org.dbpedia.spotlight.spot.dictionary").trim();
         if(!new File(spotterFile).isFile()) {
             throw new ConfigurationException("Cannot find spotter file "+spotterFile);
         }

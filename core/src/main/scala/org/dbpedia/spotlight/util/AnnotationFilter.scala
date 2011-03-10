@@ -23,6 +23,7 @@ import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.disambiguate.{DefaultDisambiguator, Disambiguator}
 import org.dbpedia.spotlight.string.ParseSurfaceFormText
 import org.dbpedia.spotlight.sparql.SparqlQueryExecuter
+import java.net.URLEncoder
 
 
 class AnnotationFilter(val config: SpotlightConfiguration)
@@ -34,7 +35,7 @@ class AnnotationFilter(val config: SpotlightConfiguration)
     val simThresholdList = config.getSimilarityThresholds.map(_.doubleValue)
 
     // Responsible for sending SPARQL queries to the endpoint (results will be used for filtering)
-    val sparqlExecuter = new SparqlQueryExecuter(config.getSparqlEndpoint(), config.getSparqlMainGraph());
+    val sparqlExecuter = new SparqlQueryExecuter(config.getSparqlMainGraph(),config.getSparqlEndpoint());
 
     object ListColor extends Enumeration {
         type ListColor = Value
@@ -282,7 +283,7 @@ class AnnotationFilter(val config: SpotlightConfiguration)
         LOG.info("Filtering... ")
 
         val query = "select distinct ?pol where {?pol a <http://dbpedia.org/ontology/President> .   FILTER REGEX(?pol, \"Bacon\") }";
-
+        println(java.net.URLEncoder.encode(query))
         val filter = new AnnotationFilter(config);
         val filteredOccList : List[DBpediaResourceOccurrence] = filter.filter(occurrences, 0, 0, List(), query, false, true);
 

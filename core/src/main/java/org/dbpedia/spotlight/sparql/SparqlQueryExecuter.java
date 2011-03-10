@@ -68,11 +68,13 @@ public class SparqlQueryExecuter {
 		LOG.debug(url);
 		//FIXME Do some test with the returned results to see if there actually are results.
         Set<String> uris = null;
+        String response = null;
         try {
 //            uris = parse(readOutput(get(url)));
-            uris = parse(request(url));
+            response = request(url);
+            uris = parse(response);
         } catch (JSONException e) {
-            throw new OutputException(e);
+            throw new OutputException(e+response);
         }
         return uris;
 	}
