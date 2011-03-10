@@ -67,7 +67,8 @@ public abstract class TermCache {
 
 
     /**
-     * Extracts the DocIdSet for documents containing both the surfaceForm (previously stored) and the context term at hand.
+     * Retrieves from the cache the DocIdSet for documents containing the context term at hand.
+     * If DocIdSet is not cached, creates it by reading from the index (createDocIdSet).
      * @param reader
      * @param term
      * @return
@@ -123,7 +124,7 @@ public abstract class TermCache {
     }
 
     /**
-     * Returns the number of documents containing the set of terms provided
+     * Returns the number of documents containing the all terms in the set provided
      * @param reader
      * @param terms
      * @return
@@ -154,6 +155,7 @@ public abstract class TermCache {
 
     /**
      * How many times does a surface form occur in the context field?
+     * For phrases, only approximation is possible.
      * @param reader
      * @param sf
      * @return

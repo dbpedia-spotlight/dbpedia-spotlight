@@ -61,7 +61,7 @@ public class CachedInvCandFreqSimilarity extends DefaultSimilarity implements Ca
         final int df = searcher.docFreq(term);
         final int max = searcher.maxDoc();
         final float idf = idf(df, max);
-        final long maxCf = termCache.cardinality(((IndexSearcher) searcher).getIndexReader(), surfaceFormTerm); // This is the number of documents that contain the surface form (size of surrogate set)
+        final long maxCf = termCache.cardinality(((IndexSearcher) searcher).getIndexReader(), surfaceFormTerm); // This is the number of documents that contain the surface form (size of candidate set)
         float surfaceFormIDF = idf(df, max);
 
         return new Explanation.IDFExplanation() {
@@ -117,7 +117,7 @@ public class CachedInvCandFreqSimilarity extends DefaultSimilarity implements Ca
     //FIXME this is not thread-safe
     @Override
     public Explanation.IDFExplanation idfExplain(final Term term, final Searcher searcher) throws IOException {
-        final int df = searcher.docFreq(term);
+        final int df = searcher.docFreq(term);   //TODO for URI term, the df is the value of the field uriCount ?
         final int max = searcher.maxDoc();
         final float idf = idf(df, max);
 
@@ -126,7 +126,7 @@ public class CachedInvCandFreqSimilarity extends DefaultSimilarity implements Ca
             long sf = 0;
 
             boolean isSurfaceFormField = term.field().equals(LuceneManager.DBpediaResourceField.SURFACE_FORM.toString());
-
+            //TODO can optimize for URI term. No need to compute anything, just return.
             private long sf() {
 
                 try {
@@ -175,13 +175,13 @@ public class CachedInvCandFreqSimilarity extends DefaultSimilarity implements Ca
             }
             @Override
             public float getIdf() {
-                if (isSurfaceFormField)
-                    return idf; // inverse document frequency
-                else {
+//                if (isSurfaceFormField)
+//                    return idf; // inverse document frequency
+//                else {
                     sf = sf(); // sense frequency
                     float isf = isf(sf, maxSf); // inverse sense frequency
                     return isf;
-                }
+//                }
 
             }};
     }

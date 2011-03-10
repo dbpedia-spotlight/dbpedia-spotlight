@@ -243,21 +243,7 @@ public class LuceneManager {
         return newDoc;
     }
 
-    /**
-     * TODO Gives us a chance to add some smarter/faster analyzer for query time that, for example:
-     * - automatically discards very common words when querying
-     * - uses only words around a given surface form
-     * @return
-     */
-    public Analyzer getQueryTimeContextAnalyzer() {
-        //Analyzer queryTimeAnalyzer = new QueryAutoStopWordAnalyzer(Version.LUCENE_29, analyzer); // should be done at class loading time
-        //timed(printTime("Adding auto stopwords took ")) {
-        //  queryTimeAnalyzer.addStopWords(contextSearcher.getIndexReader, DBpediaResourceField.CONTEXT.toString, 0.5f);
-        //}
-        // return this.queryTimeAnalyzer();
-        
-        return this.contextAnalyzer();
-    }
+
 
     /*---------- Basic methods for querying the index correctly ----------*/
 
@@ -283,6 +269,22 @@ public class LuceneManager {
             andQuery.add(new TermQuery(t), BooleanClause.Occur.MUST);
         }
         return andQuery;
+    }
+
+    /**
+     * TODO Gives us a chance to add some smarter/faster analyzer for query time that, for example:
+     * - automatically discards very common words when querying
+     * - uses only words around a given surface form
+     * @return
+     */
+    public Analyzer getQueryTimeContextAnalyzer() {
+        //Analyzer queryTimeAnalyzer = new QueryAutoStopWordAnalyzer(Version.LUCENE_29, analyzer); // should be done at class loading time
+        //timed(printTime("Adding auto stopwords took ")) {
+        //  queryTimeAnalyzer.addStopWords(contextSearcher.getIndexReader, DBpediaResourceField.CONTEXT.toString, 0.5f);
+        //}
+        // return this.queryTimeAnalyzer();
+
+        return this.contextAnalyzer();
     }
 
     public Query getQuery(Text context) throws SearchException {
@@ -372,15 +374,25 @@ public class LuceneManager {
 //        return query;
 //    }
 
+    /**
+     * Builds a Lucene Query object (CandidateResourceQuery) that uses the SurfaceForm to compute ICF for context terms
+     * @param sf
+     * @param context
+     * @return
+     * @throws SearchException
+     */
     public BooleanQuery getQuery(SurfaceForm sf, Text context) throws SearchException {
+        // First get all terms in the context
         Set<Term> ctxTerms = new HashSet<Term>();
         Query contextQuery = getQuery(context);
         contextQuery.extractTerms(ctxTerms);
 
+        // Then get the surface form terms
         Query sfQuery = getQuery(sf);
         Set<Term> sfTerms = new HashSet<Term>();
         sfQuery.extractTerms(sfTerms);   //TODO FUTURE if we have an ngram analyzer for SF, passing this set down to the similarity class enables its usage. For now we have only one term.
 
+        // Now create CandidateResourceQueries that associate the surface form to each context term
         BooleanQuery orQuery = new BooleanQuery();
         orQuery.add(new BooleanClause(sfQuery, BooleanClause.Occur.MUST)); //TODO do we need this?
         for (Term sfTerm: sfTerms) { //FIXME this is not correct in the context of the ICF similarity. better to pass the full set downstream and let they handle it there. but for now, we have only one term..

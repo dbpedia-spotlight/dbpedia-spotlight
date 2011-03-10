@@ -78,7 +78,7 @@ object EvaluateDisambiguationOnly
     }
 
     def getNewStopwordedDisambiguator(indexDir: String) : Disambiguator = {
-        val f = new File("e:\\dbpa\\data\\surface_forms\\stopwords.list")
+        val f = new File("/home/pablo/web/dbpedia36data/stopwords.list")
         val stopwords = Source.fromFile(f, "UTF-8").getLines.toSet
         println("Stopwords loaded: "+stopwords.size);
         val analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", stopwords);
@@ -91,13 +91,15 @@ object EvaluateDisambiguationOnly
     def getICFSnowballDisambiguator(indexDir: String) : Disambiguator = {
         val analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET);
         val similarity : Similarity = new InvCandFreqSimilarity();
-        val directory =  LuceneManager.pickDirectory(new File(indexDir+"."+analyzer.getClass.getSimpleName+".DefaultSimilarity"));
+        //val directory =  LuceneManager.pickDirectory(new File(indexDir+"."+analyzer.getClass.getSimpleName+".DefaultSimilarity"));
+        val directory =  LuceneManager.pickDirectory(new File(indexDir));
         createMergedDisambiguator(indexDir, analyzer, similarity, directory)
     }
 
     def getICFCachedDisambiguator(indexDir: String) : Disambiguator = {
       val analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET);
-      val directory = LuceneManager.pickDirectory(new File(indexDir+"."+analyzer.getClass.getSimpleName+".DefaultSimilarity"));
+      //val directory = LuceneManager.pickDirectory(new File(indexDir+"."+analyzer.getClass.getSimpleName+".DefaultSimilarity"));
+      val directory =  LuceneManager.pickDirectory(new File(indexDir));
       val cache = new JCSTermCache(new LuceneManager.BufferedMerging(directory));
       val similarity : Similarity = new CachedInvCandFreqSimilarity(cache);
       createMergedDisambiguator(indexDir, analyzer, similarity, directory)
@@ -259,9 +261,9 @@ object EvaluateDisambiguationOnly
         val disSet = Set(// Snowball analyzer
                             //getDefaultSnowballDisambiguator(indexDir),
                             //getNewDisambiguator(indexDir),
-                            //getICFCachedDisambiguator(indexDir)
-                            getNewStopwordedDisambiguator(indexDir)
-                            //getICFSnowballDisambiguator(indexDir)
+                            getICFCachedDisambiguator(indexDir),
+                            //getNewStopwordedDisambiguator(indexDir),
+                            getICFSnowballDisambiguator(indexDir)
                             //getSweetSpotSnowballDisambiguator(indexDir)
                             //getICFWithPriorSnowballDisambiguator(indexDir),
                             //getICFIDFSnowballDisambiguator(indexDir),
