@@ -122,7 +122,7 @@ public class SpotlightConfiguration {
             throw new ConfigurationException("Cannot find spotter file "+spotterFile);
         }
 
-        serverURI = config.getProperty("org.dbpedia.spotlight.web.rest.uri");
+        serverURI = config.getProperty("org.dbpedia.spotlight.web.rest.uri").trim();
         if (!serverURI.endsWith("/")) {
             serverURI = serverURI.concat("/");
         }
@@ -132,8 +132,8 @@ public class SpotlightConfiguration {
             throw new ConfigurationException("Server URI not valid.",e);
         }
 
-        sparqlEndpoint = config.getProperty("org.dbpedia.spotlight.sparql.endpoint"); //TODO how to fail gracefully for endpoint?
-        sparqlMainGraph = config.getProperty("org.dbpedia.spotlight.sparql.graph");
+        sparqlEndpoint = config.getProperty("org.dbpedia.spotlight.sparql.endpoint").trim(); //TODO how to fail gracefully for endpoint?
+        sparqlMainGraph = config.getProperty("org.dbpedia.spotlight.sparql.graph").trim();
 
         //...
 

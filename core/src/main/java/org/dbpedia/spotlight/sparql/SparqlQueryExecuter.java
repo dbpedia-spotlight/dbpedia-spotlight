@@ -76,6 +76,7 @@ public class SparqlQueryExecuter {
         } catch (JSONException e) {
             throw new OutputException(e+response);
         }
+        LOG.info(String.format("-- %s found.",uris.size()));
         return uris;
 	}
 

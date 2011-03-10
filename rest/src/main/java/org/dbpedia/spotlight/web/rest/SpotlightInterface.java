@@ -205,16 +205,16 @@ public abstract class SpotlightInterface  {
                          String dbpediaTypesString,
                          String spqarlQuery,
                          String policy,
-                         boolean coreferenceResolution) throws OutputException {
+                         boolean coreferenceResolution) throws Exception {
         String result;
-        try {
+//        try {
             List<DBpediaResourceOccurrence> occs = getOccurrences(text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
             result = output.makeXML(text, occs, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
-        }
-        catch (Exception e) { //TODO throw exception up to Annotate for WebApplicationException to handle.
-            LOG.info("ERROR: "+e.getMessage());
-            result = output.makeErrorXML(e.getMessage(), text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
-        }
+//        }
+//        catch (Exception e) { //TODO throw exception up to Annotate for WebApplicationException to handle.
+//            LOG.info("ERROR: "+e.getMessage());
+//            result = output.makeErrorXML(e.getMessage(), text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
+//        }
         LOG.info("XML format");
         return result;
     }
