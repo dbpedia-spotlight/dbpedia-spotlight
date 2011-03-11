@@ -164,4 +164,9 @@ public class PriorDisambiguator implements Disambiguator {
     public int contextTermsNumber(DBpediaResource resource) throws SearchException {
         return 0;  // prior works without context
     }
+
+    @Override
+    public double averageIdf(Text context) throws IOException {
+        throw new IOException(this.getClass()+" has no index available to calculate averageIdf");
+    }
 }

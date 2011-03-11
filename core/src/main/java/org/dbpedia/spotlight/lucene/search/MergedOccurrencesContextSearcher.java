@@ -18,6 +18,8 @@ package org.dbpedia.spotlight.lucene.search;
 
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.Ints;
+import org.apache.lucene.analysis.Token;
+import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.document.MapFieldSelector;
@@ -36,6 +38,7 @@ import org.dbpedia.spotlight.model.vsm.FeatureVector;
 import org.dbpedia.spotlight.string.ContextExtractor;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.*;
 
 /**
@@ -53,6 +56,8 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
     private String[] onlyUriAndTypes = {LuceneManager.DBpediaResourceField.URI.toString(),
                                         LuceneManager.DBpediaResourceField.URI_COUNT.toString(),
                                         LuceneManager.DBpediaResourceField.TYPE.toString()};
+
+    long numDocs = super.getNumberOfEntries();
 
     public MergedOccurrencesContextSearcher(LuceneManager lucene) throws IOException {
         super(lucene);
@@ -446,5 +451,46 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
 //            LOG.error("Error reading number of resources. "+e.getMessage());
 //        }
 //        return total;
+    }
+
+
+    public double getAverageIdf(Text context) throws IOException {
+        double idfSum = 0;
+        int wordCount = 0;
+
+        Set<String> seenWords = new HashSet<String>();
+
+//        StringReader sr = new StringReader(context.text());
+//        TokenStream ts = mLucene.contextAnalyzer().tokenStream(LuceneManager.DBpediaResourceField.CONTEXT.toString(), sr);
+//        Token t;
+//        while((t = ts.next()) != null) {
+//            String word = t.term();
+
+        for(String word : context.text().split("\\W+")) {   // simple tokenizer
+            if(seenWords.contains(word) || word.trim().equals("")) {
+                continue;
+            }
+
+            try {
+                int docCount = getHits(mLucene.getQuery(new Text(word))).length;
+
+    //            TermDocs tds = mReader.termDocs(new Term(t.term(), LuceneManager.DBpediaResourceField.CONTEXT.toString()););
+    //            int docCount = 0;
+    //            while(tds.next()) {
+    //                docCount++;
+    //            }
+
+                if(docCount > 0) {
+                    wordCount++;
+                    idfSum += Math.log(numDocs/docCount);
+                }
+
+            } catch (SearchException e) {
+                LOG.trace("word "+word+"not found in context field when getting average idf");
+            }
+            seenWords.add(word);
+        }
+
+        return idfSum/wordCount;
     }
 }

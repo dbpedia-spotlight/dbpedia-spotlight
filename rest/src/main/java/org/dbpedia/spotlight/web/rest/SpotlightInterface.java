@@ -153,7 +153,7 @@ public abstract class SpotlightInterface  {
 
         LOG.info("Shown:");
         for(DBpediaResourceOccurrence occ : occList) {
-            LOG.info(occ.resource());
+            LOG.info(occ.resource()+" <- "+occ.surfaceForm());
         }
 
         return occList;

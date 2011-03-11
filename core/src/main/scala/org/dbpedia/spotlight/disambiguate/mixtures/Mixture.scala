@@ -10,10 +10,6 @@ package org.dbpedia.spotlight.disambiguate.mixtures
 
 abstract class Mixture(val contextWeight: Double) {
 
-    if(0 > contextWeight || contextWeight > 1) {
-        throw new IllegalArgumentException("context weight must be between 0 and 1; got "+contextWeight)
-    }
-
     def getScore(contextScore: Double, uriCount: Int) : Double
 
     override def toString: String

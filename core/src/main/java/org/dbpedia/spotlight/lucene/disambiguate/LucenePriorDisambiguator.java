@@ -145,4 +145,9 @@ public class LucenePriorDisambiguator implements Disambiguator {
         return 0;  // prior works without context
     }
 
+    @Override
+    public double averageIdf(Text context) throws IOException {
+        throw new IOException(this.getClass()+" has no context available in the index to calculate averageIdf");
+    }
+
 }

@@ -83,5 +83,15 @@ class DBpediaResourceOccurrence(val id : String,
         id+"\t"+resource.uri+"\t"+surfaceForm.name+"\t"+context.text+"\t"+textOffset+"\t"+resource.types.map(_.name).mkString(",")
     }
 
+
+    def setSimilarityScore(s: Double) {
+        this.similarityScore = s
+    }
+
+    def setPercentageOfSecondRank(p: Double) {
+        this.percentageOfSecondRank = p
+    }
+
+
 }
 

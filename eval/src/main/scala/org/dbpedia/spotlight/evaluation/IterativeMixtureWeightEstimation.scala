@@ -3,7 +3,7 @@ package org.dbpedia.spotlight.evaluation
 import io.Source
 import org.dbpedia.spotlight.model.{Text, SurfaceForm, DBpediaResource, DBpediaResourceOccurrence}
 import java.io.File
-import org.dbpedia.spotlight.disambiguate.mixtures.{LinearRegressionMixture, Fader2Mixture, FaderMixture, Mixture}
+import org.dbpedia.spotlight.disambiguate.mixtures._
 
 /**
  * Created by IntelliJ IDEA.
@@ -148,11 +148,11 @@ object IterativeMixtureWeightEstimation
         val RESOURCE_NUMBER = 3202919
 
         val mixtureMethods: List[Double => Mixture] = List(
-            //new OnlyContextMixture(_),
+            (Double => new OnlySimScoreMixture),
             //new OnlyPriorMixture(_, OCC_NUMBER),
             //new SimpleLinearMixture(_, OCC_NUMBER),
             //new Fader2Mixture(_, 100000)      // 0.4 is best
-            //new Fader2Mixture(_, 50000),       // 0.5 is best
+            new Fader2Mixture(_, 50000),       // 0.5 is best
 //            new Fader2Mixture(_, 25000),
 //            new Fader2Mixture(_, 10000),
 //            new Fader2Mixture(_, 5000),
@@ -161,7 +161,8 @@ object IterativeMixtureWeightEstimation
 //            new Fader2Mixture(_, 500),
 //            new Fader2Mixture(_, 250)
              //new FaderMixture(_, 15, SURROGATES_NUMBER)
-             //new LinearRegressionMixture()
+             (Double => new LinearRegressionMixture)
+
         )
 
         System.err.println("Testing with "+mixtureMethods.length+" mixture methods...")

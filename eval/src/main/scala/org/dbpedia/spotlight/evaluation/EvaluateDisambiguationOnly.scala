@@ -31,9 +31,11 @@ import org.apache.lucene.store.{NIOFSDirectory, Directory, FSDirectory}
 import io.Source
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.disambiguate._
+import mixtures.LinearRegressionMixture
 import org.dbpedia.spotlight.lucene.index.MergedOccurrencesContextIndexer
 import org.dbpedia.spotlight.lucene._
 import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
+import org.dbpedia.spotlight.model.ContextSearcher
 
 /**
  * This class is evolving to be the main disambiguation class that takes parameters for which dataset to run.
@@ -51,6 +53,10 @@ object EvaluateDisambiguationOnly
     }
 
     def createMergedDisambiguator(outputFileName: String, analyzer: Analyzer, similarity: Similarity, directory: Directory) : Disambiguator = {
+        createDisambiguator(outputFileName, analyzer, similarity, directory, new MergedOccurrencesDisambiguator(_))
+    }
+
+    def createDisambiguator(outputFileName: String, analyzer: Analyzer, similarity: Similarity, directory: Directory, dis: (MergedOccurrencesContextSearcher => Disambiguator)) : Disambiguator = {
         ensureExists(directory)
         //val luceneManager = new LuceneManager.BufferedMerging(directory)
         val luceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(directory)
@@ -74,12 +80,13 @@ object EvaluateDisambiguationOnly
 
         LOG.info("Number of entries in merged resource index ("+contextSearcher.getClass()+"): "+ contextSearcher.getNumberOfEntries());
         // The Disambiguator chooses the best URI for a surface form
-        new MergedOccurrencesDisambiguator(contextSearcher)
+        dis(contextSearcher)
     }
 
     def getNewStopwordedDisambiguator(indexDir: String) : Disambiguator = {
-        val f = new File("/home/pablo/web/dbpedia36data/stopwords.list")
-        val stopwords = Source.fromFile(f, "UTF-8").getLines.toSet
+        val f = new File("e:\\dbpa\\data\\surface_forms\\stopwords.list")
+        //val stopwords = Source.fromFile(f, "UTF-8").getLines.toSet
+        val stopwords = StopAnalyzer.ENGLISH_STOP_WORDS_SET
         println("Stopwords loaded: "+stopwords.size);
         val analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", stopwords);
         val similarity : Similarity = new InvCandFreqSimilarity();
@@ -103,6 +110,17 @@ object EvaluateDisambiguationOnly
       val cache = new JCSTermCache(new LuceneManager.BufferedMerging(directory));
       val similarity : Similarity = new CachedInvCandFreqSimilarity(cache);
       createMergedDisambiguator(indexDir, analyzer, similarity, directory)
+    }
+
+    def getICFCachedMixedDisambiguator(indexDir: String) : Disambiguator = {
+      val analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET);
+      //val directory = LuceneManager.pickDirectory(new File(indexDir+"."+analyzer.getClass.getSimpleName+".DefaultSimilarity"));
+      val directory =  LuceneManager.pickDirectory(new File(indexDir));
+      val cache = new JCSTermCache(new LuceneManager.BufferedMerging(directory));
+      //val similarity : Similarity = new CachedInvCandFreqSimilarity(cache);
+      val similarity : Similarity = new InvCandFreqSimilarity
+      val mixture = new LinearRegressionMixture
+      createDisambiguator(indexDir, analyzer, similarity, directory, new MixedWeightsDisambiguator(_, mixture))
     }
 
     def getNewDisambiguator(indexDir: String) : Disambiguator = {
@@ -261,9 +279,10 @@ object EvaluateDisambiguationOnly
         val disSet = Set(// Snowball analyzer
                             //getDefaultSnowballDisambiguator(indexDir),
                             //getNewDisambiguator(indexDir),
-                            getICFCachedDisambiguator(indexDir),
+                            //getICFCachedDisambiguator(indexDir)
+                            getICFCachedMixedDisambiguator(indexDir)
                             //getNewStopwordedDisambiguator(indexDir),
-                            getICFSnowballDisambiguator(indexDir)
+                            //getICFSnowballDisambiguator(indexDir)
                             //getSweetSpotSnowballDisambiguator(indexDir)
                             //getICFWithPriorSnowballDisambiguator(indexDir),
                             //getICFIDFSnowballDisambiguator(indexDir),

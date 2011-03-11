@@ -20,11 +20,9 @@ import org.apache.lucene.search.Explanation;
 import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
 import org.dbpedia.spotlight.exceptions.SearchException;
-import org.dbpedia.spotlight.model.DBpediaResource;
-import org.dbpedia.spotlight.model.DBpediaResourceOccurrence;
-import org.dbpedia.spotlight.model.SurfaceForm;
-import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
+import org.dbpedia.spotlight.model.*;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -63,5 +61,7 @@ public interface Disambiguator {
     public List<Explanation> explain(DBpediaResourceOccurrence goldStandardOccurrence, int nExplanations) throws SearchException;
 
     public int contextTermsNumber(DBpediaResource resource) throws SearchException;
+
+    public double averageIdf(Text context) throws IOException;
 
 }

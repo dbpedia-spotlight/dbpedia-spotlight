@@ -90,10 +90,8 @@ public class MergedOccurrencesDisambiguator implements Disambiguator {
 
 
     public DBpediaResourceOccurrence disambiguate(SurfaceFormOccurrence sfOcc) throws SearchException, ItemNotFoundException, InputException {
-        //LOG.debug("Disambiguating occurrence: "+sfOcc);
-
         // search index for surface form
-        LOG.info("Getting hits for "+sfOcc.surfaceForm()+" and the context...");
+        LOG.info("Disambiguating "+sfOcc.surfaceForm()+" ...");
         ScoreDoc[] hits = mMergedSearcher.getHits(sfOcc);
  
         if (hits.length == 0)
@@ -173,7 +171,6 @@ public class MergedOccurrencesDisambiguator implements Disambiguator {
 
         for (SurfaceFormOccurrence sfOcc : sfOccs) {
             try {
-                LOG.info("Disambiguating "+sfOcc.surfaceForm()+" ...");
                 results.add(disambiguate(sfOcc));
             } catch (ItemNotFoundException e) {
                 LOG.error("Could not disambiguate "+sfOcc.surfaceForm()+": "+e);
@@ -230,6 +227,11 @@ public class MergedOccurrencesDisambiguator implements Disambiguator {
             termsCount += vector.getTerms().length;
         }
         return termsCount;
+    }
+
+    @Override
+    public double averageIdf(Text context) throws IOException {
+        return mMergedSearcher.getAverageIdf(context);
     }
 
 }

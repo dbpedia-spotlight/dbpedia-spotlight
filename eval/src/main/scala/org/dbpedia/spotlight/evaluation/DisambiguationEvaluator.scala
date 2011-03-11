@@ -119,7 +119,8 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
                       "ambiguity\t"+            // number of URIs that the surface form can refer to
                       "spotProb\t"+             // probability of this being a relevant surface form
                       "trainingVectorLength\t"+ // terms in the context field
-                      "queryWordTypes\n"            // word types in the query
+                      "queryWordTypes\t"+       // word types in the query
+                      "averageIdf\n"            // average idf of the query terms
         )
 
         for (testOcc <- testSource) //TODO it sounds like ultimately we'd need to get paragraphs with occurrences instead. Think if graph disamb
@@ -172,6 +173,7 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
                         // simple tokenization and counting of terms
                         val queryWordTypes = testOcc.context.text.split("\\W+").toSet.size
 
+                        val averageIdf = "NA"  // disambiguator.averageIdf(testOcc.context)
 
                         for(sptlResultOcc <- sortedOccs) {
 
@@ -207,7 +209,8 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
                                           ambiguity+"\t"+
                                           spotProb+"\t"+
                                           trainingVectorLength+"\t"+
-                                          queryWordTypes+"\n"
+                                          queryWordTypes+"\t"+
+                                          averageIdf+"\n"
                             )
 
                             //givenAnswers = sortedOccs.map(annotatedResOcc => annotatedResOcc.resource.uri+"("+annotatedResOcc.similarityScore.toString+")").mkString("")

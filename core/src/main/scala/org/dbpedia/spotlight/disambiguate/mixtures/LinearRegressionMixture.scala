@@ -1,15 +1,24 @@
 package org.dbpedia.spotlight.disambiguate.mixtures
 
 /**
- * Adaptation of Fader et al. (2009) mixture
+ * Linear regression mixture
  */
 
-class LinearRegressionMixture(override val contextWeight: Double, val priorWeight: Double) extends Mixture(contextWeight) {
+//TODO everything is hard-coded here :(
+
+class LinearRegressionMixture extends Mixture(0) {
+
+    override val contextWeight = 1.1247
+    val priorWeight = 344.597
+    val c = -0.0055
+
+    val totalOccurrenceCount = 69772256
+
 
     def getScore(contextScore: Double, uriCount: Int) = {
-        contextWeight * contextScore + priorWeight * uriCount
+        contextWeight * contextScore + priorWeight * uriCount/totalOccurrenceCount + c
     }
 
-    override def toString = "LinearRegressionMixture[priorWeight="+priorWeight+"]("+contextWeight+")"
+    override def toString = "LinearRegressionMixture[priorWeight="+priorWeight+",c="+c+"]("+contextWeight+")"
 
 }

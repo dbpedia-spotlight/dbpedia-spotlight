@@ -65,7 +65,7 @@ public class BaseSearcher implements Closeable {
     }
 
     public long getNumberOfEntries() {
-        return this.mReader.maxDoc();
+        return this.mReader.maxDoc();    // is this reliable, or is this.mReader.numDocs() better?
     }
 
     /**

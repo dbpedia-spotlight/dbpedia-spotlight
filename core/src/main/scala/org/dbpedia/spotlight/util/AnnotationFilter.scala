@@ -23,6 +23,7 @@ import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.disambiguate.{DefaultDisambiguator, Disambiguator}
 import org.dbpedia.spotlight.string.ParseSurfaceFormText
 import org.dbpedia.spotlight.sparql.SparqlQueryExecuter
+import org.dbpedia.spotlight.exceptions.InputException
 import java.net.URLEncoder
 
 
@@ -64,20 +65,17 @@ class AnnotationFilter(val config: SpotlightConfiguration)
                blacklist : Boolean,
                coreferenceResolution : Boolean): List[DBpediaResourceOccurrence] = {
 
+        if (0 > confidence || confidence > 1) {
+            throw new InputException("confidence must be between 0 and 1; got "+confidence)
+        }
+
         var filteredOccs = occs
 
         val listColor = if(blacklist) Blacklist else Whitelist
 
         if (coreferenceResolution) filteredOccs = buildCoreferents(filteredOccs)
-
         filteredOccs = filterBySupport(filteredOccs, targetSupport)
-        if (0 <= confidence || confidence <= 1) {
-            filteredOccs = filterByConfidence(filteredOccs, confidence)
-        }
-        else {
-            LOG.warn("confidence must be between 0 and 1 (is "+confidence+"); setting to 0")
-        }
-
+        filteredOccs = filterByConfidence(filteredOccs, confidence)
         filteredOccs = filterByType(filteredOccs, if(dbpediaTypes == null) List() else dbpediaTypes.toList, listColor)
         filteredOccs = filterBySupport(filteredOccs, targetSupport)
 
