@@ -19,12 +19,12 @@ package org.dbpedia.spotlight.disambiguate
 import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
 import org.dbpedia.spotlight.lucene.LuceneManager
 import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
-import org.dbpedia.spotlight.model.{DBpediaResource, SurfaceForm, SurfaceFormOccurrence, DBpediaResourceOccurrence}
 import java.io.File
 import org.dbpedia.spotlight.lucene.similarity._
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.exceptions.{SearchException, InputException}
 import org.apache.lucene.search.Explanation
+import org.dbpedia.spotlight.model._
 
 /**
  * Created by IntelliJ IDEA.
@@ -87,6 +87,10 @@ class DefaultDisambiguator(val indexDir : File) extends Disambiguator  {
 
     def contextTermsNumber(resource : DBpediaResource) : Int = {
         disambiguator.contextTermsNumber(resource)
+    }
+
+    def averageIdf(context : Text) : Double = {
+        disambiguator.averageIdf(context)
     }
 
 }
