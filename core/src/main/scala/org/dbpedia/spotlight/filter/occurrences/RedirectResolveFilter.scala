@@ -21,17 +21,13 @@ import org.dbpedia.spotlight.model.{DBpediaResource, DBpediaResourceOccurrence}
 
 class RedirectResolveFilter(val redirects : Map[String,String]) extends OccurrenceFilter {
 
-    def filter(occs : List[DBpediaResourceOccurrence]) : List[DBpediaResourceOccurrence] = {
-        occs.map(resolveRedirects)
-    }
-
-    def resolveRedirects(occ : DBpediaResourceOccurrence) : DBpediaResourceOccurrence = {
+    def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
         redirects.get(occ.resource.uri) match {
             case Some(targetUri) => {
                 val resolvedResource = new DBpediaResource(targetUri, occ.resource.support, occ.resource.types)
-                new DBpediaResourceOccurrence(occ.id, resolvedResource, occ.surfaceForm, occ.context, occ.textOffset, occ.provenance, occ.similarityScore, occ.percentageOfSecondRank, occ.spotProb)
+                Some(new DBpediaResourceOccurrence(occ.id, resolvedResource, occ.surfaceForm, occ.context, occ.textOffset, occ.provenance, occ.similarityScore, occ.percentageOfSecondRank, occ.spotProb))
             }
-            case None => occ
+            case None => Some(occ)
         }
     }
 

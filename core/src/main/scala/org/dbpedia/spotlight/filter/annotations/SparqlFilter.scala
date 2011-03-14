@@ -22,35 +22,36 @@ import org.dbpedia.spotlight.sparql.SparqlQueryExecuter
 import scala.collection.JavaConversions._
 
 
-class SparqlFilter(val executer : SparqlQueryExecuter, val sparqlQuery: String, val blacklistOrWhitelist : FilterPolicy.ListColor) extends AnnotationFilter  {
+class SparqlFilter(val executer : SparqlQueryExecuter, val sparqlQuery: String, val listColor : FilterPolicy.ListColor) extends AnnotationFilter  {
 
     private val LOG = LogFactory.getLog(this.getClass)
 
-    def filter(occs : List[DBpediaResourceOccurrence]) : List[DBpediaResourceOccurrence] = {
+    val uriSet =
+        if(sparqlQuery != null && sparqlQuery != "") {
+            val s = executer.query(sparqlQuery).toSet
+            LOG.debug("SPARQL "+listColor+":"+s)
+            s
+        }
+        else {
+            Set[String]()
+        }
+
+    private val acceptable = listColor match {
+        case FilterPolicy.Whitelist => (resource : DBpediaResource) =>  uriSet.contains(resource.uri)
+        case FilterPolicy.Blacklist => (resource : DBpediaResource) => !uriSet.contains(resource.uri)
+    }
+
+    def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
         if(sparqlQuery == null || sparqlQuery == "") {
-            return occs
+            Some(occ)
         }
-
-        val uriSet = executer.query(sparqlQuery).toSet
-        LOG.debug("SPARQL "+blacklistOrWhitelist+":"+uriSet);
-
-        val acceptable = blacklistOrWhitelist match {
-            case FilterPolicy.Whitelist => (resource : DBpediaResource) =>  uriSet.contains(resource.uri)
-            case FilterPolicy.Blacklist => (resource : DBpediaResource) => !uriSet.contains(resource.uri)
+        else if(acceptable(occ.resource)) {
+            Some(occ)
         }
-
-        occs.filter(isOk(_, acceptable))
+        else {
+            LOG.info("filtered out by SPARQL "+listColor+": "+occ.resource)
+            None
+        }
     }
-
-    private def isOk(occ : DBpediaResourceOccurrence, acceptable : DBpediaResource => Boolean) : Boolean = {
-        if (!acceptable(occ.resource)) {
-            LOG.info("filtered out by SPARQL "+blacklistOrWhitelist+": "+occ.resource)
-            return false
-        }
-
-        true
-    }
-
-
 
 }

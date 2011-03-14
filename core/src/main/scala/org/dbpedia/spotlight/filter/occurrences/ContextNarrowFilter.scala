@@ -26,26 +26,16 @@ class ContextNarrowFilter(val contextExtractor : ContextExtractor) extends Occur
 
     private val LOG = LogFactory.getLog(this.getClass)
 
-    def filter(occs : List[DBpediaResourceOccurrence]) : List[DBpediaResourceOccurrence] = {
-        var shortContextCount = 0
-
-        val narrowOccs = occs.flatMap{ occ =>
-            try {
-                Some(contextExtractor.narrowContext(occ))
-            }
-            catch {
-                case e : InputException => {
-                    shortContextCount += 1
-                    None
-                }
+    def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
+        try {
+            Some(contextExtractor.narrowContext(occ))
+        }
+        catch {
+            case e : InputException => {
+                LOG.warn("filtered out occurrence "+occ.id+". too little context")
+                None
             }
         }
-
-        if (shortContextCount > 0) {
-            LOG.warn(shortContextCount+" occurrences were filtered out due to too little context")
-        }
-
-        narrowOccs
     }
 
 }

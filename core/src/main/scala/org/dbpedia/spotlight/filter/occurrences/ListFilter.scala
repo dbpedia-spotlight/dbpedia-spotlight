@@ -22,8 +22,13 @@ class ListFilter extends OccurrenceFilter {
 
     val listPrefix = "List_of_"
 
-    def filter(occs : List[DBpediaResourceOccurrence]) : List[DBpediaResourceOccurrence] = {
-        occs.filter(occ => !isListResource(occ.resource) && !isListSource(occ))
+    def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
+        if(!isListResource(occ.resource) && !isListSource(occ)) {
+            Some(occ)
+        }
+        else {
+            None
+        }
     }
 
     def isListResource(resource : DBpediaResource) : Boolean = {

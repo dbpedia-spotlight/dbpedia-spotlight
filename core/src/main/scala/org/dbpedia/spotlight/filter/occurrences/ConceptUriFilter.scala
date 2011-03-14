@@ -16,17 +16,18 @@
 
 package org.dbpedia.spotlight.filter.occurrences
 
-import org.dbpedia.spotlight.model.{DBpediaResource, DBpediaResourceOccurrence}
+import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
 
 
 class ConceptUriFilter(val conceptUris : Set[String]) extends OccurrenceFilter {
 
-    def filter(occs : List[DBpediaResourceOccurrence]) : List[DBpediaResourceOccurrence] = {
-        occs.filter(occ => isGoodResource(occ.resource))
-    }
-
-    def isGoodResource(resource : DBpediaResource) : Boolean = {
-        conceptUris contains resource.uri
+    def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
+        if(conceptUris contains occ.resource.uri) {
+            Some(occ)
+        }
+        else {
+            None
+        }
     }
 
 }

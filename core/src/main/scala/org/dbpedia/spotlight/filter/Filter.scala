@@ -24,6 +24,21 @@ import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
 
 trait Filter {
 
-    def filter(occs : List[DBpediaResourceOccurrence]) : List[DBpediaResourceOccurrence]
+    def filterOccs(occs : Traversable[DBpediaResourceOccurrence]) : Traversable[DBpediaResourceOccurrence] = {
+        new FilteredOccs(occs)
+    }
+
+    private class FilteredOccs(occs : Traversable[DBpediaResourceOccurrence]) extends Traversable[DBpediaResourceOccurrence] {
+        override def foreach[U](f : DBpediaResourceOccurrence => U) {
+            for(occ <- occs) {
+                touchOcc(occ) match {
+                    case Some(filteredOcc) => f( filteredOcc )
+                    case _ =>
+                }
+            }
+        }
+    }
+
+    def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence]
 
 }

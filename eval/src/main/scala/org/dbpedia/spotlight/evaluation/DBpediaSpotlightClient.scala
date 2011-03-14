@@ -181,7 +181,7 @@ object DBpediaSpotlightClient
 
 
         //val filteredOccList : List[DBpediaResourceOccurrence] = filter.filter(occurrences, 0, 0, List(), "", false, true);
-        val filteredOccList : List[DBpediaResourceOccurrence] = new CoreferenceFilter().filter(occurrences)
+        val filteredOccList = new CoreferenceFilter().filterOccs(occurrences)
 
         for (confidence <- EvalParams.confidenceInterval) {
           val confidenceFilter = new ConfidenceFilter(configuration.getSimilarityThresholds.map(_.doubleValue).toList, confidence)
@@ -190,8 +190,8 @@ object DBpediaSpotlightClient
 
             //var localFiltered = filter.filterBySupport(filteredOccList, support)
             //localFiltered = filter.filterByConfidence(localFiltered, confidence)
-            var localFiltered = supportFilter.filter(filteredOccList)
-            localFiltered = confidenceFilter.filter(localFiltered)
+            var localFiltered = supportFilter.filterOccs(filteredOccList)
+            localFiltered = confidenceFilter.filterOccs(localFiltered)
 
             val out = new PrintStream(new File(baseDir+prefix+".c"+confidence+"s"+support+".set"))
             out.append(localFiltered.map(occ => occ.resource.uri).toSet.mkString("\n"))

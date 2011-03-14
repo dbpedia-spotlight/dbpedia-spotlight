@@ -33,7 +33,7 @@ class CombineAllAnnotationFilters(val config: SpotlightConfiguration) {
     private val sparqlExecuter = new SparqlQueryExecuter(config.getSparqlMainGraph(), config.getSparqlEndpoint())
 
 
-    def filter(occs : List[DBpediaResourceOccurrence],
+    def filter(occs : Traversable[DBpediaResourceOccurrence],
                confidence : Double,
                targetSupport : Int,
                dbpediaTypes : java.util.List[DBpediaType],
@@ -48,9 +48,9 @@ class CombineAllAnnotationFilters(val config: SpotlightConfiguration) {
                        :: Nil)
         if (coreferenceResolution) filterList = new CoreferenceFilter :: filterList
 
-        val filteredOccs = filterList.foldLeft(occs){ (o, f) => f.filter(o) }
+        val filteredOccs = filterList.foldLeft(occs){ (o, f) => f.filterOccs(o) }
 
-        filteredOccs.sortBy(_.textOffset)
+        filteredOccs.toList.sortBy(_.textOffset)
     }
 
     def filter(occs : java.util.List[DBpediaResourceOccurrence],
@@ -64,7 +64,7 @@ class CombineAllAnnotationFilters(val config: SpotlightConfiguration) {
         filter(occs.toList, confidence, targetSupport, dbpediaTypes, sparqlQuery, listColor, coreferenceResolution)
     }
 
-    def filter(occs : List[DBpediaResourceOccurrence],
+    def filter(occs : Traversable[DBpediaResourceOccurrence],
                confidence : Double,
                targetSupport : Int,
                dbpediaTypes : java.util.List[DBpediaType],

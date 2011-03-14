@@ -23,12 +23,13 @@ class NumberResourcesFilter extends OccurrenceFilter {
 
     val numbersRegex = "^\\d+$"
 
-    def filter(occs : List[DBpediaResourceOccurrence]) : List[DBpediaResourceOccurrence] = {
-        occs.filter(occ => isNumberResource(occ.resource))
-    }
-
-    def isNumberResource(resource : DBpediaResource) : Boolean = {
-        resource.uri.matches(numbersRegex)
+    def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
+        if(occ.resource.uri.matches(numbersRegex)) {
+            Some(occ)
+        }
+        else {
+            None
+        }
     }
 
 }

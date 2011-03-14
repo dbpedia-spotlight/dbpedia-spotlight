@@ -24,17 +24,14 @@ class SupportFilter(val targetSupport : Int) extends AnnotationFilter  {
 
     private val LOG = LogFactory.getLog(this.getClass)
 
-    def filter(occs : List[DBpediaResourceOccurrence]) : List[DBpediaResourceOccurrence] = {
-        occs.filter(isOk)
-    }
-
-    private def isOk(occ : DBpediaResourceOccurrence) : Boolean = {
-        if (occ.resource.support < targetSupport) {
-            LOG.info("filtered out by support ("+occ.resource.support+"<"+targetSupport+"): "+occ)
-            return false
+    def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
+        if (occ.resource.support > targetSupport) {
+            Some(occ)
         }
-
-        true
+        else{
+            LOG.info("filtered out by support ("+occ.resource.support+"<"+targetSupport+"): "+occ)
+            None
+        }
     }
 
 }

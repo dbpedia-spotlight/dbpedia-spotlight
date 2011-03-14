@@ -18,10 +18,12 @@ package org.dbpedia.spotlight.lucene.index
 
 import io.Source
 import java.io.File
-import org.dbpedia.spotlight.io.{AllOccurrenceSource, FileOccurrenceSource, DisambiguationContextSource, WikiOccurrenceSource}
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.string.ContextExtractor
 import org.dbpedia.spotlight.util.{IndexingConfiguration, OccurrenceFilter}
+import org.dbpedia.spotlight.filter.occurrences.{RedirectResolveFilter, ConceptUriFilter, ContextNarrowFilter}
+import org.dbpedia.spotlight.io._
+import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
 
 /**
  * Saves Occurrences to a TSV file.
@@ -43,21 +45,29 @@ object SaveWikipediaDump2Occs {
         val redirectTCFileName  = config.get("org.dbpedia.spotlight.data.redirectsTC")
 
         LOG.info("Loading concept URIs from "+conceptURIsFileName+"...")
-        val conceptURIsSet = Source.fromFile(conceptURIsFileName, "UTF-8").getLines.toSet
+        val conceptUrisSet = Source.fromFile(conceptURIsFileName, "UTF-8").getLines.toSet
+        val conceptUriFilter = new ConceptUriFilter(conceptUrisSet)
 
         LOG.info("Loading redirects transitive closure from "+redirectTCFileName+"...")
         val redirectsTCMap = Source.fromFile(redirectTCFileName, "UTF-8").getLines.map{ line =>
             val elements = line.split("\t")
             (elements(0), elements(1))
         }.toMap
+        val redirectResolver = new RedirectResolveFilter(redirectsTCMap)
 
         val narrowContext = new ContextExtractor(0, 200)
+        val contextNarrowFilter = new ContextNarrowFilter(narrowContext)
 
-        val filter = new OccurrenceFilter(redirectsTC = redirectsTCMap, conceptURIs = conceptURIsSet, contextExtractor = narrowContext)
+        val filters = (conceptUriFilter :: redirectResolver :: contextNarrowFilter :: Nil)
 
-        val occs = filter.filter(AllOccurrenceSource.fromXMLDumpFile(new File(wikiDumpFileName)))
+        //TODO these two asInstanceOf calls are not that nice:
+        val occSource = AllOccurrenceSource.fromXMLDumpFile(new File(wikiDumpFileName)).asInstanceOf[Traversable[DBpediaResourceOccurrence]]
+        //val filter = new OccurrenceFilter(redirectsTC = redirectsTCMap, conceptURIs = conceptUrisSet, contextExtractor = narrowContext)
+        //val occs = filter.filter(occSource)
 
-        FileOccurrenceSource.writeToFile(occs, new File(targetFileName))
+        val occs = filters.foldLeft(occSource){ (o,f) => f.filterOccs(o) }
+
+        FileOccurrenceSource.writeToFile(occs.asInstanceOf[OccurrenceSource], new File(targetFileName))
 
         config.set("org.dbpedia.spotlight.index.occurrences", targetFileName)
 

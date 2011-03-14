@@ -27,10 +27,11 @@ class CoreferenceFilter extends AnnotationFilter {
 
     private val LOG = LogFactory.getLog(this.getClass)
 
-    def filter(occs : List[DBpediaResourceOccurrence]) : List[DBpediaResourceOccurrence] = {
+    override def filterOccs(occs : Traversable[DBpediaResourceOccurrence]) : Traversable[DBpediaResourceOccurrence] = {
         // this is a heuristic and has nothing to do with proper coreference resolution!!!
-        var backwardIdx = occs.length
-        occs.reverse.map(laterOcc => {
+        val occList = occs.toList
+        var backwardIdx = occList.length
+        occList.reverse.map(laterOcc => {
             backwardIdx -= 1
             val coreferentOcc = occs.slice(0, backwardIdx).find(prevOcc => {
                 val coreferring = isCoreferent(prevOcc.surfaceForm, laterOcc.surfaceForm)
@@ -77,6 +78,9 @@ class CoreferenceFilter extends AnnotationFilter {
                 )
     }
 
-
+    def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
+        // this filter has to operate on a complete set of occurrences in order to find coreferents
+        throw new NoSuchMethodError("don't use touchOcc method for this filter; only use filterOccs method")
+    }
 
 }

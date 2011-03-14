@@ -20,9 +20,12 @@ import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.model.{DBpediaResource, DBpediaType, DBpediaResourceOccurrence}
 
 
-class TypeFilter(val dbpediaTypes : List[DBpediaType], val blacklistOrWhitelist : FilterPolicy.ListColor) extends AnnotationFilter  {
+class TypeFilter(var dbpediaTypes : List[DBpediaType], val blacklistOrWhitelist : FilterPolicy.ListColor) extends AnnotationFilter  {
 
     private val LOG = LogFactory.getLog(this.getClass)
+
+    dbpediaTypes = dbpediaTypes.filter(_.name.trim.nonEmpty)
+    if(dbpediaTypes.isEmpty) LOG.info("types are empty: showing all types")  // see comment below
 
     private val acceptable = blacklistOrWhitelist match {
         case FilterPolicy.Whitelist => (resource : DBpediaResource) =>
@@ -37,29 +40,20 @@ class TypeFilter(val dbpediaTypes : List[DBpediaType], val blacklistOrWhitelist 
 
     private val showUntyped = dbpediaTypes.find(t => DBpediaType.UNKNOWN equals t) != None
 
-    def filter(occs : List[DBpediaResourceOccurrence]) : List[DBpediaResourceOccurrence] = {
-        if (dbpediaTypes.filter(_.name.trim.nonEmpty).isEmpty) {
-            LOG.info("types are empty: showing all types")
-            return occs
+    def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
+        if(dbpediaTypes.isEmpty) {   // hack, because web demo does not guarantee to check all types when loading!
+            Some(occ)
         }
-
-        LOG.info("Type filtering with "+blacklistOrWhitelist+" policy; list="+dbpediaTypes.map(_.name).mkString("List(", ",", ")"))
-
-        occs.filter(isOk)
-    }
-
-    private def isOk(occ : DBpediaResourceOccurrence) : Boolean = {
-        // if the resource does not have type and the targets contain "unknown": don't filter
-        if (showUntyped && occ.resource.types.isEmpty) {
-            return true
+        else if(showUntyped && occ.resource.types.isEmpty) {
+            Some(occ)
         }
-
-        if (!acceptable(occ.resource)) {
-            LOG.info("filtered out by type: "+occ.resource)
-            return false
+        else if(acceptable(occ.resource)) {
+            Some(occ)
         }
-
-        true
+        else {
+            LOG.info("filtered out by type "+blacklistOrWhitelist+": "+occ.resource+" list="+dbpediaTypes.map(_.name).mkString("List(", ",", ")"))
+            None
+        }
     }
 
 }
