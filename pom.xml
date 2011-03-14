@@ -356,6 +356,12 @@
             <id>anonsvn</id>
             <url>http://anonsvn.icefaces.org/repo/maven2/releases/</url>
         </repository>
+
+        <repository>
+            <id>weka</id>
+            <url>https://maven.ch.cam.ac.uk/m2repo/</url>
+        </repository>
+
     </repositories>
 
 

@@ -38,6 +38,10 @@ class DBpediaResource(var uri : String, var support : Int = 0, var types : List[
         this(uri, 0, List[DBpediaType]())
     }
 
+    def this(uri : String, support : Int) = {
+        this(uri, support, List[DBpediaType]())
+    }
+
     def equals(that : DBpediaResource) : Boolean = {
         this.uri.equals(that.uri)
     }

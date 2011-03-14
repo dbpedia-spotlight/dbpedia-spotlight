@@ -167,6 +167,13 @@
             <artifactId>cloud9</artifactId>
             <version>SNAPSHOT</version>
         </dependency>
+
+        <dependency>
+            <groupId>weka</groupId>
+            <artifactId>weka</artifactId>
+            <version>3.5.7</version>
+        </dependency>
+
     </dependencies>
 
 </project>

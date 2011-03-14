@@ -204,7 +204,7 @@ object EvaluateDisambiguationOnly
     def getPriorDisambiguator(indexDir: String) : Disambiguator = {
         val analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET);
         val similarity : Similarity = new DefaultSimilarity
-        val directory = new NIOFSDirectory(new File(indexDir+"."+analyzer.getClass.getSimpleName+"."+similarity.getClass.getSimpleName));
+        val directory = new NIOFSDirectory(new File(indexDir));//+"."+analyzer.getClass.getSimpleName+"."+similarity.getClass.getSimpleName));
         //val luceneManager = new LuceneManager.BufferedMerging(directory)
         val luceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(directory)
         luceneManager.setContextAnalyzer(analyzer);
@@ -280,7 +280,7 @@ object EvaluateDisambiguationOnly
                             //getDefaultSnowballDisambiguator(indexDir),
                             //getNewDisambiguator(indexDir),
                             //getICFCachedDisambiguator(indexDir)
-                            getICFCachedMixedDisambiguator(indexDir)
+                            getICFCachedMixedDisambiguator(indexDir),
                             //getNewStopwordedDisambiguator(indexDir),
                             //getICFSnowballDisambiguator(indexDir)
                             //getSweetSpotSnowballDisambiguator(indexDir)
@@ -301,7 +301,7 @@ object EvaluateDisambiguationOnly
                             //getICFIDFStandardDisambiguator,
 
                          // no analyzer
-                            //getPriorDisambiguator(indexDir)
+                            getPriorDisambiguator(indexDir)
         )
 
         // Read some text to test.

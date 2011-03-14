@@ -78,7 +78,7 @@ public class MixedWeightsDisambiguator extends MergedOccurrencesDisambiguator {
 
     private class SimScoreComparator implements Comparator<DBpediaResourceOccurrence> {
         public int compare(DBpediaResourceOccurrence me, DBpediaResourceOccurrence other) {
-            return Double.compare(me.similarityScore(), other.similarityScore());
+            return Double.compare(other.similarityScore(), me.similarityScore());
         }
         public boolean equals(Object other) {
             return false;

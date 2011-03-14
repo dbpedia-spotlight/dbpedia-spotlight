@@ -16,6 +16,9 @@
 
 package org.dbpedia.spotlight.lucene.disambiguate;
 
+import com.google.common.collect.Ordering;
+import com.google.common.primitives.Doubles;
+import com.google.common.primitives.Ints;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.document.Document;
@@ -34,17 +37,22 @@ import java.util.*;
 
 /**
  * Does something similar to DBpedia Lookup Service.
- *
  * Gets the URI with the highest prior - given that this URI has appeared at least once with surface form.
+ *
  * Prior here is defined as c(uri)/N
  * N = total number of occurrences
+ *
+ * Sets support in DBpediaResource and ranks by that.
+ * TODO set percentage of second?
+ * TODO set score?
  *
  * @author pablomendes
  */
 public class LucenePriorDisambiguator implements Disambiguator {
 
     Log LOG = LogFactory.getLog(this.getClass());
-    
+    String[] filter = {LuceneManager.DBpediaResourceField.URI.toString(),LuceneManager.DBpediaResourceField.URI_COUNT.toString()};
+
     MergedOccurrencesContextSearcher mSearcher;
 
     public LucenePriorDisambiguator(MergedOccurrencesContextSearcher searcher) throws IOException {
@@ -54,70 +62,76 @@ public class LucenePriorDisambiguator implements Disambiguator {
     public List<SurfaceFormOccurrence> spotProbability(List<SurfaceFormOccurrence> sfOccurrences) {
         return sfOccurrences; //FIXME IMPLEMENT
     }
-    
 
-    @Override
-    public List<DBpediaResourceOccurrence> disambiguate(List<SurfaceFormOccurrence> sfOccurrences) {
-        //LOG.debug("Retrieving surrogates for surface form: "+sf);
+    /**
+     * For backwards compatibility - is able to get a count from multiple URI fields or from a URICOUNT field.
+     * @param doc
+     * @return
+     */
+    private Map.Entry<String,Integer> getURICount(Document doc) throws ItemNotFoundException{
+        Map<String,Integer> result = new HashMap<String,Integer>();
+        Integer count = 0;
 
+        String[] uriValues = doc.getValues(LuceneManager.DBpediaResourceField.URI.toString());
+        if (uriValues == null)
+            throw new ItemNotFoundException("URI is not in the index: "+LuceneManager.DBpediaResourceField.URI.toString());
+        String uri = uriValues[0];
+
+        String[] countValues = doc.getValues(LuceneManager.DBpediaResourceField.URI_COUNT.toString());
+        if (countValues==null) {
+            count = uriValues.length; // count is how many times a URI has been added to the index
+        } else {
+            count = new Integer(countValues[0]); // count has been stored as a field
+        }
+        result.put(uri, count);
+        return result.entrySet().iterator().next();
+    }
+
+      @Override
+    public List<DBpediaResourceOccurrence> disambiguate(List<SurfaceFormOccurrence> sfOccurrences) throws SearchException {
         List<DBpediaResourceOccurrence> disambiguated = new ArrayList<DBpediaResourceOccurrence>();
 
         for (SurfaceFormOccurrence sfOcc: sfOccurrences) {
-            String maxUri = null;
-            Long maxCount = Long.MIN_VALUE;
-            String[] onlyUri = {LuceneManager.DBpediaResourceField.URI.toString()};
-            FieldSelector fieldSelector = new MapFieldSelector(onlyUri);
             try {
-                for (Document doc: mSearcher.getDocuments(sfOcc.surfaceForm(), fieldSelector)) { //TODO can create a Map<String,Double> here and give it to a RankingStrategy
-                    String[] fields = doc.getValues(LuceneManager.DBpediaResourceField.URI.toString());
-                    long numUris = fields.length;
-                    if (numUris > maxCount) {
-                        maxCount = numUris;
-                        maxUri = fields[0];
-                    }
-                }
-            } catch (SearchException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                disambiguated.add(bestK(sfOcc,1).get(0));
+            } catch (ItemNotFoundException e) {
+                throw new SearchException("Error in disambiguate. ",e);
             }
-
-//            if (docs.size()==0)
-//                throw new SearchException("Could not find surface form "+sfOcc.surfaceForm());
-            
-            //if (maxUri == null)
-            //    throw new SearchException("Could not find surface form "+sfOcc.surfaceForm());
-               // don't want SearchExceptions; just ignoring this SurfaceFormOccurrence
-
-            disambiguated.add(new DBpediaResourceOccurrence(new DBpediaResource(maxUri),
-                    sfOcc.surfaceForm(),
-                    sfOcc.context(),
-                    sfOcc.textOffset()));
         }
 
         return disambiguated;
-    }
+     }
 
     @Override
     public List<DBpediaResourceOccurrence> bestK(SurfaceFormOccurrence sfOccurrence, int k) throws SearchException, ItemNotFoundException {
         List<DBpediaResourceOccurrence> resultOccs = new LinkedList<DBpediaResourceOccurrence>();
 
-        String[] onlyUri = {LuceneManager.DBpediaResourceField.URI.toString()};
-        FieldSelector fieldSelector = new MapFieldSelector(onlyUri);
-        for (Document doc : mSearcher.getDocuments(sfOccurrence.surfaceForm(), fieldSelector)) { //TODO can create a Map<String,Double> here and give it to a RankingStrategy
-            String[] fields = doc.getValues(LuceneManager.DBpediaResourceField.URI.toString());
-            long numUris = fields.length;
-            String uri = fields[0];
-            new DBpediaResourceOccurrence(new DBpediaResource(uri),
-                                          sfOccurrence.surfaceForm(),
-                                          sfOccurrence.context(), //TODO can gain some speedup by lazy loading context
-                                          sfOccurrence.textOffset(),
-                                          1/numUris);  // returns CONDITIONAL prior (given the surface form)!
+        FieldSelector fieldSelector = new MapFieldSelector(filter);
+        for (Document doc : mSearcher.getDocuments(sfOccurrence.surfaceForm(), fieldSelector)) {
+            Map.Entry<String,Integer> e = getURICount(doc);
+            int numUris = e.getValue();
+            String uri = e.getKey();
+            DBpediaResourceOccurrence occ = new DBpediaResourceOccurrence(new DBpediaResource(uri,numUris),
+                    sfOccurrence.surfaceForm(),
+                    sfOccurrence.context(),
+                    sfOccurrence.textOffset());
+                    //1 / numUris); //this is not really similarity score. TODO set this or not?
+
+            resultOccs.add(occ);
+
         }
 
         if (resultOccs.isEmpty())
             throw new SearchException("Could not find surface form "+sfOccurrence.surfaceForm());
 
-        Collections.sort(resultOccs);
-        return resultOccs.subList(0,k);
+        Ordering descOrder = new Ordering<DBpediaResourceOccurrence>() {
+            public int compare(DBpediaResourceOccurrence left, DBpediaResourceOccurrence right) {
+                return Doubles.compare(right.resource().support(), left.resource().support());
+
+            }
+        };
+
+        return descOrder.sortedCopy(resultOccs).subList(0, Math.min(k, resultOccs.size()));
     }
 
     @Override
@@ -129,7 +143,7 @@ public class LucenePriorDisambiguator implements Disambiguator {
     public int ambiguity(SurfaceForm sf) throws SearchException {
         return mSearcher.getAmbiguity(sf);
     }
-    
+
     @Override
     public int trainingSetSize(DBpediaResource res) throws SearchException {
         return mSearcher.getSupport(res);
@@ -149,5 +163,6 @@ public class LucenePriorDisambiguator implements Disambiguator {
     public double averageIdf(Text context) throws IOException {
         throw new IOException(this.getClass()+" has no context available in the index to calculate averageIdf");
     }
+
 
 }

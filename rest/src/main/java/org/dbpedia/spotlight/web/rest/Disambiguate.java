@@ -18,21 +18,17 @@ package org.dbpedia.spotlight.web.rest;
 
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.Path;
-import javax.ws.rs.GET;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 
 /**
  * REST Web Service
  * TODO Merge with Annotate (only difference is the SpotlightInterface object, which can be given in constructor)
  */
 
+@ApplicationPath("http://spotlight.dbpedia.org/rest")
 @Path("/disambiguate")
 @Consumes("text/plain")
 public class Disambiguate {

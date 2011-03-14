@@ -59,9 +59,9 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
         resOccList.toList
     }
 
-    def bestK(disambiguator : Disambiguator, correctlySpottedOcc : SurfaceFormOccurrence) : List[DBpediaResourceOccurrence] = {
-        disambiguator.bestK(correctlySpottedOcc, outputTopK).toList.sortBy(_.similarityScore).reverse
-    }
+//    def bestK(disambiguator : Disambiguator, correctlySpottedOcc : SurfaceFormOccurrence) : List[DBpediaResourceOccurrence] = {
+//        disambiguator.bestK(correctlySpottedOcc, outputTopK).toList.sortBy(_.similarityScore).reverse //FIXME shouldn't the sorting be done inside? think of disambiguators that don' t sort by score (e.g. prior disambiguator)
+//    }
 
     def compare(gold : List[DBpediaResourceOccurrence], found : List[DBpediaResourceOccurrence]) : Int =
         {
@@ -159,7 +159,7 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
                         val sfOcc = new SurfaceFormOccurrence(testOcc.surfaceForm, testOcc.context, testOcc.textOffset, testOcc.provenance)
 
                         val sortedOccs = timed(storeTime(disambiguator)) {
-                            bestK(disambiguator, sfOcc)
+                            disambiguator.bestK(sfOcc,outputTopK)
                         }
 
                         //val sptlDecision = sortedOccs.head

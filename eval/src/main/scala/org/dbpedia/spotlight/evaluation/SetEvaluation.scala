@@ -50,6 +50,8 @@ object SetEvaluation {
         "WikiMachine",
         "Alchemy",
         "WMWikify",
+        "WMWikify.0.3",
+        "WMWikify.0.8",
         "Zemanta"
     )
     val spotlight = Set(
@@ -219,6 +221,14 @@ object SetEvaluation {
     //      val text = Source.fromFile(wikiMachineFileName).getLines.toSet
   }
 
+    def run(baseDir: String) {
+        val gold = SetEvaluation.getGoldResults(baseDir)
+      val systems = SetEvaluation.getSystemsResults(baseDir)
+
+      printPoints(baseDir, gold, systems);
+      //printLines(baseDir, gold);
+    }
+
    def main(args : Array[String])
   {
 
@@ -232,11 +242,7 @@ object SetEvaluation {
 //    val baseDir = "/home/pablo/eval/manual"
       val baseDir = "/home/pablo/eval/wikify"
 
-      val gold = SetEvaluation.getGoldResults(baseDir)
-      val systems = SetEvaluation.getSystemsResults(baseDir)
-
-      printPoints(baseDir, gold, systems);
-      //printLines(baseDir, gold);
+      run(baseDir)
 
   }
 }

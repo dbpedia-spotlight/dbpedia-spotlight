@@ -383,13 +383,13 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
 
         FieldSelector fieldSelector = new MapFieldSelector(onlyUriAndTypes);
 
-        LOG.debug("Getting document number "+docNo+"...");
+        LOG.trace("Getting document number "+docNo+"...");
         Document document = getDocument(docNo, fieldSelector);
         String uri = document.get(LuceneManager.DBpediaResourceField.URI.toString());
         if (uri==null)
             throw new SearchException("Cannot find URI for document "+document);
 
-        LOG.debug("Setting URI, types and support...");
+        LOG.trace("Setting URI, types and support...");
         DBpediaResource resource = new DBpediaResource(uri);
         resource.setTypes( getDBpediaTypes(document) );
         resource.setSupport( getSupport(document) ); //TODO this can be optimized for time performance by adding a support field. (search for the most likely URI then becomes a bit more complicated)

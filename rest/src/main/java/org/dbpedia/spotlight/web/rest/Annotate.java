@@ -29,6 +29,7 @@ import javax.ws.rs.core.UriInfo;
  * TODO Merge with Disambiguate (only difference is the SpotlightInterface object, which can be given in constructor)
  */
 
+@ApplicationPath("http://spotlight.dbpedia.org/rest")
 @Path("/annotate")
 @Consumes("text/plain")
 public class Annotate {

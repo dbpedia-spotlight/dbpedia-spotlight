@@ -20,10 +20,19 @@ import org.apache.commons.logging.LogFactory
 import java.io.{PrintStream, File}
 import io.Source
 import org.dbpedia.spotlight.annotate.DefaultAnnotator
+import org.dbpedia.spotlight.util.AnnotationFilter
 import org.dbpedia.spotlight.string.WikiLinkParser
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.model.{SpotlightConfiguration, DBpediaResource, DBpediaResourceOccurrence}
-import org.dbpedia.spotlight.filter.annotations.{CoreferenceFilter, SupportFilter, ConfidenceFilter}
+import org.dbpedia.spotlight.lucene.disambiguate.MixedWeightsDisambiguator
+import org.apache.lucene.util.Version
+import org.dbpedia.spotlight.lucene.LuceneManager
+import org.apache.lucene.search.Similarity
+import org.apache.lucene.analysis.{StopAnalyzer, Analyzer}
+import org.dbpedia.spotlight.disambiguate.mixtures.LinearRegressionMixture
+import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
+import org.dbpedia.spotlight.lucene.similarity.{CachedInvCandFreqSimilarity, JCSTermCache, InvCandFreqSimilarity}
+import org.dbpedia.spotlight.filter.annotations.{SupportFilter, CoreferenceFilter, ConfidenceFilter}
 
 /**
  * Reads in manually annotated paragraphs, computes the inter-annotator agreement, then compares
@@ -45,7 +54,24 @@ object DBpediaSpotlightClient
     val confidence = 0.0;
     val support = 0;
 
-    val annotator = new DefaultAnnotator(new File(spotterFile), new File(indexDirectory));
+    val targetTypesList = null;
+    val coreferenceResolution = true;
+
+    val analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET);
+    //val directory = LuceneManager.pickDirectory(new File(indexDir+"."+analyzer.getClass.getSimpleName+".DefaultSimilarity"));
+    val directory =  LuceneManager.pickDirectory(new File(indexDirectory));
+    val cache = new JCSTermCache(new LuceneManager.BufferedMerging(directory));
+    val similarity : Similarity = new CachedInvCandFreqSimilarity(cache);
+    //val similarity : Similarity = new InvCandFreqSimilarity
+    val mixture = new LinearRegressionMixture
+    val luceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(directory)
+    luceneManager.setContextAnalyzer(analyzer);
+    luceneManager.setContextSimilarity(similarity);
+    val contextSearcher = new MergedOccurrencesContextSearcher(luceneManager);
+
+    val disambiguator = new MixedWeightsDisambiguator(contextSearcher,mixture);
+    val annotator = new DefaultAnnotator(new File(spotterFile), disambiguator);
+    val filter = new AnnotationFilter(configuration)
 
   def parseToMatrix(occList : List[DBpediaResourceOccurrence]) : String = {
     val buffer = new StringBuffer();

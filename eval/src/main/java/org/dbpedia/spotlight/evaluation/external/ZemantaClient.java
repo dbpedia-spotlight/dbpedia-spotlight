@@ -101,13 +101,16 @@ public class ZemantaClient extends AnnotationClient {
         String api_key = args[0];
         ZemantaClient c = new ZemantaClient(api_key);
 
-        File manualEvalInput = new File("/home/pablo/eval/manual/AnnotationText.txt");
-        File manualEvalOutput = new File("/home/pablo/eval/manual/AnnotationText-Zemanta.txt.list");
-       //c.evaluateManual(manualEvalInput, manualEvalOutput);
+        //File input = new File("/home/pablo/eval/manual/AnnotationText.txt");
+        //File output = new File("/home/pablo/eval/manual/AnnotationText-Zemanta.txt.list");
 
-        File cucerzanEvalInput = new File("/home/pablo/eval/cucerzan/cucerzan.txt");
-        File cucerzanEvalOutput = new File("/home/pablo/eval/cucerzan/systems/cucerzan-Zemanta.set");
-        c.evaluateManual(cucerzanEvalInput, cucerzanEvalOutput);
+        //File input = new File("/home/pablo/eval/cucerzan/cucerzan.txt");
+        //File output = new File("/home/pablo/eval/cucerzan/systems/cucerzan-Zemanta.set");
+
+        File input = new File("/home/pablo/eval/wikify/gold/WikifyAllInOne.txt");
+        File output = new File("/home/pablo/eval/wikify/systems/Zemanta.list");
+
+        c.evaluateManual(input, output);
 
 
 //        ZemantaClient c = new ZemantaClient(api_key);

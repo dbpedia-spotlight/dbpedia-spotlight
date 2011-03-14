@@ -234,12 +234,15 @@ public class OpenCalaisClient extends AnnotationClient {
 //        File outputFile = new File(baseDir+"AnnotationText-OpenCalais.txt.list");
 //        File inputFile = new File(baseDir+"AnnotationText.txt");
 
-        File inputFile = new File("/home/pablo/eval/manual/AnnotationText.txt");
-        File outputFile = new File("/home/pablo/eval/manual/OpenCalais.txt");        
-
+//        File inputFile = new File("/home/pablo/eval/manual/AnnotationText.txt");
+//        File outputFile = new File("/home/pablo/eval/manual/OpenCalais.txt");
 
 //        File inputFile = new File("/home/pablo/eval/cucerzan/cucerzan.txt");
 //        File outputFile = new File("/home/pablo/eval/cucerzan/systems/cucerzan-OpenCalais.txt");
+
+        File inputFile = new File("/home/pablo/eval/wikify/gold/WikifyAllInOne.txt");
+        File outputFile = new File("/home/pablo/eval/wikify/systems/OpenCalais.list");
+
         try {
             OpenCalaisClient client = new OpenCalaisClient(apikey);
             client.evaluateManual(inputFile, outputFile);

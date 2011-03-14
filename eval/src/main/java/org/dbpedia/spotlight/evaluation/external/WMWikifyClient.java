@@ -45,7 +45,9 @@ import java.util.List;
  */
 public class WMWikifyClient extends AnnotationClient {
 
-    private static String url_pattern ="http://wdm.cs.waikato.ac.nz:8080/service?task=wikify&xml&source=%s";
+    //TODO minProbability:0.3 &minProbability=0.8
+    //repeatMode: 0=mark all, 1=mark first, 2=mark first in each section
+    private static String url_pattern ="http://wdm.cs.waikato.ac.nz:8080/service?task=wikify&xml&repeatMode=0&source=%s";
 
     public WMWikifyClient() {    }
 
@@ -137,7 +139,7 @@ public class WMWikifyClient extends AnnotationClient {
 //        client.evaluateManual(cucerzanEvalInput, cucerzanEvalOutput);
 
         File wikifyEvalInput = new File("/home/pablo/eval/wikify/gold/WikifyAllInOne.txt");
-        File wikifyEvalOutput = new File("/home/pablo/eval/wikify/systems/wikify-WMWikify.list");
+        File wikifyEvalOutput = new File("/home/pablo/eval/wikify/systems/WMWikify.0.8.list");
         client.evaluateManual(wikifyEvalInput, wikifyEvalOutput);
 
     }
