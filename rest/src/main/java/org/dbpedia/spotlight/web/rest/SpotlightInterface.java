@@ -21,14 +21,13 @@ import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.annotate.Annotator;
 import org.dbpedia.spotlight.disambiguate.Disambiguator;
 import org.dbpedia.spotlight.exceptions.InputException;
-import org.dbpedia.spotlight.exceptions.OutputException;
 import org.dbpedia.spotlight.exceptions.SearchException;
+import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters;
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence;
 import org.dbpedia.spotlight.model.DBpediaType;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 import org.dbpedia.spotlight.string.ParseSurfaceFormText;
-import org.dbpedia.spotlight.util.AnnotationFilter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,11 +46,11 @@ public abstract class SpotlightInterface  {
     public abstract List<DBpediaResourceOccurrence> process(String text) throws SearchException, InputException;
 
     private SpotlightConfiguration config;
-    private AnnotationFilter annotationFilter;
+    private CombineAllAnnotationFilters annotationFilter;
 
     private SpotlightInterface(SpotlightConfiguration config) {
         this.config = config;
-        this.annotationFilter = new AnnotationFilter(config);
+        this.annotationFilter = new CombineAllAnnotationFilters(config);
     }
     /**
      * Initialize the interface to perform disambiguation

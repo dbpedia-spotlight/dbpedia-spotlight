@@ -20,10 +20,10 @@ import org.apache.commons.logging.LogFactory
 import java.io.{PrintStream, File}
 import io.Source
 import org.dbpedia.spotlight.annotate.DefaultAnnotator
-import org.dbpedia.spotlight.util.AnnotationFilter
 import org.dbpedia.spotlight.string.WikiLinkParser
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.model.{SpotlightConfiguration, DBpediaResource, DBpediaResourceOccurrence}
+import org.dbpedia.spotlight.filter.annotations.{CoreferenceFilter, SupportFilter, ConfidenceFilter}
 
 /**
  * Reads in manually annotated paragraphs, computes the inter-annotator agreement, then compares
@@ -45,10 +45,7 @@ object DBpediaSpotlightClient
     val confidence = 0.0;
     val support = 0;
 
-    val targetTypesList = null;
-    val coreferenceResolution = true;
     val annotator = new DefaultAnnotator(new File(spotterFile), new File(indexDirectory));
-    val filter = new AnnotationFilter(configuration)
 
   def parseToMatrix(occList : List[DBpediaResourceOccurrence]) : String = {
     val buffer = new StringBuffer();
@@ -157,12 +154,19 @@ object DBpediaSpotlightClient
 //      writeAsEntitySetToFile(entitiesByPercentageRank.slice(0,10), new File(baseDir+prefix+".rank.t10.set"))
 
 
-      val filteredOccList : List[DBpediaResourceOccurrence] = filter.filter(occurrences, 0, 0, List(), "", false, true);
-      //val filteredOccList : List[DBpediaResourceOccurrence] = AnnotationFilter.filter(occurrences, 0, 0, AnnotationFilter.PERLOCPLA, AnnotationFilter.DEFAULT_COREFERENCE_RESOLUTION);
-      for (confidence <- EvalParams.confidenceInterval) {
+        //val filteredOccList : List[DBpediaResourceOccurrence] = filter.filter(occurrences, 0, 0, List(), "", false, true);
+        val filteredOccList : List[DBpediaResourceOccurrence] = new CoreferenceFilter().filter(occurrences)
+
+        for (confidence <- EvalParams.confidenceInterval) {
+          val confidenceFilter = new ConfidenceFilter(configuration.getSimilarityThresholds.map(_.doubleValue).toList, confidence)
           for(support <- EvalParams.supportInterval) {
-            var localFiltered = filter.filterBySupport(filteredOccList, support)
-            localFiltered = filter.filterByConfidence(localFiltered, confidence)
+            val supportFilter = new SupportFilter(support)
+
+            //var localFiltered = filter.filterBySupport(filteredOccList, support)
+            //localFiltered = filter.filterByConfidence(localFiltered, confidence)
+            var localFiltered = supportFilter.filter(filteredOccList)
+            localFiltered = confidenceFilter.filter(localFiltered)
+
             val out = new PrintStream(new File(baseDir+prefix+".c"+confidence+"s"+support+".set"))
             out.append(localFiltered.map(occ => occ.resource.uri).toSet.mkString("\n"))
             out.close();

@@ -26,7 +26,7 @@ import org.dbpedia.spotlight.sparql.SparqlQueryExecuter
 import org.dbpedia.spotlight.exceptions.InputException
 import java.net.URLEncoder
 
-
+@deprecated("please use org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters")
 class AnnotationFilter(val config: SpotlightConfiguration)
 {
     private val LOG = LogFactory.getLog(this.getClass)

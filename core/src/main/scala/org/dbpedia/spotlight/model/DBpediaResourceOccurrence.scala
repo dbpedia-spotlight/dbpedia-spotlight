@@ -67,7 +67,7 @@ class DBpediaResourceOccurrence(val id : String,
         val end = if (textOffset+span > context.text.length) context.text.length else textOffset+span
         //System.err.printf("textOffset: %s, start:%s, end:%s, context.text.length:%s, similarityScore:%s,", textOffset.toString, start.toString, end.toString, context.text.length.toString, similarityScore.toString);
         val text = if (start>end) "Text[]" else "Text[... " + context.text.substring(start, end) + " ...]"    
-        val score = if (-1.0 < similarityScore) similarityScore.toString.substring(0,Math.min(similarityScore.toString.length, 5)) else "";
+        val score = if (similarityScore == -1.0) "" else "%.3f".format(similarityScore)
         //surfaceForm + " - at position *" + textOffset + "* in - Text[..." + context.text.substring(start,end) + "...]"
         if (!id.isEmpty) id+": " else "" +surfaceForm+" -"+score+"-> "+resource+" - at position *"+textOffset+"* in - "+text
     }
