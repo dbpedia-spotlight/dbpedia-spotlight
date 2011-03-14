@@ -31,6 +31,7 @@ import org.dbpedia.spotlight.string.ContextExtractor
  *
  */
 
+@deprecated("please use org.dbpedia.spotlight.filter.occurrences.OccurrenceFilter!")
 class OccurrenceFilter(val maximumSurfaceFormLength : Int = Integer.MAX_VALUE,
                        val minimumParagraphLength : Int = 0,
                        val maximumParagraphLength : Int = Integer.MAX_VALUE,

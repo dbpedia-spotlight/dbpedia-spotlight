@@ -1,7 +1,3 @@
-package org.dbpedia.spotlight.filter.annotations
-
-import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
-
 /**
  * Copyright 2011 Pablo Mendes, Max Jakob
  *
@@ -18,8 +14,13 @@ import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
  * limitations under the License.
  */
 
-trait AnnotationFilter {
+package org.dbpedia.spotlight.filter.annotations
 
-    def filter(occs : List[DBpediaResourceOccurrence]) : List[DBpediaResourceOccurrence]
+import org.dbpedia.spotlight.filter.Filter
 
-}
+/**
+ * Filter result annotations based on scores, types, SPARQL queries etc.
+ * These filters ought to be applied after the annotation or disambiguation process to increase precision.
+ */
+
+trait AnnotationFilter extends Filter

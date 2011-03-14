@@ -1,5 +1,3 @@
-package org.dbpedia.spotlight.filter.annotations
-
 /**
  * Copyright 2011 Pablo Mendes, Max Jakob
  *
@@ -15,6 +13,8 @@ package org.dbpedia.spotlight.filter.annotations
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+package org.dbpedia.spotlight.filter.annotations
 
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
 import org.apache.commons.logging.LogFactory
