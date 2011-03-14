@@ -57,10 +57,15 @@ public class CustomScoresDisambiguator implements Disambiguator {
         return sfOccurrences; //FIXME IMPLEMENT
     }
     
-    public List<DBpediaResourceOccurrence> disambiguate(List<SurfaceFormOccurrence> sfOccurrences) throws SearchException, ItemNotFoundException {
+    public List<DBpediaResourceOccurrence> disambiguate(List<SurfaceFormOccurrence> sfOccurrences) throws SearchException {
         List<DBpediaResourceOccurrence> disambiguated = new ArrayList<DBpediaResourceOccurrence>();
         for (SurfaceFormOccurrence sfOcc: sfOccurrences) {
-            List<DBpediaResourceOccurrence> candidates = bestK(sfOcc, 1);
+            List<DBpediaResourceOccurrence> candidates = null;
+            try {
+                candidates = bestK(sfOcc, 1);
+            } catch (ItemNotFoundException e) {
+                LOG.error("Could not disambiguate. Surface form not found: "+sfOcc.surfaceForm()+": "+e);
+            }
             disambiguated.add(candidates.get(0));
         }
         return disambiguated;
