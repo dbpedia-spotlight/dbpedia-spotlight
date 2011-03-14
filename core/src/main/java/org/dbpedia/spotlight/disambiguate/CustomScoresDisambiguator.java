@@ -16,6 +16,8 @@
 
 package org.dbpedia.spotlight.disambiguate;
 
+import com.google.common.collect.Ordering;
+import com.google.common.primitives.Doubles;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.search.Explanation;
@@ -31,102 +33,89 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * Preliminary class to take a list of DBpediaResource priors as the only cue to decide which surrogate to choose for a given surface form occurrence.
+ * Preliminary class to take a list of weights for each DBpediaResource as the only cue to decide which surrogate to choose for a given surface form occurrence.
+ * For example, this has been used to get a list of prior probabilities computed offline in a Hadoop/Pig job
+ *
  * @author pablomendes
  */
-public class PriorDisambiguator implements Disambiguator {
+public class CustomScoresDisambiguator implements Disambiguator {
 
     Log LOG = LogFactory.getLog(this.getClass());
 
-    Map<String,Double> priors = new HashMap<String,Double>();
+    Map<String,Double> scores = new HashMap<String,Double>();
 
     SurrogateSearcher surrogateSearcher;
 
-    public PriorDisambiguator(SurrogateSearcher surrogates, DataLoader loader) {
+    public CustomScoresDisambiguator(SurrogateSearcher surrogates, DataLoader loader) {
         this.surrogateSearcher = surrogates;
-        priors = loader.loadPriors();
-        LOG.debug(loader+": "+priors.size()+" priors loaded.");
+        if (loader!=null)
+            scores = loader.loadPriors();
+        LOG.debug(loader+": "+ scores.size()+" scores loaded.");
     }
 
     public List<SurfaceFormOccurrence> spotProbability(List<SurfaceFormOccurrence> sfOccurrences) {
         return sfOccurrences; //FIXME IMPLEMENT
     }
     
-    public List<DBpediaResourceOccurrence> disambiguate(List<SurfaceFormOccurrence> sfOccurrences) {
+    public List<DBpediaResourceOccurrence> disambiguate(List<SurfaceFormOccurrence> sfOccurrences) throws SearchException, ItemNotFoundException {
         List<DBpediaResourceOccurrence> disambiguated = new ArrayList<DBpediaResourceOccurrence>();
-        int errorCount = 0;                           
         for (SurfaceFormOccurrence sfOcc: sfOccurrences) {
-            Set<DBpediaResource> candidates = new HashSet<DBpediaResource>();
-            try {
-                candidates = surrogateSearcher.get(sfOcc.surfaceForm());
-                DBpediaResource best = chooseBest(candidates);
-                DBpediaResourceOccurrence dbprOcc = new DBpediaResourceOccurrence(best, sfOcc.surfaceForm(), sfOcc.context(), sfOcc.textOffset(), Provenance.Annotation());
-                disambiguated.add(dbprOcc);
-            } catch (ItemNotFoundException e) {
-                errorCount++;
-                LOG.debug(e);
-            } catch (SearchException e) {
-                errorCount++;
-                LOG.debug(e);
-            }
-        }
-        if (errorCount > 0) {
-            LOG.info("Number of ItemNotFoundException: "+errorCount);
+            List<DBpediaResourceOccurrence> candidates = bestK(sfOcc, 1);
+            disambiguated.add(candidates.get(0));
         }
         return disambiguated;
     }
 
-    private DBpediaResource chooseBest(Set<DBpediaResource> candidates) {
-        Map<String,Double> priorsForCandidates = new HashMap<String,Double>();
-        DBpediaResource chosen = null;
+    @Override
+    public List<DBpediaResourceOccurrence> bestK(SurfaceFormOccurrence sfOccurrence, int k) throws SearchException, ItemNotFoundException {
+        Set<DBpediaResource> candidates = surrogateSearcher.get(sfOccurrence.surfaceForm());
+
+        List<DBpediaResourceOccurrence> all = getScores(sfOccurrence, candidates);
+
+        Ordering descOrder = new Ordering<DBpediaResourceOccurrence>() {
+            public int compare(DBpediaResourceOccurrence left, DBpediaResourceOccurrence right) {
+                return Doubles.compare(right.similarityScore(), left.similarityScore());
+
+            }
+        };
+
+        return descOrder.sortedCopy(all).subList(0, Math.min(k, all.size()));
+    }
+
+    protected List<DBpediaResourceOccurrence> getScores(SurfaceFormOccurrence sfOccurrence, Set<DBpediaResource> candidates) {
+         List<DBpediaResourceOccurrence> occurrences = new ArrayList<DBpediaResourceOccurrence>();
         try {
             for(DBpediaResource r: candidates) {
-                String uri = r.uri();
-                //LOG.trace("chooseBest URI: "+uri);
-                Double prior = priors.get(uri);
-                if (prior==null) {
-                    LOG.debug("No prior found for URI: "+uri);
-                    prior = 0.0;
+                Double score = scores.get(r);
+                if (score ==null) {
+                    LOG.debug("No score found for URI: "+r);
+                    score = 0.0;
                 }
-                priorsForCandidates.put(uri, prior);
+                DBpediaResourceOccurrence occ = new DBpediaResourceOccurrence(r,
+                    sfOccurrence.surfaceForm(),
+                    sfOccurrence.context(),
+                    sfOccurrence.textOffset(),
+                    score);
+                occurrences.add(occ);
             }
-            LOG.trace("Priors for candidates: "+priorsForCandidates);
-            chosen = max(priorsForCandidates);
         } catch (NullPointerException e2) {
             LOG.error("NullPointerException here. Resource: "+candidates);
         }
-        return chosen;
+        return occurrences;
     }
 
-    //TODO this is a copy+paste from DisambiguationStrategy with minor modifications
-    class ValueComparator implements Comparator<Map.Entry<String,Double>> {
-        @Override
-        public int compare(Map.Entry<String,Double> o1, Map.Entry<String,Double> o2) {
-            return o1.getValue().compareTo(o2.getValue());
-        }
-    }
-    public DBpediaResource max(Map<String,Double> countForResource) {
-        String chosen = Collections.max((Collection<Map.Entry<String,Double>>) countForResource.entrySet(),
-                                                  new ValueComparator())
-                                     .getKey();
-        return new DBpediaResource(chosen);
-    }
 
-    //TODO implement
-    @Override
-    public List<DBpediaResourceOccurrence> bestK(SurfaceFormOccurrence sfOccurrence, int k) throws SearchException, ItemNotFoundException {
-        return new LinkedList<DBpediaResourceOccurrence>();
-    }
+
 
     public static void main(String[] args) throws IOException {
       String luceneIndexFileName = "data/apple-example/LuceneIndex-apple50_test";
-      String resourcePriorsFileName = "data/apple-example/3apples-priors.tsv";
+      String resourcePriorsFileName = "data/apple-example/3apples-scores.tsv";
 
       // Lucene Manager - Controls indexing and searching
       LuceneManager luceneManager = new LuceneManager(FSDirectory.open(new File(luceneIndexFileName)));
 
         try {
-            new PriorDisambiguator(new org.dbpedia.spotlight.lucene.search.SurrogateSearcher(luceneManager), new DataLoader(new DataLoader.TSVParser(), new File("data/Distinct-surfaceForm-By-uri.grouped")));
+            new CustomScoresDisambiguator(new org.dbpedia.spotlight.lucene.search.SurrogateSearcher(luceneManager), new DataLoader(new DataLoader.TSVParser(), new File("data/Distinct-surfaceForm-By-uri.grouped")));
         } catch (IOException e) {
             e.printStackTrace();
         }

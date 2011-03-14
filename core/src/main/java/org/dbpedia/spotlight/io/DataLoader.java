@@ -37,6 +37,7 @@ public class DataLoader {
 
     Log LOG = LogFactory.getLog(this.getClass());
     LineParser mParser;
+    File f;
 
     public DataLoader(LineParser parser) {
         this.mParser = parser;
@@ -44,10 +45,11 @@ public class DataLoader {
 
     public DataLoader(LineParser parser, File f) {
         this.mParser = parser;
+        this.f = f;
     }
 
     public Map<String,Double> loadPriors() {
-        return null;
+        return loadPriors(f);
     }
     
     public Map<String,Double> loadPriors(InputStream in) throws IOException {

@@ -29,17 +29,23 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Similarity;
 import org.dbpedia.spotlight.exceptions.InputException;
+import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
 import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.lucene.LuceneFeatureVector;
 import org.dbpedia.spotlight.lucene.LuceneManager;
 import org.dbpedia.spotlight.lucene.similarity.CachedSimilarity;
 import org.dbpedia.spotlight.model.*;
+import org.dbpedia.spotlight.model.SurrogateSearcher;
 import org.dbpedia.spotlight.model.vsm.FeatureVector;
 import org.dbpedia.spotlight.string.ContextExtractor;
+import org.hsqldb.lib.*;
 
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Contains a unified index of (surface form, uri, context)
@@ -383,7 +389,7 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
 
         FieldSelector fieldSelector = new MapFieldSelector(onlyUriAndTypes);
 
-        LOG.trace("Getting document number "+docNo+"...");
+        LOG.trace("Getting document number " + docNo + "...");
         Document document = getDocument(docNo, fieldSelector);
         String uri = document.get(LuceneManager.DBpediaResourceField.URI.toString());
         if (uri==null)
@@ -493,4 +499,6 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
 
         return idfSum/wordCount;
     }
+
+
 }

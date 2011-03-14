@@ -34,8 +34,8 @@ import org.dbpedia.spotlight.disambiguate._
 import mixtures.LinearRegressionMixture
 import org.dbpedia.spotlight.lucene.index.MergedOccurrencesContextIndexer
 import org.dbpedia.spotlight.lucene._
-import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
 import org.dbpedia.spotlight.model.ContextSearcher
+import search.{SurrogateSearcher, MergedOccurrencesContextSearcher}
 
 /**
  * This class is evolving to be the main disambiguation class that takes parameters for which dataset to run.
@@ -214,6 +214,18 @@ object EvaluateDisambiguationOnly
         new LucenePriorDisambiguator(contextSearcher)
     }
 
+    def getRandomDisambiguator(indexDir: String) : Disambiguator = {
+        val analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET);
+        val similarity : Similarity = new DefaultSimilarity
+        val directory = new NIOFSDirectory(new File(indexDir));//+"."+analyzer.getClass.getSimpleName+"."+similarity.getClass.getSimpleName));
+        //val luceneManager = new LuceneManager.BufferedMerging(directory)
+        val luceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(directory)
+        luceneManager.setContextAnalyzer(analyzer);
+        luceneManager.setContextSimilarity(similarity);
+        val contextSearcher = new SurrogateSearcher(luceneManager);
+        LOG.info("Number of entries in merged resource index ("+contextSearcher.getClass()+"): "+ contextSearcher.getNumberOfEntries());
+        new RandomDisambiguator(contextSearcher)
+    }
 
     def ensureExists(directory: Directory)() {
         // Lucene Indexer - Needs an index in disk to be used in disambiguation
@@ -301,7 +313,8 @@ object EvaluateDisambiguationOnly
                             //getICFIDFStandardDisambiguator,
 
                          // no analyzer
-                            getPriorDisambiguator(indexDir)
+                            getPriorDisambiguator(indexDir),
+                            getRandomDisambiguator(indexDir)
         )
 
         // Read some text to test.
@@ -310,7 +323,7 @@ object EvaluateDisambiguationOnly
         //      // Now with most common amongst top K most similar contexts
         //      var disambiguator2 : Disambiguator = new MergedOccurrencesDisambiguator(resourceSearcher, new RankingStrategy.MostCommonAmongTopK(contextSearcher))
         //      // Now with most common URI by usage (prior) -- reading from file
-        //      //var disambiguator3 : Disambiguator = new PriorDisambiguator(surrogateSearcher, new DataLoader(new DataLoader.TSVParser(), new File(resourcePriorsFileName)));
+        //      //var disambiguator3 : Disambiguator = new CustomScoresDisambiguator(surrogateSearcher, new DataLoader(new DataLoader.TSVParser(), new File(resourcePriorsFileName)));
         //      // Now with most common URI by usage (prior) -- reading from lucene
         //      var disambiguator4 : Disambiguator = new LucenePriorDisambiguator(resourceSearcher);
 
