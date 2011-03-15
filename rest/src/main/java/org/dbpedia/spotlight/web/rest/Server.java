@@ -26,10 +26,15 @@ import org.dbpedia.spotlight.disambiguate.Disambiguator;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 
+import com.sun.grizzly.http.SelectorThread;
+import com.sun.jersey.api.container.grizzly.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Instantiates Web Service that will execute annotation and disambiguation tasks.
@@ -69,13 +74,24 @@ public class Server {
         // Set static annotator that will be used by Annotate and Disambiguate
         setAnnotator(new DefaultAnnotator(spotterFile, indexDir));
 
+        // CHANGED TO GRIZZLY CONTAINER SO THAT WE CAN GET IP INSIDE THE RESOURCES
+        /*
         ResourceConfig resources = new ClassNamesResourceConfig(
-                Class.forName("org.dbpedia.spotlight.web.rest.Annotate"),
-                Class.forName("org.dbpedia.spotlight.web.rest.Disambiguate"));
-
+                Class.forName("org.dbpedia.spotlight.web.rest.resources.Annotate"),
+                Class.forName("org.dbpedia.spotlight.web.rest.resources.Disambiguate"));
+        resources.getProperties().put("com.sun.jersey.config.property.WadlGeneratorConfig", "org.dbpedia.spotlight.web.rest.wadl.ExternalUriWadlGeneratorConfig");
         HttpServer server = HttpServerFactory.create(serverURI, resources);
-
         server.start();
+        */
+
+        final Map<String, String> initParams = new HashMap<String, String>();
+        initParams.put("com.sun.jersey.config.property.resourceConfigClass", "com.sun.jersey.api.core.PackagesResourceConfig");
+        initParams.put("com.sun.jersey.config.property.packages", "org.dbpedia.spotlight.web.rest.resources");
+        initParams.put("com.sun.jersey.config.property.WadlGeneratorConfig", "org.dbpedia.spotlight.web.rest.wadl.ExternalUriWadlGeneratorConfig");
+
+        SelectorThread threadSelector = GrizzlyWebContainerFactory.create(serverURI, initParams);
+        threadSelector.start();
+
         System.err.println("Server started in " + System.getProperty("user.dir") + " listening on " + serverURI);
 
         //Open browser
@@ -92,7 +108,10 @@ public class Server {
         }
 
         //Stop the HTTP server
-        server.stop(0);
+        //server.stop(0);
+        threadSelector.stopEndpoint();
+        System.exit(0);
+
     }
 
     private static void setAnnotator(Annotator a) throws ConfigurationException {

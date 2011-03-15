@@ -103,6 +103,7 @@ public abstract class SpotlightInterface  {
 
     private OutputManager output = new OutputManager();
 
+
     /**
      * Retrieves representation of an instance of org.dbpedia.spotlight.web.Annotation
      * @return an instance of java.lang.String
@@ -113,7 +114,8 @@ public abstract class SpotlightInterface  {
                                                           String dbpediaTypesString,
                                                           String sparqlQuery,
                                                           String policy,
-                                                          boolean coreferenceResolution) throws SearchException, InputException {
+                                                          boolean coreferenceResolution,
+                                                          String clientIp) throws SearchException, InputException {
 
         LOG.info("******************************** Parameters ********************************");
         announceAPI();
@@ -125,7 +127,7 @@ public abstract class SpotlightInterface  {
         else {
             policy = "whitelist";
         }
-
+        LOG.info("client ip: " + clientIp);
         LOG.info("text: " + text);
         LOG.info("text length in chars: "+text.length());
         LOG.info("confidence: "+String.valueOf(confidence));
@@ -165,10 +167,11 @@ public abstract class SpotlightInterface  {
                           String dbpediaTypesString,
                           String spqarlQuery,
                           String policy,
-                          boolean coreferenceResolution) throws Exception {
+                          boolean coreferenceResolution,
+                          String clientIp) throws Exception {
         String result;
         try {
-            List<DBpediaResourceOccurrence> occs = getOccurrences(text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
+            List<DBpediaResourceOccurrence> occs = getOccurrences(text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution, clientIp);
             result = output.makeHTML(text, occs);
         }
         catch (InputException e) { //TODO throw exception up to Annotate for WebApplicationException to handle.
@@ -185,10 +188,11 @@ public abstract class SpotlightInterface  {
                           String dbpediaTypesString,
                           String spqarlQuery,
                           String policy,
-                          boolean coreferenceResolution) throws Exception {
+                          boolean coreferenceResolution,
+                          String clientIp) throws Exception {
         String result;
         try {
-            List<DBpediaResourceOccurrence> occs = getOccurrences(text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
+            List<DBpediaResourceOccurrence> occs = getOccurrences(text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution, clientIp);
             result = output.makeRDFa(text, occs);
         }
         catch (InputException e) { //TODO throw exception up to Annotate for WebApplicationException to handle.
@@ -205,10 +209,11 @@ public abstract class SpotlightInterface  {
                          String dbpediaTypesString,
                          String spqarlQuery,
                          String policy,
-                         boolean coreferenceResolution) throws Exception {
+                         boolean coreferenceResolution,
+                          String clientIp) throws Exception {
         String result;
 //        try {
-            List<DBpediaResourceOccurrence> occs = getOccurrences(text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
+            List<DBpediaResourceOccurrence> occs = getOccurrences(text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution, clientIp);
             result = output.makeXML(text, occs, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
 //        }
 //        catch (Exception e) { //TODO throw exception up to Annotate for WebApplicationException to handle.
@@ -225,9 +230,10 @@ public abstract class SpotlightInterface  {
                           String dbpediaTypesString,
                           String spqarlQuery,
                           String policy,
-                          boolean coreferenceResolution) throws Exception {
+                          boolean coreferenceResolution,
+                          String clientIp) throws Exception {
         String result;
-        String xml = getXML(text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
+        String xml = getXML(text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution, clientIp);
         result = output.xml2json(xml);
         LOG.info("JSON format");
         return result;
