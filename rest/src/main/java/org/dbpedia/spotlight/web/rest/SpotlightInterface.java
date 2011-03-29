@@ -155,7 +155,7 @@ public abstract class SpotlightInterface  {
 
         LOG.info("Shown:");
         for(DBpediaResourceOccurrence occ : occList) {
-            LOG.info(occ.resource()+" <- "+occ.surfaceForm());
+            LOG.info(String.format("%s <- %s; score: %s, support: %s", occ.resource(),occ.surfaceForm(), occ.similarityScore(), occ.resource().support()));
         }
 
         return occList;
