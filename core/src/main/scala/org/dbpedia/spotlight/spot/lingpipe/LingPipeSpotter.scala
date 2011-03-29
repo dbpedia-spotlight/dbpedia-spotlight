@@ -71,7 +71,7 @@ class LingPipeSpotter(val dictionary : Dictionary[String], val overlap : Boolean
         chunkSet.toList.map{ chunk =>
             val textOffsetStart = chunk.start
             val textOffsetEnd = chunk.end
-            //val chunkType = chunk.type   // not interesting for us
+            //val chunkType = chunk.`type`   // empty for ExactDictionaryChunker
             //val score = chunk.score      // not interesting for us
             val surfaceForm = new SurfaceForm( text.text.substring(textOffsetStart, textOffsetEnd) )
             new SurfaceFormOccurrence(surfaceForm, text, textOffsetStart)

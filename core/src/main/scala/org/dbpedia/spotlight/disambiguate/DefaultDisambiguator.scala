@@ -16,7 +16,7 @@
 
 package org.dbpedia.spotlight.disambiguate
 
-import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
+import mixtures.LinearRegressionMixture
 import org.dbpedia.spotlight.lucene.LuceneManager
 import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
 import java.io.File
@@ -25,6 +25,7 @@ import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.exceptions.{SearchException, InputException}
 import org.apache.lucene.search.Explanation
 import org.dbpedia.spotlight.model._
+import org.dbpedia.spotlight.lucene.disambiguate.{MixedWeightsDisambiguator, MergedOccurrencesDisambiguator}
 
 /**
  * Created by IntelliJ IDEA.
@@ -50,7 +51,8 @@ class DefaultDisambiguator(val indexDir : File) extends Disambiguator  {
     //luceneManager.setContextSimilarity(new NewSimilarity(cache))        // set most successful Similarity
 
     val contextSearcher = new MergedOccurrencesContextSearcher(luceneManager)
-    val disambiguator : Disambiguator = new MergedOccurrencesDisambiguator(contextSearcher)
+    //val disambiguator : Disambiguator = new MergedOccurrencesDisambiguator(contextSearcher)
+    val disambiguator : Disambiguator = new MixedWeightsDisambiguator(contextSearcher, new LinearRegressionMixture())
 
     LOG.info("Done.")
 
