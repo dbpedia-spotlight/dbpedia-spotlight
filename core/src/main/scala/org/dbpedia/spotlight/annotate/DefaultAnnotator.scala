@@ -23,15 +23,24 @@ import org.dbpedia.spotlight.spot.Spotter
 import org.dbpedia.spotlight.disambiguate.{Disambiguator, DefaultDisambiguator}
 import org.dbpedia.spotlight.exceptions.InputException
 import org.dbpedia.spotlight.spot.lingpipe.{IndexLingPipeSpotter, LingPipeSpotter}
+import org.dbpedia.spotlight.candidate.{SpotSelector, CommonWordFilter}
 
 /**
  * Annotates a text with DBpedia Resources
  */
 
-class DefaultAnnotator(val spotter : Spotter, val disambiguator: Disambiguator) extends Annotator {
+class DefaultAnnotator(val spotter : Spotter, val spotSelector: SpotSelector, val disambiguator: Disambiguator) extends Annotator {
+
+    def this(spotter : Spotter, disambiguator : Disambiguator) = {
+        this(spotter, null, disambiguator);
+    }
 
     def this(spotterFile: File, indexDir : File) {
         this(new LingPipeSpotter(spotterFile), new DefaultDisambiguator(indexDir))
+    }
+
+    def this(spotterFile: File, spotSelectorFile: File, indexDir : File) {
+        this(new LingPipeSpotter(spotterFile), new CommonWordFilter(spotSelectorFile.getPath), new DefaultDisambiguator(indexDir))
     }
 
     def this(spotter : Spotter, indexDir : File) {
@@ -44,16 +53,23 @@ class DefaultAnnotator(val spotter : Spotter, val disambiguator: Disambiguator) 
 
     private val LOG = LogFactory.getLog(this.getClass)
 
-
     @throws(classOf[InputException])
     def annotate(text : String) : java.util.List[DBpediaResourceOccurrence] = {
         LOG.info("Spotting...")
         val spottedSurfaceForms : java.util.List[SurfaceFormOccurrence] = spotter.extract(new Text(text))
 
-        //LOG.info("Selecting candidates...");
-        //val selectedSpots = disambiguator.spotProbability(spottedSurfaceForms);
-        LOG.info("Skipping candidate selection.");
-        val selectedSpots = spottedSurfaceForms
+        val selectedSpots = if (spotSelector==null) {
+            LOG.info("Skipping candidate selection.");
+            spottedSurfaceForms
+        } else  {
+            LOG.info("Selecting candidates...");
+
+            // Old selector that we never quite finished coding
+            //val selectedSpots = disambiguator.spotProbability(spottedSurfaceForms);
+
+            // New selector
+            spotSelector.select(spottedSurfaceForms)
+        };
 
         LOG.info("Disambiguating... ("+disambiguator.name+")")
         val disambiguatedOccurrences : java.util.List[DBpediaResourceOccurrence] = disambiguator.disambiguate(selectedSpots)

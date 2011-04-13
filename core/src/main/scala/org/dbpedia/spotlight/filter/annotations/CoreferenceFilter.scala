@@ -20,7 +20,9 @@ import org.dbpedia.spotlight.model.{SurfaceForm, DBpediaResourceOccurrence}
 import org.apache.commons.logging.LogFactory
 
 /**
- *
+ * this is a heuristic and has nothing to do with proper coreference resolution!!!
+ * TODO how will this behave when filter is applied on occurrences from different texts? (PABLO)
+ * @author maxjakob
  */
 
 class CoreferenceFilter extends AnnotationFilter {

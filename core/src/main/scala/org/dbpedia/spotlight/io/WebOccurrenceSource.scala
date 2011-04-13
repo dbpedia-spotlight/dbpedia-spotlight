@@ -28,6 +28,7 @@ import org.dbpedia.spotlight.util.{OccurrenceFilter, IndexingConfiguration}
 
 /**
  * Gets Occurrences from the Web using Yahoo! Boss.
+ * @author maxjakob
  */
 object WebOccurrenceSource
 {

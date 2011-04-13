@@ -18,6 +18,7 @@ package org.dbpedia.spotlight.model
 
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.string.ModifiedWikiUtil
+import java.io.Serializable
 
 
 class DBpediaResource(var uri : String, var support : Int = 0, var types : List[DBpediaType] = List[DBpediaType]())
@@ -42,8 +43,11 @@ class DBpediaResource(var uri : String, var support : Int = 0, var types : List[
         this(uri, support, List[DBpediaType]())
     }
 
-    def equals(that : DBpediaResource) : Boolean = {
-        this.uri.equals(that.uri)
+    override def equals(obj : Any) : Boolean = {
+        obj match {
+            case that: DBpediaResource => this.uri.equals(that.uri)
+            case _ => this.equals(obj)
+        }
     }
 
     override def hashCode() = {
@@ -69,6 +73,7 @@ class DBpediaResource(var uri : String, var support : Int = 0, var types : List[
 
 }
 
+@serializable
 object DBpediaResource {
     val DBPEDIA_RESOURCE_PREFIX = "http://dbpedia.org/resource/"
 }
