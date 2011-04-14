@@ -16,10 +16,6 @@
 
 package org.dbpedia.spotlight.web.rest;
 
-import com.sun.jersey.api.container.httpserver.HttpServerFactory;
-import com.sun.jersey.api.core.ClassNamesResourceConfig;
-import com.sun.jersey.api.core.ResourceConfig;
-import com.sun.net.httpserver.HttpServer;
 import org.dbpedia.spotlight.annotate.Annotator;
 import org.dbpedia.spotlight.annotate.DefaultAnnotator;
 import org.dbpedia.spotlight.disambiguate.Disambiguator;
@@ -70,9 +66,12 @@ public class Server {
         URI serverURI = new URI(configuration.getServerURI());       // "http://localhost:"+args[0]+"/rest/"
         File indexDir = new File(configuration.getIndexDirectory()); //"/home/pablo/web/dbpedia36data/2.9.3/small/Index.wikipediaTraining.Merged.SnowballAnalyzer.DefaultSimilarity"
         File spotterFile = new File(configuration.getSpotterFile()); //"/home/pablo/eval/manual/Eval.spotterDictionary"
+        File commonWordsFile = new File(configuration.getCommonWordsFile()); //TODO get from config "/home/pablo/data/wortschatz/words.txt.CompactHashSet"
 
         // Set static annotator that will be used by Annotate and Disambiguate
-        setAnnotator(new DefaultAnnotator(spotterFile, indexDir));
+        setAnnotator(new DefaultAnnotator(spotterFile,
+                commonWordsFile,
+                indexDir));
 
         // CHANGED TO GRIZZLY CONTAINER SO THAT WE CAN GET IP INSIDE THE RESOURCES
         /*

@@ -258,7 +258,7 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
     }
 
     public ScoreDoc[] getHits(DBpediaResource resource) throws SearchException {
-        return getHits(mLucene.getQuery(resource));        
+        return getHits(mLucene.getQuery(resource), 2); // only needs one, but get two just to check if index is corrupted
     }
 
     public int getAmbiguity(SurfaceForm sf) throws SearchException {
@@ -337,7 +337,7 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
      * @param topN
      * @return
      */
-    public Map<String, Integer> getContextWords(DBpediaResource dbpediaResource, int topN) throws SearchException {
+    public List<Map.Entry<String,Integer>> getContextWords(DBpediaResource dbpediaResource) throws SearchException {
         Map<String,Integer> termFreqMap = new HashMap<String,Integer>();
         ScoreDoc[] docs = getHits(dbpediaResource);
         //TODO Create an exception DuplicateResourceException
@@ -348,7 +348,7 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
                 TermFreqVector vector = mReader.getTermFreqVector(d.doc, LuceneManager.DBpediaResourceField.CONTEXT.toString());
                 int[] freqs = vector.getTermFrequencies();
                 String[] terms = vector.getTerms();
-                for (int i=0; i<vector.size(); i++) {
+                for (int i=0; i < vector.size(); i++) {
                     termFreqMap.put(terms[i],freqs[i]);
                 }
             }
@@ -363,7 +363,7 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
         };
         List<Map.Entry<String,Integer>> sorted = descOrder.sortedCopy(termFreqMap.entrySet());
 
-        return termFreqMap;
+        return sorted;
     }
 
 

@@ -294,7 +294,7 @@ object SurrogatesUtil
 
     // Returns a cleaned surface form if it is considered to be worth keeping
     def getCleanSurfaceForm(surfaceForm : String, stopWords : Set[String], lowerCased : Boolean=false) : Option[String] = {
-        var cleanedSurfaceForm = ModifiedWikiUtil.wikiDecode(surfaceForm)
+        var cleanedSurfaceForm = ModifiedWikiUtil.wikiDecode(surfaceForm) //TODO MAX please prefer ModifiedWikiUtil.cleanSurfaceForm
         cleanedSurfaceForm = cleanedSurfaceForm.replaceAll(""" \(.+?\)$""", "")
         cleanedSurfaceForm = cleanedSurfaceForm.replaceAll("""^(The|THE|A) """, "")
         //TODO also clean quotation marks??
@@ -318,7 +318,7 @@ object SurrogatesUtil
     }
 
     def getSurfaceForm(resource : DBpediaResource) : SurfaceForm = {
-        new SurfaceForm(ModifiedWikiUtil.wikiDecode(resource.uri)
+        new SurfaceForm(ModifiedWikiUtil.wikiDecode(resource.uri)  //TODO MAX please prefer ModifiedWikiUtil.cleanSurfaceForm
                         .replaceAll(""" \(.+?\)$""", "")
                         .replaceAll("""^(The|A) """, ""))
     }

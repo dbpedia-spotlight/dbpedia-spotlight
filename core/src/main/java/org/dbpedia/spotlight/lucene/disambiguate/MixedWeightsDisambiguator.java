@@ -92,7 +92,7 @@ public class MixedWeightsDisambiguator extends MergedOccurrencesDisambiguator {
         for(DBpediaResourceOccurrence occ : bestK) {
             double contextScore = occ.similarityScore();
             int uriCount = occ.resource().support();
-            occ.setSimilarityScore(mixture.getScore(contextScore, uriCount));
+            occ.setSimilarityScore(mixture.getScore(contextScore, uriCount)); //TODO have a final score and a contextual score as well
         }
 
         Collections.sort(bestK, new SimScoreComparator());

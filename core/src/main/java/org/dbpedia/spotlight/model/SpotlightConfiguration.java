@@ -21,6 +21,9 @@
 
 package org.dbpedia.spotlight.model;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.jcs.utils.threadpool.ThreadPoolManager;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 
 import java.io.*;
@@ -29,7 +32,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Scanner;
 
 /**
  * Holds all configuration parameters needed to run the DBpedia Spotlight Server
@@ -40,6 +42,8 @@ import java.util.Scanner;
  */
 public class SpotlightConfiguration {
 
+    private static Log LOG = LogFactory.getLog(SpotlightConfiguration.class);
+
     public final static String DEFAULT_TEXT = "";
     public final static String DEFAULT_CONFIDENCE = "0.5";
     public final static String DEFAULT_SUPPORT = "30";
@@ -49,6 +53,7 @@ public class SpotlightConfiguration {
     public final static String DEFAULT_COREFERENCE_RESOLUTION = "true";
 
     protected String spotterFile    = "";
+    protected String commonWordsFile    = null;
     protected String indexDirectory = "";
     protected List<Double> similarityThresholds;
     protected String similarityThresholdsFile = "similarity-thresholds.txt";
@@ -80,6 +85,10 @@ public class SpotlightConfiguration {
 
     public String getSparqlEndpoint() {
         return sparqlEndpoint;
+    }
+
+    public String getCommonWordsFile() {
+        return commonWordsFile;
     }
 
 //final static String spotterFile= "/home/pablo/web/dbpedia36data/2.9.3/surface_forms-Wikipedia-TitRedDis.thresh3.spotterDictionary";
@@ -120,6 +129,13 @@ public class SpotlightConfiguration {
         spotterFile = config.getProperty("org.dbpedia.spotlight.spot.dictionary").trim();
         if(!new File(spotterFile).isFile()) {
             throw new ConfigurationException("Cannot find spotter file "+spotterFile);
+        }
+
+        commonWordsFile = config.getProperty("org.dbpedia.spotlight.spot.common").trim();
+        if(!new File(commonWordsFile).isFile()) {
+            LOG.error("Did not find common words file for spot selector, therefore will skip this step.");
+            commonWordsFile = null; //TODO for now if there is no file, we do no candidate selection
+            //throw new ConfigurationException("Cannot find common words file "+commonWordsFile);
         }
 
         serverURI = config.getProperty("org.dbpedia.spotlight.web.rest.uri").trim();

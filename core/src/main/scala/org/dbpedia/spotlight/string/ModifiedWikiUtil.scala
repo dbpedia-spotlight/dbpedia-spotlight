@@ -72,6 +72,28 @@ object ModifiedWikiUtil {
         return cleanSpace(URLDecoder.decode(name, "UTF-8"))
     }
 
+    //TODO make code in SurrogatesUtil use this method
+    def cleanPageTitle(title: String) = {
+       ModifiedWikiUtil.wikiDecode(title)
+            .replaceAll(""" \(.+?\)$""", "")
+            //.replaceAll("""^(The|THE|A) """, "") //HACK ?
+    }
+
+    def cleanDisambiguation(title : String) = {
+        title.replaceAll(""" \([D|d]isambiguation\)$""", "")
+    }
+
+    // Used by the IndexPriorYSmoother to query the Web for a resource title
+    def getKeywordsFromPageTitle(title: String) = {
+        val disambiguatedTitle = """(.+?) \((.+?)\)$""".r
+        //val simpleTitle = """(.+?)$""".r
+        val decoded = ModifiedWikiUtil.wikiDecode(title) // remove wikiurl encoded chars
+        cleanDisambiguation(decoded) match {
+            case disambiguatedTitle(title, explanation) => String.format("+\"%s\" +\"%s\"",title,explanation) // remove parenthesis, add quotes and plus
+            case title : String => String.format("+\"%s\"",title)
+        }
+
+    }
 
     def isEncoded(s : String) =
     {

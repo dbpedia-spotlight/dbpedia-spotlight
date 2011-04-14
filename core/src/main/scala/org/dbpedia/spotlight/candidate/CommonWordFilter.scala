@@ -5,7 +5,9 @@ import com.officedepot.cdap2.collection.CompactHashSet
 import java.io._
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence
 import collection.JavaConversions._
+import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
+import org.apache.log4j.Logger
 
 /**
  * This is a temporary workaround to the common words problem. Pablo is working on the actual fix.
@@ -14,13 +16,13 @@ import org.apache.commons.logging.LogFactory
  */
 class CommonWordFilter(val filename: String) extends SpotSelector {
 
+    val LOG = Logger.getLogger(this.getClass);
+
     val extension = ".CompactHashSet";
     val minimumCount = 100;
     val file = new File(filename+extension);
 
     val commonWords = if (file exists) unserialize else { serialize(parse); unserialize }
-
-    private val LOG = LogFactory.getLog(this.getClass)
 
     def parse() = {
         LOG.info(" parsing common words file ")
@@ -43,14 +45,19 @@ class CommonWordFilter(val filename: String) extends SpotSelector {
         out.close()
     }
 
-    def unserialize() = {
+    def unserialize = {
         LOG.info(" loading serialized dictionary of common words ")
-        val in = new ObjectInputStream(new FileInputStream(file))
-        val set = in.readObject match {
-            case s: CompactHashSet[String] => s
-            case _ => throw new ClassCastException("Serialized Object is not of type CompactHashSet[String] ");
+        var set = new CompactHashSet[String]
+        try {
+            val in = new ObjectInputStream(new FileInputStream(file))
+            set = in.readObject match {
+                case s: CompactHashSet[String] => s
+                case _ => throw new ClassCastException("Serialized Object is not of type CompactHashSet[String] ");
+            }
+            in.close();
+        } catch {
+            case e: Exception => LOG.info("Error loading CommonWords. "+e.getMessage);
         }
-        in.close();
         set
     }
 
@@ -65,8 +72,8 @@ class CommonWordFilter(val filename: String) extends SpotSelector {
         val previousSize = occs.size
         val r = occs.filter( o => !isCommonWord(o) );
         val count = previousSize-r.size
-        val percent = if (count==0) 0 else count.toDouble / previousSize
-        LOG.info(String.format("Removed %s occurrences confusable with common words (%s\\%).", count.toString, percent.toString ))
+        val percent = if (count==0) "0" else "%1.0f" format ((count.toDouble / previousSize) * 100)
+        LOG.info(String.format("Removed %s (%s percent) occurrences confusable with common words.", count.toString, percent.toString ))
         r
     }
 
@@ -81,4 +88,3 @@ class CommonWordFilter(val filename: String) extends SpotSelector {
     }
 
 }
-
