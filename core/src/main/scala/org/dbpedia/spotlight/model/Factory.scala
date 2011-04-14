@@ -30,15 +30,15 @@ object Factory {
         surfaceForm;
     }
 
-    def createDBpediaResourceOccurrenceFromDocument(doc : Document) {
+    def createDBpediaResourceOccurrenceFromDocument(doc : Document) : DBpediaResourceOccurrence = {
         createDBpediaResourceOccurrenceFromDocument(doc, -1)
     }
-    def createDBpediaResourceOccurrenceFromDocument(doc : Document, id: Int) = {
+    def createDBpediaResourceOccurrenceFromDocument(doc : Document, id: Int) : DBpediaResourceOccurrence = {
         // getField: If multiple fields exists with this name, this method returns the first value added.
         var resource = new DBpediaResource(doc.getField(LuceneManager.DBpediaResourceField.URI.toString).stringValue)
         var context = new Text(doc.getFields(LuceneManager.DBpediaResourceField.CONTEXT.toString).mkString("\n"))
 
-        new DBpediaResourceOccurrence(
+        new DBpediaResourceOccurrence( //TODO add document id as occurrence id
             resource,
             createSurfaceFormFromDBpediaResourceURI(resource), // this is sort of the "official" surface form, since it's the cleaned up title
             context,

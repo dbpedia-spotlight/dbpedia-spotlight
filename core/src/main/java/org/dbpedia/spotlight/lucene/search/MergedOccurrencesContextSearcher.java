@@ -267,6 +267,17 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
         return hits.length;
     }
 
+    public List<DBpediaResource> getDBpediaResourceCandidates(SurfaceForm sf) throws SearchException {
+        List<DBpediaResource> results = new ArrayList<DBpediaResource>();
+        ScoreDoc[] hits = getHits(mLucene.getQuery(sf));
+        for (ScoreDoc sd: hits) {
+            results.add(getDBpediaResource(sd.doc));
+        }
+        LOG.trace("Ambiguity for "+sf+"="+hits.length);
+        return results;
+    }
+
+
     /**
      * Gets number of occurrences (support) for DBpediaResource.
      * Will issue a search. If you have a document, prefer using getSupport(Document).
@@ -341,7 +352,8 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
         Map<String,Integer> termFreqMap = new HashMap<String,Integer>();
         ScoreDoc[] docs = getHits(dbpediaResource);
         //TODO Create an exception DuplicateResourceException
-        LOG.error(String.format("Resource %s has more than one document in  the index. Maybe index corrupted?", dbpediaResource));
+        if (docs.length>1)
+            LOG.error(String.format("Resource %s has more than one document in  the index. Maybe index corrupted?", dbpediaResource));
         // Will accept multiple docs for a resource and get the overall top terms
         try {
             for (ScoreDoc d: docs) {
@@ -385,7 +397,9 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
     }
 
     // Returns the first URI that can be found in the document number docNo
-    public DBpediaResource getDBpediaResource(int docNo) throws SearchException { //TODO why is this overriding BaseSearcher? can merge?
+    //TODO move to Factory
+    //TODO why is this overriding BaseSearcher? can merge?
+    public DBpediaResource getDBpediaResource(int docNo) throws SearchException {
 
         FieldSelector fieldSelector = new MapFieldSelector(onlyUriAndTypes);
 

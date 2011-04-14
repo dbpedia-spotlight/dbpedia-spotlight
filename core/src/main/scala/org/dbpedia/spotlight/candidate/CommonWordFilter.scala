@@ -14,7 +14,7 @@ import org.apache.log4j.Logger
  *
  * @author pablomendes
  */
-class CommonWordFilter(val filename: String) extends SpotSelector {
+class CommonWordFilter(val filename: String, val load: Boolean = true) extends SpotSelector {
 
     val LOG = Logger.getLogger(this.getClass);
 
@@ -22,7 +22,7 @@ class CommonWordFilter(val filename: String) extends SpotSelector {
     val minimumCount = 100;
     val file = new File(filename+extension);
 
-    val commonWords = if (file exists) unserialize else { serialize(parse); unserialize }
+    val commonWords = if (load && (file exists)) unserialize else { serialize(parse); unserialize }
 
     def parse() = {
         LOG.info(" parsing common words file ")
