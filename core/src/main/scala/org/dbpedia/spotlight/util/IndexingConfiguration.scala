@@ -155,7 +155,6 @@ class IndexingConfiguration(val configFile: File) {
             throw new ConfigurationException("specified stop words file not found: "+stopwordsFile)
         }
 
-        //validate yahoo data ...
     }
 
 }
