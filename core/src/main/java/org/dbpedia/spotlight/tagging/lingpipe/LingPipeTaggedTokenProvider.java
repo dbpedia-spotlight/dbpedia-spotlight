@@ -1,11 +1,11 @@
-package org.dbpedia.spotlight.candidate.tagging.lingpipe;
+package org.dbpedia.spotlight.tagging.lingpipe;
 
 import com.aliasi.sentences.SentenceModel;
 import com.aliasi.tag.Tagger;
 import com.aliasi.tag.Tagging;
 import com.aliasi.tokenizer.Tokenizer;
-import org.dbpedia.spotlight.candidate.tagging.TaggedToken;
-import org.dbpedia.spotlight.candidate.tagging.TaggedTokenProvider;
+import org.dbpedia.spotlight.tagging.TaggedToken;
+import org.dbpedia.spotlight.tagging.TaggedTokenProvider;
 
 import java.util.ArrayList;
 import java.util.Collections;

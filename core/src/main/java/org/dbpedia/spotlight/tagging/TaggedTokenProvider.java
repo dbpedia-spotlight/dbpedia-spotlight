@@ -1,4 +1,4 @@
-package org.dbpedia.spotlight.candidate.tagging;
+package org.dbpedia.spotlight.tagging;
 
 import java.util.List;
 

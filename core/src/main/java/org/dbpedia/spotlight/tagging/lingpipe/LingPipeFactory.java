@@ -1,4 +1,4 @@
-package org.dbpedia.spotlight.candidate.tagging.lingpipe;
+package org.dbpedia.spotlight.tagging.lingpipe;
 
 import com.aliasi.hmm.HiddenMarkovModel;
 import com.aliasi.hmm.HmmDecoder;

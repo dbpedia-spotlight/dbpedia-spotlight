@@ -1,4 +1,4 @@
-package org.dbpedia.spotlight.candidate.tagging;
+package org.dbpedia.spotlight.tagging;
 
 /**
  * Part-of-speech data for a token.

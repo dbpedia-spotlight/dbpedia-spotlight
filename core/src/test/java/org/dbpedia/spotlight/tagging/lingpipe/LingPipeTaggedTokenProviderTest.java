@@ -1,8 +1,8 @@
-package org.dbpedia.spotlight.candidate.tagging.lingpipe;
+package org.dbpedia.spotlight.tagging.lingpipe;
 
 import com.aliasi.sentences.IndoEuropeanSentenceModel;
 import junit.framework.TestCase;
-import org.dbpedia.spotlight.candidate.tagging.TaggedToken;
+import org.dbpedia.spotlight.tagging.TaggedToken;
 
 import java.io.File;
 import java.util.LinkedList;
