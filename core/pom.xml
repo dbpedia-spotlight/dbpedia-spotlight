@@ -91,7 +91,7 @@
                             <artifactId>weka</artifactId>
                             <version>3.7.3</version>
                             <packaging>jar</packaging>
-                            <file>${basedir}/../../weka/out/artifacts/jar/weka-trunk.jar</file>
+                            <file>${basedir}/../lib/weka-trunk.jar</file>
                         </configuration>
                     </execution>
                 </executions>
@@ -223,7 +223,11 @@
             <version>4.8.2</version>
         </dependency>
 
-
+        <dependency>
+            <groupId>org.scalaj</groupId>
+            <artifactId>scalaj-collection_2.8.0</artifactId>
+            <version>1.0</version>
+        </dependency>
 
 
     </dependencies>
