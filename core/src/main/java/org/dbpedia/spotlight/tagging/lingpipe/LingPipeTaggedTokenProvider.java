@@ -84,12 +84,14 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 		//Load the POS model:
 		Tagger posTagger = LingPipeFactory.createPOSTagger();
 
+		long start = System.currentTimeMillis();
 		//1.) Tokenization
 		ArrayList tokenList = new ArrayList();
 		ArrayList whiteList = new ArrayList();
 		Tokenizer tokenizer = LingPipeFactory.getTokenizerFactory().tokenizer(text.toCharArray(),
 				0, text.length());
 		tokenizer.tokenize(tokenList, whiteList);
+		System.err.println("Tokenization took " + (System.currentTimeMillis() - start) + "ms.");
 
 		//2.) Sentence detection
 		String[] tokens = new String[tokenList.size()];
@@ -97,16 +99,36 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 		tokenList.toArray(tokens);
 		whiteList.toArray(whites);
 
+
+		start = System.currentTimeMillis();
 		SentenceModel sentenceModel = LingPipeFactory.createSentenceModel();
 		int[] sentenceBoundaries = sentenceModel.boundaryIndices(tokens, whites);
+		System.err.println("Sent detection took " + (System.currentTimeMillis() - start) + "ms.");
 
+		start = System.currentTimeMillis();
 		//3.) Part-of-Speech tagging
 		int sentStartToken = 0;
-		int sentEndToken = 0;
+		int sentEndToken;
 		int textOffset = 0;
 
-		for (int i = 0; i < sentenceBoundaries.length; ++i) {
-			sentEndToken = sentenceBoundaries[i];
+
+		/**
+		 * Tag every sentence with final punctuation (i < sentenceBoundaries.length), if there is
+		 * text without final punctuation, treat the rest of the text as a single sentence.
+		 */
+
+		for (int i = 0; (i < sentenceBoundaries.length || sentStartToken < tokens.length); ++i) {
+
+			if (i < sentenceBoundaries.length) {
+				//We are between two sentence-final punctuation tokens.
+
+				sentEndToken = sentenceBoundaries[i];
+			} else {
+				//We are beyond the last sentence-final punctuation: Tag the rest of the text.
+
+				sentEndToken = tokens.length - 1;
+			}
+
 
 			Tagging<String> tags = posTagger.tag(tokenList.subList(sentStartToken, sentEndToken + 1));
 			for (int j = 0; j < tags.size(); j++) {
@@ -117,6 +139,9 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 
 			sentStartToken = sentEndToken + 1;
 		}
+
+		System.err.println("POS tagging took " + (System.currentTimeMillis() - start) + "ms.");
+
 
 	}
 

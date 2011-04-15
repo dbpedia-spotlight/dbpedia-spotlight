@@ -26,6 +26,7 @@ public class LingPipeFactory {
 
 	private static File taggerModelFile;
 	private static HiddenMarkovModel hmm;
+	private static HmmDecoder hmmDecoder;
 
 	public static void setTaggerModelFile(File taggerModelFile) throws IOException {
 		LingPipeFactory.taggerModelFile = taggerModelFile;
@@ -42,6 +43,7 @@ public class LingPipeFactory {
 		} catch (ClassNotFoundException e) {
 			throw new IOException("Could not decode POS tagger model");
 		}
+		hmmDecoder = new HmmDecoder(hmm);
 	}
 
 
@@ -55,7 +57,7 @@ public class LingPipeFactory {
 	}
 
 	public static Tagger createPOSTagger() {
-		return new HmmDecoder(hmm);
+		return hmmDecoder;
 	}
 
 	public static SentenceModel createSentenceModel() {
