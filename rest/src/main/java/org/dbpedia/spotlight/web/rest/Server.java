@@ -70,18 +70,8 @@ public class Server {
 
         // Set static annotator that will be used by Annotate and Disambiguate
         setAnnotator(new DefaultAnnotator(spotterFile,
-                commonWordsFile,
+                //commonWordsFile,
                 indexDir));
-
-        // CHANGED TO GRIZZLY CONTAINER SO THAT WE CAN GET IP INSIDE THE RESOURCES
-        /*
-        ResourceConfig resources = new ClassNamesResourceConfig(
-                Class.forName("org.dbpedia.spotlight.web.rest.resources.Annotate"),
-                Class.forName("org.dbpedia.spotlight.web.rest.resources.Disambiguate"));
-        resources.getProperties().put("com.sun.jersey.config.property.WadlGeneratorConfig", "org.dbpedia.spotlight.web.rest.wadl.ExternalUriWadlGeneratorConfig");
-        HttpServer server = HttpServerFactory.create(serverURI, resources);
-        server.start();
-        */
 
         final Map<String, String> initParams = new HashMap<String, String>();
         initParams.put("com.sun.jersey.config.property.resourceConfigClass", "com.sun.jersey.api.core.PackagesResourceConfig");

@@ -155,7 +155,8 @@ public abstract class SpotlightInterface  {
 
         LOG.info("Shown:");
         for(DBpediaResourceOccurrence occ : occList) {
-            LOG.info(String.format("%s <- %s; score: %s, support: %s", occ.resource(),occ.surfaceForm(), occ.similarityScore(), occ.resource().support()));
+            //TODO attention, spotProb is currently abused to contain prior. will fix soon
+            LOG.info(String.format("%s <- %s; score: %s, support: %s, prior: %s", occ.resource(),occ.surfaceForm(), occ.similarityScore(), occ.resource().support(), occ.resource().prior()));
         }
 
         return occList;

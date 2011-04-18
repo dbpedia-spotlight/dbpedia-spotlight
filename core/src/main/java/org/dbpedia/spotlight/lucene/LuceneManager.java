@@ -79,7 +79,7 @@ public class LuceneManager {
 
     // what to do if lucene.mContextIndexDir already exists (so we do not unvoluntary add to an existing index).
     // true to create the index or overwrite the existing one; false to append to the existing index
-    public boolean shouldOverride = true;  //BE CAREFUL: indices will be overwritten if true !!!!!
+    public boolean shouldOverride = false;  //BE CAREFUL: indices will be overwritten if true !!!!!
 
     // this value specifies how many top results Lucene should return
     public int topResultsLimit = 100;
@@ -131,10 +131,18 @@ public class LuceneManager {
 
 
     public enum DBpediaResourceField {
-        URI("URI"), URI_COUNT("URI_COUNT"), SURFACE_FORM("SURFACE_FORM"), CONTEXT("CONTEXT"), TYPE("TYPE");
+        URI("URI"), URI_COUNT("URI_COUNT"), URI_PRIOR("URI_PRIOR"), SURFACE_FORM("SURFACE_FORM"), CONTEXT("CONTEXT"), TYPE("TYPE");
         private String name;
         DBpediaResourceField(String name) {
             this.name = name;
+        }
+        public static String[] stringValues() {
+            String[] stringValues = new String[values().length];
+            int i = 0;
+            for (DBpediaResourceField value: values()) {
+                stringValues[i] = value.toString();
+            }
+            return stringValues;
         }
         @Override
         public String toString() {
@@ -363,6 +371,13 @@ public class LuceneManager {
                                     Field.Index.NOT_ANALYZED_NO_NORMS);
     }
 
+    public Field getUriPriorField(double prior) {
+        return new Field(DBpediaResourceField.URI_PRIOR.toString(),
+                                    Double.toString(prior),
+                                    Field.Store.YES,
+                                    Field.Index.NOT_ANALYZED_NO_NORMS);
+    }
+
     /*---------- Composed methods for querying the index correctly (they use the basic methods) ----------*/ //TODO Move to LuceneQueryFactory
 
 //    public Query getQuery(SurfaceForm sf, Text context) throws SearchException {  //PABLO add specific query for sf+context case
@@ -434,10 +449,10 @@ public class LuceneManager {
     public Document getDocument(DBpediaResourceOccurrence resourceOccurrence) {
         Document doc = new Document();
         doc.add(getField(resourceOccurrence.resource()));
-        //doc.add(getField(resourceOccurrence.surfaceForm()));  //uncomment this if you want anchor texts as surface forms; otherwise index surface forms in a second run together with types
+        doc.add(getField(resourceOccurrence.surfaceForm()));  //uncomment this if you want anchor texts as surface forms; otherwise index surface forms in a second run together with types
         doc.add(getField(resourceOccurrence.context()));
-        doc.add(getUriCountField(1));
-
+        doc.add(getUriCountField(resourceOccurrence.resource().support()));
+        doc.add(getUriPriorField(resourceOccurrence.resource().prior()));
         return doc;
     }
 
@@ -452,6 +467,8 @@ public class LuceneManager {
         Document doc = new Document();
         doc.add(getField(surfaceForm));
         doc.add(getField(resource));
+        doc.add(getUriCountField(resource.support()));
+        doc.add(getUriPriorField(resource.prior()));
         return doc;
     }
 

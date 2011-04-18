@@ -8,6 +8,7 @@ import collection.JavaConversions._
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.apache.log4j.Logger
+import org.dbpedia.spotlight.io.WortschatzParser
 
 /**
  * This is a temporary workaround to the common words problem. Pablo is working on the actual fix.
@@ -19,23 +20,12 @@ class CommonWordFilter(val filename: String, val load: Boolean = true) extends S
     val LOG = Logger.getLogger(this.getClass);
 
     val extension = ".CompactHashSet";
-    val minimumCount = 100;
     val file = new File(filename+extension);
 
     val commonWords = if (load && (file exists)) unserialize else { serialize(parse); unserialize }
 
     def parse() = {
-        LOG.info(" parsing common words file ")
-        // get lines, split in three fields, get the middle one (word)
-        val commonWords = new CompactHashSet[String]();
-
-        val log = Source.fromFile(filename, "iso-8859-1").getLines.foreach(line => {
-            if (line.trim()!="") {
-                val fields = line.split("\\s")
-                if (fields(2).toInt > minimumCount) commonWords.add(fields(1))
-            }
-        });
-        commonWords
+        WortschatzParser.parse(filename, 100)
     }
 
     def serialize(commonWords: CompactHashSet[String]) {

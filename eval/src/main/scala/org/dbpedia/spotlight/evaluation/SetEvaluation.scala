@@ -115,11 +115,13 @@ object SetEvaluation {
         val goldStandardName = dirs(dirs.size-1)
         goldStandardName match {
             case "cucerzan" =>
-                getCucerzanGold(baseDir)
+                 Map("cucerzan"->Source.fromFile(baseDir+"/gold/cucerzan.set").getLines.toSet)
             case "manual" =>
                 getManualGold(baseDir)
             case "wikify" =>
-                getWikifyGold(baseDir)
+                Map("wikify"->Source.fromFile(baseDir+"/gold/WikifyAllInOne.set").getLines.toSet)
+            case "grounder" =>
+                Map("grounder"->Source.fromFile(baseDir+"/gold/g1b_spotlight.txt").getLines.toSet)
             case _ => {
                 println("There is no loader method configured for a gold standard called "+goldStandardName)
                 Map()
@@ -226,7 +228,7 @@ object SetEvaluation {
       val systems = SetEvaluation.getSystemsResults(baseDir)
 
       printPoints(baseDir, gold, systems);
-      //printLines(baseDir, gold);
+      printLines(baseDir, gold);
     }
 
    def main(args : Array[String])
@@ -240,7 +242,8 @@ object SetEvaluation {
 
 //    val baseDir = "/home/pablo/eval/cucerzan"
 //    val baseDir = "/home/pablo/eval/manual"
-      val baseDir = "/home/pablo/eval/wikify"
+//      val baseDir = "/home/pablo/eval/wikify"
+      val baseDir = "/home/pablo/eval/grounder"
 
       run(baseDir)
 

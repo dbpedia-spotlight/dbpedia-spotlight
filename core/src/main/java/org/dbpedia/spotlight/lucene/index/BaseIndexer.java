@@ -81,7 +81,7 @@ public abstract class BaseIndexer<T> implements FeatureVectorBuilder, Closeable 
 
     public abstract void add(T item) throws IndexException;
 
- 
+
     @Override
     public void close() throws IOException {
         LOG.info("Closing Lucence writer...");

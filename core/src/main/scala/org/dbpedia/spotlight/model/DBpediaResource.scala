@@ -21,7 +21,10 @@ import org.dbpedia.spotlight.string.ModifiedWikiUtil
 import java.io.Serializable
 
 
-class DBpediaResource(var uri : String, var support : Int = 0, var types : List[DBpediaType] = List[DBpediaType]())
+class DBpediaResource(var uri : String,
+                      var support : Int = 0,
+                      var prior : Double = 0.0,
+                      var types : List[DBpediaType] = List[DBpediaType]())
 {
     require(uri != null)
 
@@ -36,11 +39,15 @@ class DBpediaResource(var uri : String, var support : Int = 0, var types : List[
 
 
     def this(uri : String) = {
-        this(uri, 0, List[DBpediaType]())
+        this(uri, 0, 0.0, List[DBpediaType]())
     }
 
     def this(uri : String, support : Int) = {
-        this(uri, support, List[DBpediaType]())
+        this(uri, support, 0.0, List[DBpediaType]())
+    }
+
+    def this(uri : String, support : Int, prior : Double) = {
+        this(uri, support, prior, List[DBpediaType]())
     }
 
     override def equals(obj : Any) : Boolean = {
@@ -58,6 +65,10 @@ class DBpediaResource(var uri : String, var support : Int = 0, var types : List[
         support = s
     }
 
+    def setPrior(s : Double) {
+        prior = s
+    }
+
     def setTypes(typesList : java.util.List[DBpediaType]) {
         types = typesList.toList
     }
@@ -66,14 +77,33 @@ class DBpediaResource(var uri : String, var support : Int = 0, var types : List[
 
     override def toString = {
         val typesString = if (types.nonEmpty) types.map(_.name).mkString("(", ",", ")") else ""
-        "DBpediaResource["+uri+typesString+"]"
+
+        if (isCommonWord) {
+            "WiktionaryResource["+uri+typesString+"]"
+        } else {
+            "DBpediaResource["+uri+typesString+"]"
+        }
     }
 
-    def getFullUri = DBpediaResource.DBPEDIA_RESOURCE_PREFIX + uri
+    /**
+     * This means that a dummy candidate has been added as a surrogate to a common word.
+     */
+    def isCommonWord = {
+        uri.startsWith("W:")
+    }
+
+    def getFullUri = {
+        if (isCommonWord) {
+            DBpediaResource.WIKTIONARY_RESOURCE_PREFIX + uri
+        } else {
+            DBpediaResource.DBPEDIA_RESOURCE_PREFIX + uri
+        }
+    }
 
 }
 
 @serializable
 object DBpediaResource {
     val DBPEDIA_RESOURCE_PREFIX = "http://dbpedia.org/resource/"
+    val WIKTIONARY_RESOURCE_PREFIX = "http://en.wiktionary.org/wiki/"
 }

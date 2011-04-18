@@ -7,9 +7,11 @@ import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.model.{SurfaceForm, DBpediaResource, LuceneFactory, SpotlightConfiguration}
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.candidate.CommonWordFilter
+import org.dbpedia.spotlight.io.WortschatzParser
 
 /**
  * Takes in a list of Common Words and queries the index to find classes that are confusable with those.
+ * After this, you can run Generate
  * @author pablomendes
  */
 
@@ -17,23 +19,24 @@ object GetDBpediaResourceCandidates {
 
     private val LOG = LogFactory.getLog(this.getClass)
 
-    val configuration = new SpotlightConfiguration("conf/eval.properties"); //TODO move this to command line parameter
-
-    val factory = new LuceneFactory(configuration)
-    val searcher = factory.searcher
-
     /**
      * This class obtains DBpediaResources that are candidates for a given surface form
      *
      */
     def main(args: Array[String]) {
         val indexingConfigFileName = args(0)
-        val surfaceFormSetFile = args(1)
-        val uriSetFile = args(2)
+        val spotlightConfigFileName = args(1)
+        val surfaceFormSetFile = args(2)
+        val uriSetFile = surfaceFormSetFile+".uris"
+
+        val configuration = new SpotlightConfiguration(spotlightConfigFileName); //TODO move this to command line parameter
+
+        val factory = new LuceneFactory(configuration)
+        val searcher = factory.searcher
 
         val out = new PrintWriter(uriSetFile);
 
-        val surfaceForms = new CommonWordFilter(surfaceFormSetFile, false).parse;
+        val surfaceForms = WortschatzParser.parse(surfaceFormSetFile, 50, 100);
         var i = 0;
         surfaceForms.foreach( name => {
             i = i + 1

@@ -49,7 +49,7 @@ public class SurrogateSearcher extends BaseSearcher implements org.dbpedia.spotl
      * @throws org.dbpedia.spotlight.exceptions.SearchException
      */
     @Override
-    public Set<DBpediaResource> get(SurfaceForm sf) throws SearchException {
+    public Set<DBpediaResource> getCandidates(SurfaceForm sf) throws SearchException {
         Set<DBpediaResource> surrogates = new HashSet<DBpediaResource>();
 
         // search index for surface form, iterate through the results
@@ -69,7 +69,7 @@ public class SurrogateSearcher extends BaseSearcher implements org.dbpedia.spotl
         return surrogates;
     }
 
-    public Set<SurfaceForm> get(DBpediaResource res) throws SearchException {
+    public Set<SurfaceForm> getSurfaceForms(DBpediaResource res) throws SearchException {
         Set<SurfaceForm> surfaceForms = new HashSet<SurfaceForm>();
 
         // search index for resource, iterate through the results

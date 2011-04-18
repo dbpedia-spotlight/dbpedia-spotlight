@@ -30,6 +30,6 @@ import java.util.Set;
  */
 public interface SurrogateSearcher {
 
-    public Set<DBpediaResource> get(SurfaceForm sf) throws SearchException, ItemNotFoundException;
+    public Set<DBpediaResource> getCandidates(SurfaceForm sf) throws SearchException, ItemNotFoundException;
 
 }

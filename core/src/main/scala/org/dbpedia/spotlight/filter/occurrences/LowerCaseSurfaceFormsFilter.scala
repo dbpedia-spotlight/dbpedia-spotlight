@@ -21,8 +21,8 @@ import org.dbpedia.spotlight.model.{SurfaceForm, DBpediaResource, DBpediaResourc
 class LowerCaseSurfaceFormsFilter extends OccurrenceFilter {
 
     def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
-        val lowerCasedSf = new SurfaceForm(occ.surfaceForm.name)
-        Some(new DBpediaResourceOccurrence(occ.id, occ.resource, lowerCasedSf, occ.context, occ.textOffset, occ.provenance, occ.similarityScore, occ.percentageOfSecondRank, occ.spotProb))
+        val lowerCasedSf = new SurfaceForm(occ.surfaceForm.name) //FIXME what about other properties of SurfaceForm (e.g.spot prob?)
+        Some(new DBpediaResourceOccurrence(occ.id, occ.resource, lowerCasedSf, occ.context, occ.textOffset, occ.provenance, occ.similarityScore, occ.percentageOfSecondRank, occ.contextualScore))
     }
 
 }

@@ -19,18 +19,23 @@ package org.dbpedia.spotlight.lucene.index;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.FieldSelector;
+import org.apache.lucene.document.MapFieldSelector;
 import org.apache.lucene.index.Term;
 import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.lucene.LuceneManager;
 import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher;
-import org.dbpedia.spotlight.model.DBpediaType;
-import org.dbpedia.spotlight.model.SurfaceForm;
+import org.dbpedia.spotlight.model.*;
 
 import java.io.IOException;
 import java.util.*;
 
 /**
  * Class adding surface forms and DBpedia types to an existing index that contains URIs and context (both "stored").
+ *
+ * @author maxjakob
+ * @author pablomendes (priorEnricher) TODO consider splitting each of the enrichWith... methods into a subclass of IndexEnricher
  */
 public class IndexEnricher extends BaseIndexer<Object> {
 
@@ -47,9 +52,136 @@ public class IndexEnricher extends BaseIndexer<Object> {
      * @throws java.io.IOException
      */
     public IndexEnricher(LuceneManager lucene) throws IOException {
-        super(lucene);
+        super(lucene, false); //ATTENTION: if this is set to true, it will override the existing index!
         searcher = new MergedOccurrencesContextSearcher(this.mLucene);
     }
+
+    private long getIndexSize() {
+        long indexSize = searcher.getNumberOfEntries();
+        if (indexSize == 0) {
+            throw new IllegalArgumentException("index in "+mLucene.directory()+" contains no entries; this method can only enrich existing indexes");
+        }
+        return indexSize;
+    }
+
+    private void commit(int i) throws IOException {
+        if (i%DOCS_BEFORE_FLUSH==0) {
+            LOG.info("  processed "+i+" documents. committing...");
+            mWriter.commit();
+            LOG.info("  done.");
+        }
+    }
+
+    private void done(long indexSize) throws IOException {
+        LOG.info("Processed " + indexSize + " documents. Final commit...");
+        mWriter.commit();
+        //LOG.info("Optimizing...");
+        //mWriter.optimize();
+        LOG.info("Done.");
+    }
+
+    /**
+     * Gets custom prior probabilities from a map and adds them to the index. If resource in the map is not in the index, it creates a new entry
+     * (can be used to cope with sparsity in Wikipedia)
+     * @param uriPriorMap
+     * @throws SearchException
+     * @throws IOException
+     * @author pablomendes
+     */
+    public void enrichWithPriors(Map<DBpediaResource,Double> uriPriorMap) throws SearchException, IOException {
+        long indexSize = getIndexSize();
+        LOG.info("Adding URI priors to index "+mLucene.directory()+"...");
+
+        if (uriPriorMap == null || uriPriorMap.size() == 0 ) {
+            LOG.info("No URI priors provided to enrichWithPriors. Cowardly refusing to invent them.");
+            return;
+        }
+
+        int i = 0;
+        for (Map.Entry<DBpediaResource,Double> uriPrior: uriPriorMap.entrySet()) {
+            String uri = uriPrior.getKey().uri();
+            Double prior = uriPrior.getValue();
+
+            FieldSelector fields = new MapFieldSelector(LuceneManager.DBpediaResourceField.stringValues());
+            List<Document> docs = searcher.getDocuments(uriPrior.getKey(), fields);
+            if (docs.size()==0) {
+                DBpediaResource resource = new DBpediaResource(uri, 0, prior); // support is zero because we didn't see it in Wikipedia
+                SurfaceForm surfaceForm = Factory.createSurfaceFormFromDBpediaResourceURI(resource);
+                Text context = new Text(surfaceForm.name());
+                DBpediaResourceOccurrence occ = new DBpediaResourceOccurrence(
+                                                                                resource,
+                                                                                surfaceForm,
+                                                                                context,
+                                                                                0,
+                                                                                Provenance.Web());
+
+                mWriter.addDocument(mLucene.getDocument(occ)); // add new doc
+
+            } else for (Document doc: docs) {
+                addPriorToDoc(doc, uri, prior); // update doc
+            }
+            commit(i++);
+        }
+
+        done(i);
+    }
+
+
+    /**
+     * Goes over the index and adds a prior field. Divides support by total number of occurrences, or gets it from file if exists.
+     * @param uriPriorMap
+     * @throws SearchException
+     * @throws IOException
+     * @author pablomendes
+     */
+    public void enrichWithPriors2(Map<DBpediaResource,Double> uriPriorMap) throws SearchException, IOException {
+        long indexSize = getIndexSize();
+        LOG.info("Adding URI priors to index "+mLucene.directory()+"...");
+
+        if (uriPriorMap == null || uriPriorMap.size() == 0 ) {
+            LOG.info("No URI priors provided to enrichWithPriors. Cowardly refusing to invent them.");
+            return;
+        }
+
+        int modified = 0;
+        //TODO go over the priors instead of going over the index.
+        for (int i=0; i<indexSize; i++) {
+            Document doc = searcher.getFullDocument(i);
+            Field uriField = doc.getField(LuceneManager.DBpediaResourceField.URI.toString());
+            if (uriField == null) {
+                LOG.error("URI Field was null! Skipping.");
+                continue;
+            }
+
+            String uri = uriField.stringValue();
+            Double newPrior = uriPriorMap.remove(uri);
+            addPriorToDoc(doc, uri, newPrior);
+
+            commit(i);
+        }
+
+        done(indexSize);
+    }
+
+    private void addPriorToDoc(Document doc, String uri, Double newPrior) throws IOException {
+
+            Field priorField = doc.getField(LuceneManager.DBpediaResourceField.URI_PRIOR.toString());
+
+            if (newPrior != null) {
+                //doc = mLucene.add(doc, );
+                if (priorField==null) {
+                    priorField = mLucene.getUriPriorField(newPrior);
+                    doc.add(priorField);
+                } else {
+                    priorField.setValue(newPrior.toString());
+                }
+            }
+
+            Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
+            mWriter.updateDocument(uriTerm, doc);  //deletes everything with this uri and writes a new doc
+
+    }
+
 
 
     public void enrichWithSurfaceForms(Map<String,LinkedHashSet<SurfaceForm>> sfMap) throws SearchException, IOException {
@@ -80,18 +212,10 @@ public class IndexEnricher extends BaseIndexer<Object> {
             Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
             mWriter.updateDocument(uriTerm, doc);  //deletes everything with this uri and writes a new doc
 
-            if (i%DOCS_BEFORE_FLUSH==0) {
-                LOG.info("  processed "+i+" documents. committing...");
-                mWriter.commit();
-                LOG.info("  done.");
-            }
+            commit(i);
         }
 
-        LOG.info("Processed "+indexSize+" documents. Final commit...");
-        mWriter.commit();
-        //LOG.info("Optimizing...");
-        //mWriter.optimize();
-        LOG.info("Done.");
+        done(indexSize);
     }
 
     public void enrichWithTypes(Map<String,LinkedHashSet<DBpediaType>> typesMap) throws SearchException, IOException {
@@ -122,18 +246,10 @@ public class IndexEnricher extends BaseIndexer<Object> {
             Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
             mWriter.updateDocument(uriTerm, doc);  //deletes everything with this uri and writes a new doc
 
-            if (i%DOCS_BEFORE_FLUSH==0) {
-                LOG.info("  processed "+i+" documents. committing...");
-                mWriter.commit();
-                LOG.info("  done.");
-            }
+            commit(i);
         }
 
-        LOG.info("Processed "+indexSize+" documents. Final commit...");
-        mWriter.commit();
-        //LOG.info("Optimizing...");
-        //mWriter.optimize();
-        LOG.info("Done.");
+        done(indexSize);
     }
 
     /**
@@ -157,11 +273,7 @@ public class IndexEnricher extends BaseIndexer<Object> {
             Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
             mWriter.updateDocument(uriTerm, doc); //deletes everything with this uri and writes a new doc
 
-            if (i%DOCS_BEFORE_FLUSH==0) {
-                LOG.info("  processed "+i+" documents. committing...");
-                mWriter.commit();
-                LOG.info("  done.");
-            }
+            commit(i);
         }
 
         LOG.info("Processed "+indexSize+" documents. Final commit...");

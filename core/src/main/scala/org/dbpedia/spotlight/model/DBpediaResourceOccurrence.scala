@@ -25,7 +25,7 @@ class DBpediaResourceOccurrence(val id : String,
                                 val provenance : Provenance.Value = Provenance.Undefined,
                                 var similarityScore : Double = -1,
                                 var percentageOfSecondRank : Double = -1,
-                                var spotProb: Double = -1)
+                                var contextualScore: Double = -1)
         extends Comparable[DBpediaResourceOccurrence] {
 
     //TODO there are a lot of constructors here, because Scala keyword arguments do not mix well with Java; cleaning up anyone?

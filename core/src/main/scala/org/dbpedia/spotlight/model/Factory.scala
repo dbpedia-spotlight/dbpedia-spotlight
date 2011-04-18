@@ -1,7 +1,6 @@
 package org.dbpedia.spotlight.model
 
 import org.dbpedia.spotlight.string.ModifiedWikiUtil
-import org.apache.lucene.document.Document
 import org.dbpedia.spotlight.lucene.LuceneManager
 import org.apache.lucene.util.Version
 import org.apache.lucene.analysis.{StopAnalyzer, Analyzer}
@@ -16,6 +15,9 @@ import org.dbpedia.spotlight.annotate.DefaultAnnotator
 import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter
 import org.dbpedia.spotlight.candidate.{CommonWordFilter, SpotSelector}
 import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters
+import org.apache.lucene.document.{Field, Document}
+import org.dbpedia.spotlight.lucene.LuceneManager.DBpediaResourceField
+import collection.JavaConversions._
 
 /**
  * Class containing methods to create model objects in many different ways
@@ -47,6 +49,16 @@ object Factory {
             )
     }
 
+
+    def setField(resource: DBpediaResource, field: DBpediaResourceField, document: Document) {
+        field match {
+            case DBpediaResourceField.URI_COUNT => resource.setSupport(document.getField(field.name).stringValue.toInt)
+            case DBpediaResourceField.URI_PRIOR => resource.setPrior(document.getField(field.name).stringValue.toDouble)
+            case DBpediaResourceField.TYPE => resource.setTypes(document.getValues(field.name).map( t => new DBpediaType(t) ).toList)
+            case _ =>
+        }
+    }
+
 }
 
 class LuceneFactory(val configuration: SpotlightConfiguration,
@@ -73,6 +85,7 @@ class LuceneFactory(val configuration: SpotlightConfiguration,
 
     def spotSelector() ={
         new CommonWordFilter(configuration.getCommonWordsFile)
+        //null
     }
 
     def annotator() ={

@@ -5,7 +5,6 @@ import org.apache.commons.logging.LogFactory
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.model.{LuceneFactory, SpotlightConfiguration, DBpediaResource}
 
-import org.dbpedia.spotlight.util.WebSearchConfiguration
 import java.net.{URLEncoder, Socket}
 import io.Source
 import java.io._
@@ -15,6 +14,7 @@ import java.io._
  * The idea is that "huge" will appear much more commonly than "huge TV series" on the Web, even though in Wikipedia that is not the case.
  * This is, thus, an attempt to deal with sparsity in Wikipedia.
  * TODO can  be generalized -- see YahooBossSearcher.getYahooAnswer()
+ * TODO break it down in KeywordsGenerator and WebOccurrenceSearcher
  * @author pablomendes
  */
 
@@ -93,7 +93,7 @@ object WebOccurrenceSearcher {
          *
          * TODO use HTTPClient and factor this code to a YahooBossSearch class
          */
-        private def getYahooAnswer(keywords: String) : (Long, Long) =
+        def getYahooAnswer(keywords: String) : (Long, Long) =
         {
 
             val query = yahooBossSearchUrl + URLEncoder.encode(keywords) + appID + options
@@ -150,22 +150,36 @@ object WebOccurrenceSearcher {
         val config = new WebSearchConfiguration(indexingConfigFileName);
         val prior = new YahooBossSearcher(config)
 
-        val out = new PrintWriter(uriSetFile+".counts");
+        val counts = new PrintWriter(uriSetFile+".counts");
+        val queries = new PrintWriter(uriSetFile+".queries");
         val uriSet = Source.fromFile(uriSetFile).getLines
         var i = 0;
         uriSet.foreach( uri => {
             i = i + 1
             LOG.info(String.format("URI %s : %s", i.toString, uri));
-            val results = prior.get(new DBpediaResource(uri))
-            out.print(String.format("%s\t%s\t%s\n", uri, results._1.toString, results._2.toString))
-            if (i % 100 == 0) {
-                out.flush
-            } else {
-                Thread.sleep(700)
+            try {
+                val keywords = getAllKeywords(new DBpediaResource(uri));
+                queries.print(String.format("%s\t%s\n"), uri, keywords)
+                LOG.info("Searching for :"+keywords)
+                val results = prior.getYahooAnswer(keywords)
+                counts.print(String.format("%s\t%s\t%s\n", uri, results._1.toString, results._2.toString))
+
+                if (i % 100 == 0) {
+                    counts.flush
+                } else {
+                    //Thread.sleep(700)
+                }
+            } catch {
+                case e: java.net.ConnectException => {
+                    LOG.error("ConnectException: ")
+                    e.printStackTrace
+                    Thread.sleep(2000)
+                }
+                case any: Exception => LOG.error("Unknown Error: "+any)
             }
         });
 
-        out.close
+        counts.close
     }
 
 }

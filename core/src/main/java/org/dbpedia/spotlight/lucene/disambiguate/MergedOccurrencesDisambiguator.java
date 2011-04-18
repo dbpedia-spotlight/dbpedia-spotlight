@@ -42,11 +42,6 @@ public class MergedOccurrencesDisambiguator implements Disambiguator {
     public MergedOccurrencesDisambiguator(MergedOccurrencesContextSearcher searcher) throws IOException {
         this.mMergedSearcher = searcher;
     }
-      // Not used anymore because we always pick the top
-//    public MergedOccurrencesDisambiguator(MergedOccurrencesContextSearcher searcher, RankingStrategy strategy) throws IOException {
-//        this.mMergedSearcher = searcher;
-//        this.mStrategy = strategy;
-//    }
 
     /*
       IDF of surface form
@@ -69,7 +64,9 @@ public class MergedOccurrencesDisambiguator implements Disambiguator {
 
     /*
 
+      TODO We never quite finished implementing these methods. Added a deprecated annotation as warning
       */
+    @Deprecated
     public List<SurfaceFormOccurrence> spotProbability(List<SurfaceFormOccurrence> spotted) throws SearchException {
         List<SurfaceFormOccurrence> result = new ArrayList<SurfaceFormOccurrence>();
         for (SurfaceFormOccurrence spot: spotted) {
@@ -80,6 +77,10 @@ public class MergedOccurrencesDisambiguator implements Disambiguator {
         return spotted;    
     }
 
+    /*
+    TODO We never quite finished implementing these methods. Added a deprecated annotation as warning
+     */
+    @Deprecated
     public Double spotProbability(SurfaceForm sf) throws SearchException {
         long freqUnannotated = this.mMergedSearcher.getContextFrequency(sf);
         long freqAnnotated = this.mMergedSearcher.getFrequency(sf);
@@ -118,8 +119,8 @@ public class MergedOccurrencesDisambiguator implements Disambiguator {
                 sfOcc.textOffset(),          // position in the context where surface form occurs
                 Provenance.Annotation(),     // value to signal that this occurrence was created by the disambiguation method
                 score,                       // similarity score of the highest ranked
-                percentageOfSecond,
-                sfOcc.spotProb());         // percentage of the second ranked entity in relation to the first ranked entity
+                percentageOfSecond,          // percentage of the second ranked entity in relation to the first ranked entity
+                score);           // TODO abusing spotProb here. we need to revise all scores
     }
 
     public List<DBpediaResourceOccurrence> bestK(SurfaceFormOccurrence sfOccurrence, int k) throws SearchException, ItemNotFoundException, InputException {
@@ -157,7 +158,7 @@ public class MergedOccurrencesDisambiguator implements Disambiguator {
                                                                                 Provenance.Annotation(),
                                                                                 score,
                                                                                 percentageOfSecond,
-                                                                                sfOccurrence.spotProb());
+                                                                                score); //TODO abusing what was spotProb here. now we have contextual score. need better way to do this
             rankedOccs.add(resultOcc);
         }
 
@@ -196,7 +197,7 @@ public class MergedOccurrencesDisambiguator implements Disambiguator {
         return mMergedSearcher.getAmbiguity(sf);
     }
 
-    public int trainingSetSize(DBpediaResource res) throws SearchException {
+    public int support(DBpediaResource res) throws SearchException {
         int n = 0;
         try {
          n = mMergedSearcher.getSupport(res);

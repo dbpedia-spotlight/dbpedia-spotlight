@@ -48,7 +48,7 @@ object EvaluateDisambiguationOnly
     private val LOG = LogFactory.getLog(this.getClass)
 
     def createMergedDisambiguator(outputFileName: String, analyzer: Analyzer, similarity: Similarity) : Disambiguator = {
-        val directory = FSDirectory.open(new File(outputFileName+"."+analyzer.getClass.getSimpleName+"."+similarity.getClass.getSimpleName));
+        val directory = FSDirectory.open(new File(outputFileName));//+"."+analyzer.getClass.getSimpleName+"."+similarity.getClass.getSimpleName));
         createMergedDisambiguator(outputFileName, analyzer, similarity, directory)
     }
 
@@ -287,17 +287,18 @@ object EvaluateDisambiguationOnly
         // For merged disambiguators
         //val indexDir = baseDir+"/2.9.3/Index.wikipediaTraining.Merged";
 
-
-        val disSet = Set(// Snowball analyzer
-                            //getDefaultSnowballDisambiguator(indexDir),
-                            //getNewDisambiguator(indexDir),
+        val default : Disambiguator = new DefaultDisambiguator(new File(indexDir))
+        val disSet = Set(
+                            default
+                            //getDefaultSnowballDisambiguator(indexDir) ,
                             //getICFCachedDisambiguator(indexDir)
-                            getICFCachedMixedDisambiguator(indexDir),
+                            //getICFCachedMixedDisambiguator(indexDir),
                             //getNewStopwordedDisambiguator(indexDir),
                             //getICFSnowballDisambiguator(indexDir)
                             //getSweetSpotSnowballDisambiguator(indexDir)
                             //getICFWithPriorSnowballDisambiguator(indexDir),
                             //getICFIDFSnowballDisambiguator(indexDir),
+                            //getNewDisambiguator(indexDir),
 
                             //getDefaultScorePlusPriorSnowballDisambiguator(indexDir)
 //                                getDefaultScorePlusConditionalSnowballDisambiguator(indexDir),
@@ -313,8 +314,8 @@ object EvaluateDisambiguationOnly
                             //getICFIDFStandardDisambiguator,
 
                          // no analyzer
-                            getPriorDisambiguator(indexDir),
-                            getRandomDisambiguator(indexDir)
+                            //getPriorDisambiguator(indexDir),
+                            //getRandomDisambiguator(indexDir)
         )
 
         // Read some text to test.

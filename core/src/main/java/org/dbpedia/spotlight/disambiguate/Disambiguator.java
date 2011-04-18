@@ -56,7 +56,7 @@ public interface Disambiguator {
      * @return
      * @throws SearchException
      */
-    public int trainingSetSize(DBpediaResource resource) throws SearchException;
+    public int support(DBpediaResource resource) throws SearchException;
 
     public List<Explanation> explain(DBpediaResourceOccurrence goldStandardOccurrence, int nExplanations) throws SearchException;
 

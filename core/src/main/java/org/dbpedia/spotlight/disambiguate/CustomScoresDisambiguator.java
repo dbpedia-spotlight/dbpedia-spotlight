@@ -73,7 +73,7 @@ public class CustomScoresDisambiguator implements Disambiguator {
 
     @Override
     public List<DBpediaResourceOccurrence> bestK(SurfaceFormOccurrence sfOccurrence, int k) throws SearchException, ItemNotFoundException {
-        Set<DBpediaResource> candidates = surrogateSearcher.get(sfOccurrence.surfaceForm());
+        Set<DBpediaResource> candidates = surrogateSearcher.getCandidates(sfOccurrence.surfaceForm());
 
         List<DBpediaResourceOccurrence> all = getScores(sfOccurrence, candidates);
 
@@ -133,7 +133,7 @@ public class CustomScoresDisambiguator implements Disambiguator {
     }
 
     @Override
-    public int trainingSetSize(DBpediaResource resource) throws SearchException {
+    public int support(DBpediaResource resource) throws SearchException {
         // for the WikiPageContext, the training size is always 1 page per resource
         return 1;
     }
@@ -147,7 +147,7 @@ public class CustomScoresDisambiguator implements Disambiguator {
     public int ambiguity(SurfaceForm sf) throws SearchException {
         int s = 0;
         try {
-            s = surrogateSearcher.get(sf).size();
+            s = surrogateSearcher.getCandidates(sf).size();
         } catch (ItemNotFoundException e) {
             s = 0; // surface form not found
         }

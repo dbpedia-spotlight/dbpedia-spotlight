@@ -31,8 +31,8 @@ import org.dbpedia.spotlight.exceptions._
  */
 class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurrence], val disambiguatorSet : Set[Disambiguator], val output : PrintStream)
 {
-
-    val PRIOR_DENOMINATOR : Double = 69772256.0
+    // moved to BaseSearcher.getNumberOfOccurrences
+    //val PRIOR_DENOMINATOR : Double = 69772256.0
 
     private val LOG = LogFactory.getLog(this.getClass)
     var totalOccurrenceCount = 0
@@ -112,7 +112,7 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
                       "correctURI\t"+           // correct resource of this occurrence   TODO print type?
                       "spotlightURI\t"+         // resource given as result by Spotlight
                       "disambiguator\t"+        // type of disambiguator
-                      "trainingSetSize\t"+      // number of Wikipedia inlinks for this resource
+                      "support\t"+      // number of Wikipedia inlinks for this resource
                       "prior\t"+                // prior probability of seeing the spotlightURI; normalized uriCount
                       "score\t"+                // context similarity score
                       "percentageOfSecond\t"+   // context similarity score of second ranked divided by context similarity score of first ranked
@@ -191,8 +191,8 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
                             }
 
 
-                            val trainingSetSize = disambiguator.trainingSetSize(sptlResultOcc.resource)
-                            val prior = trainingSetSize / PRIOR_DENOMINATOR
+                            val trainingSetSize = testOcc.resource.support //disambiguator.support(sptlResultOcc.resource)
+                            val prior = testOcc.resource.prior //support / disambiguator.totalNumberOfOccurrences
                             val trainingVectorLength = "NA" //disambiguator.contextTermsNumber(sptlResultOcc.resource)  //TODO bring this back when TermVectors are stored in the CONTEXT field
 
                             // write stats for this disambiguator

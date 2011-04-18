@@ -1,6 +1,6 @@
 package org.dbpedia.spotlight.util
 
-import org.dbpedia.spotlight.lucene.index.WebOccurrenceSearcher
+import org.dbpedia.spotlight.util.WebOccurrenceSearcher
 import org.dbpedia.spotlight.model.DBpediaResource
 
 import org.junit.Test

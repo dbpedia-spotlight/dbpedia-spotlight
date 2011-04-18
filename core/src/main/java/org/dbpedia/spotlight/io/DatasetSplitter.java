@@ -264,7 +264,7 @@ public abstract class DatasetSplitter {
             if (triple[2].toString().equals(targetType)) {
                 String targetUri = triple[0].toString().replace("http://dbpedia.org/resource/", "");
                 try {
-                    Set<SurfaceForm> surfaceFormsForURI = surrogateSearcher.get(new DBpediaResource(targetUri));
+                    Set<SurfaceForm> surfaceFormsForURI = surrogateSearcher.getSurfaceForms(new DBpediaResource(targetUri));
                     for (SurfaceForm sf : surfaceFormsForURI) {
                         surfaceForms.add(sf.name());    
                     }

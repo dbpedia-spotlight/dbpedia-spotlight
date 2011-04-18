@@ -21,7 +21,7 @@ import org.dbpedia.spotlight.model.Text;
 
 /**
  * ExtractivClient test case.
- *
+ * TODO set up one test class for AnnotationClient that contains methods for each of the clients in order to avoid boilerplate code
  * @author jodaiber
  * 
  */

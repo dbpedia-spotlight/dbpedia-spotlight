@@ -34,6 +34,7 @@ import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.lucene.LuceneFeatureVector;
 import org.dbpedia.spotlight.lucene.LuceneManager;
 import org.dbpedia.spotlight.model.DBpediaResource;
+import org.dbpedia.spotlight.model.Factory;
 import org.dbpedia.spotlight.model.SurfaceForm;
 import org.dbpedia.spotlight.model.Text;
 import org.dbpedia.spotlight.model.vsm.FeatureVector;
@@ -56,6 +57,9 @@ public class BaseSearcher implements Closeable {
     IndexSearcher mSearcher;
     IndexReader mReader;
 
+    //TODO create method that iterates over all documents in the index and computes this. (if takes too long, think about storing somewhere at indexing time)
+    private double mNumberOfOccurrences = 69772256;
+
     public BaseSearcher(LuceneManager lucene) throws IOException {
         this.mLucene = lucene;
         LOG.debug("Opening IndexSearcher and IndexReader for Lucene directory "+this.mLucene.mContextIndexDir+" ...");
@@ -66,6 +70,10 @@ public class BaseSearcher implements Closeable {
 
     public long getNumberOfEntries() {
         return this.mReader.maxDoc();    // is this reliable, or is this.mReader.numDocs() better?
+    }
+
+    public double getNumberOfOccurrences() {
+        return this.mNumberOfOccurrences;
     }
 
     /**
@@ -155,15 +163,26 @@ public class BaseSearcher implements Closeable {
     }
 
     /**
+     * Creates a DBpediaResource with all fields stored in the index
+     * TODO FACTORY move to Factory
+     * @param docNo
+     * @return
+     */
+    public DBpediaResource getDBpediaResource(int docNo) throws SearchException {
+        return getDBpediaResource(docNo,LuceneManager.DBpediaResourceField.stringValues());
+    }
+
+    /**
      * CONTEXT SEARCHER and SURROGATE SEARCHER
+     * Loads only a few fields (faster)
+     * TODO FACTORY move to Factory
      * @param docNo
      * @return
      * @throws SearchException
      */
-    public DBpediaResource getDBpediaResource(int docNo) throws SearchException {
+    public DBpediaResource getDBpediaResource(int docNo, String[] fieldsToLoad) throws SearchException {
 
-        String[] onlyUriAndTypes = {LuceneManager.DBpediaResourceField.URI.toString()};
-        FieldSelector fieldSelector = new MapFieldSelector(onlyUriAndTypes);
+        FieldSelector fieldSelector = new MapFieldSelector(fieldsToLoad);
         Document document = getDocument(docNo, fieldSelector);
         Field uriField = document.getField(LuceneManager.DBpediaResourceField.URI.toString());
         if (uriField==null)
@@ -174,7 +193,14 @@ public class BaseSearcher implements Closeable {
             throw new SearchException("Cannot find URI for document "+document);
 
         //LOG.debug("uri:"+uri);
-        return new DBpediaResource(uri);
+        DBpediaResource resource = new DBpediaResource(uri);
+
+        for (String fieldName: fieldsToLoad) {
+            Field field = document.getField(fieldName);
+            if (field != null) Factory.setField(resource, LuceneManager.DBpediaResourceField.valueOf(fieldName), document);
+        }
+
+        return resource;
     }
 
     public SurfaceForm getSurfaceForm(int docNo) throws SearchException {
@@ -183,7 +209,7 @@ public class BaseSearcher implements Closeable {
         Document document = getDocument(docNo,fieldSelector);
         Field sfField = document.getField(LuceneManager.DBpediaResourceField.SURFACE_FORM.toString());
         if (sfField==null)
-            throw new SearchException("Cannot find URI for document "+document);
+            throw new SearchException("Cannot find SurfaceForm for document "+document);
 
         String sf = sfField.stringValue();
         if (sf==null)
@@ -228,7 +254,7 @@ public class BaseSearcher implements Closeable {
         TermEnum terms = mReader.terms(); //TODO check what can we do about fields here. should have only top terms for context field?
         while (terms.next()) {
             Term term = terms.term();
-            int frequency = mReader.docFreq(term);
+            int frequency = mReader.docFreq(term); // DF
             frequencyMap.put(term, frequency);
         }
 
