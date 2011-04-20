@@ -26,6 +26,7 @@ import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.document.MapFieldSelector;
 import org.apache.lucene.search.Explanation;
 import org.dbpedia.spotlight.disambiguate.Disambiguator;
+import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
 import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.lucene.LuceneManager;
@@ -63,6 +64,11 @@ public class LucenePriorDisambiguator implements Disambiguator {
         return sfOccurrences; //FIXME IMPLEMENT
     }
 
+    @Override
+    public DBpediaResourceOccurrence disambiguate(SurfaceFormOccurrence sfOccurrence) throws SearchException, ItemNotFoundException, InputException {
+        return bestK(sfOccurrence,1).get(0);
+    }
+
     /**
      * For backwards compatibility - is able to get a count from multiple URI fields or from a URICOUNT field.
      * @param doc
@@ -87,13 +93,14 @@ public class LucenePriorDisambiguator implements Disambiguator {
         return result.entrySet().iterator().next();
     }
 
+
       @Override
-    public List<DBpediaResourceOccurrence> disambiguate(List<SurfaceFormOccurrence> sfOccurrences) throws SearchException {
+    public List<DBpediaResourceOccurrence> disambiguate(List<SurfaceFormOccurrence> sfOccurrences) throws SearchException, InputException {
         List<DBpediaResourceOccurrence> disambiguated = new ArrayList<DBpediaResourceOccurrence>();
 
         for (SurfaceFormOccurrence sfOcc: sfOccurrences) {
             try {
-                disambiguated.add(bestK(sfOcc,1).get(0));
+                disambiguated.add(disambiguate(sfOcc));
             } catch (ItemNotFoundException e) {
                 throw new SearchException("Error in disambiguate. ",e);
             }

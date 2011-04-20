@@ -140,7 +140,7 @@ public class LuceneManager {
             String[] stringValues = new String[values().length];
             int i = 0;
             for (DBpediaResourceField value: values()) {
-                stringValues[i] = value.toString();
+                stringValues[i++] = value.toString();
             }
             return stringValues;
         }
@@ -207,6 +207,20 @@ public class LuceneManager {
     public Document add(Document doc, SurfaceForm sf) {
         Field sfField = getField(sf);
         doc.add(sfField);
+        return doc;
+    }
+
+    public Document add(Document doc, Double prior) {
+
+        Field priorField = doc.getField(LuceneManager.DBpediaResourceField.URI_PRIOR.toString());
+        if (priorField==null) {
+            priorField = getUriPriorField(prior);
+        } else {
+            priorField.setValue(prior.toString());
+            doc.removeFields(LuceneManager.DBpediaResourceField.URI_PRIOR.toString());
+        }
+        doc.add(priorField);
+
         return doc;
     }
 

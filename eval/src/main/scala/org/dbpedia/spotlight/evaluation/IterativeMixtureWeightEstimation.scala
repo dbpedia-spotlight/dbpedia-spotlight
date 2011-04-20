@@ -19,7 +19,7 @@ object IterativeMixtureWeightEstimation
 
     val contextWeights = (0 to INTERVALS).map(_.toDouble/INTERVALS)
 
-    class Candidate(val occ: DBpediaResourceOccurrence,
+    class Candidate(val occ: DBpediaResourceOccurrence,   //todo WHY THIS?
                     val spotlightAnswer: DBpediaResource,
                     val diambiguator: String,
                     val uriCount: Int,
@@ -62,7 +62,7 @@ object IterativeMixtureWeightEstimation
 
             val mixture = mixtureMethod(weight)
 
-            candidates.foreach(c => c.mixedScore = mixture.getScore(c.score, c.uriCount))
+            candidates.foreach(c => c.mixedScore = mixture.getScore(c.occ))
 
             val reRankedCandidates = candidates.sortBy(_.mixedScore).reverse
             if(reRankedCandidates.head.correct) {

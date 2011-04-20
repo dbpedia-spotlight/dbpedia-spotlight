@@ -17,6 +17,7 @@
 package org.dbpedia.spotlight.lucene.disambiguate;
 
 import org.dbpedia.spotlight.disambiguate.mixtures.Mixture;
+import org.dbpedia.spotlight.exceptions.DisambiguationException;
 import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
 import org.dbpedia.spotlight.exceptions.SearchException;
@@ -45,32 +46,29 @@ public class MixedWeightsDisambiguator extends MergedOccurrencesDisambiguator {
         this.mixture = mixture;
     }
 
-
     @Override
     public DBpediaResourceOccurrence disambiguate(SurfaceFormOccurrence sfOcc) throws SearchException, ItemNotFoundException, InputException {
         DBpediaResourceOccurrence resultOcc = null;
 
         List<DBpediaResourceOccurrence> bestKsuper = super.bestK(sfOcc, Integer.MAX_VALUE);
 
-        double best = Double.MIN_VALUE;
+        double best = -Double.MAX_VALUE;
         double second;
         for(DBpediaResourceOccurrence occ : bestKsuper) {
-            double contextScore = occ.similarityScore();
-            int uriCount = occ.resource().support();
-            double mixedScore = mixture.getScore(contextScore, uriCount);
+            double mixedScore = mixture.getScore(occ);
             if(mixedScore > best) {
                 second = best;
                 best = mixedScore;
                 resultOcc = occ;
                 resultOcc.setSimilarityScore(mixedScore);
-                if(second > Double.MIN_VALUE) {
+                if(second > -Double.MAX_VALUE) {
                     resultOcc.setPercentageOfSecondRank(second/best);
                 }
             }
         }
 
         if(resultOcc == null) {
-            throw new ItemNotFoundException("no disambiguation found for "+sfOcc.surfaceForm());
+            throw new SearchException("Error when reranking mixture weights "+sfOcc.surfaceForm()); //DisambiguationException
         }
 
         return resultOcc;
@@ -90,9 +88,7 @@ public class MixedWeightsDisambiguator extends MergedOccurrencesDisambiguator {
         List<DBpediaResourceOccurrence> bestK = super.bestK(sfOccurrence, k);
 
         for(DBpediaResourceOccurrence occ : bestK) {
-            double contextScore = occ.similarityScore();
-            int uriCount = occ.resource().support();
-            occ.setSimilarityScore(mixture.getScore(contextScore, uriCount)); //TODO have a final score and a contextual score as well
+            occ.setSimilarityScore(mixture.getScore(occ));
         }
 
         Collections.sort(bestK, new SimScoreComparator());
@@ -100,7 +96,7 @@ public class MixedWeightsDisambiguator extends MergedOccurrencesDisambiguator {
         for(int i=1; i < bestK.size(); i++) {
             DBpediaResourceOccurrence top = bestK.get(i-1);
             DBpediaResourceOccurrence bottom = bestK.get(i);
-            top.setPercentageOfSecondRank(bottom.similarityScore()/top.similarityScore());
+            top.setPercentageOfSecondRank(bottom.similarityScore()/top.similarityScore()); //TODO similarityScore or contextualScore??
         }
 
         return bestK;

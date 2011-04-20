@@ -1,5 +1,7 @@
 package org.dbpedia.spotlight.disambiguate.mixtures
 
+import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
+
 /**
  * Created by IntelliJ IDEA.
  * User: Max
@@ -10,7 +12,7 @@ package org.dbpedia.spotlight.disambiguate.mixtures
 
 abstract class Mixture(val contextWeight: Double) {
 
-    def getScore(contextScore: Double, uriCount: Int) : Double
+    def getScore(occurrence: DBpediaResourceOccurrence) : Double
 
     override def toString: String
 

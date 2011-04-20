@@ -114,13 +114,14 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
                       "disambiguator\t"+        // type of disambiguator
                       "support\t"+      // number of Wikipedia inlinks for this resource
                       "prior\t"+                // prior probability of seeing the spotlightURI; normalized uriCount
-                      "score\t"+                // context similarity score
+                      "score\t"+                // final similarity score (mixtures may change this from the contextual)
                       "percentageOfSecond\t"+   // context similarity score of second ranked divided by context similarity score of first ranked
                       "ambiguity\t"+            // number of URIs that the surface form can refer to
-                      "spotProb\t"+             // probability of this being a relevant surface form
+                      "contextualScore\t"+             // probability of this being a relevant surface form
                       "trainingVectorLength\t"+ // terms in the context field
                       "queryWordTypes\t"+       // word types in the query
                       "averageIdf\n"            // average idf of the query terms
+                    //"spotProb\t"+             // probability of this being a relevant surface form
         )
 
         for (testOcc <- testSource) //TODO it sounds like ultimately we'd need to get paragraphs with occurrences instead. Think if graph disamb
@@ -158,15 +159,15 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
 
                         val sfOcc = new SurfaceFormOccurrence(testOcc.surfaceForm, testOcc.context, testOcc.textOffset, testOcc.provenance)
 
-                        val sortedOccs = timed(storeTime(disambiguator)) {
-                            disambiguator.bestK(sfOcc,outputTopK)
+                        val bestK = timed(storeTime(disambiguator)) {
+                            disambiguator.bestK(sfOcc,outputTopK) //ATTENTION!!! the order of occurrences returned here will be used to assess if this was a correct or incorrect disambiguation
                         }
 
                         //val sptlDecision = sortedOccs.head
                         //score = sptlDecision.similarityScore.toString
                         //precentageOfSecond = sptlDecision.percentageOfSecondRank.toString
                         //sptlResultURI = sptlDecision.resource.uri
-                        if(testOcc.resource equals sortedOccs.head.resource) {
+                        if(testOcc.resource equals bestK.head.resource) {
                             disambiguationCounters = disambiguationCounters.updated(disambiguator.name, disambiguationCounters.get(disambiguator.name).getOrElse(0) + 1)
                         }
 
@@ -175,7 +176,9 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
 
                         val averageIdf = "NA"  // disambiguator.averageIdf(testOcc.context)
 
-                        for(sptlResultOcc <- sortedOccs) {
+                        val sortedOccs = bestK.sortBy( o => o.resource.prior ) // Change order here for training data.
+
+                        for(sptlResultOcc <- bestK) {
 
                             var disambAccuracy = 0
                             if(testOcc.resource equals sptlResultOcc.resource) {
@@ -192,7 +195,7 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
 
 
                             val trainingSetSize = testOcc.resource.support //disambiguator.support(sptlResultOcc.resource)
-                            val prior = testOcc.resource.prior //support / disambiguator.totalNumberOfOccurrences
+                            //val prior = (testOcc.resource.support / 69772256)
                             val trainingVectorLength = "NA" //disambiguator.contextTermsNumber(sptlResultOcc.resource)  //TODO bring this back when TermVectors are stored in the CONTEXT field
 
                             // write stats for this disambiguator
@@ -203,11 +206,11 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
                                           sptlResultOcc.resource.uri+"\t"+
                                           disambiguator.name+"\t"+
                                           trainingSetSize+"\t"+
-                                          prior+"\t"+
+                                          sptlResultOcc.resource.prior +"\t"+
                                           sptlResultOcc.similarityScore.toString+"\t"+
                                           sptlResultOcc.percentageOfSecondRank.toString+"\t"+
                                           ambiguity+"\t"+
-                                          spotProb+"\t"+
+                                          sptlResultOcc.contextualScore+"\t"+
                                           trainingVectorLength+"\t"+
                                           queryWordTypes+"\t"+
                                           averageIdf+"\n"

@@ -17,11 +17,8 @@
 package org.dbpedia.spotlight.exceptions;
 
 /**
- * Created by IntelliJ IDEA.
- * User: PabloMendes
- * Date: Jun 29, 2010
- * Time: 3:48:46 PM
- * To change this template use File | Settings | File Templates.
+ * Happens while attempting to index or modify index.
+ * @author pablomendes
  */
 public class IndexException extends Exception {
 

@@ -22,6 +22,7 @@ import org.apache.lucene.index.TermFreqVector;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.ScoreDoc;
 import org.dbpedia.spotlight.disambiguate.Disambiguator;
+import org.dbpedia.spotlight.exceptions.DisambiguationException;
 import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
 import org.dbpedia.spotlight.exceptions.SearchException;
@@ -90,7 +91,7 @@ public class MergedOccurrencesDisambiguator implements Disambiguator {
     }
 
 
-    public DBpediaResourceOccurrence disambiguate(SurfaceFormOccurrence sfOcc) throws SearchException, ItemNotFoundException, InputException {
+    public DBpediaResourceOccurrence disambiguate(SurfaceFormOccurrence sfOcc) throws SearchException, ItemNotFoundException, InputException  {
         // search index for surface form
         LOG.info("Disambiguating "+sfOcc.surfaceForm()+" ...");
         ScoreDoc[] hits = mMergedSearcher.getHits(sfOcc);

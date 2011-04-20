@@ -23,6 +23,8 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.document.MapFieldSelector;
 import org.apache.lucene.index.Term;
+import org.dbpedia.spotlight.exceptions.IndexException;
+
 import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.lucene.LuceneManager;
 import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher;
@@ -41,7 +43,7 @@ public class IndexEnricher extends BaseIndexer<Object> {
 
     Log LOG = LogFactory.getLog(this.getClass());
 
-    int DOCS_BEFORE_FLUSH = 25000;  // for priored surface forms (failed with 20,000 before (without PRIOR_DEVIDER))
+    int DOCS_BEFORE_FLUSH = 10000;  // for priored surface forms (failed with 20,000 before (without PRIOR_DEVIDER))
     int PRIOR_DEVIDER = 10;         // for priored surface forms, add SF only  number of times URI is indexed / PRIOR_DEVIDER 
 
     MergedOccurrencesContextSearcher searcher;
@@ -72,9 +74,13 @@ public class IndexEnricher extends BaseIndexer<Object> {
         }
     }
 
-    private void done(long indexSize) throws IOException {
+    private void done(long indexSize) throws IndexException {
         LOG.info("Processed " + indexSize + " documents. Final commit...");
-        mWriter.commit();
+        try {
+            mWriter.commit();
+        } catch (IOException e) {
+            throw new IndexException("Error while performing final commit for index enrichment.", e);
+        }
         //LOG.info("Optimizing...");
         //mWriter.optimize();
         LOG.info("Done.");
@@ -87,8 +93,11 @@ public class IndexEnricher extends BaseIndexer<Object> {
      * @throws SearchException
      * @throws IOException
      * @author pablomendes
-     */
-    public void enrichWithPriors(Map<DBpediaResource,Double> uriPriorMap) throws SearchException, IOException {
+     */                           //TODO List<DBpediaResource> and .setPrior(Double)
+    public void enrichWithPriors(Map<DBpediaResource,Double> uriPriorMap) throws IndexException {
+
+        boolean lowercased = true;
+
         long indexSize = getIndexSize();
         LOG.info("Adding URI priors to index "+mLucene.directory()+"...");
 
@@ -97,30 +106,39 @@ public class IndexEnricher extends BaseIndexer<Object> {
             return;
         }
 
+        FieldSelector fields = new MapFieldSelector(LuceneManager.DBpediaResourceField.stringValues());
         int i = 0;
         for (Map.Entry<DBpediaResource,Double> uriPrior: uriPriorMap.entrySet()) {
             String uri = uriPrior.getKey().uri();
             Double prior = uriPrior.getValue();
 
-            FieldSelector fields = new MapFieldSelector(LuceneManager.DBpediaResourceField.stringValues());
-            List<Document> docs = searcher.getDocuments(uriPrior.getKey(), fields);
-            if (docs.size()==0) {
-                DBpediaResource resource = new DBpediaResource(uri, 0, prior); // support is zero because we didn't see it in Wikipedia
-                SurfaceForm surfaceForm = Factory.createSurfaceFormFromDBpediaResourceURI(resource);
-                Text context = new Text(surfaceForm.name());
-                DBpediaResourceOccurrence occ = new DBpediaResourceOccurrence(
-                                                                                resource,
-                                                                                surfaceForm,
-                                                                                context,
-                                                                                0,
-                                                                                Provenance.Web());
+            try {
 
-                mWriter.addDocument(mLucene.getDocument(occ)); // add new doc
+                List<Document> docs = searcher.getDocuments(uriPrior.getKey(), fields);
+                if (docs.size()==0) {
+                    DBpediaResource resource = new DBpediaResource(uri, 0, prior); // support is zero because we didn't see it in Wikipedia
+                    SurfaceForm surfaceForm = Factory.createSurfaceFormFromDBpediaResourceURI(resource, lowercased);
+                    Text context = new Text(surfaceForm.name());
+                    DBpediaResourceOccurrence occ = new DBpediaResourceOccurrence(
+                            resource,
+                            surfaceForm,
+                            context,
+                            0,
+                            Provenance.Web());
 
-            } else for (Document doc: docs) {
-                addPriorToDoc(doc, uri, prior); // update doc
+                    mWriter.addDocument(mLucene.getDocument(occ)); // add new doc
+
+                } else for (Document doc: docs) {
+                    doc = mLucene.add(doc, prior);
+                    Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
+                    mWriter.updateDocument(uriTerm, doc);  //deletes everything with this uri and writes a new doc
+                }
+                commit(i++);
+            } catch (SearchException e) {
+                LOG.error("Error while adding priors to index for doc "+i+". Skipping.", e);
+            } catch (IOException e) {
+                throw new IndexException("Error while adding priors to index.", e);
             }
-            commit(i++);
         }
 
         done(i);
@@ -133,8 +151,9 @@ public class IndexEnricher extends BaseIndexer<Object> {
      * @throws SearchException
      * @throws IOException
      * @author pablomendes
-     */
-    public void enrichWithPriors2(Map<DBpediaResource,Double> uriPriorMap) throws SearchException, IOException {
+     */                          //TODO List<DBpediaResource> and .setPrior(Double)
+    @Deprecated //TODO UNTESTED!
+    public void enrichWithPriors2(Map<DBpediaResource,Double> uriPriorMap) throws SearchException, IOException, IndexException {
         long indexSize = getIndexSize();
         LOG.info("Adding URI priors to index "+mLucene.directory()+"...");
 
@@ -154,8 +173,10 @@ public class IndexEnricher extends BaseIndexer<Object> {
             }
 
             String uri = uriField.stringValue();
-            Double newPrior = uriPriorMap.remove(uri);
-            addPriorToDoc(doc, uri, newPrior);
+            Double newPrior = uriPriorMap.remove(new DBpediaResource(uri));
+            doc = mLucene.add(doc, newPrior);
+            Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
+            mWriter.updateDocument(uriTerm, doc);  //deletes everything with this uri and writes a new doc
 
             commit(i);
         }
@@ -163,28 +184,7 @@ public class IndexEnricher extends BaseIndexer<Object> {
         done(indexSize);
     }
 
-    private void addPriorToDoc(Document doc, String uri, Double newPrior) throws IOException {
-
-            Field priorField = doc.getField(LuceneManager.DBpediaResourceField.URI_PRIOR.toString());
-
-            if (newPrior != null) {
-                //doc = mLucene.add(doc, );
-                if (priorField==null) {
-                    priorField = mLucene.getUriPriorField(newPrior);
-                    doc.add(priorField);
-                } else {
-                    priorField.setValue(newPrior.toString());
-                }
-            }
-
-            Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
-            mWriter.updateDocument(uriTerm, doc);  //deletes everything with this uri and writes a new doc
-
-    }
-
-
-
-    public void enrichWithSurfaceForms(Map<String,LinkedHashSet<SurfaceForm>> sfMap) throws SearchException, IOException {
+    public void enrichWithSurfaceForms(Map<String,LinkedHashSet<SurfaceForm>> sfMap) throws SearchException, IOException, IndexException {
         long indexSize = searcher.getNumberOfEntries();
         if (indexSize == 0) {
             throw new IllegalArgumentException("index in "+mLucene.directory()+" contains no entries; this method can only add surface forms to an existing index");
@@ -218,7 +218,7 @@ public class IndexEnricher extends BaseIndexer<Object> {
         done(indexSize);
     }
 
-    public void enrichWithTypes(Map<String,LinkedHashSet<DBpediaType>> typesMap) throws SearchException, IOException {
+    public void enrichWithTypes(Map<String,LinkedHashSet<DBpediaType>> typesMap) throws SearchException, IOException, IndexException {
         long indexSize = searcher.getNumberOfEntries();
         if (indexSize == 0) {
             throw new IllegalArgumentException("index in "+mLucene.directory()+" contains no entries; this method can only add types to an existing index");

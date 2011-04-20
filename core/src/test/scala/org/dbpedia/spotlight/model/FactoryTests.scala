@@ -23,7 +23,7 @@ class FactoryTests {
 
         examples.keys.foreach( title => {
             val r = new DBpediaResource(title);
-            val s = org.dbpedia.spotlight.model.Factory.createSurfaceFormFromDBpediaResourceURI(r)
+            val s = org.dbpedia.spotlight.model.Factory.createSurfaceFormFromDBpediaResourceURI(r, false)
             printf("%-30s=%30s \n",title,r.uri)
             printf("%-30s=%30s \n",examples(title),s.name)
             assert(s.name.equals(examples(title)));

@@ -20,6 +20,7 @@ import org.dbpedia.spotlight.annotate.Annotator;
 import org.dbpedia.spotlight.annotate.DefaultAnnotator;
 import org.dbpedia.spotlight.disambiguate.Disambiguator;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
+import org.dbpedia.spotlight.model.LuceneFactory;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 
 import com.sun.grizzly.http.SelectorThread;
@@ -69,9 +70,9 @@ public class Server {
         File commonWordsFile = new File(configuration.getCommonWordsFile()); //TODO get from config "/home/pablo/data/wortschatz/words.txt.CompactHashSet"
 
         // Set static annotator that will be used by Annotate and Disambiguate
-        setAnnotator(new DefaultAnnotator(spotterFile,
-                //commonWordsFile,
-                indexDir));
+        LuceneFactory factory = new LuceneFactory(configuration);
+        setAnnotator(factory.annotator());
+        //setAnnotator(new DefaultAnnotator(spotterFile,//commonWordsFile,indexDir));
 
         final Map<String, String> initParams = new HashMap<String, String>();
         initParams.put("com.sun.jersey.config.property.resourceConfigClass", "com.sun.jersey.api.core.PackagesResourceConfig");

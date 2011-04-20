@@ -80,7 +80,7 @@ object SetEvaluation {
             val f = new File(baseDir+systemName+"."+extension)
             if (f.exists) {
                 //println("Found: "+systemName);
-                resultsByName += systemName -> Source.fromFile(f).getLines.toSet
+                resultsByName += systemName -> slurp(f)
             } else {
                 println("Not found: "+f.getAbsolutePath);
             }
@@ -88,23 +88,29 @@ object SetEvaluation {
         return resultsByName;
     }
 
+    implicit def string2file(filename: String) = new File(filename);
+
+    def slurp(f: File) = {
+        Source.fromFile(f).getLines.filter(l => l.trim() != "").toSet
+    }
+
   def getManualGold(baseDir: String) :  Map[String, Set[String]] = {
-    val mostrelaxed = Source.fromFile(baseDir+"/gold/gold-mostRelaxed-Union.set").getLines.toSet
-    val relaxed = Source.fromFile(baseDir+"/gold/gold-relaxed.set").getLines.toSet
-    val strict = Source.fromFile(baseDir+"/gold/gold-strict.set").getLines.toSet
-    val strictest = Source.fromFile(baseDir+"/gold/gold-strictest-onlyInfobox.set").getLines.toSet
+    val mostrelaxed = slurp(baseDir+"/gold/gold-mostRelaxed-Union.set")
+    val relaxed = slurp(baseDir+"/gold/gold-relaxed.set")
+    val strict = slurp(baseDir+"/gold/gold-strict.set")
+    val strictest = slurp(baseDir+"/gold/gold-strictest-onlyInfobox.set")
     val manualGold = Map("mostrelaxed"->mostrelaxed, "relaxed"->relaxed, "strict"->strict, "strictest"->strictest);
     manualGold;
   }
 
   def getCucerzanGold(baseDir: String) :  Map[String, Set[String]] = {
-    val cucerzan = Source.fromFile(baseDir+"/gold/cucerzan.set").getLines.toSet
+    val cucerzan = slurp(baseDir+"/gold/cucerzan.set")
     val cucerzanGold = Map("cucerzan"->cucerzan);
     cucerzanGold
   }
 
   def getWikifyGold(baseDir: String) :  Map[String, Set[String]] = {
-    val wikify = Source.fromFile(baseDir+"/gold/WikifyAllInOne.set").getLines.toSet
+    val wikify = slurp(baseDir+"/gold/WikifyAllInOne.set")
     val wikifyGold = Map("wikify"->wikify);
     wikifyGold
   }
@@ -115,13 +121,13 @@ object SetEvaluation {
         val goldStandardName = dirs(dirs.size-1)
         goldStandardName match {
             case "cucerzan" =>
-                 Map("cucerzan"->Source.fromFile(baseDir+"/gold/cucerzan.set").getLines.toSet)
+                 Map("cucerzan"->slurp(baseDir+"/gold/cucerzan.set"))
             case "manual" =>
                 getManualGold(baseDir)
             case "wikify" =>
-                Map("wikify"->Source.fromFile(baseDir+"/gold/WikifyAllInOne.set").getLines.toSet)
+                Map("wikify"->slurp(baseDir+"/gold/WikifyAllInOne.set"))
             case "grounder" =>
-                Map("grounder"->Source.fromFile(baseDir+"/gold/g1b_spotlight.txt").getLines.toSet)
+                Map("grounder"->slurp(baseDir+"/gold/g1b_spotlight.set"))
             case _ => {
                 println("There is no loader method configured for a gold standard called "+goldStandardName)
                 Map()
@@ -242,8 +248,8 @@ object SetEvaluation {
 
 //    val baseDir = "/home/pablo/eval/cucerzan"
 //    val baseDir = "/home/pablo/eval/manual"
-//      val baseDir = "/home/pablo/eval/wikify"
-      val baseDir = "/home/pablo/eval/grounder"
+      val baseDir = "/home/pablo/eval/wikify"
+//      val baseDir = "/home/pablo/eval/grounder"
 
       run(baseDir)
 

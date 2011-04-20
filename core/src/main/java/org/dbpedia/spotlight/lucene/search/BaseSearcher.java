@@ -69,7 +69,7 @@ public class BaseSearcher implements Closeable {
     }
 
     public long getNumberOfEntries() {
-        return this.mReader.maxDoc();    // is this reliable, or is this.mReader.numDocs() better?
+        return this.mReader.numDocs();    // can use maxDoc?
     }
 
     public double getNumberOfOccurrences() {
@@ -164,12 +164,16 @@ public class BaseSearcher implements Closeable {
 
     /**
      * Creates a DBpediaResource with all fields stored in the index
-     * TODO FACTORY move to Factory
+     * TODO REMOVE. This is bad because the fields being loaded are opaque to the caller. Some need only URI, others need everything.
      * @param docNo
      * @return
      */
     public DBpediaResource getDBpediaResource(int docNo) throws SearchException {
-        return getDBpediaResource(docNo,LuceneManager.DBpediaResourceField.stringValues());
+        String[] fields = {LuceneManager.DBpediaResourceField.TYPE.toString(),
+                LuceneManager.DBpediaResourceField.URI.toString(),
+                LuceneManager.DBpediaResourceField.URI_COUNT.toString(),
+                LuceneManager.DBpediaResourceField.URI_PRIOR.toString()};
+        return getDBpediaResource(docNo,fields);
     }
 
     /**
@@ -199,9 +203,33 @@ public class BaseSearcher implements Closeable {
             Field field = document.getField(fieldName);
             if (field != null) Factory.setField(resource, LuceneManager.DBpediaResourceField.valueOf(fieldName), document);
         }
-
+        if (resource.prior() == 0.0) { // adjust prior
+            resource.setPrior(resource.support() / this.getNumberOfOccurrences());
+        }
         return resource;
     }
+
+//        // Returns the first URI that can be found in the document number docNo   (old, superceded by Factory.setField)
+//    //TODO move to Factory
+//    //TODO why is this overriding BaseSearcher? can merge?
+//    public DBpediaResource getDBpediaResource(int docNo) throws SearchException {
+//
+//        FieldSelector fieldSelector = new MapFieldSelector(onlyUriAndTypes);
+//
+//        LOG.trace("Getting document number " + docNo + "...");
+//        Document document = getDocument(docNo, fieldSelector);
+//        String uri = document.get(LuceneManager.DBpediaResourceField.URI.toString());
+//        if (uri==null)
+//            throw new SearchException("Cannot find URI for document "+document);
+//
+//        LOG.trace("Setting URI, types and support...");
+//        DBpediaResource resource = new DBpediaResource(uri);
+//        resource.setTypes( getDBpediaTypes(document) );
+//        resource.setSupport( getSupport(document) ); //TODO this can be optimized for time performance by adding a support field. (search for the most likely URI then becomes a bit more complicated)
+//
+//        //LOG.debug("uri:"+uri);
+//        return resource;
+//    }
 
     public SurfaceForm getSurfaceForm(int docNo) throws SearchException {
         String[] onlyUriAndTypes = {LuceneManager.DBpediaResourceField.SURFACE_FORM.toString()};

@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.store.FSDirectory;
+import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
 import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.io.DataLoader;
@@ -56,17 +57,20 @@ public class CustomScoresDisambiguator implements Disambiguator {
     public List<SurfaceFormOccurrence> spotProbability(List<SurfaceFormOccurrence> sfOccurrences) {
         return sfOccurrences; //FIXME IMPLEMENT
     }
-    
-    public List<DBpediaResourceOccurrence> disambiguate(List<SurfaceFormOccurrence> sfOccurrences) throws SearchException {
+
+    @Override
+    public DBpediaResourceOccurrence disambiguate(SurfaceFormOccurrence sfOccurrence) throws SearchException, ItemNotFoundException, InputException {
+        return bestK(sfOccurrence, 1).get(0);
+    }
+
+    public List<DBpediaResourceOccurrence> disambiguate(List<SurfaceFormOccurrence> sfOccurrences) throws SearchException, InputException {
         List<DBpediaResourceOccurrence> disambiguated = new ArrayList<DBpediaResourceOccurrence>();
         for (SurfaceFormOccurrence sfOcc: sfOccurrences) {
-            List<DBpediaResourceOccurrence> candidates = null;
             try {
-                candidates = bestK(sfOcc, 1);
+                disambiguated.add(disambiguate(sfOcc));
             } catch (ItemNotFoundException e) {
                 LOG.error("Could not disambiguate. Surface form not found: "+sfOcc.surfaceForm()+": "+e);
             }
-            disambiguated.add(candidates.get(0));
         }
         return disambiguated;
     }

@@ -35,8 +35,12 @@ import org.apache.avalon.framework.configuration.ConfigurationException
 object AddPriorsToIndex {
 
     def uri2prior(line : String) = {
-        val fields = line.split("\\s+");
-        (fields(0), fields(1).toDouble) // extracts a map from uri2prior from the csv line
+        if (line.trim != null) {
+            val fields = line.split("\\s+");
+            (fields(0), fields(1).toDouble) // extracts a map from uri2prior from the csv line
+        } else {
+            ("",0.0) //
+        }
     }
 
     def main(args : Array[String]) {

@@ -33,8 +33,11 @@ public interface Disambiguator {
 
     public List<SurfaceFormOccurrence> spotProbability(List<SurfaceFormOccurrence> sfOccurrences) throws SearchException;
 
+    public DBpediaResourceOccurrence disambiguate(SurfaceFormOccurrence sfOccurrence) throws SearchException, ItemNotFoundException, InputException; //TODO DisambiguationException
+
     public List<DBpediaResourceOccurrence> disambiguate(List<SurfaceFormOccurrence> sfOccurrences) throws SearchException, InputException; //TODO DisambiguationException
 
+    //TODO consider moving this to CandidateSelector / CandidateSearcher interface
     public List<DBpediaResourceOccurrence> bestK(SurfaceFormOccurrence sfOccurrence, int k) throws SearchException, ItemNotFoundException, InputException;
 
     /**

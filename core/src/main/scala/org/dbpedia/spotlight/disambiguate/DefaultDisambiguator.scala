@@ -29,6 +29,8 @@ import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.lucene.disambiguate.{MixedWeightsDisambiguator, MergedOccurrencesDisambiguator}
 import io.Source
 import collection.JavaConversions._
+import scala.actors._
+import Actor._
 
 /**
  * Created by IntelliJ IDEA.
@@ -56,42 +58,96 @@ class DefaultDisambiguator(val indexDir : File) extends Disambiguator  {
     //val disambiguator : Disambiguator = new MergedOccurrencesDisambiguator(contextSearcher)
     val disambiguator : Disambiguator = new MixedWeightsDisambiguator(contextSearcher, new LinearRegressionMixture())
 
-    var uriPriorMap = Map[String,Double]()
-    var total = 0.0
-    Source.fromFile("/home/pablo/data/urisWortWikt.set.counts").getLines.foreach(line => {
-        val fields = line.split("\\s+");
-        val entry = (fields(0), fields(1).toDouble)
-        uriPriorMap += entry // append entry to map
-        total = total + entry._2
-    });
-    val priors = uriPriorMap.map( e => e._1 -> e._2 / total )
 
     LOG.info("Done.")
 
+//    LOG.info("Loading temporary URI -> Prior map")
+//    var uriPriorMap = Map[String,Double]()
+//    var total = 0.0
+//    Source.fromFile("/home/pablo/data/urisWortWikt.set.counts").getLines.foreach(line => {
+//        val fields = line.split("\\s+");
+//        val entry = (fields(0), fields(1).toDouble)
+//        uriPriorMap += entry // append entry to map
+//        total = total + entry._2
+//    });
+//    val priors = uriPriorMap.map( e => e._1 -> e._2 / total )
+//    LOG.info("Done.")
+//
+//    //temporary
+//    def addPriors (list: java.util.List[DBpediaResourceOccurrence])  {
+//        LOG.info("Get URI priors from map (temporary: it will be in the index)")
+//        val start = System.nanoTime
+//        list.asScala.foreach(o => {
+//            val p = priors.getOrElse(o.resource.uri, 0.0);//o.resource.support.toDouble / 69772256)
+//            o.resource.prior = p
+//        })
+//        LOG.info(String.format("Took %s ms ",((System.nanoTime-start)/1000).toString ))
+//    }
+
+//    @throws(classOf[InputException])
+//    def disambiguate(sfOccurrences: java.util.List[SurfaceFormOccurrence]): java.util.List[DBpediaResourceOccurrence] = {
+//        val list = disambiguator.disambiguate(sfOccurrences)
+//        LOG.info("Get URI priors from map (temporary: it will be in the index)")
+//        val start = System.nanoTime
+//        list.asScala.foreach(o => {
+//            val p = priors.getOrElse(o.resource.uri, 0.0);//o.resource.support.toDouble / 69772256)
+//            o.resource.prior = p
+//        })
+//        LOG.info(String.format("Took %s ms ",((System.nanoTime-start)/1000).toString ))
+//        list
+//
+//    }
+
+    def disambiguate(sfOccurrence: SurfaceFormOccurrence): DBpediaResourceOccurrence = {
+        disambiguator.disambiguate(sfOccurrence)
+    }
 
     @throws(classOf[InputException])
     def disambiguate(sfOccurrences: java.util.List[SurfaceFormOccurrence]): java.util.List[DBpediaResourceOccurrence] = {
-        val list = disambiguator.disambiguate(sfOccurrences)
-        LOG.info("Get URI priors from map (temporary: it will be in the index)")
-        val start = System.nanoTime
-        list.asScala.foreach(o => {
-            val p = priors.getOrElse(o.resource.uri, 0.0);//o.resource.support.toDouble / 69772256)
-            o.resource.prior = p
-        })
-        LOG.info(String.format("Took %s ms ",((System.nanoTime-start)/1000).toString ))
-        list
+        val nOccurrences = sfOccurrences.size()
 
+        // Get a reference to this actor
+        val caller = self
+
+        // Start an actor to disambiguate one surface form occurrence at a time
+        val multiThreadedDisambiguator = actor {
+            var i = 0;
+            loopWhile( i < nOccurrences) {
+                reactWithin(2000) {
+                    case sfOccurrence: SurfaceFormOccurrence =>
+                        //LOG.info("Disambiguate: "+sfOccurrence.surfaceForm)
+                        i = i+1
+                        // Send the disambiguated occurrence back to the caller
+                        caller ! disambiguator.disambiguate(sfOccurrence)
+                    case TIMEOUT =>
+                        LOG.error(" Timed out trying to disambiguate! ")
+                        i = i+1
+                }
+            }
+        }
+
+        // Send occurrences for parallel disambiguation
+        sfOccurrences.asScala.foreach( o => multiThreadedDisambiguator ! o);
+
+        // Aggregate disambiguated occurrences
+        val list = new java.util.ArrayList[DBpediaResourceOccurrence]()
+        for ( i <- 1 to nOccurrences) {
+            receiveWithin(4000) { //TODO using receive since I'm not entirely sure how the list aggregation would be with react. maybe make this functional and use react
+                case disambiguation: DBpediaResourceOccurrence =>
+                   // LOG.info("Disambiguation "+disambiguation.resource)
+                    list.add(disambiguation)
+                case TIMEOUT => LOG.error(" Timed out trying to aggregate disambiguations! ")
+            }
+        }
+        //TODO temporary add priors from a map
+        //addPriors(list)
+
+        return list;
     }
 
     def bestK(sfOccurrence: SurfaceFormOccurrence, k: Int): java.util.List[DBpediaResourceOccurrence] = {
         val list = disambiguator.bestK(sfOccurrence, k)
-        LOG.info("Get URI priors from map (temporary: it will be in the index)")
-        val start = System.nanoTime
-        list.asScala.foreach(o => {
-            val p = priors.getOrElse(o.resource.uri, 0.0);//o.resource.support.toDouble / 69772256)
-            o.resource.prior = p
-        })
-        LOG.info(String.format("Took %s ms ",((System.nanoTime-start)/1000).toString ))
+        //addPriors(list)
         list
     }
 

@@ -341,6 +341,17 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
 //        //TODO can this be optimized for time performance by adding a support field?
 //        return document.getFields(LuceneManager.DBpediaResourceField.URI.toString()).length;  // number of URI fields in this document;
 //    }
+        // Returns a list of DBpediaTypes that are registered in the index in document number docNo.
+    // Duplicates are not removed.
+    // CAUTION: sorting is not guaranteed! (but should be fine (Max thinks) if an order was given when indexing (typically from least to most specific)
+    public List<DBpediaType> getDBpediaTypes(Document document) throws SearchException {
+        String[] types = document.getValues(LuceneManager.DBpediaResourceField.TYPE.toString());
+        List<DBpediaType> typesList = new ArrayList<DBpediaType>();
+        for (String t : types) {
+            typesList.add(new DBpediaType(t));
+        }
+        return typesList;
+    }
 
     /**
      *
@@ -396,41 +407,7 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
         return vectors;
     }
 
-    // Returns the first URI that can be found in the document number docNo
-    //TODO move to Factory
-    //TODO why is this overriding BaseSearcher? can merge?
-    public DBpediaResource getDBpediaResource(int docNo) throws SearchException {
 
-        FieldSelector fieldSelector = new MapFieldSelector(onlyUriAndTypes);
-
-        LOG.trace("Getting document number " + docNo + "...");
-        Document document = getDocument(docNo, fieldSelector);
-        String uri = document.get(LuceneManager.DBpediaResourceField.URI.toString());
-        if (uri==null)
-            throw new SearchException("Cannot find URI for document "+document);
-
-        LOG.trace("Setting URI, types and support...");
-        DBpediaResource resource = new DBpediaResource(uri);
-        resource.setTypes( getDBpediaTypes(document) );
-        resource.setSupport( getSupport(document) ); //TODO this can be optimized for time performance by adding a support field. (search for the most likely URI then becomes a bit more complicated)
-
-        //LOG.debug("uri:"+uri);
-        return resource;
-    }
-
-
-
-    // Returns a list of DBpediaTypes that are registered in the index in document number docNo.
-    // Duplicates are not removed.
-    // CAUTION: sorting is not guaranteed! (but should be fine (Max thinks) if an order was given when indexing (typically from least to most specific)
-    public List<DBpediaType> getDBpediaTypes(Document document) throws SearchException {
-        String[] types = document.getValues(LuceneManager.DBpediaResourceField.TYPE.toString());
-        List<DBpediaType> typesList = new ArrayList<DBpediaType>();
-        for (String t : types) {
-            typesList.add(new DBpediaType(t));
-        }
-        return typesList;
-    }
 
     /**
      * Generates explanations for how a given SurfaceFormOccurrence has been disambiguated into a DBpediaResourceOccurrence
