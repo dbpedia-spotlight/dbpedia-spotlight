@@ -4,6 +4,8 @@ import com.aliasi.sentences.SentenceModel;
 import com.aliasi.tag.Tagger;
 import com.aliasi.tag.Tagging;
 import com.aliasi.tokenizer.Tokenizer;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.tagging.TaggedToken;
 import org.dbpedia.spotlight.tagging.TaggedTokenProvider;
 
@@ -27,6 +29,8 @@ import java.util.List;
 //TODO see if you can use hashing for O(1) retrieval
 
 public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
+
+    private Log LOG = LogFactory.getLog(this.getClass());
 
 	List<TaggedToken> taggedTokens = new ArrayList<TaggedToken>();
 	private static final int MAX_TAG_RESULTS = 10;
@@ -91,7 +95,7 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 		Tokenizer tokenizer = LingPipeFactory.getTokenizerFactory().tokenizer(text.toCharArray(),
 				0, text.length());
 		tokenizer.tokenize(tokenList, whiteList);
-		System.err.println("Tokenization took " + (System.currentTimeMillis() - start) + "ms.");
+		LOG.trace("Tokenization took " + (System.currentTimeMillis() - start) + "ms.");
 
 		//2.) Sentence detection
 		String[] tokens = new String[tokenList.size()];
@@ -103,7 +107,7 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 		start = System.currentTimeMillis();
 		SentenceModel sentenceModel = LingPipeFactory.createSentenceModel();
 		int[] sentenceBoundaries = sentenceModel.boundaryIndices(tokens, whites);
-		System.err.println("Sent detection took " + (System.currentTimeMillis() - start) + "ms.");
+		LOG.trace("Sentence segmentation took " + (System.currentTimeMillis() - start) + "ms.");
 
 		start = System.currentTimeMillis();
 		//3.) Part-of-Speech tagging
@@ -140,7 +144,7 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 			sentStartToken = sentEndToken + 1;
 		}
 
-		System.err.println("POS tagging took " + (System.currentTimeMillis() - start) + "ms.");
+		LOG.trace("POS tagging took " + (System.currentTimeMillis() - start) + "ms.");
 
 
 	}

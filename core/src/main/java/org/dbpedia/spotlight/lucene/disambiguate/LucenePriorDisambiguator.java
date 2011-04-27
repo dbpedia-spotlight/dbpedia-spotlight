@@ -74,24 +74,24 @@ public class LucenePriorDisambiguator implements Disambiguator {
      * @param doc
      * @return
      */
-    private Map.Entry<String,Integer> getURICount(Document doc) throws ItemNotFoundException{
-        Map<String,Integer> result = new HashMap<String,Integer>();
-        Integer count = 0;
-
-        String[] uriValues = doc.getValues(LuceneManager.DBpediaResourceField.URI.toString());
-        if (uriValues == null)
-            throw new ItemNotFoundException("URI is not in the index: "+LuceneManager.DBpediaResourceField.URI.toString());
-        String uri = uriValues[0];
-
-        String[] countValues = doc.getValues(LuceneManager.DBpediaResourceField.URI_COUNT.toString());
-        if (countValues==null) {
-            count = uriValues.length; // count is how many times a URI has been added to the index
-        } else {
-            count = new Integer(countValues[0]); // count has been stored as a field
-        }
-        result.put(uri, count);
-        return result.entrySet().iterator().next();
-    }
+//    private Map.Entry<String,Integer> getURICount(Document doc) throws ItemNotFoundException{
+//        Map<String,Integer> result = new HashMap<String,Integer>();
+//        Integer count = 0;
+//
+//        String[] uriValues = doc.getValues(LuceneManager.DBpediaResourceField.URI.toString());
+//        if (uriValues == null)
+//            throw new ItemNotFoundException("URI is not in the index: "+LuceneManager.DBpediaResourceField.URI.toString());
+//        String uri = uriValues[0];
+//
+//        String[] countValues = doc.getValues(LuceneManager.DBpediaResourceField.URI_COUNT.toString());
+//        if (countValues==null) {
+//            count = uriValues.length; // count is how many times a URI has been added to the index
+//        } else {
+//            count = new Integer(countValues[0]); // count has been stored as a field
+//        }
+//        result.put(uri, count);
+//        return result.entrySet().iterator().next();
+//    }
 
 
       @Override
@@ -113,12 +113,8 @@ public class LucenePriorDisambiguator implements Disambiguator {
     public List<DBpediaResourceOccurrence> bestK(SurfaceFormOccurrence sfOccurrence, int k) throws SearchException, ItemNotFoundException {
         List<DBpediaResourceOccurrence> resultOccs = new LinkedList<DBpediaResourceOccurrence>();
 
-        FieldSelector fieldSelector = new MapFieldSelector(filter);
-        for (Document doc : mSearcher.getDocuments(sfOccurrence.surfaceForm(), fieldSelector)) {
-            Map.Entry<String,Integer> e = getURICount(doc);
-            int numUris = e.getValue();
-            String uri = e.getKey();
-            DBpediaResourceOccurrence occ = new DBpediaResourceOccurrence(new DBpediaResource(uri,numUris),
+        for (DBpediaResource resource: mSearcher.getCandidates(sfOccurrence.surfaceForm())) {
+            DBpediaResourceOccurrence occ = new DBpediaResourceOccurrence(resource,
                     sfOccurrence.surfaceForm(),
                     sfOccurrence.context(),
                     sfOccurrence.textOffset());

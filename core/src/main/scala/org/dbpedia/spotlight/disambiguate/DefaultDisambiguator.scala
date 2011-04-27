@@ -132,7 +132,7 @@ class DefaultDisambiguator(val indexDir : File) extends Disambiguator  {
         // Aggregate disambiguated occurrences
         val list = new java.util.ArrayList[DBpediaResourceOccurrence]()
         for ( i <- 1 to nOccurrences) {
-            receiveWithin(4000) { //TODO using receive since I'm not entirely sure how the list aggregation would be with react. maybe make this functional and use react
+            receiveWithin(6000) { //TODO using receive since I'm not entirely sure how the list aggregation would be with react. maybe make this functional and use react
                 case disambiguation: DBpediaResourceOccurrence =>
                    // LOG.info("Disambiguation "+disambiguation.resource)
                     list.add(disambiguation)

@@ -83,7 +83,7 @@ object ModifiedWikiUtil {
         title.replaceAll(""" \([D|d]isambiguation\)$""", "")
     }
 
-    // Used by the WebOccurrenceSearcher to query the Web for a resource title
+    // Used by the KeywordExtractor to query the Web for a resource title
     def getKeywordsFromPageTitle(title: String) = {
         val disambiguatedTitle = """(.+?) \((.+?)\)$""".r
         //val simpleTitle = """(.+?)$""".r

@@ -12,13 +12,13 @@ import org.dbpedia.spotlight.disambiguate.mixtures.LinearRegressionMixture
 import org.dbpedia.spotlight.lucene.disambiguate.MixedWeightsDisambiguator
 import org.dbpedia.spotlight.annotate.DefaultAnnotator
 import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter
-import org.dbpedia.spotlight.candidate.{CommonWordFilter, SpotSelector}
 import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters
 import org.apache.lucene.document.{Field, Document}
 import org.dbpedia.spotlight.lucene.LuceneManager.DBpediaResourceField
 import collection.JavaConversions._
 import org.dbpedia.spotlight.disambiguate.DefaultDisambiguator
 import org.dbpedia.spotlight.lucene.search.{BaseSearcher, MergedOccurrencesContextSearcher}
+import org.dbpedia.spotlight.candidate.{AtLeastOneNounFilter, CommonWordFilter, SpotSelector}
 
 /**
  * Class containing methods to create model objects in many different ways
@@ -36,7 +36,7 @@ object Factory {
     def createDBpediaResourceOccurrenceFromDocument(doc : Document, id: Int, searcher: BaseSearcher) : DBpediaResourceOccurrence = {
         // getField: If multiple fields exists with this name, this method returns the first value added.
         var resource = searcher.getDBpediaResource(id);
-        var context = new Text(doc.getFields(LuceneManager.DBpediaResourceField.CONTEXT.toString).mkString("\n"))
+        var context = new Text(doc.getFields(LuceneManager.DBpediaResourceField.CONTEXT.toString).map(f => f.stringValue).mkString("\n"))
 
         new DBpediaResourceOccurrence( //TODO add document id as occurrence id
             resource,
@@ -89,9 +89,10 @@ class LuceneFactory(val configuration: SpotlightConfiguration,
         new LingPipeSpotter(new File(configuration.getSpotterFile));
     }
 
-    def spotSelector() ={
+    def spotSelector() = {
+        new AtLeastOneNounFilter
         //new CommonWordFilter(configuration.getCommonWordsFile)
-        null
+        //null
     }
 
     def annotator() ={

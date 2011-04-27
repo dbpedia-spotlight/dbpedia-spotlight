@@ -31,9 +31,9 @@ class LinearRegressionMixture extends Mixture(0) {
 //    val priorWeight = 109.8291
 //    val c = 0.7257
 
-    val priorWeight = 659.9734
-    override val contextWeight = 0.8351
-    val c = 0.2138
+    val priorWeight = 661.7888
+    override val contextWeight = 0.7886
+    val c = 0.2214
 
     val totalOccurrenceCount = 69772256
 

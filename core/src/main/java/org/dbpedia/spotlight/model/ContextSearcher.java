@@ -35,6 +35,6 @@ public interface ContextSearcher { //TODO We should have a ResourceSearcher, Occ
     //TODO this only makes sense for ResourceSearcher
     public DBpediaResource getDBpediaResource(int docNo) throws SearchException;
 
-    public long getNumberOfEntries();
+    public int getNumberOfEntries();
 
 }

@@ -140,19 +140,21 @@ public class MergedOccurrencesContextIndexer extends OccurrenceContextIndexer {
                 throw new IndexException("Error running commit.",e);
             }
 
-            try {
-                if (numMerges % maxMergesBeforeOptimize == 0) {
-                    /*
-                   If an index will not have more documents added for a while and optimal search performance is desired, then either the full optimize  method or partial optimize(int)  method should be called before the index is closed.
-                   http://lucene.apache.org/java/2_4_0/api/org/apache/lucene/index/LuceneIndexWriter.html
-                    */
-                    LOG.info("Optimizing index...");
-                    mWriter.optimize();
-                    LOG.info("Optimize done.");
-                }
-            } catch (Exception e) {
-                throw new IndexException("Error running optimization.",e);
-            }
+            /*
+            Since Lucene 2.9 you don’t need to optimize in most cases, as search is working per-segment.
+            Optimizing an index should only be done during maintenance or if you want to ship a static index e.g. on a DVD.
+            For live installations, the merge policy will manage index segments for you fine and index reopen times and field cache for sorting will be working fast.
+            http://mail-archives.apache.org/mod_mbox/lucene-java-user/201008.mbox/browser
+            */
+            //try {
+                //if (numMerges % maxMergesBeforeOptimize == 0) {
+                    //LOG.info("Optimizing index...");
+                    //mWriter.optimize();
+                    //LOG.info("Optimize done.");
+                //}
+            //} catch (Exception e) {
+            //    throw new IndexException("Error running optimization.",e);
+            //}
 
         } else {
             if (uriToDocumentMap.containsKey(uri)) {

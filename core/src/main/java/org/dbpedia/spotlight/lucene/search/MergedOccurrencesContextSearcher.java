@@ -53,7 +53,7 @@ import java.util.Set;
  * - Allows prior disambiguator to get a quick "default sense" based on the most popular URI for a given surface form
  * @author pablomendes
  */
-public class MergedOccurrencesContextSearcher extends BaseSearcher implements ContextSearcher {
+public class MergedOccurrencesContextSearcher extends BaseSearcher implements ContextSearcher, SurrogateSearcher {
 
     String[] onlyUriCount = {LuceneManager.DBpediaResourceField.URI_COUNT.toString()};
     String[] uriAndCount = {LuceneManager.DBpediaResourceField.URI.toString(),
@@ -214,6 +214,8 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
         return documents;
     }
 
+
+
     public List<Document> getDocuments(DBpediaResource res, FieldSelector fieldSelector) throws SearchException {
         //LOG.trace("Retrieving documents for surface form: "+res);
 
@@ -267,8 +269,12 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
         return hits.length;
     }
 
-    public List<DBpediaResource> getDBpediaResourceCandidates(SurfaceForm sf) throws SearchException {
-        List<DBpediaResource> results = new ArrayList<DBpediaResource>();
+    public Set<DBpediaResource> getCandidates(SurfaceForm sf) throws SearchException {
+        return getDBpediaResources(sf);
+    }
+
+    public Set<DBpediaResource> getDBpediaResources(SurfaceForm sf) throws SearchException {
+        Set<DBpediaResource> results = new HashSet<DBpediaResource>();
         ScoreDoc[] hits = getHits(mLucene.getQuery(sf));
         for (ScoreDoc sd: hits) {
             results.add(getDBpediaResource(sd.doc));
@@ -276,7 +282,6 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
         LOG.trace("Ambiguity for "+sf+"="+hits.length);
         return results;
     }
-
 
     /**
      * Gets number of occurrences (support) for DBpediaResource.
@@ -490,6 +495,5 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
 
         return idfSum/wordCount;
     }
-
 
 }

@@ -68,7 +68,7 @@ public class BaseSearcher implements Closeable {
         LOG.debug("Done.");
     }
 
-    public long getNumberOfEntries() {
+    public int getNumberOfEntries() {
         return this.mReader.numDocs();    // can use maxDoc?
     }
 

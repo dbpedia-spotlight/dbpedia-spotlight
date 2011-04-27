@@ -66,9 +66,13 @@ class DefaultAnnotator(val spotter : Spotter, val spotSelector: SpotSelector, va
 
             // Old selector that we never quite finished coding
             //val selectedSpots = disambiguator.spotProbability(spottedSurfaceForms);
-
+            val previousSize = spottedSurfaceForms.size
             // New selector
-            spotSelector.select(spottedSurfaceForms)
+            val r = spotSelector.select(spottedSurfaceForms)
+            val count = previousSize-r.size
+            val percent = if (count==0) "0" else "%1.0f" format ((count.toDouble / previousSize) * 100)
+            LOG.info(String.format("Removed %s (%s percent) occurrences confusable with common words.", count.toString, percent.toString ))
+            r
         };
 
         LOG.info("Disambiguating... ("+disambiguator.name+")")

@@ -60,7 +60,10 @@ public class CustomScoresDisambiguator implements Disambiguator {
 
     @Override
     public DBpediaResourceOccurrence disambiguate(SurfaceFormOccurrence sfOccurrence) throws SearchException, ItemNotFoundException, InputException {
-        return bestK(sfOccurrence, 1).get(0);
+        List<DBpediaResourceOccurrence> candidates = bestK(sfOccurrence, 1);
+        if (candidates.size()==0)
+            throw new ItemNotFoundException(sfOccurrence.surfaceForm()+" was not found in the index.");
+        return candidates.get(0);
     }
 
     public List<DBpediaResourceOccurrence> disambiguate(List<SurfaceFormOccurrence> sfOccurrences) throws SearchException, InputException {
@@ -78,6 +81,9 @@ public class CustomScoresDisambiguator implements Disambiguator {
     @Override
     public List<DBpediaResourceOccurrence> bestK(SurfaceFormOccurrence sfOccurrence, int k) throws SearchException, ItemNotFoundException {
         Set<DBpediaResource> candidates = surrogateSearcher.getCandidates(sfOccurrence.surfaceForm());
+
+        if (candidates.size()==0)
+            return new LinkedList<DBpediaResourceOccurrence>();
 
         List<DBpediaResourceOccurrence> all = getScores(sfOccurrence, candidates);
 

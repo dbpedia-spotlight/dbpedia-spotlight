@@ -128,7 +128,7 @@ public class IndexEnricher extends BaseIndexer<Object> {
 
                     mWriter.addDocument(mLucene.getDocument(occ)); // add new doc
 
-                } else for (Document doc: docs) {
+                } else for (Document doc: docs) { // SHOULD BE JUST ONE!
                     doc = mLucene.add(doc, prior);
                     Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
                     mWriter.updateDocument(uriTerm, doc);  //deletes everything with this uri and writes a new doc

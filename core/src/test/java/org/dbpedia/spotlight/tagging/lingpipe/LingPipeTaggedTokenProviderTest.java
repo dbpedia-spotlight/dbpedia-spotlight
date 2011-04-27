@@ -37,7 +37,7 @@ public class LingPipeTaggedTokenProviderTest extends TestCase {
 	public void setUp() throws Exception {
 		super.setUp();
 		LingPipeFactory.setSentenceModel(new IndoEuropeanSentenceModel());
-		LingPipeFactory.setTaggerModelFile(new File("/Users/jodaiber/dbpdata/pos-en-general-brown.HiddenMarkovModel"));
+		LingPipeFactory.setTaggerModelFile(new File("/home/pablo/data/brown/pos-en-general-brown.HiddenMarkovModel"));
 
 		lingPipeTaggedTokenProvider1 = new LingPipeTaggedTokenProvider();
 		lingPipeTaggedTokenProvider1.initialize(text1);

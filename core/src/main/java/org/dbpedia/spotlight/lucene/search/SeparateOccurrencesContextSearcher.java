@@ -36,11 +36,6 @@ public class SeparateOccurrencesContextSearcher extends BaseSearcher implements 
         super(lucene);
     }
 
-    @Override
-    public long getNumberOfEntries() {  //TODO why override with the same implementation?
-        return super.getNumberOfEntries();
-    }
-
     public ScoreDoc[] getHits(DBpediaResource resource, Text context) throws SearchException {
         return getHits(mLucene.getQuery(resource,context));
     }
