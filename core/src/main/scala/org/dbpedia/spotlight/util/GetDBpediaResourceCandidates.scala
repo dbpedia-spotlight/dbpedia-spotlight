@@ -14,7 +14,6 @@ import org.dbpedia.spotlight.io.WortschatzParser
  * After this, you can run Generate
  * @author pablomendes
  */
-
 object GetDBpediaResourceCandidates {
 
     private val LOG = LogFactory.getLog(this.getClass)
@@ -36,19 +35,22 @@ object GetDBpediaResourceCandidates {
 
         val out = new PrintWriter(uriSetFile);
 
-        val surfaceForms = WortschatzParser.parse(surfaceFormSetFile, 50, 100);
+        //val surfaceForms = WortschatzParser.parse(surfaceFormSetFile, 50, 100);
+        val surfaceForms = Source.fromFile(surfaceFormSetFile).getLines;
         var i = 0;
         surfaceForms.foreach( name => {
             i = i + 1
             LOG.info(String.format("Surface Form %s : %s", i.toString, name));
             val sf = new SurfaceForm(name)
-            val uriList = searcher.getDBpediaResourceCandidates(sf).toList.map( r => r.uri).mkString("\n")
+            val uriList = searcher.getCandidates(sf).toList.map( r => r.uri).mkString("\n")
             if (uriList.size>0)
                 out.print(uriList+"\n");
             if (i % 100 == 0) {
                 out.flush
             }
         });
+
+        LOG.info(String.format("Results saved to %s ", uriSetFile))
 
         out.close
     }
