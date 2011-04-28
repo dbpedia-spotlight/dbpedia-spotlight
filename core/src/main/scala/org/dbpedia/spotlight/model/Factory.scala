@@ -47,6 +47,21 @@ object Factory {
             )
     }
 
+    def createDBpediaResourceOccurrencesFromDocument(doc : Document, id: Int, searcher: BaseSearcher) = {
+        // getField: If multiple fields exists with this name, this method returns the first value added.
+        var resource = searcher.getDBpediaResource(id);
+        var occContexts = doc.getFields(LuceneManager.DBpediaResourceField.CONTEXT.toString).map(f => new Text(f.stringValue))
+
+        occContexts.map(context =>
+            new DBpediaResourceOccurrence( //TODO add document id as occurrence id
+                resource,
+                createSurfaceFormFromDBpediaResourceURI(resource, false), // this is sort of the "official" surface form, since it's the cleaned up title
+                context,
+                -1, //TODO find offset
+                Provenance.Wikipedia // Ideally grab this from index, if we have sources other than Wikipedia
+            ))
+    }
+
 
     def setField(resource: DBpediaResource, field: DBpediaResourceField, document: Document) {
         field match {

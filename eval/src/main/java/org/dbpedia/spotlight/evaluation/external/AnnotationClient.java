@@ -58,7 +58,7 @@ public abstract class AnnotationClient {
             }
 
             // Read the response body.
-            byte[] responseBody = method.getResponseBody();
+            byte[] responseBody = method.getResponseBody(); //TODO Going to buffer response body of large or unknown size. Using getResponseBodyAsStream instead is recommended.
 
             // Deal with the response.
             // Use caution: ensure correct character encoding and is not binary data

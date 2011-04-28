@@ -361,8 +361,7 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
     /**
      *
      * @param dbpediaResource
-     * @param topN
-     * @return
+     * @return map from term (word) to count
      */
     public List<Map.Entry<String,Integer>> getContextWords(DBpediaResource dbpediaResource) throws SearchException {
         Map<String,Integer> termFreqMap = new HashMap<String,Integer>();
@@ -374,6 +373,8 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
         try {
             for (ScoreDoc d: docs) {
                 TermFreqVector vector = mReader.getTermFreqVector(d.doc, LuceneManager.DBpediaResourceField.CONTEXT.toString());
+                if (vector==null)
+                    throw new SearchException("The index you are using does not have term frequencies stored. Cannot run getContextWords(DBpediaResource).");
                 int[] freqs = vector.getTermFrequencies();
                 String[] terms = vector.getTerms();
                 for (int i=0; i < vector.size(); i++) {
