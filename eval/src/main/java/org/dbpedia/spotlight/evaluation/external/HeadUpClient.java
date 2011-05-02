@@ -17,14 +17,12 @@
 
 package org.dbpedia.spotlight.evaluation.external;
 
-import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.dbpedia.spotlight.exceptions.AnnotationException;
 import org.dbpedia.spotlight.model.DBpediaResource;
 import org.dbpedia.spotlight.model.Text;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
@@ -49,7 +47,7 @@ import java.util.List;
  * Features and ease of use:
  *
  * - currently no API key required
- * - for entities, the API returns a list of surface forms with their corresponding surface form
+ * - the API returns a list of entities with their corresponding surface form
  *   in the text
  * - DBPedia entites are identified by the dbpedia: prefix
  * - Has a problem with if apostrophe ' is given within the string
@@ -93,8 +91,12 @@ public class HeadUpClient extends AnnotationClient {
 
 	
 	private String buildURL(Text text) throws UnsupportedEncodingException {
-        String cleanText = text.text();
-        //String cleanText = text.text().replaceAll("'"," ").replaceAll("\"","\\\""); //TODO removed quotes here as a hack. Permanent fix needed.
+
+		/**
+		 * The API does not support single quotation characters as such, therefore
+		 * replace them with their corresponding HTML Special Entity.
+		 */
+		String cleanText = text.text().replace("'", "&apos;");
 		return API_URL + "/str('" + URLEncoder.encode(cleanText, "utf-8") + "')/x:entity";
 	}
 
