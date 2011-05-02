@@ -20,6 +20,7 @@ import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dbpedia.spotlight.exceptions.AnnotationException;
 import org.dbpedia.spotlight.model.DBpediaResource;
 import org.dbpedia.spotlight.model.Text;
 import org.dbpedia.spotlight.string.XmlParser;
@@ -50,7 +51,7 @@ public class ZemantaClient extends AnnotationClient {
      * @param text
      * @return
      */
-    public List<DBpediaResource> extract(Text text) {
+    public List<DBpediaResource> extract(Text text) throws AnnotationException {
         String response = process(text.text());
         List<DBpediaResource> entities = new ArrayList<DBpediaResource>();
         try {
@@ -76,7 +77,7 @@ public class ZemantaClient extends AnnotationClient {
         return entities;
     }
 
-    protected String process(String text) {
+    protected String process(String text) throws AnnotationException {
         String url = "http://api.zemanta.com/services/rest/0.0/";
         PostMethod method = new PostMethod(url);
         method.setRequestHeader("Content-type","application/x-www-form-urlencoded");
@@ -107,8 +108,11 @@ public class ZemantaClient extends AnnotationClient {
         //File input = new File("/home/pablo/eval/cucerzan/cucerzan.txt");
         //File output = new File("/home/pablo/eval/cucerzan/systems/cucerzan-Zemanta.set");
 
-        File input = new File("/home/pablo/eval/wikify/gold/WikifyAllInOne.txt");
-        File output = new File("/home/pablo/eval/wikify/systems/Zemanta.list");
+//        File input = new File("/home/pablo/eval/wikify/gold/WikifyAllInOne.txt");
+//        File output = new File("/home/pablo/eval/wikify/systems/Zemanta.list");
+
+        File input = new File("/home/pablo/eval/csaw/gold/paragraphs.txt");
+        File output = new File("/home/pablo/eval/csaw/systems/Zemanta.list");
 
         c.evaluateManual(input, output);
 

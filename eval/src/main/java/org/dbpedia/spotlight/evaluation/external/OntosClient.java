@@ -68,7 +68,12 @@ public class OntosClient extends AnnotationClient {
                     // Create a method instance.
         GetMethod method = new GetMethod("http://news.ontos.com/token?j_username="+user+"&j_password="+password);
 //        method.getParams().setCookiePolicy(CookiePolicy.RFC_2109);
-        this.authToken = request(method);
+        try {
+            this.authToken = request(method);
+        } catch (AnnotationException e) {
+            LOG.error("Could not execute authentication request.", e);
+            e.printStackTrace();
+        }
         return this.authToken != null; //TODO test this.
     }
 
@@ -76,7 +81,7 @@ public class OntosClient extends AnnotationClient {
         return text.text().replaceAll("\\s+"," ").replaceAll("[\'\"]","");
     }
     
-    public String annotate(Text text) throws AuthenticationException {
+    public String annotate(Text text) throws AnnotationException {
         if (!authenticated) {
             throw new AuthenticationException("Client is not authenticated with Ontos. Please call authenticate(user, password) first.");
         }

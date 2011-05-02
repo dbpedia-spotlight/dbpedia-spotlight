@@ -26,6 +26,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.LinkedList;
@@ -51,7 +52,7 @@ import java.util.List;
  * - for entities, the API returns a list of surface forms with their corresponding surface form
  *   in the text
  * - DBPedia entites are identified by the dbpedia: prefix
- * 
+ * - Has a problem with if apostrophe ' is given within the string
  * 
  */
 
@@ -68,9 +69,9 @@ public class HeadUpClient extends AnnotationClient {
 		try {
 			requestData = request(buildURL(text));
 		} catch (JSONException e) {
-			throw new AnnotationException("Could not read API response.");
+			throw new AnnotationException("Could not read API response.",e);
 		} catch (UnsupportedEncodingException e) {
-			throw new AnnotationException("Could not build API request URL.");
+			throw new AnnotationException("Could not build API request URL.",e);
 		}
 
 		if(requestData.length() == 0)
@@ -82,7 +83,8 @@ public class HeadUpClient extends AnnotationClient {
 						= new DBpediaResource(requestData.getJSONObject(i).getString("uri").replace("dbpedia:", ""));
 				dbpediaResources.add(dBpediaResource);
 			} catch (JSONException e) {
-				
+				LOG.error("Error parsing JSON.");
+                e.printStackTrace();
 			}
 		}
 
@@ -91,16 +93,41 @@ public class HeadUpClient extends AnnotationClient {
 
 	
 	private String buildURL(Text text) throws UnsupportedEncodingException {
-		return API_URL + "/str('" + URLEncoder.encode(text.text(), "utf-8") + "')/x:entity";
+        String cleanText = text.text();
+        //String cleanText = text.text().replaceAll("'"," ").replaceAll("\"","\\\""); //TODO removed quotes here as a hack. Permanent fix needed.
+		return API_URL + "/str('" + URLEncoder.encode(cleanText, "utf-8") + "')/x:entity";
 	}
 
 
-	private JSONArray request(String url) throws JSONException {
+	private JSONArray request(String url) throws JSONException, AnnotationException {
 		GetMethod method = new GetMethod(url);
 		String response = request(method);
+        LOG.info("reponse: "+response);
 		JSONArray json = new JSONArray(response);
 		return json;
 	}
+
+    public static void main(String[] args) throws Exception {
+
+         HeadUpClient client = new HeadUpClient();
+
+         File manualEvalOutput = new File("/home/pablo/eval/manual/systems/HeadUp.list");
+         File manualEvalInput = new File("/home/pablo/eval/manual/AnnotationText.txt");
+         client.evaluateManual(manualEvalInput, manualEvalOutput);
+
+         File cucerzanEvalInput = new File("/home/pablo/eval/cucerzan/cucerzan.txt");
+         File cucerzanEvalOutput = new File("/home/pablo/eval/cucerzan/systems/HeadUp.list");
+//        client.evaluateManual(cucerzanEvalInput, cucerzanEvalOutput);
+
+         File wikifyEvalInput = new File("/home/pablo/eval/wikify/gold/WikifyAllInOne.txt");
+         File wikifyEvalOutput = new File("/home/pablo/eval/wikify/systems/HeadUp.list");
+         //client.evaluateManual(wikifyEvalInput, wikifyEvalOutput);
+
+         File input = new File("/home/pablo/eval/csaw/gold/paragraphs.txt");
+         File output = new File("/home/pablo/eval/csaw/systems/HeadUp.list");
+         client.evaluateManual(input, output);
+     }
+
 
 
 }

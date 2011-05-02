@@ -41,7 +41,7 @@ public abstract class AnnotationClient {
     private static HttpClient client = new HttpClient();
 
 
-    public String request(HttpMethod method) {
+    public String request(HttpMethod method) throws AnnotationException {
 
         String response = null;
 
@@ -65,11 +65,12 @@ public abstract class AnnotationClient {
             response = new String(responseBody);
 
         } catch (HttpException e) {
-            System.err.println("Fatal protocol violation: " + e.getMessage());
-            e.printStackTrace();
+            LOG.error("Fatal protocol violation: " + e.getMessage());
+            throw new AnnotationException("Protocol error executing HTTP request.",e);
         } catch (IOException e) {
-            System.err.println("Fatal transport error: " + e.getMessage());
-            e.printStackTrace();
+            LOG.error("Fatal transport error: " + e.getMessage());
+            LOG.error(method.getQueryString());
+            throw new AnnotationException("Transport error executing HTTP request.",e);
         } finally {
             // Release the connection.
             method.releaseConnection();
@@ -111,7 +112,8 @@ public abstract class AnnotationClient {
             }
         }
     }
-    public void saveExtractedEntitiesSet(File inputFile, File outputFile, LineParser parser) throws Exception {
+
+    public void saveExtractedEntitiesSet(File inputFile, File outputFile, LineParser parser, int restartFrom) throws Exception {
         PrintWriter out = new PrintWriter(outputFile);
         LOG.info("Opening input file "+inputFile.getAbsolutePath());
         String text = readFileAsString(inputFile);
@@ -123,6 +125,9 @@ public abstract class AnnotationClient {
             String s = parser.parse(snippet);
             if (s!= null && !s.equals("")) {
                 i++;
+
+                if (i<restartFrom) continue;
+
                 List<DBpediaResource> entities = new ArrayList<DBpediaResource>();
                 try {
                     final long startTime = System.nanoTime();
@@ -134,11 +139,13 @@ public abstract class AnnotationClient {
                 } catch (AnnotationException e) {
                     error++;
                     LOG.error(e);
+                    e.printStackTrace();
                 }
                 for (DBpediaResource e: entities) {
                     out.println(e.uri());
                 }
                 out.println();
+                out.flush();
             }
         }
         out.close();
@@ -150,7 +157,11 @@ public abstract class AnnotationClient {
 
 
     public void evaluateManual(File inputFile, File outputFile) throws Exception {
-         saveExtractedEntitiesSet(inputFile, outputFile, new LineParser.ManualDatasetLineParser());
+        evaluateManual(inputFile,outputFile,0);
+    }
+
+    public void evaluateManual(File inputFile, File outputFile, int restartFrom) throws Exception {
+         saveExtractedEntitiesSet(inputFile, outputFile, new LineParser.ManualDatasetLineParser(), restartFrom);
     }
 
 //    public void evaluateCurcerzan(File inputFile, File outputFile) throws Exception {

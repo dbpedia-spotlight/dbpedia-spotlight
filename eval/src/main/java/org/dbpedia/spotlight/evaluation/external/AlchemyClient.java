@@ -18,6 +18,7 @@ package org.dbpedia.spotlight.evaluation.external;
 
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.dbpedia.spotlight.exceptions.AnnotationException;
 import org.dbpedia.spotlight.model.DBpediaResource;
 import org.dbpedia.spotlight.model.Text;
 import org.dbpedia.spotlight.string.XmlParser;
@@ -55,7 +56,7 @@ public class AlchemyClient extends AnnotationClient {
     Content-Type header: application/x-www-form-urlencoded
     outputMode=json
      */
-    protected String process(String text) {
+    protected String process(String text) throws AnnotationException {
         PostMethod method = new PostMethod(url);
         method.setRequestHeader("Content-type","application/x-www-form-urlencoded");
         NameValuePair[] params = {new NameValuePair("text",text), new NameValuePair("apikey",this.apikey)};
@@ -65,7 +66,7 @@ public class AlchemyClient extends AnnotationClient {
         return response;
     }
 
-    public List<DBpediaResource> extract(Text text) {
+    public List<DBpediaResource> extract(Text text) throws AnnotationException {
         List<DBpediaResource> entities = new ArrayList<DBpediaResource>();
         String response = process(text.text());
         Element root = null;
@@ -113,7 +114,11 @@ public class AlchemyClient extends AnnotationClient {
 
         File cucerzanEvalInput = new File("/home/pablo/eval/cucerzan/cucerzan.txt");
         File cucerzanEvalOutput = new File("/home/pablo/eval/cucerzan/systems/cucerzan-Alchemy2.set");
-        client.evaluateManual(cucerzanEvalInput, cucerzanEvalOutput);
+
+        File input = new File("/home/pablo/eval/csaw/gold/paragraphs.txt");
+        File output = new File("/home/pablo/eval/csaw/systems/Alchemy.list");
+
+        client.evaluateManual(input, output);
     }
 
 }

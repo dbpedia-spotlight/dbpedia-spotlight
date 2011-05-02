@@ -23,6 +23,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dbpedia.spotlight.exceptions.AnnotationException;
 import org.dbpedia.spotlight.model.*;
 
 import java.io.File;
@@ -57,7 +58,7 @@ import java.util.Set;
  */
 public class OpenCalaisClient extends AnnotationClient {
 
-    public Log LOG = LogFactory.getLog(this.getClass());
+    Log LOG = LogFactory.getLog(this.getClass());
 
     private static String url ="http://api.opencalais.com/tag/rs/enrich";
     // Create an instance of HttpClient.
@@ -93,7 +94,7 @@ public class OpenCalaisClient extends AnnotationClient {
         this.apikey = apikey;
     }
 
-    private String dereference(String uri) {
+    private String dereference(String uri) throws AnnotationException {
         LOG.debug("Dereferencing: "+uri);
         GetMethod method = new GetMethod(uri);
         method.setRequestHeader("Accept", "rdf/xml");
@@ -125,7 +126,7 @@ public class OpenCalaisClient extends AnnotationClient {
         return uri;
     }
 
-    private List<DBpediaResource> parseJson(Text rawText, String annotatedText) {
+    private List<DBpediaResource> parseJson(Text rawText, String annotatedText) throws AnnotationException {
         List<DBpediaResource> entities = new ArrayList<DBpediaResource>();
         JSONObject jsonObj = JSONObject.fromObject(annotatedText);
         //System.out.println();
@@ -180,12 +181,12 @@ public class OpenCalaisClient extends AnnotationClient {
         return entities;
     }
 
-    public List<DBpediaResource> extract(Text text) {
+    public List<DBpediaResource> extract(Text text) throws AnnotationException{
         List<DBpediaResource> entities = parseJson(text, process(text.text()));
         return entities;
     }
     
-    protected String process(String text) {
+    protected String process(String text) throws AnnotationException {
         PostMethod method = new PostMethod(url);
         // Set mandatory parameters
         method.setRequestHeader("x-calais-licenseID", apikey);
@@ -240,8 +241,11 @@ public class OpenCalaisClient extends AnnotationClient {
 //        File inputFile = new File("/home/pablo/eval/cucerzan/cucerzan.txt");
 //        File outputFile = new File("/home/pablo/eval/cucerzan/systems/cucerzan-OpenCalais.txt");
 
-        File inputFile = new File("/home/pablo/eval/wikify/gold/WikifyAllInOne.txt");
-        File outputFile = new File("/home/pablo/eval/wikify/systems/OpenCalais.list");
+//        File inputFile = new File("/home/pablo/eval/wikify/gold/WikifyAllInOne.txt");
+//        File outputFile = new File("/home/pablo/eval/wikify/systems/OpenCalais.list");
+
+        File inputFile = new File("/home/pablo/eval/csaw/gold/paragraphs.txt");
+        File outputFile = new File("/home/pablo/eval/csaw/systems/OpenCalais.list");
 
         try {
             OpenCalaisClient client = new OpenCalaisClient(apikey);
@@ -297,7 +301,7 @@ public class OpenCalaisClient extends AnnotationClient {
 
         /*
         */
-        protected String process(String text) {
+        protected String process(String text) throws AnnotationException {
             PostMethod method = createPostMethod();
             NameValuePair[] params = {new NameValuePair("licenseID",apikey), new NameValuePair("content",text), new NameValuePair("paramsXML",paramsXml)};
             method.setRequestBody(params);

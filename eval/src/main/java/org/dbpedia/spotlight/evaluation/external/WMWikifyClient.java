@@ -96,12 +96,8 @@ public class WMWikifyClient extends AnnotationClient {
         Element root = null;
         try {
             root = XmlParser.parse(response);
-        } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (SAXException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (Exception e) { //IOException, ParseException, ParserConfigurationException
+            throw new AnnotationException("Could not parse XML response.",e);
         }
         NodeList list = XmlParser.getNodes("//WikipediaMinerResponse/WikifierResponse/DetectedTopicList/DetectedTopic", root);
 
@@ -130,18 +126,21 @@ public class WMWikifyClient extends AnnotationClient {
 
         WMWikifyClient client = new WMWikifyClient();
 
-        File manualEvalOutput = new File("/home/pablo/eval/manual/systems/AnnotationText-WMWikify.txt.list");
+        File manualEvalOutput = new File("/home/pablo/eval/manual/systems/WMWikify.list");
         File manualEvalInput = new File("/home/pablo/eval/manual/AnnotationText.txt");
-        //client.evaluateManual(manualEvalInput, manualEvalOutput);
+        client.evaluateManual(manualEvalInput, manualEvalOutput);
 
         File cucerzanEvalInput = new File("/home/pablo/eval/cucerzan/cucerzan.txt");
-        File cucerzanEvalOutput = new File("/home/pablo/eval/cucerzan/systems/cucerzan-WMWikify.list");
+        File cucerzanEvalOutput = new File("/home/pablo/eval/cucerzan/systems/WMWikify.list");
 //        client.evaluateManual(cucerzanEvalInput, cucerzanEvalOutput);
 
         File wikifyEvalInput = new File("/home/pablo/eval/wikify/gold/WikifyAllInOne.txt");
-        File wikifyEvalOutput = new File("/home/pablo/eval/wikify/systems/WMWikify.0.8.list");
-        client.evaluateManual(wikifyEvalInput, wikifyEvalOutput);
+        File wikifyEvalOutput = new File("/home/pablo/eval/wikify/systems/WMWikify.list");
+        //client.evaluateManual(wikifyEvalInput, wikifyEvalOutput);
 
+        File CSAWEvalInput = new File("/home/pablo/eval/csaw/gold/paragraphs.txt");
+        File CSAWEvalOutput = new File("/home/pablo/eval/csaw/systems/WMWikify.list");
+        client.evaluateManual(CSAWEvalInput, CSAWEvalOutput);
     }
 
 }

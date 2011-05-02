@@ -54,7 +54,7 @@ public class WikiMachineClient extends AnnotationClient {
         return parse(response);
     }
 
-    protected String process(String text) {
+    protected String process(String text) throws AnnotationException {
         String url = "http://thewikimachine.fbk.eu/gui/basic";
         PostMethod method = new PostMethod(url);
         method.setRequestHeader("Content-type","application/x-www-form-urlencoded");
@@ -77,7 +77,6 @@ public class WikiMachineClient extends AnnotationClient {
         String wikiUrl;
         String surfaceForm;
         List<DBpediaResource> entities = new ArrayList<DBpediaResource>();
-        if (html==null || html.equals("")) return entities;
 
         try {
             InputStream is = new ByteArrayInputStream(html.getBytes("UTF-8"));
@@ -119,9 +118,13 @@ public class WikiMachineClient extends AnnotationClient {
         //File cucerzanEvalOutput = new File("/home/pablo/eval/cucerzan/systems/WikiMachine.list");
 //        client.evaluateManual(cucerzanEvalInput, cucerzanEvalOutput);
 
-        File wikifyEvalInput = new File("/home/pablo/eval/wikify/gold/WikifyAllInOne.txt");
-        File wikifyEvalOutput = new File("/home/pablo/eval/wikify/systems/WikiMachine.list");
-        client.evaluateManual(wikifyEvalInput, wikifyEvalOutput);
+//        File wikifyEvalInput = new File("/home/pablo/eval/wikify/gold/WikifyAllInOne.txt");
+//        File wikifyEvalOutput = new File("/home/pablo/eval/wikify/systems/WikiMachine.list");
+//        client.evaluateManual(wikifyEvalInput, wikifyEvalOutput);
+
+        File csawEvalInput = new File("/home/pablo/eval/csaw/gold/paragraphs.txt");
+        File csawEvalOutput = new File("/home/pablo/eval/csaw/systems/WikiMachine.list");
+        client.evaluateManual(csawEvalInput, csawEvalOutput);
 
     }
 
