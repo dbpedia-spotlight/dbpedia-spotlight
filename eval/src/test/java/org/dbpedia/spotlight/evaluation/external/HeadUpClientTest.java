@@ -40,6 +40,10 @@ public class HeadUpClientTest extends TestCase {
 				"through its AdWords program.");
     }
 
+    public void testQuotes() throws Exception {
+    	assertNotNull(client.extract(new Text(text.text()+" because now I'm adding some single quote and also \"double quotes\"")));
+    }
+
     public void testExtract() throws Exception {
     	assertNotNull(client.extract(text));
     }
