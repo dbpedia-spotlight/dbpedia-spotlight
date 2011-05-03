@@ -131,12 +131,13 @@ public class SpotlightConfiguration {
             throw new ConfigurationException("Cannot find spotter file "+spotterFile);
         }
 
-        commonWordsFile = config.getProperty("org.dbpedia.spotlight.spot.common").trim();
-        if(!new File(commonWordsFile).isFile()) {
-            LOG.error("Did not find common words file for spot selector, therefore will skip this step.");
-            commonWordsFile = null; //TODO for now if there is no file, we do no candidate selection
-            //throw new ConfigurationException("Cannot find common words file "+commonWordsFile);
-        }
+        commonWordsFile = null;
+//        config.getProperty("org.dbpedia.spotlight.spot.common").trim();
+//        if(!new File(commonWordsFile).isFile()) {
+//            LOG.error("Did not find common words file for spot selector, therefore will skip this step.");
+//            commonWordsFile = null; //TODO for now if there is no file, we do no candidate selection
+//            //throw new ConfigurationException("Cannot find common words file "+commonWordsFile);
+//        }
 
         serverURI = config.getProperty("org.dbpedia.spotlight.web.rest.uri").trim();
         if (!serverURI.endsWith("/")) {
