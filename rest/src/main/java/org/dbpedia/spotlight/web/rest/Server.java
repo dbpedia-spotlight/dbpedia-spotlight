@@ -67,7 +67,6 @@ public class Server {
         URI serverURI = new URI(configuration.getServerURI());       // "http://localhost:"+args[0]+"/rest/"
         File indexDir = new File(configuration.getIndexDirectory()); //"/home/pablo/web/dbpedia36data/2.9.3/small/Index.wikipediaTraining.Merged.SnowballAnalyzer.DefaultSimilarity"
         File spotterFile = new File(configuration.getSpotterFile()); //"/home/pablo/eval/manual/Eval.spotterDictionary"
-        File commonWordsFile = new File(configuration.getCommonWordsFile()); //TODO get from config "/home/pablo/data/wortschatz/words.txt.CompactHashSet"
 
         // Set static annotator that will be used by Annotate and Disambiguate
         LuceneFactory factory = new LuceneFactory(configuration);

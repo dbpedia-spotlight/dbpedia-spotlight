@@ -53,7 +53,6 @@ public class SpotlightConfiguration {
     public final static String DEFAULT_COREFERENCE_RESOLUTION = "true";
 
     protected String spotterFile    = "";
-    protected String commonWordsFile    = null;
     protected String indexDirectory = "";
     protected List<Double> similarityThresholds;
     protected String similarityThresholdsFile = "similarity-thresholds.txt";
@@ -85,10 +84,6 @@ public class SpotlightConfiguration {
 
     public String getSparqlEndpoint() {
         return sparqlEndpoint;
-    }
-
-    public String getCommonWordsFile() {
-        return commonWordsFile;
     }
 
 //final static String spotterFile= "/home/pablo/web/dbpedia36data/2.9.3/surface_forms-Wikipedia-TitRedDis.thresh3.spotterDictionary";
@@ -130,14 +125,6 @@ public class SpotlightConfiguration {
         if(!new File(spotterFile).isFile()) {
             throw new ConfigurationException("Cannot find spotter file "+spotterFile);
         }
-
-        commonWordsFile = null;
-//        config.getProperty("org.dbpedia.spotlight.spot.common").trim();
-//        if(!new File(commonWordsFile).isFile()) {
-//            LOG.error("Did not find common words file for spot selector, therefore will skip this step.");
-//            commonWordsFile = null; //TODO for now if there is no file, we do no candidate selection
-//            //throw new ConfigurationException("Cannot find common words file "+commonWordsFile);
-//        }
 
         serverURI = config.getProperty("org.dbpedia.spotlight.web.rest.uri").trim();
         if (!serverURI.endsWith("/")) {
