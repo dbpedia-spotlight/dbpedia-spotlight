@@ -39,9 +39,9 @@ public class LingPipeFactory {
 			hmm = (HiddenMarkovModel) objIn.readObject();
 			Streams.closeInputStream(objIn);
 		} catch (FileNotFoundException e) {
-			throw new IOException("Could not find POS tagger model");
+			throw new IOException("Could not find POS tagger model "+taggerModelFile,e);
 		} catch (ClassNotFoundException e) {
-			throw new IOException("Could not decode POS tagger model");
+			throw new IOException("Could not decode POS tagger model in "+taggerModelFile,e);
 		}
 		hmmDecoder = new HmmDecoder(hmm);
 	}
