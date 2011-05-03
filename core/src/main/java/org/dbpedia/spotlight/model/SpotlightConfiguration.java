@@ -56,6 +56,7 @@ public class SpotlightConfiguration {
     protected String indexDirectory = "";
     protected List<Double> similarityThresholds;
     protected String similarityThresholdsFile = "similarity-thresholds.txt";
+    protected String taggerFile = "";
 
     protected String serverURI       = "http://localhost:2222/rest/";
     protected String sparqlMainGraph = "http://dbpedia.org/sparql";
@@ -84,6 +85,10 @@ public class SpotlightConfiguration {
 
     public String getSparqlEndpoint() {
         return sparqlEndpoint;
+    }
+
+    public String getTaggerFile() {
+        return taggerFile;
     }
 
 //final static String spotterFile= "/home/pablo/web/dbpedia36data/2.9.3/surface_forms-Wikipedia-TitRedDis.thresh3.spotterDictionary";
@@ -124,6 +129,11 @@ public class SpotlightConfiguration {
         spotterFile = config.getProperty("org.dbpedia.spotlight.spot.dictionary").trim();
         if(!new File(spotterFile).isFile()) {
             throw new ConfigurationException("Cannot find spotter file "+spotterFile);
+        }
+
+        taggerFile = config.getProperty("org.dbpedia.spotlight.tagging.hmm").trim();
+        if(!new File(taggerFile).isFile()) {
+            throw new ConfigurationException("Cannot find POS tagger model file "+taggerFile);
         }
 
         serverURI = config.getProperty("org.dbpedia.spotlight.web.rest.uri").trim();

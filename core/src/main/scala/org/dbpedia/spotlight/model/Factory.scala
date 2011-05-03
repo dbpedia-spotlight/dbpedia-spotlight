@@ -19,6 +19,7 @@ import collection.JavaConversions._
 import org.dbpedia.spotlight.disambiguate.DefaultDisambiguator
 import org.dbpedia.spotlight.lucene.search.{BaseSearcher, MergedOccurrencesContextSearcher}
 import org.dbpedia.spotlight.candidate.{AtLeastOneNounFilter, CommonWordFilter, SpotSelector}
+import org.dbpedia.spotlight.exceptions.ConfigurationException
 
 /**
  * Class containing methods to create model objects in many different ways
@@ -83,6 +84,7 @@ class LuceneFactory(val configuration: SpotlightConfiguration,
 
     def this(configuration: SpotlightConfiguration) {
         this(configuration, new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET))
+        if (!new File(configuration.getTaggerFile).exists()) throw new ConfigurationException("POS tagger file does not exist! "+configuration.getTaggerFile);
     }
 
     val directory : Directory = LuceneManager.pickDirectory(new File(configuration.getIndexDirectory))
@@ -105,7 +107,7 @@ class LuceneFactory(val configuration: SpotlightConfiguration,
     }
 
     def spotSelector() = {
-        new AtLeastOneNounFilter
+        new AtLeastOneNounFilter(new File(configuration.getTaggerFile))
         //new CommonWordFilter(configuration.getCommonWordsFile)
         //null
     }

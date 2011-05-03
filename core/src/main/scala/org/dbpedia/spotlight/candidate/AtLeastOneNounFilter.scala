@@ -30,12 +30,12 @@ import org.apache.commons.logging.LogFactory
  *
  * @author pablomendes
  */
-class AtLeastOneNounFilter extends SpotSelector {
+class AtLeastOneNounFilter(val posTaggerModel: File) extends SpotSelector {
 
     private val LOG = LogFactory.getLog(this.getClass)
 
     LingPipeFactory.setSentenceModel(new IndoEuropeanSentenceModel)
-    LingPipeFactory.setTaggerModelFile(new File("/home/pablo/data/brown/pos-en-general-brown.HiddenMarkovModel"))
+    LingPipeFactory.setTaggerModelFile(posTaggerModel)
     val tagger = new LingPipeTaggedTokenProvider
 
     var lastText = ""
