@@ -49,7 +49,7 @@ class GenerateMatricesForAgreement {
       for(testFileName <- testFileNames) {
         val text = Source.fromFile(testFileName).mkString
         val out = new PrintStream(testFileName+".matrix");
-        out.append(WikiLinkParser.parseToMatrix(text));
+//        out.append(WikiLinkParser.parseToMatrix(text));
         out.close();
       }
 
@@ -58,7 +58,7 @@ class GenerateMatricesForAgreement {
       val wikiMachineFileName = baseDir+"AnnotationText-WikiMachine.txt";
       val text = Source.fromFile(wikiMachineFileName).mkString
       val out = new PrintStream(wikiMachineFileName+".matrix");
-      out.append(WikiMachineClient.Parser.parseToMatrix(text));
+//      out.append(WikiMachineClient.Parser.parseToMatrix(text));
       out.close();
 
 
