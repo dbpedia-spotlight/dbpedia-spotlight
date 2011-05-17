@@ -1,0 +1,77 @@
+
+/* styles for JSF 2.0 Introduction project */
+
+body {
+    font-family: Helvetica, sans-serif;
+    background-color: #f9f9f9;
+    margin: 50px;
+    color: #444;
+}
+
+h4 { margin: 10px 0 }
+
+.smallText {
+    font-size: small;
+    text-align: center;
+    color: #777;
+    margin: 5px 0 15px;
+}
+
+label {
+    font-size: small;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+input { margin: 5px }
+
+#mainContainer {
+    width: 500px;
+    height: 250px;
+}
+
+#left { float: left }
+
+#right { float: right }
+
+.subContainer {
+    margin: 10px;
+    padding: 10px;
+    width: 202px;
+    height: 202px;
+    position: relative;
+}
+
+.greyBox {
+    background-color: #f5f5f5;
+    border: 1px solid #ccc;
+}
+
+#squareContainer {
+    position: absolute;
+    width: 234px;
+    top: -5px;
+    left: -5px;
+}
+
+.square {
+    width: 105px;
+    height: 105px;
+    margin: 5px;
+    float: left;
+    border: 1px solid #ccc;
+}
+
+#backButton {
+    margin: 55px 79px;
+}
+
+.highlight {
+    font-size: larger;
+    color: #c00;
+}
+
+.error {
+    font-size: smaller;
+    color: #c00;
+}

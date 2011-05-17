@@ -1,0 +1,44 @@
+# Maximum heap space for indexing
+# -------------------------------
+org.dbpedia.spotlight.index.heapspace = 2g
+
+
+# Wikipedia Dump
+# --------------
+org.dbpedia.spotlight.data.wikipediaDump = data/enwiki-20100312-pages-articles.xml
+org.dbpedia.spotlight.index.occurrences =
+org.dbpedia.spotlight.index.dir =
+
+
+# DBpedia Datasets
+# ----------------
+org.dbpedia.spotlight.data.labels = data/dbpedia/labels_en.nt
+org.dbpedia.spotlight.data.redirects = data/dbpedia/redirects_en.nt
+org.dbpedia.spotlight.data.disambiguations = data/dbpedia/disambiguations_en.nt
+org.dbpedia.spotlight.data.instanceTypes = data/dbpedia/instance_types_en.nt
+
+
+# Important created files
+# -----------------------
+org.dbpedia.spotlight.data.conceptURIs = data/conceptURIs.list
+org.dbpedia.spotlight.data.redirectsTC = data/redirects_tc.tsv
+org.dbpedia.spotlight.data.surfaceForms = data/surface_forms-Wikipedia-TitRedDis.tsv
+
+
+# Stop word list
+# --------------
+org.dbpedia.spotlight.data.stopWords = data/stopword.list
+
+
+# Yahoo! Boss properties
+# ----------------------
+# application ID
+org.dbpedia.spotlight.yahoo.appID = please-specify-if-you-want-to-experiment-with-WebOccurrences!
+# number of results returned at for one query (maximum: 50)
+org.dbpedia.spotlight.yahoo.maxResults = 50
+# number of iteration; each iteration returns YahooBossResults results
+org.dbpedia.spotlight.yahoo.maxIterations = 100
+## important for Yahoo! Boss query string: both language and region must be set according to
+## http://developer.yahoo.com/search/boss/boss_guide/supp_regions_lang.html
+org.dbpedia.spotlight.yahoo.language = en
+org.dbpedia.spotlight.yahoo.region = us

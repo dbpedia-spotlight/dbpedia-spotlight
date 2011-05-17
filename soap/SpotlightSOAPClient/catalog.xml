@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" prefer="system">
+    <system systemId="http://spotlight.dbpedia.org/soap/Disambiguation?wsdl" uri="xml-resources/web-service-references/Disambiguation/wsdl/spotlight.dbpedia.org/SpotlightSOAPWebService/Disambiguation.wsdl"/>
+    <system systemId="http://spotlight.dbpedia.org/soap/Disambiguation?xsd=1" uri="xml-resources/web-service-references/Disambiguation/wsdl/spotlight.dbpedia.org/SpotlightSOAPWebService/Disambiguation.xsd_1.xsd"/>
+    <system systemId="http://spotlight.dbpedia.org/soap/Annotation?wsdl" uri="xml-resources/web-service-references/Annotation/wsdl/spotlight.dbpedia.org/SpotlightSOAPWebService/Annotation.wsdl"/>
+    <system systemId="http://spotlight.dbpedia.org/soap/Annotation?xsd=1" uri="xml-resources/web-service-references/Annotation/wsdl/spotlight.dbpedia.org/SpotlightSOAPWebService/Annotation.xsd_1.xsd"/>
+</catalog>

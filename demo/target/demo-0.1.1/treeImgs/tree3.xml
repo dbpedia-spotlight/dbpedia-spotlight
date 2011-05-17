@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='iso-8859-1'?>
+<!--~
+  ~ Copyright 2011 Pablo Mendes, Max Jakob
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<tree id="0">
+	<item text="Books" id="books" open="1" im0="books_close.gif" im1="closed2.gif" im2="open2.gif" call="1" select="1">
+		<item text="Mystery &amp; Thrillers" id="mystery" im0="book.gif" im1="books_open.gif" im2="books_close.gif">
+			<item text="Lawrence Block" id="lb" im0="book.gif" im1="books_open.gif" im2="book.gif">
+				<item text="All the Flowers Are Dying" id="lb_1" im0="book_titel.gif" im1="book_titel.gif" im2="book_titel.gif">
+                                        <item text="All the Flowers Are Dying" id="lb_11" im0="book_titel.gif" im1="book_titel.gif" im2="book_titel.gif"/>
+                                 </item>
+				<item text="The Burglar on the Prowl" id="lb_2" im0="book_titel.gif" im1="book_titel.gif" im2="book_titel.gif"/>
+				<item text="The Plot Thickens" id="lb_3" im0="book_titel.gif" im1="book_titel.gif" im2="book_titel.gif"/>
+				<item text="Grifter's Game" id="lb_4" im0="book_titel.gif" im1="book_titel.gif" im2="book_titel.gif"/>
+				<item text="The Burglar Who Thought He Was Bogart" id="lb_5" im0="book_titel.gif" im1="book_titel.gif" im2="book_titel.gif"/>
+			</item>
+			<item text="Robert Crais" id="rc" im0="book.gif" im1="books_open.gif" im2="book.gif">
+				<item text="The Forgotten Man" id="rc_1" im0="book_titel.gif" im1="book_titel.gif" im2="book_titel.gif"/>
+				<item text="Stalking the Angel" id="rc_2" im0="book_titel.gif" im1="book_titel.gif" im2="book_titel.gif"/>
+				<item text="Free Fall" id="rc_3" im0="book_titel.gif" im1="book_titel.gif" im2="book_titel.gif"/>
+				<item text="Sunset Express" id="rc_4" im0="book_titel.gif" im1="book_titel.gif" im2="book_titel.gif"/>
+				<item text="Hostage" id="rc_5" im0="book_titel.gif" im1="book_titel.gif" im2="book_titel.gif"/>
+			</item>
+			<item text="Ian Rankin" id="ir" im0="book.gif" im1="books_open.gif" im2="book.gif"></item>
+			<item text="James Patterson" id="jp" im0="book.gif" im1="books_open.gif" im2="book.gif"></item>
+			<item text="Nancy Atherton" id="na" im0="book.gif" im1="books_open.gif" im2="book.gif"></item>
+		</item>
+		<item text="History" id="history" im0="book.gif" im1="books_open.gif" im2="books_close.gif">
+			<item text="John Mack Faragher" id="jmf" im0="book.gif" im1="books_open.gif" im2="book.gif"></item>
+			<item text="Jim Dwyer" id="jd" im0="book.gif" im1="books_open.gif" im2="book.gif"></item>
+			<item text="Larry Schweikart" id="ls" im0="book.gif" im1="books_open.gif" im2="book.gif"></item>
+			<item text="R. Lee Ermey" id="rle" im0="book.gif" im1="books_open.gif" im2="book.gif"></item>
+		</item>
+		<item text="Horror" id="horror" open="1" im0="book.gif" im1="books_open.gif" im2="books_close.gif">
+			<item text="Stephen King" id="sk" im0="book.gif" im1="books_open.gif" im2="book.gif"></item>
+			<item text="Dan Brown" id="db" im0="book.gif" im1="books_open.gif" im2="book.gif">
+				<item text="Angels &amp; Demons" id="db_1" im0="book_titel.gif" im1="book_titel.gif" im2="book_titel.gif"/>
+				<item text="Deception Point" id="db_2" im0="book_titel.gif" im1="book_titel.gif" im2="book_titel.gif"/>
+				<item text="Digital Fortress" id="db_3" im0="book_titel.gif" im1="book_titel.gif" im2="book_titel.gif"/>
+				<item text="The Da Vinci Code" id="db_4" im0="book_titel.gif" im1="book_titel.gif" im2="book_titel.gif"/>
+				<item text="Deception Point" id="db_5" im0="book_titel.gif" im1="book_titel.gif" im2="book_titel.gif"/>
+			</item>
+			<item text="Mary Janice Davidson" id="mjd" im0="book.gif" im1="books_open.gif" im2="book.gif"></item>
+			<item text="Katie Macalister" id="km" im0="book.gif" im1="books_open.gif" im2="book.gif"></item>
+		</item>
+		<item text="Science Fiction &amp; Fantasy" id="fantasy" im0="book.gif" im1="books_open.gif" im2="books_close.gif">
+			<item text="Audrey Niffenegger" id="af" im0="book.gif" im1="books_open.gif" im2="book.gif"></item>
+			<item text="Philip Roth" id="pr" im0="book.gif" im1="books_open.gif" im2="book.gif"></item>
+		</item>
+		<item text="Sport" id="sport" im0="book.gif" im1="books_open.gif" im2="books_close.gif">
+			<item text="Bill Reynolds" id="br" im0="book.gif" im1="books_open.gif" im2="book.gif"></item>
+		</item>
+		<item text="Teens" id="teens" im0="book.gif" im1="books_open.gif" im2="books_close.gif">
+			<item text="Joss Whedon" id="jw" im0="book.gif" im1="books_open.gif" im2="book.gif">
+				<item text="Astonishing X-Men" id="jw_1" im0="book_titel.gif" im1="book_titel.gif" im2="book_titel.gif"/>
+				<item text="Joss Whedon: The Genius Behind Buffy" id="jw_2" im0="book_titel.gif" im1="book_titel.gif" im2="book_titel.gif"/>
+				<item text="Fray" id="jw_3" im0="book_titel.gif" im1="book_titel.gif" im2="book_titel.gif"/>
+				<item text="Tales Of The Vampires" id="jw_4" im0="book_titel.gif" im1="book_titel.gif" im2="book_titel.gif"/>
+				<item text="The Harvest" id="jw_5" im0="book_titel.gif" im1="book_titel.gif" im2="book_titel.gif"/>
+			</item>
+			<item text="Meg Cabot" id="mc" im0="book.gif" im1="books_open.gif" im2="book.gif"></item>
+			<item text="Garth Nix" id="gn" im0="book.gif" im1="books_open.gif" im2="book.gif"></item>
+			<item text="Ann Brashares" id="ab" im0="book.gif" im1="books_open.gif" im2="book.gif"></item>
+		</item>
+	</item>
+	<item text="Magazines" id="magazines" im0="tombs_mag.gif" im1="tombs_mag.gif" im2="tombs_mag.gif">
+		<item text="Sport" id="mag_sp" im0="magazines_open.gif" im1="magazines_open.gif" im2="magazines_close.gif"></item>
+	</item>
+        </item>
+</tree>

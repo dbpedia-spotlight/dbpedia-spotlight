@@ -1,0 +1,77 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!--~
+  ~ Copyright 2011 Pablo Mendes, Max Jakob
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ice="http://www.icesoft.com/icefaces/component"
+        >
+    <h:head>
+        <title>DBpedia Spotlight - Demo</title>
+        <link href="./xmlhttp/css/xp/xp.css" rel="stylesheet" type="text/css"/>
+        <link href="resources/stylesheet.css" rel="stylesheet" type="text/css"/>
+    </h:head>
+    <h:body>
+        <center>
+        <a href="http://dbpedia.org/spotlight/" >
+            <img src="dbpedia_spotlight_logo.jpg" style="border: 0;" alt="DBpedia Spotlight"/>
+        </a>
+        <h3 style="color: #5c7683; border: 0; text-decoration: none;">Shedding Light on the Web of Documents</h3>
+        <h1 style="font-size:1px; color:white">DBpedia Spotlight</h1>
+        <h2><i>Demo</i></h2>
+        <ice:form>
+            <ice:panelGrid width="688" columns="1" style=" border: 1px solid gray;">
+                <ice:panelGrid width="687" columns="1" style=" border: 1px solid lightgray;">
+                    <ice:outputText escape="false"
+                                    style="width:687px; height:350px; font-size:120%;"
+                                    value="#{AnnotationBean.annotatedText}">
+                    </ice:outputText>
+                </ice:panelGrid>
+                <ice:panelGrid columns="2">
+                    <ice:column style="vertical-align:middle;">
+                        <input type="button" onclick="window.location.href='index.xhtml';" value="Back"/>
+                    </ice:column>
+                    <ice:column>
+                        <div style="margin-left:10px;">
+                            <h:outputText style="margin-left:10px; margin-right:10px;" value="Confidence: #{AnnotationBean.confidence}"/>
+                            <h:outputText style="margin-left:10px; margin-right:10px;" value="Support: #{AnnotationBean.support}"/>
+                            <!-- <h:outputText style="margin-left:10px; margin-right:10px;" value="With Coreference Resolution Heuristic" rendered="#{AnnotationBean.coreferenceResolution==true}"/>
+                            <h:outputText style="margin-left:10px; margin-right:10px;" value="Without Coreference Resolution Heuristic" rendered="#{AnnotationBean.coreferenceResolution==false}"/> -->
+                        </div>
+                        <div style="margin-left:20px; margin-top:5px;">
+                            Types: 
+                            <h:outputText value="Place, " rendered="#{AnnotationBean.place}"/>
+                            <h:outputText value="Person, " rendered="#{AnnotationBean.person}"/>
+                            <h:outputText value="Work, " rendered="#{AnnotationBean.work}"/>
+                            <h:outputText value="Organisation, " rendered="#{AnnotationBean.organisation}"/>
+                            <h:outputText value="Species, " rendered="#{AnnotationBean.species}"/>
+                            <h:outputText value="all other types, " rendered="#{AnnotationBean.otherTypes}"/>
+                            <h:outputText value="untyped" rendered="#{AnnotationBean.untyped}"/>
+                        </div>
+                    </ice:column>
+                </ice:panelGrid>
+            </ice:panelGrid>
+        </ice:form>
+        <br/>
+        <div style="font-size:100%; font-weight:bold;">version 0.1</div>
+
+        </center>
+    </h:body>
+</html>
+

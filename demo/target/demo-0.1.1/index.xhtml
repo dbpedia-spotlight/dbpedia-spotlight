@@ -1,0 +1,109 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!--~
+  ~ Copyright 2011 Pablo Mendes, Max Jakob
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ice="http://www.icesoft.com/icefaces/component"
+        >
+    <h:head>
+        <title>DBpedia Spotlight - Demo</title>
+        <link href="./xmlhttp/css/xp/xp.css"  rel="stylesheet" type="text/css"/>
+        <link href="resources/stylesheet.css" rel="stylesheet" type="text/css"/>
+        <link rel="stylesheet" type="text/css" href="css/dhtmlXTree.css"/>
+        <script language='JavaScript' src='js/dhtmlXTree.js' type='text/javascript'/>
+        <script language='JavaScript' src='js/dhtmlXCommon.js' type='text/javascript'/>
+    </h:head>
+    <h:body>
+        <center>
+        <a href="http://dbpedia.org/spotlight/" >
+            <img src="dbpedia_spotlight_logo.jpg" style="border: 0;" alt="DBpedia Spotlight"/>
+        </a>
+        <h3 style="color: #5c7683; border: 0; text-decoration: none;">Shedding Light on the Web of Documents</h3>
+        <h1 style="font-size:1px; color:white">DBpedia Spotlight</h1>
+        <h2><i>Demo</i></h2>
+        <ice:form id ="inputDataForm">
+                <ice:panelGrid width="1000" columns="1">
+                <ice:panelDivider id="icePnlDvr"
+                orientation="vertical"
+                dividerPosition="70"
+                style="width: 100%; height: 450px;">
+                    <f:facet name="first">
+                    <ice:panelGroup style="padding: 10px;">
+                        <ice:inputTextarea cols="20" rows="4"
+                                    style="width:600px; height:350px; font-size:120%; overflow:scroll; border: 1px solid lightgray;"
+                                    value="#{AnnotationBean.text}"
+                                    />
+                        <ice:panelGrid columns="10">
+                            <h:outputText value="Confidence"/>
+                            <h:inputText id="confidence" size="3" maxlength="3" value="#{AnnotationBean.confidence}"/>
+                            <h:outputText value="Support"/>
+                            <h:inputText id="support" size="5" maxlength="5" value="#{AnnotationBean.support}"/>
+                            <!-- <h:outputText value="Coreference Resolution"/>
+                            <h:selectBooleanCheckbox id="coreferenceResolution" value="#{AnnotationBean.coreferenceResolution}"/> -->
+                            <ice:commandButton action="/Annotations" value="Annotate" onclick="form['inputDataForm:types'].value = tree2.getAllChecked();">
+                            </ice:commandButton>
+                            <ice:commandButton action="/Disambiguations" value="Disambiguate" onclick="form['inputDataForm:types'].value = tree2.getAllChecked();">
+                            </ice:commandButton>
+                            <ice:commandButton action="#{AnnotationBean.clear}" value="Clear">
+                            </ice:commandButton>
+                            <ice:outputConnectionStatus/>
+                            <ice:inputHidden id="types" value="#{AnnotationBean.targetTypes}"/>
+                        </ice:panelGrid>
+                    </ice:panelGroup>
+                    </f:facet>
+                    <f:facet name="second">
+                        <ice:panelGroup style="padding: 10px;">
+                        <u><b>Types</b></u>:
+                        <ice:panelGroup id="treeboxbox_tree2" style="overflow:auto;">
+<!--               		<div id="treeboxbox_tree2" style="width:250; height:218;background-color:#f5f5f5;border :1px solid Silver;; overflow:auto;"></div>-->
+                        </ice:panelGroup>
+               <script type="text/javascript">
+//<![CDATA[
+                  tree2=new dhtmlXTreeObject("inputDataForm:treeboxbox_tree2","100%","100%",0);
+                  tree2.setImagePath("treeImgs/");
+                  tree2.enableCheckBoxes(1);
+                  tree2.enableThreeStateCheckboxes(true);
+                  tree2.loadXML("treeImgs/DBpediaTypes.xml");
+                  window.onload = function(){
+                      tree2.setSubChecked("thing", true);
+                      tree2.setSubChecked("unknown", true);
+                  };
+//]]>
+              </script>
+                        </ice:panelGroup>
+                     </f:facet>
+                </ice:panelDivider>
+                </ice:panelGrid>
+        </ice:form>
+        <table width="800"><tr><td>
+            <ul>
+                <li><i>Annotate</i> takes plain text as input. (Currently English language only)</li>
+                <li><i>Disambiguate</i> assumes that surface forms of interest are marked in the text with double square brackets [[like this]].</li>
+                <br/>
+                <li><i>Confidence</i> (range 0-1): how reliable is the disambiguation? Regulates precision and recall.</li>
+                <li><i>Support</i> (range 0-infinity): do you want only "common" concepts? Specifies the number of Wikipedia inlinks that a concept must have in order to be annotated.</li>
+                <!-- <li><i>Coreference Resolution</i>: applies a coreference resolution heuristic for names.</li> -->
+                <li><i>Types</i> from the <a href="http://wiki.dbpedia.org/Ontology" target="_blank">DBpedia Ontology</a>. Only specified types will be annotated.</li>
+            </ul>
+        </td></tr></table>
+        </center>
+    </h:body>
+</html>
+
