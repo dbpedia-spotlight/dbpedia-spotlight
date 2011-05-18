@@ -16,11 +16,75 @@
 
 package org.dbpedia.spotlight.evaluation.external;
 
+import org.apache.commons.httpclient.Header;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.dbpedia.spotlight.exceptions.AnnotationException;
+import org.dbpedia.spotlight.model.DBpediaResource;
+import org.dbpedia.spotlight.model.Text;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.LinkedList;
+import java.util.List;
+
 /**
- * Please see {@link org.dbpedia.spotlight.evaluation.DBpediaSpotlightClient}.
- * TODO example client to our Web API here.
+ * Simple web service base annotation client for DBpedia Spotlight.
  *
- * @author pablomendes
+ * @author pablomendes, Joachim Daiber
  */
-public class DBpediaSpotlightClient {
+
+public class DBpediaSpotlightClient extends AnnotationClient {
+
+	private final static String API_URL = "http://spotlight.dbpedia.org/";
+	private static final double CONFIDENCE = 0.0;
+	private static final int SUPPORT = 0;
+
+	@Override
+	public List<DBpediaResource> extract(Text text) throws AnnotationException {
+
+		String spotlightResponse;
+		try {
+			GetMethod getMethod = new GetMethod(API_URL + "rest/annotate/?" +
+					"confidence=" + CONFIDENCE
+					+ "&support=" + SUPPORT
+					+ "&text=" + URLEncoder.encode(text.text(), "utf-8"));
+			getMethod.addRequestHeader(new Header("Accept", "application/json"));
+
+			spotlightResponse = request(getMethod);
+		} catch (UnsupportedEncodingException e) {
+			throw new AnnotationException("Could not encode text.", e);
+		}
+
+		assert spotlightResponse != null;
+
+		JSONObject resultJSON = null;
+		JSONArray entities = null;
+
+		try {
+			resultJSON = new JSONObject(spotlightResponse);
+			entities = resultJSON.getJSONArray("Resources");
+		} catch (JSONException e) {
+			throw new AnnotationException("Received invalid response from Extractiv API.");
+		}
+
+		LinkedList<DBpediaResource> resources = new LinkedList<DBpediaResource>();
+		for(int i = 0; i < entities.length(); i++) {
+			try {
+				JSONObject entity = entities.getJSONObject(i);
+				resources.add(
+						new DBpediaResource(entity.getString("@URI"),
+								Integer.parseInt(entity.getString("@support"))));
+
+			} catch (JSONException e) {}
+
+		}
+
+
+		return resources;
+	}
+
+
 }
