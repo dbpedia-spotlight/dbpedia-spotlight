@@ -34,18 +34,18 @@ object Factory {
         surfaceForm;
     }
 
-    def createDBpediaResourceOccurrenceFromDocument(doc : Document, id: Int, searcher: BaseSearcher) : DBpediaResourceOccurrence = {
+    def createMergedDBpediaResourceOccurrenceFromDocument(doc : Document, id: Int, searcher: BaseSearcher) = {
         // getField: If multiple fields exists with this name, this method returns the first value added.
         var resource = searcher.getDBpediaResource(id);
         var context = new Text(doc.getFields(LuceneManager.DBpediaResourceField.CONTEXT.toString).map(f => f.stringValue).mkString("\n"))
 
-        new DBpediaResourceOccurrence( //TODO add document id as occurrence id
+        Array(new DBpediaResourceOccurrence( //TODO add document id as occurrence id
             resource,
             createSurfaceFormFromDBpediaResourceURI(resource, false), // this is sort of the "official" surface form, since it's the cleaned up title
             context,
             -1,
             Provenance.Wikipedia // Ideally grab this from index, if we have sources other than Wikipedia
-            )
+            ))
     }
 
     def createDBpediaResourceOccurrencesFromDocument(doc : Document, id: Int, searcher: BaseSearcher) = {

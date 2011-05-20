@@ -39,6 +39,7 @@ object CompressIndex
 
     def main(args : Array[String]) {
         val indexingConfigFileName = args(0)
+        val minCount = if (args.length>1) args(1).toInt else 0;
 
         val config = new IndexingConfiguration(indexingConfigFileName)
         val indexFileName = config.get("org.dbpedia.spotlight.index.dir")
@@ -50,7 +51,7 @@ object CompressIndex
         val luceneManager = new LuceneManager.BufferedMerging(FSDirectory.open(indexFile))
 
         val compressor = new IndexEnricher(luceneManager)
-        compressor.unstore(unstoreFields, optimizeSegments)
+        compressor.unstore(unstoreFields, optimizeSegments, minCount)
         compressor.close
     }
 

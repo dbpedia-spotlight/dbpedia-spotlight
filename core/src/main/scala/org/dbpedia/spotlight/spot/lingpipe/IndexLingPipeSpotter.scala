@@ -23,6 +23,8 @@ import java.io.{FileInputStream, File}
 import org.semanticweb.yars.nx.parser.NxParser
 import com.aliasi.dict.{DictionaryEntry, MapDictionary}
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
+import org.dbpedia.spotlight.io.IndexedOccurrencesSource
+import java.util.ArrayList
 
 /**
  * Created by IntelliJ IDEA.
@@ -58,6 +60,7 @@ object IndexLingPipeSpotter
     def writeDictionaryFile(dictionary : MapDictionary[String], targetFile : File) {
         LOG.info("Saving compiled dictionary to "+targetFile.getName+"...")
         AbstractExternalizable.compileTo(dictionary, targetFile)
+        LOG.info(dictionary.size+" entries saved.")
     }
 
     private def getDictionaryFromNTSurrogates(surrogatesNTFile : File) : MapDictionary[String] = {
@@ -94,7 +97,8 @@ object IndexLingPipeSpotter
         val surrogatesFile = new File(args(0))
         val dictFile = if (args.length > 1) new File(args(1)) else new File(surrogatesFile.getAbsolutePath+".spotterDictionary")
 
-        val dictionary = getDictionary(surrogatesFile)
+        //val dictionary = getDictionary(surrogatesFile)
+        val dictionary = getDictionary(IndexedOccurrencesSource.fromFile(surrogatesFile).foldLeft(List[DBpediaResourceOccurrence]())( (a,b) => b :: a ) );
         writeDictionaryFile(dictionary, dictFile)
     }
 }
