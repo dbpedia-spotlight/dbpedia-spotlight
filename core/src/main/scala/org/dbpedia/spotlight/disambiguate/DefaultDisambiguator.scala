@@ -33,11 +33,13 @@ import scala.actors._
 import Actor._
 
 /**
- * Created by IntelliJ IDEA.
- * User: Max
- * Date: 20.09.2010
- * Time: 16:31:30
- * To change this template use File | Settings | File Templates.
+ * Default implementation of the disambiguation functionality.
+ * Uses classes and parameters we found to perform best.
+ * This implementation will change with time, as we evolve the system.
+ * If you want a stable implementation, copy this class to MyDisambiguator and use that.
+ *
+ * @author maxjakob
+ * @author pablomendes
  */
 class DefaultDisambiguator(val indexDir : File) extends Disambiguator  {
 
@@ -132,12 +134,20 @@ class DefaultDisambiguator(val indexDir : File) extends Disambiguator  {
         // Aggregate disambiguated occurrences
         val list = new java.util.ArrayList[DBpediaResourceOccurrence]()
         for ( i <- 1 to nOccurrences) {
-            receiveWithin(6000) { //TODO using receive since I'm not entirely sure how the list aggregation would be with react. maybe make this functional and use react
+            receiveWithin(10000) {
                 case disambiguation: DBpediaResourceOccurrence =>
                    // LOG.info("Disambiguation "+disambiguation.resource)
-                    list.add(disambiguation)
-                case TIMEOUT => LOG.error(" Timed out trying to aggregate disambiguations! ")
+                  LOG.info(disambiguation)
+                  LOG.info(sfOccurrences.get(0))
+
+                    if(disambiguation.context.text.equals(sfOccurrences.get(0).context.text)) { //PATCH by Jo Daiber
+                      list.add(disambiguation)
+                    }
+                case TIMEOUT =>
+                  LOG.error(" Timed out trying to aggregate disambiguations! ")
+                  exit()
             }
+
         }
         //TODO temporary add priors from a map
         //addPriors(list)
