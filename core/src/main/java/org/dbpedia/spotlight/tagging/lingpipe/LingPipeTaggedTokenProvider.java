@@ -85,6 +85,8 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 	@Override
 	public void initialize(String text) {
 
+        taggedTokens = new ArrayList<TaggedToken>(); //patch by Paul Houle
+
 		//Load the POS model:
 		Tagger posTagger = LingPipeFactory.createPOSTagger();
 
