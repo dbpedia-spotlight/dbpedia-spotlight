@@ -1,0 +1,2 @@
+* DBpedia Spotlight
+release distribution=staging, date=20:51 20.05.2011,version=0.4.9,urgency=low,by=Pablo Mendes

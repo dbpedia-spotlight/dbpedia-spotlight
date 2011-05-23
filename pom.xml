@@ -21,7 +21,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
-        <dbpedia.spotlight.version>0.1.1</dbpedia.spotlight.version>
+        <dbpedia.spotlight.version>0.4.9</dbpedia.spotlight.version>
 
         <heapspace.Xmx.compiler>-Xmx1g</heapspace.Xmx.compiler>
         <heapspace.Xmx.indexer>-Xmx2g</heapspace.Xmx.indexer>
@@ -165,6 +165,18 @@
                 <artifactId>lucene-highlighter</artifactId>
                 <version>2.9.3</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-contrib</artifactId>
+                <version>2.9.3</version>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-queries</artifactId>
+                <version>2.9.3</version>
+                <type>pom</type>
+            </dependency>
 
             <dependency>
                 <groupId>commons-lang</groupId>
@@ -232,13 +244,31 @@
             <dependency>
                 <groupId>com.sun.jersey</groupId>
                 <artifactId>jersey-server</artifactId>
-                <version>1.5</version>
+                <version>1.7</version>
             </dependency>
 
             <dependency>
                 <groupId>com.sun.jersey</groupId>
                 <artifactId>jersey-client</artifactId>
-                <version>1.5</version>
+                <version>1.7</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sun.jersey</groupId>
+                <artifactId>jersey-grizzly</artifactId>
+                <version>1.7</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sun.jersey</groupId>
+                <artifactId>jersey-bundle</artifactId>
+                <version>1.7</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sun.grizzly</groupId>
+                <artifactId>grizzly-servlet-webserver</artifactId>
+                <version>1.9.9</version>
             </dependency>
 
             <dependency>

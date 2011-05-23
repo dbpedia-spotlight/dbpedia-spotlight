@@ -1,0 +1,2 @@
+nohup java -cp /usr/share/java/dbpedia-spotlight-0.4.9-jar-with-dependencies.jar org.dbpedia.spotlight.web.rest.Server /etc/dbpedia-spotlight/server.properties > dbpedia-spotlight.log 2>&1 &
+#java -cp /usr/share/java/dbpedia-spotlight.jar org.dbpedia.spotlight.web.rest.Server /etc/dbpedia-spotlight/server.properties > dbpedia-spotlight.log &
