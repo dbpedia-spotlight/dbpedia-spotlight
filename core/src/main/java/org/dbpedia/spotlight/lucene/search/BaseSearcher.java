@@ -55,13 +55,14 @@ public class BaseSearcher implements Closeable {
 
     LuceneManager mLucene;
     IndexSearcher mSearcher;
-    IndexReader mReader;
+    protected IndexReader mReader;
 
     //TODO create method that iterates over all documents in the index and computes this. (if takes too long, think about storing somewhere at indexing time)
     private double mNumberOfOccurrences = 69772256;
 
     public BaseSearcher(LuceneManager lucene) throws IOException {
         this.mLucene = lucene;
+        LOG.info("Using index at: "+this.mLucene.mContextIndexDir);
         LOG.debug("Opening IndexSearcher and IndexReader for Lucene directory "+this.mLucene.mContextIndexDir+" ...");
         this.mReader = IndexReader.open(this.mLucene.mContextIndexDir, true); // read-only=true
         this.mSearcher = new IndexSearcher(this.mReader);
@@ -120,6 +121,22 @@ public class BaseSearcher implements Closeable {
         }
         //LOG.debug("docNo:"+docNo);
         return document;
+    }
+
+    public List<Document> getDocuments(DBpediaResource res, FieldSelector fieldSelector) throws SearchException {
+        //LOG.trace("Retrieving documents for resource: "+res);
+
+        // search index for surface form
+        List<Document> documents = new ArrayList<Document>();
+
+        // Iterate through the results:
+        for (ScoreDoc hit : getHits(mLucene.getQuery(res))) {
+            documents.add(getDocument(hit.doc, fieldSelector));
+        }
+        //LOG.debug(documents.size()+" documents found.");
+
+        // return set of surrogates
+        return documents;
     }
 
     public ScoreDoc[] getHits(Query query, int n) throws SearchException {
@@ -217,7 +234,7 @@ public class BaseSearcher implements Closeable {
 //        FieldSelector fieldSelector = new MapFieldSelector(onlyUriAndTypes);
 //
 //        LOG.trace("Getting document number " + docNo + "...");
-//        Document document = getDocument(docNo, fieldSelector);
+//        Document document = createDocument(docNo, fieldSelector);
 //        String uri = document.get(LuceneManager.DBpediaResourceField.URI.toString());
 //        if (uri==null)
 //            throw new SearchException("Cannot find URI for document "+document);

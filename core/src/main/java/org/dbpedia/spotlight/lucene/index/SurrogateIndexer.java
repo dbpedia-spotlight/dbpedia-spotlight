@@ -50,7 +50,7 @@ public class SurrogateIndexer extends BaseIndexer<Surrogate> {
     }
 
     public void add(SurfaceForm surfaceForm, DBpediaResource resource) throws IndexException {
-        Document newDoc = mLucene.getDocument(surfaceForm, resource);
+        Document newDoc = mLucene.createDocument(surfaceForm, resource);
         try {
             mWriter.addDocument(newDoc); // do not commit for faster indexing.
         } catch (IOException e) {

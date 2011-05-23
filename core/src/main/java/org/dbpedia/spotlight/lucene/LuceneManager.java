@@ -150,7 +150,7 @@ public class LuceneManager {
         }
     }
 
-    private int getUriCount(Document doc) {
+    private int getUriCount(Document doc) { //TODO couldn't return backwards compatible count?
         Field uriCountField = doc.getField(DBpediaResourceField.URI_COUNT.toString());
         if(uriCountField == null) {
             return 0;
@@ -254,8 +254,10 @@ public class LuceneManager {
 
             String fieldString = enumField.toString();
             for (Field luceneField : doc.getFields(fieldString)) {
+                String value = luceneField.stringValue();
+                //if (luceneField.name().equals(DBpediaResourceField.SURFACE_FORM.toString())) value = luceneField.stringValue().toLowerCase(); //HACK temp. remove now.
                 Field newField = new Field(fieldString,
-                                           luceneField.stringValue(),
+                                           value,
                                            store,
                                            index,
                                            termVector);
@@ -457,10 +459,11 @@ public class LuceneManager {
     /*---------------------- Composed methods for indexing correctly -------------------------------*/
     
     /**
+     * Creates a new document from the resourceOccurrence (to be stored in index)
      * @param resourceOccurrence
      * @return
      */
-    public Document getDocument(DBpediaResourceOccurrence resourceOccurrence) {
+    public Document createDocument(DBpediaResourceOccurrence resourceOccurrence) {
         Document doc = new Document();
         doc.add(getField(resourceOccurrence.resource()));
         doc.add(getField(resourceOccurrence.surfaceForm()));  //uncomment this if you want anchor texts as surface forms; otherwise index surface forms in a second run together with types
@@ -470,14 +473,26 @@ public class LuceneManager {
         return doc;
     }
 
-    public Document getDocument(WikiPageContext wikiPageContext) {
+    /**
+     * Creates a new document from a wikiPageContext (to be stored in index)
+     * @param wikiPageContext
+     * @return
+     */
+    public Document createDocument(WikiPageContext wikiPageContext) {
         Document doc = new Document();
         doc.add(getField(wikiPageContext.context()));
         doc.add(getField(wikiPageContext.resource()));
         return doc;
     }
 
-    public Document getDocument(SurfaceForm surfaceForm, DBpediaResource resource) {
+    /**
+     * Creates a new document from surface form and resource (to be stored in index)
+     * TODO why do we need this in addition to DBpediaResourceOccurrence which already encapsulates both?
+     * @param surfaceForm
+     * @param resource
+     * @return
+     */
+    public Document createDocument(SurfaceForm surfaceForm, DBpediaResource resource) {
         Document doc = new Document();
         doc.add(getField(surfaceForm));
         doc.add(getField(resource));
@@ -487,7 +502,7 @@ public class LuceneManager {
     }
 
     public Document addOccurrenceToDocument(DBpediaResourceOccurrence occ, Document doc) {
-        Document occDoc = getDocument(occ);
+        Document occDoc = createDocument(occ);
         return merge(occDoc, doc);
     }
 

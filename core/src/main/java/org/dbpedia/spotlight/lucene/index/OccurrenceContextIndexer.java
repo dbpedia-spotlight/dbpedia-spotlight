@@ -68,7 +68,7 @@ public abstract class OccurrenceContextIndexer extends BaseIndexer<DBpediaResour
      */
     protected void addOccurrence(DBpediaResourceOccurrence resourceOccurrence) throws IndexException {
         //LOG.debug("Indexing occurrence");
-        Document newDoc = mLucene.getDocument(resourceOccurrence);
+        Document newDoc = mLucene.createDocument(resourceOccurrence);
         try {
             mWriter.addDocument(newDoc); // do not commit for faster indexing.
         } catch (IOException e) {

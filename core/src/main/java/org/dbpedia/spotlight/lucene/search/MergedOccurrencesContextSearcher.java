@@ -216,21 +216,7 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
 
 
 
-    public List<Document> getDocuments(DBpediaResource res, FieldSelector fieldSelector) throws SearchException {
-        //LOG.trace("Retrieving documents for surface form: "+res);
 
-        // search index for surface form
-        List<Document> documents = new ArrayList<Document>();
-
-        // Iterate through the results:
-        for (ScoreDoc hit : getHits(mLucene.getQuery(res))) {
-            documents.add(getDocument(hit.doc, fieldSelector));
-        }
-        //LOG.debug(documents.size()+" documents found.");
-
-        // return set of surrogates
-        return documents;
-    }
 
     public List<Document> getDocuments(SurfaceForm sf, FieldSelector fieldSelector) throws SearchException {
         //LOG.trace("Retrieving documents for surface form: "+res);
