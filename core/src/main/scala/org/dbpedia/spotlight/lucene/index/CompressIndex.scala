@@ -46,7 +46,7 @@ object CompressIndex
         
         val indexFile = new File(indexFileName)
         if (!indexFile.exists) {
-            throw new IllegalArgumentException("index dir "+indexFile+" does not exists; can't compress")
+            throw new IllegalArgumentException("index dir "+indexFile+" does not exist; can't compress")
         }
         val luceneManager = new LuceneManager.BufferedMerging(FSDirectory.open(indexFile))
 

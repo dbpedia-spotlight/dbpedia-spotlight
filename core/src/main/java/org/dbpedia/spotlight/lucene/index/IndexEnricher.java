@@ -87,8 +87,10 @@ public class IndexEnricher extends BaseIndexer<Object> {
     }
 
     /**
-     * Gets custom prior probabilities from a map and adds them to the index. If resource in the map is not in the index, it creates a new entry
+     * Gets custom prior probabilities from a map and adds them to the index.
+     * If resource in the map is not in the index, it creates a new entry
      * (can be used to cope with sparsity in Wikipedia)
+     * //TODO could instead of going over the input priors, go over the index and divide support by total.
      * @param uriPriorMap
      * @throws SearchException
      * @throws IOException
@@ -126,7 +128,7 @@ public class IndexEnricher extends BaseIndexer<Object> {
                             0,
                             Provenance.Web());
 
-                    mWriter.addDocument(mLucene.getDocument(occ)); // add new doc
+                    mWriter.addDocument(mLucene.createDocument(occ)); // add new doc
 
                 } else for (Document doc: docs) { // SHOULD BE JUST ONE!
                     doc = mLucene.add(doc, prior);
@@ -142,46 +144,6 @@ public class IndexEnricher extends BaseIndexer<Object> {
         }
 
         done(i);
-    }
-
-
-    /**
-     * Goes over the index and adds a prior field. Divides support by total number of occurrences, or gets it from file if exists.
-     * @param uriPriorMap
-     * @throws SearchException
-     * @throws IOException
-     * @author pablomendes
-     */                          //TODO List<DBpediaResource> and .setPrior(Double)
-    @Deprecated //TODO UNTESTED!
-    public void enrichWithPriors2(Map<DBpediaResource,Double> uriPriorMap) throws SearchException, IOException, IndexException {
-        long indexSize = getIndexSize();
-        LOG.info("Adding URI priors to index "+mLucene.directory()+"...");
-
-        if (uriPriorMap == null || uriPriorMap.size() == 0 ) {
-            LOG.info("No URI priors provided to enrichWithPriors. Cowardly refusing to invent them.");
-            return;
-        }
-
-        int modified = 0;
-        //TODO go over the priors instead of going over the index.
-        for (int i=0; i<indexSize; i++) {
-            Document doc = searcher.getFullDocument(i);
-            Field uriField = doc.getField(LuceneManager.DBpediaResourceField.URI.toString());
-            if (uriField == null) {
-                LOG.error("URI Field was null! Skipping.");
-                continue;
-            }
-
-            String uri = uriField.stringValue();
-            Double newPrior = uriPriorMap.remove(new DBpediaResource(uri));
-            doc = mLucene.add(doc, newPrior);
-            Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
-            mWriter.updateDocument(uriTerm, doc);  //deletes everything with this uri and writes a new doc
-
-            commit(i);
-        }
-
-        done(indexSize);
     }
 
     public void enrichWithSurfaceForms(Map<String,LinkedHashSet<SurfaceForm>> sfMap) throws SearchException, IOException, IndexException {
@@ -259,6 +221,9 @@ public class IndexEnricher extends BaseIndexer<Object> {
      * @throws IOException: inherited from mWriter.updateDocument
      */
     public void unstore(List<LuceneManager.DBpediaResourceField> unstoreFields, int optimizeSegments) throws SearchException, IOException {
+        unstore(unstoreFields,optimizeSegments,0);
+    }
+    public void unstore(List<LuceneManager.DBpediaResourceField> unstoreFields, int optimizeSegments, int minCount) throws SearchException, IOException {
         //List<LuceneManager.DBpediaResourceField> unstoreFields = new LinkedList<LuceneManager.DBpediaResourceField>();
 
         long indexSize = searcher.getNumberOfEntries();
@@ -269,10 +234,26 @@ public class IndexEnricher extends BaseIndexer<Object> {
         for (int i=0; i<indexSize; i++) {
             Document doc = searcher.getFullDocument(i);
             String uri = doc.getField(LuceneManager.DBpediaResourceField.URI.toString()).stringValue();
-            doc = mLucene.unstore(doc, unstoreFields);
-            Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
-            mWriter.updateDocument(uriTerm, doc); //deletes everything with this uri and writes a new doc
 
+            int support = 0;
+            Field uriCount = doc.getField(LuceneManager.DBpediaResourceField.URI_COUNT.toString());
+            if (uriCount==null) {
+                Field[] uriFields = doc.getFields(LuceneManager.DBpediaResourceField.URI.toString());
+                support = uriFields.length;
+                uriCount = this.mLucene.getUriCountField(support);
+                doc.add(uriCount); // add count
+                doc.removeFields(LuceneManager.DBpediaResourceField.URI.toString()); // remove repeated fields
+                doc.add(uriFields[0]); // add only once
+            }
+            else support = new Integer(uriCount.stringValue());
+
+            Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
+            if (support<minCount) {
+                mWriter.deleteDocuments(uriTerm);
+            } else {
+                doc = mLucene.unstore(doc, unstoreFields);
+                mWriter.updateDocument(uriTerm, doc); //deletes everything with this uri and writes a new doc
+            }
             commit(i);
         }
 
@@ -283,6 +264,7 @@ public class IndexEnricher extends BaseIndexer<Object> {
             mWriter.optimize(optimizeSegments);
             mWriter.commit();
         }
+        mWriter.expungeDeletes();
         LOG.info("Done.");
     }
 

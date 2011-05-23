@@ -43,9 +43,10 @@ object IndexLingPipeSpotter
 
 
     def getDictionary(occs : List[DBpediaResourceOccurrence]) : MapDictionary[String] = {
+        LOG.warn("Lowercasing all surface forms in this dictionary!")
         val dictionary = new MapDictionary[String]()
         for (occ <- occs) {
-            dictionary.addEntry(new DictionaryEntry[String](occ.surfaceForm.name, ""))  // chunk type undefined
+            dictionary.addEntry(new DictionaryEntry[String](occ.surfaceForm.name.toLowerCase, ""))  // chunk type undefined
         }
         dictionary
     }
