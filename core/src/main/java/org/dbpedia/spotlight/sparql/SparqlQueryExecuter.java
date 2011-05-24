@@ -56,8 +56,8 @@ public class SparqlQueryExecuter {
         this.sparqlUrl = sparqlUrl;
     }
 
-	public Set<String> query(String query) throws IOException, OutputException, SparqlExecutionException {
-        if (query==null) return new HashSet<String>();
+	public Set<DBpediaResource> query(String query) throws IOException, OutputException, SparqlExecutionException {
+        if (query==null) return new HashSet<DBpediaResource>();
 		LOG.info("--SPARQL QUERY: "+query.replace("\n", " "));
 
 		String graphEncoded = URLEncoder.encode(mainGraph, "UTF-8");
@@ -67,7 +67,7 @@ public class SparqlQueryExecuter {
         String url = "default-graph-uri="+graphEncoded+"&query="+queryEncoded+"&format="+formatEncoded+"&debug=on&timeout=";
 		LOG.debug(url);
 		//FIXME Do some test with the returned results to see if there actually are results.
-        Set<String> uris = null;
+        Set<DBpediaResource> uris = null;
         String response = null;
         try {
 //            uris = parse(readOutput(get(url)));
@@ -130,8 +130,8 @@ public class SparqlQueryExecuter {
      * @return list of URIs as Strings contained in any variables in this result.
      * @throws org.json.JSONException
      */
-    private static Set<String> parse(String jsonString) throws JSONException {
-        Set<String> results = new HashSet<String>();
+    private static Set<DBpediaResource> parse(String jsonString) throws JSONException {
+        Set<DBpediaResource> results = new HashSet<DBpediaResource>();
         JSONObject root = new JSONObject(jsonString);
         JSONArray vars = root.getJSONObject("head").getJSONArray("vars");
         JSONArray bindings = root.getJSONObject("results").getJSONArray("bindings");
@@ -141,7 +141,7 @@ public class SparqlQueryExecuter {
             for (int v = 0; v < vars.length(); v++) {
                 JSONObject typeValue = row.getJSONObject((String) vars.get(v));
                 String uri = typeValue.getString("value").replace("http://dbpedia.org/resource/", "");
-                results.add(uri);
+                results.add(new DBpediaResource(uri));
             }
         }
 
@@ -165,7 +165,7 @@ public class SparqlQueryExecuter {
         String url = "http://dbpedia.org/sparql?default-graph-uri=http://dbpedia.org&query=select+distinct+%3Fpol+where+{%3Fpol+a+%3Chttp://dbpedia.org/ontology/Politician%3E+}&debug=on&timeout=&format=text/html&save=display&fname=";
         SparqlQueryExecuter e = new SparqlQueryExecuter("http://dbpedia.org", "http://dbpedia.org/sparql");
 
-        Set<String> uris = e.query(example2);
+        Set<DBpediaResource> uris = e.query(example2);
         System.out.println(uris);
     }
 
