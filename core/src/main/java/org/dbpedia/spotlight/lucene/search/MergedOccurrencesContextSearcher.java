@@ -18,6 +18,8 @@ package org.dbpedia.spotlight.lucene.search;
 
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.Ints;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;

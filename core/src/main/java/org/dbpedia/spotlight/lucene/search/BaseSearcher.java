@@ -51,7 +51,7 @@ import java.util.*;
  */
 public class BaseSearcher implements Closeable {
 
-    final Log LOG = LogFactory.getLog(getClass());
+    protected final Log LOG = LogFactory.getLog(getClass());
 
     LuceneManager mLucene;
     IndexSearcher mSearcher;
