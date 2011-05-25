@@ -257,6 +257,12 @@
             <version>1.8.0.1</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.mongodb</groupId>
+            <artifactId>mongo</artifactId>
+            <version>1.0</version>
+        </dependency>        
+
     </dependencies>
 
 </project>
