@@ -23,7 +23,6 @@ package org.dbpedia.spotlight.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.jcs.utils.threadpool.ThreadPoolManager;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 
 import java.io.*;
@@ -42,116 +41,169 @@ import java.util.Properties;
  */
 public class SpotlightConfiguration {
 
-    private static Log LOG = LogFactory.getLog(SpotlightConfiguration.class);
+	private static Log LOG = LogFactory.getLog(SpotlightConfiguration.class);
 
-    public final static String DEFAULT_TEXT = "";
-    public final static String DEFAULT_CONFIDENCE = "0.5";
-    public final static String DEFAULT_SUPPORT = "30";
-    public final static String DEFAULT_TYPES = "";
-    public final static String DEFAULT_SPARQL = "";
-    public final static String DEFAULT_POLICY = "whitelist";
-    public final static String DEFAULT_COREFERENCE_RESOLUTION = "true";
+	public final static String DEFAULT_TEXT = "";
+	public final static String DEFAULT_CONFIDENCE = "0.5";
+	public final static String DEFAULT_SUPPORT = "30";
+	public final static String DEFAULT_TYPES = "";
+	public final static String DEFAULT_SPARQL = "";
+	public final static String DEFAULT_POLICY = "whitelist";
+	public final static String DEFAULT_COREFERENCE_RESOLUTION = "true";
 
-    protected String spotterFile    = "";
-    protected String indexDirectory = "";
-    protected List<Double> similarityThresholds;
-    protected String similarityThresholdsFile = "similarity-thresholds.txt";
+	protected String spotterFile    = "";
+	protected String indexDirectory = "";
+	protected List<Double> similarityThresholds;
+	protected String similarityThresholdsFile = "similarity-thresholds.txt";
     protected String taggerFile = "";
 
-    protected String serverURI       = "http://localhost:2222/rest/";
-    protected String sparqlMainGraph = "http://dbpedia.org/sparql";
-    protected String sparqlEndpoint  = "http://dbpedia.org";
+	protected String serverURI       = "http://localhost:2222/rest/";
+	protected String sparqlMainGraph = "http://dbpedia.org/sparql";
+	protected String sparqlEndpoint  = "http://dbpedia.org";
 
 
-    public String getServerURI() {
-        return serverURI;
-    }
+	protected String candidateDatabaseDriver = "";
+	protected String candidateDatabaseConnector = "";
+	protected String candidateDatabaseUser = "";
+	protected String candidateDatabasePassword = "";
 
-    public String getSpotterFile() {
-        return spotterFile;
-    }
+	protected String candidateClassifierUnigram = "";
+	protected String candidateClassifierNGram = "";
 
-    public String getIndexDirectory() {
-        return indexDirectory;
-    }
 
-    public List<Double> getSimilarityThresholds() {
-        return similarityThresholds;
-    }
 
-    public String getSparqlMainGraph() {
-        return sparqlMainGraph;
-    }
 
-    public String getSparqlEndpoint() {
-        return sparqlEndpoint;
-    }
+	public String getServerURI() {
+		return serverURI;
+	}
 
-    public String getTaggerFile() {
-        return taggerFile;
-    }
+	public String getSpotterFile() {
+		return spotterFile;
+	}
 
-//final static String spotterFile= "/home/pablo/web/dbpedia36data/2.9.3/surface_forms-Wikipedia-TitRedDis.thresh3.spotterDictionary";
-    //final static String indexDirectory = "/home/pablo/web/dbpedia36data/2.9.3/Index.wikipediaTraining.Merged.SnowballAnalyzer.DefaultSimilarity";
+	public String getIndexDirectory() {
+		return indexDirectory;
+	}
 
-    public SpotlightConfiguration(String fileName) throws ConfigurationException {
-        //read config properties
-        Properties config = new Properties();
-        try {
-            config.load(new FileInputStream(new File(fileName)));
-        } catch (IOException e) {
-            throw new ConfigurationException("Cannot find configuration file "+fileName,e);
-        }
-        //set spotterFile, indexDir...
-        /*
-        jcs.default.cacheattributes.MaxObjects = 5000
-         */
-        indexDirectory = config.getProperty("org.dbpedia.spotlight.index.dir").trim();
-        if(!new File(indexDirectory).isDirectory()) {
-            throw new ConfigurationException("Cannot find index directory "+indexDirectory);
-        }
+	public List<Double> getSimilarityThresholds() {
+		return similarityThresholds;
+	}
 
-        try {
-            BufferedReader r = new BufferedReader(new FileReader(new File(indexDirectory, similarityThresholdsFile)));
-            String line;
-            similarityThresholds = new ArrayList<Double>();
-            while((line = r.readLine()) != null) {
-                similarityThresholds.add(Double.parseDouble(line));
-            }
-        } catch (FileNotFoundException e) {
-            throw new ConfigurationException("Similarity threshold file '"+similarityThresholdsFile+"' not found in index directory "+indexDirectory,e);
-        } catch (NumberFormatException e) {
-            throw new ConfigurationException("Error parsing similarity value in '"+indexDirectory+"/"+similarityThresholdsFile,e);
-        } catch (IOException e) {
-            throw new ConfigurationException("Error reading '"+indexDirectory+"/"+similarityThresholdsFile,e);
-        }
+	public String getSparqlMainGraph() {
+		return sparqlMainGraph;
+	}
 
-        spotterFile = config.getProperty("org.dbpedia.spotlight.spot.dictionary").trim();
-        if(!new File(spotterFile).isFile()) {
-            throw new ConfigurationException("Cannot find spotter file "+spotterFile);
-        }
+	public String getSparqlEndpoint() {
+		return sparqlEndpoint;
+	}
+
+	public String getTaggerFile() {
+		return taggerFile;
+	}
+
+	public String getCandidateDatabaseDriver() {
+		return candidateDatabaseDriver;
+	}
+
+	public String getCandidateDatabaseConnector() {
+		return candidateDatabaseConnector;
+	}
+
+	public String getCandidateDatabaseUser() {
+		return candidateDatabaseUser;
+	}
+
+	public String getCandidateDatabasePassword() {
+		return candidateDatabasePassword;
+	}
+
+	public String getCandidateClassifierNGram() {
+		return candidateClassifierNGram;
+	}
+
+	public String getCandidateClassifierUnigram() {
+		return candidateClassifierUnigram;
+	}
+
+	
+	//final static String spotterFile= "/home/pablo/web/dbpedia36data/2.9.3/surface_forms-Wikipedia-TitRedDis.thresh3.spotterDictionary";
+	//final static String indexDirectory = "/home/pablo/web/dbpedia36data/2.9.3/Index.wikipediaTraining.Merged.SnowballAnalyzer.DefaultSimilarity";
+
+	public SpotlightConfiguration(String fileName) throws ConfigurationException {
+		//read config properties
+		Properties config = new Properties();
+		try {
+			config.load(new FileInputStream(new File(fileName)));
+		} catch (IOException e) {
+			throw new ConfigurationException("Cannot find configuration file "+fileName,e);
+		}
+		//set spotterFile, indexDir...
+		/*
+				jcs.default.cacheattributes.MaxObjects = 5000
+				 */
+		indexDirectory = config.getProperty("org.dbpedia.spotlight.index.dir").trim();
+		if(!new File(indexDirectory).isDirectory()) {
+			throw new ConfigurationException("Cannot find index directory "+indexDirectory);
+		}
+
+		try {
+			BufferedReader r = new BufferedReader(new FileReader(new File(indexDirectory, similarityThresholdsFile)));
+			String line;
+			similarityThresholds = new ArrayList<Double>();
+			while((line = r.readLine()) != null) {
+				similarityThresholds.add(Double.parseDouble(line));
+			}
+		} catch (FileNotFoundException e) {
+			throw new ConfigurationException("Similarity threshold file '"+similarityThresholdsFile+"' not found in index directory "+indexDirectory,e);
+		} catch (NumberFormatException e) {
+			throw new ConfigurationException("Error parsing similarity value in '"+indexDirectory+"/"+similarityThresholdsFile,e);
+		} catch (IOException e) {
+			throw new ConfigurationException("Error reading '"+indexDirectory+"/"+similarityThresholdsFile,e);
+		}
+
+		spotterFile = config.getProperty("org.dbpedia.spotlight.spot.dictionary").trim();
+		if(!new File(spotterFile).isFile()) {
+			throw new ConfigurationException("Cannot find spotter file "+spotterFile);
+		}
+
 
         taggerFile = config.getProperty("org.dbpedia.spotlight.tagging.hmm").trim();
         if(!new File(taggerFile).isFile()) {
             throw new ConfigurationException("Cannot find POS tagger model file "+taggerFile);
         }
 
-        serverURI = config.getProperty("org.dbpedia.spotlight.web.rest.uri").trim();
-        if (!serverURI.endsWith("/")) {
-            serverURI = serverURI.concat("/");
-        }
-        try {
-            new URI(serverURI);
-        } catch (URISyntaxException e) {
-            throw new ConfigurationException("Server URI not valid.",e);
-        }
+		candidateDatabaseDriver =
+				config.getProperty("org.dbpedia.spotlight.candidate.cooccurence.database.jdbcdriver", "").trim();
+		candidateDatabaseConnector =
+				config.getProperty("org.dbpedia.spotlight.candidate.cooccurence.database.connector", "").trim();
+		candidateDatabaseUser =
+				config.getProperty("org.dbpedia.spotlight.candidate.cooccurence.database.user", "").trim();
+		candidateDatabasePassword =
+				config.getProperty("org.dbpedia.spotlight.candidate.cooccurence.database.password", "").trim();
 
-        sparqlEndpoint = config.getProperty("org.dbpedia.spotlight.sparql.endpoint").trim(); //TODO how to fail gracefully for endpoint?
-        sparqlMainGraph = config.getProperty("org.dbpedia.spotlight.sparql.graph").trim();
+		candidateClassifierUnigram =
+				config.getProperty("org.dbpedia.spotlight.candidate.cooccurence.classifier.unigram", "").trim();
+		candidateClassifierNGram =
+				config.getProperty("org.dbpedia.spotlight.candidate.cooccurence.classifier.ngram", "").trim();
 
-        //...
 
-    }
+		serverURI = config.getProperty("org.dbpedia.spotlight.web.rest.uri").trim();
+		if (!serverURI.endsWith("/")) {
+			serverURI = serverURI.concat("/");
+		}
+		try {
+			new URI(serverURI);
+		} catch (URISyntaxException e) {
+			throw new ConfigurationException("Server URI not valid.",e);
+		}
+
+		sparqlEndpoint = config.getProperty("org.dbpedia.spotlight.sparql.endpoint").trim(); //TODO how to fail gracefully for endpoint?
+		sparqlMainGraph = config.getProperty("org.dbpedia.spotlight.sparql.graph").trim();
+
+		//...
+
+	}
+
 
 
 }
