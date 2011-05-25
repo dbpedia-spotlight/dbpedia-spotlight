@@ -11,14 +11,16 @@ package org.dbpedia.spotlight.tagging;
  */
 public class TaggedToken implements Comparable<Integer> {
 
-	public TaggedToken(String token, String POSTag, int offset, Float confidence) {
+	public TaggedToken(String token, String white, String POSTag, int offset, Float confidence) {
 		this.token = token;
+		this.white = white;
 		this.offset = offset;
 		this.POSTag = POSTag;
 		this.confidence = confidence;
 	}
 
 	private String token;
+	private String white;
 	private String POSTag;
 	private int offset;
 	private Float confidence;
@@ -35,12 +37,7 @@ public class TaggedToken implements Comparable<Integer> {
 
 	@Override
 	public String toString() {
-		return "TaggedToken[" +
-				"token='" + token + '\'' +
-				", POSTag='" + POSTag + '\'' +
-				", offset=" + offset +
-				", confidence=" + confidence +
-				']';
+		return token + '/' + POSTag + ' ';
 	}
 
 
@@ -74,6 +71,14 @@ public class TaggedToken implements Comparable<Integer> {
 		return offset;
 	}
 
+	/**
+	 * Returns the white-space elements after the token.
+	 *
+	 * @return
+	 */
+	public String getWhite() {
+		return white;
+	}
 
 	/**
 	 * Returns the tagger's confidence for the part-of-speech tag that was assigned.
