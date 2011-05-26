@@ -23,11 +23,14 @@ package org.dbpedia.spotlight.web.rest;
 
 import java.io.*;
 // SAX classes.
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.SerializationException;
 import org.dbpedia.spotlight.exceptions.OutputException;
 import org.dbpedia.spotlight.model.DBpediaType;
+import org.dbpedia.spotlight.model.SurfaceForm;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.*;
 //JAXP 1.1
@@ -60,7 +63,7 @@ public class OutputManager {
         return hd;
     }
 
-    private String getText(String t, List<DBpediaResourceOccurrence> occList) {
+    private String getText(String t, List<DBpediaResourceOccurrence> occList) {  //WTF?
         if(occList == null || occList.isEmpty()) {
             return t.replaceAll("\\[\\[(.*?)\\]\\]", "$1");
         }
@@ -90,34 +93,90 @@ public class OutputManager {
         atts.addAttribute("","","policy","CDATA",policy);
         //atts.addAttribute("","","coreferenceResolution","CDATA",String.valueOf(coreferenceResolution));
         hd.startElement("","","Annotation",atts);
-        int i=0;
-        String dbpediaPrefix = "http://dbpedia.org/resource/";
-        for (DBpediaResourceOccurrence occ : occList){
-          if (i==0){
-              atts.clear();
-              hd.startElement("","","Resources",atts);
-          }
 
-          atts.addAttribute("","","URI","CDATA",dbpediaPrefix+occ.resource().uri());
-          atts.addAttribute("","","support","CDATA",String.valueOf(occ.resource().support()));
-          atts.addAttribute("","","types","CDATA",occ.resource().types().mkString(","));
-          // support and types should go to resource
-
-          atts.addAttribute("", "", "surfaceForm", "CDATA", occ.surfaceForm().name());
-          atts.addAttribute("","","offset","CDATA",String.valueOf(occ.textOffset()));
-          atts.addAttribute("", "", "similarityScore", "CDATA", String.valueOf(occ.similarityScore()));
-          atts.addAttribute("","","percentageOfSecondRank","CDATA",String.valueOf(occ.percentageOfSecondRank()));
-
-          hd.startElement("","","Resource",atts);
-          hd.endElement("","","Resource");
-          i++;
-        }
-        if (i>0)
-          hd.endElement("","","Resources");
+        getResourcesXml(occList, hd, atts);
 
         hd.endElement("","","Annotation");
         hd.endDocument();
         xml = out.toString("utf-8");
+        } catch (Exception e) {
+            throw new OutputException("Error creating XML output.", e);
+
+        }
+        return xml;
+    }
+
+    protected void getResourcesXml(List<DBpediaResourceOccurrence> occList, TransformerHandler hd, AttributesImpl atts) throws SAXException {
+        int i=0;
+        String dbpediaPrefix = "http://dbpedia.org/resource/";
+        for (DBpediaResourceOccurrence occ : occList){
+            if (i==0){
+                atts.clear();
+                hd.startElement("","","Resources",atts);
+            }
+
+            atts.addAttribute("","","URI","CDATA",dbpediaPrefix+occ.resource().uri());
+            atts.addAttribute("","","support","CDATA",String.valueOf(occ.resource().support()));
+            atts.addAttribute("","","types","CDATA",occ.resource().types().mkString(","));
+            // support and types should go to resource
+
+            atts.addAttribute("", "", "surfaceForm", "CDATA", occ.surfaceForm().name());
+            atts.addAttribute("","","offset","CDATA",String.valueOf(occ.textOffset()));
+            atts.addAttribute("", "", "similarityScore", "CDATA", String.valueOf(occ.similarityScore()));
+            atts.addAttribute("","","percentageOfSecondRank","CDATA",String.valueOf(occ.percentageOfSecondRank()));
+
+            hd.startElement("","","Resource",atts);
+            hd.endElement("","","Resource");
+            i++;
+        }
+        if (i>0)
+            hd.endElement("","","Resources");
+    }
+
+    protected String makeCandidatesXML(String text, Map<SurfaceForm, List<DBpediaResourceOccurrence>> candidateMap, double confidence, int support, String targetTypesString, String sparqlQuery, String policy, boolean coreferenceResolution) throws OutputException {
+        // PrintWriter from a Servlet
+        String xml = "";
+        try {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            TransformerHandler hd = initXMLDoc(out);
+
+            text = getText(text, new LinkedList<DBpediaResourceOccurrence>()); //TODO wtf?
+
+            //Create Annotation element
+            //First create text attribute
+            AttributesImpl atts = new AttributesImpl();
+
+            atts.addAttribute("","","text","CDATA",text);
+            atts.addAttribute("","","confidence","CDATA",String.valueOf(confidence));
+            atts.addAttribute("","","support","CDATA",String.valueOf(support));
+            atts.addAttribute("","","types","CDATA",targetTypesString);
+            atts.addAttribute("","","sparql","CDATA",sparqlQuery);
+            atts.addAttribute("","","policy","CDATA",policy);
+            //atts.addAttribute("","","coreferenceResolution","CDATA",String.valueOf(coreferenceResolution));
+            hd.startElement("","","Annotation",atts);
+            int i=0;
+            String dbpediaPrefix = "http://dbpedia.org/resource/";
+            for (SurfaceForm sf : candidateMap.keySet()){
+                if (i==0){
+                    atts.clear();
+                    hd.startElement("","","SurfaceForms",atts);
+                }
+                atts.addAttribute("", "", "surfaceForm", "CDATA", sf.name());
+                atts.addAttribute("","","offset","CDATA",String.valueOf(candidateMap.get(sf).get(0).textOffset())); //HACK
+                atts.addAttribute("", "", "visibility", "CDATA", "true"); //TODO annotation filters should mark occurrences for display or not, and we get the value here.
+
+                getResourcesXml(candidateMap.get(sf), hd, atts);
+
+                hd.startElement("","","SurfaceForm",atts);
+                hd.endElement("","","SurfaceForm");
+                i++;
+            }
+            if (i>0)
+                hd.endElement("","","SurfaceForms");
+
+            hd.endElement("", "", "Annotation");
+            hd.endDocument();
+            xml = out.toString("utf-8");
         } catch (Exception e) {
             throw new OutputException("Error creating XML output.", e);
 

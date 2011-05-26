@@ -34,8 +34,8 @@ import org.dbpedia.spotlight.disambiguate._
 import mixtures.LinearRegressionMixture
 import org.dbpedia.spotlight.lucene.index.MergedOccurrencesContextIndexer
 import org.dbpedia.spotlight.lucene._
-import org.dbpedia.spotlight.model.ContextSearcher
 import search.{SurrogateSearcher, MergedOccurrencesContextSearcher}
+import org.dbpedia.spotlight.model.{SpotlightConfiguration, ContextSearcher}
 
 /**
  * This class is evolving to be the main disambiguation class that takes parameters for which dataset to run.
@@ -107,7 +107,7 @@ object EvaluateDisambiguationOnly
       val analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET);
       //val directory = LuceneManager.pickDirectory(new File(indexDir+"."+analyzer.getClass.getSimpleName+".DefaultSimilarity"));
       val directory =  LuceneManager.pickDirectory(new File(indexDir));
-      val cache = new JCSTermCache(new LuceneManager.BufferedMerging(directory));
+      val cache = new JCSTermCache(new LuceneManager.BufferedMerging(directory), 5000);
       val similarity : Similarity = new CachedInvCandFreqSimilarity(cache);
       createMergedDisambiguator(indexDir, analyzer, similarity, directory)
     }
@@ -116,7 +116,7 @@ object EvaluateDisambiguationOnly
       val analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET);
       //val directory = LuceneManager.pickDirectory(new File(indexDir+"."+analyzer.getClass.getSimpleName+".DefaultSimilarity"));
       val directory =  LuceneManager.pickDirectory(new File(indexDir));
-      val cache = new JCSTermCache(new LuceneManager.BufferedMerging(directory));
+      val cache = new JCSTermCache(new LuceneManager.BufferedMerging(directory),5000);
       //val similarity : Similarity = new CachedInvCandFreqSimilarity(cache);
       val similarity : Similarity = new InvCandFreqSimilarity
       val mixture = new LinearRegressionMixture
@@ -126,7 +126,7 @@ object EvaluateDisambiguationOnly
     def getNewDisambiguator(indexDir: String) : Disambiguator = {
       val analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET);
       val directory = LuceneManager.pickDirectory(new File(indexDir+"."+analyzer.getClass.getSimpleName+".DefaultSimilarity"));
-      val cache = new JCSTermCache(new LuceneManager.BufferedMerging(directory));
+      val cache = new JCSTermCache(new LuceneManager.BufferedMerging(directory),5000);
       val similarity : Similarity = new NewSimilarity(cache);
       createMergedDisambiguator(indexDir, analyzer, similarity, directory)
     }
@@ -256,7 +256,10 @@ object EvaluateDisambiguationOnly
 
     def main(args : Array[String])
     {
-        val indexDir: String = args(0)  //"e:\\dbpa\\data\\index\\index-that-works\\Index.wikipediaTraining.Merged."
+
+        //val indexDir: String = args(0)  //"e:\\dbpa\\data\\index\\index-that-works\\Index.wikipediaTraining.Merged."
+        val config = new SpotlightConfiguration(args(0));
+        val indexDir = config.getIndexDirectory
 
         val simScoresFileName: String = ""
 
@@ -287,7 +290,7 @@ object EvaluateDisambiguationOnly
         // For merged disambiguators
         //val indexDir = baseDir+"/2.9.3/Index.wikipediaTraining.Merged";
 
-        val default : Disambiguator = new DefaultDisambiguator(new File(indexDir))
+        val default : Disambiguator = new DefaultDisambiguator(config)
         val disSet = Set(
                             default,
                             getDefaultSnowballDisambiguator(indexDir) ,

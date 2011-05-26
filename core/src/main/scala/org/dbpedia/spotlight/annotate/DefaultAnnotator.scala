@@ -31,25 +31,25 @@ import org.dbpedia.spotlight.candidate.{SpotSelector, CommonWordFilter}
 
 class DefaultAnnotator(val spotter : Spotter, val spotSelector: SpotSelector, val disambiguator: Disambiguator) extends Annotator {
 
-    def this(spotter : Spotter, disambiguator : Disambiguator) = {
-        this(spotter, null, disambiguator);
-    }
-
-    def this(spotterFile: File, indexDir : File) {
-        this(new LingPipeSpotter(spotterFile), new DefaultDisambiguator(indexDir))
-    }
-
-    def this(spotterFile: File, spotSelectorFile: File, indexDir : File) {
-        this(new LingPipeSpotter(spotterFile), new CommonWordFilter(spotSelectorFile.getPath), new DefaultDisambiguator(indexDir))
-    }
-
-    def this(spotter : Spotter, indexDir : File) {
-        this(spotter, new DefaultDisambiguator(indexDir))
-    }
-
-    def this(spotterFile: File, disambiguator: Disambiguator) {
-        this(new LingPipeSpotter(spotterFile), disambiguator)
-    }
+//    def this(spotter : Spotter, disambiguator : Disambiguator) = {
+//        this(spotter, null, disambiguator);
+//    }
+//
+//    def this(spotterFile: File, indexDir : File) {
+//        this(new LingPipeSpotter(spotterFile), new DefaultDisambiguator(indexDir))
+//    }
+//
+//    def this(spotterFile: File, spotSelectorFile: File, indexDir : File) {
+//        this(new LingPipeSpotter(spotterFile), new CommonWordFilter(spotSelectorFile.getPath), new DefaultDisambiguator(indexDir))
+//    }
+//
+//    def this(spotter : Spotter, indexDir : File) {
+//        this(spotter, new DefaultDisambiguator(indexDir))
+//    }
+//
+//    def this(spotterFile: File, disambiguator: Disambiguator) {
+//        this(new LingPipeSpotter(spotterFile), disambiguator)
+//    }
 
     private val LOG = LogFactory.getLog(this.getClass)
 

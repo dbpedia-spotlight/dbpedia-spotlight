@@ -259,7 +259,7 @@ class AnnotationFilter(val config: SpotlightConfiguration)
         val spotterFile    = config.getSpotterFile;
         val indexDir = config.getIndexDirectory
 
-        val disambiguator : Disambiguator = new DefaultDisambiguator(new File(indexDir))
+        val disambiguator : Disambiguator = new DefaultDisambiguator(config)
 
 //        // -- Spotter --
 //        val spotter : Spotter = new LingPipeSpotter(spotterFile)

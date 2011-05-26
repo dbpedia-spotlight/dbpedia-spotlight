@@ -84,9 +84,22 @@ public class LuceneManager {
     // this value specifies how many top results Lucene should return
     public int topResultsLimit = 100;
 
+
     public LuceneManager(Directory directory) throws IOException {
         this.mContextIndexDir = directory;
     }
+
+    // this file contains a bunch of useful config info for searching indexes
+//    protected SpotlightConfiguration mSearchConfiguration;
+//
+//    public LuceneManager(Directory directory, SpotlightConfiguration configuration) throws IOException {
+//        this.mContextIndexDir = directory;
+//        this.mSearchConfiguration = configuration;
+//    }
+//
+//    public SpotlightConfiguration configuration() {
+//        return mSearchConfiguration;
+//    }
 
     //---- GETTERS ---- They don't follow Java's naming convention - getDirectory() -, but rather Scala's style - mContextIndexDir()
     
@@ -105,6 +118,7 @@ public class LuceneManager {
     public Analyzer contextAnalyzer() {
         return mContextAnalyzer;
     }
+
 
     public void setContextAnalyzer(Analyzer contextAnalyzer) {
         this.mContextAnalyzer = contextAnalyzer;

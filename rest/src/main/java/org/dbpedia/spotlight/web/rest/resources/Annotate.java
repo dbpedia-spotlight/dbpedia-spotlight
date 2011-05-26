@@ -31,6 +31,7 @@ import javax.ws.rs.core.UriInfo;
 /**
  * REST Web Service
  * TODO Merge with Disambiguate (only difference is the SpotlightInterface object, which can be given in constructor)
+ *
  * @author pablomendes
  * @author Paul Houle (patch for POST)
  */

@@ -69,7 +69,7 @@ public class Server {
         File spotterFile = new File(configuration.getSpotterFile()); //"/home/pablo/eval/manual/Eval.spotterDictionary"
 
         // Set static annotator that will be used by Annotate and Disambiguate
-        LuceneFactory factory = new LuceneFactory(configuration);
+        final LuceneFactory factory = new LuceneFactory(configuration);
         setAnnotator(factory.annotator());
         //setAnnotator(new DefaultAnnotator(spotterFile,//commonWordsFile,indexDir));
 
@@ -94,6 +94,14 @@ public class Server {
         catch (Exception e) {
             System.err.println("Could not open browser. " + e);
         }
+
+        Thread warmUp = new Thread() {
+            public void run() {
+                factory.searcher().warmUp(5000);
+            }
+        };
+        warmUp.start();
+
 
         while(running) {
             Thread.sleep(100);

@@ -155,7 +155,6 @@ public abstract class SpotlightInterface  {
 
         LOG.info("Shown:");
         for(DBpediaResourceOccurrence occ : occList) {
-            //TODO attention, spotProb is currently abused to contain prior. will fix soon
             LOG.info(String.format("%s <- %s; score: %s, support: %s, prior: %s", occ.resource(),occ.surfaceForm(), occ.similarityScore(), occ.resource().support(), occ.resource().prior()));
         }
 
@@ -221,6 +220,21 @@ public abstract class SpotlightInterface  {
 //            LOG.info("ERROR: "+e.getMessage());
 //            result = output.makeErrorXML(e.getMessage(), text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
 //        }
+        LOG.info("XML format");
+        return result;
+    }
+
+    public String getCandidateXML(String text,
+                         double confidence,
+                         int support,
+                         String dbpediaTypesString,
+                         String spqarlQuery,
+                         String policy,
+                         boolean coreferenceResolution,
+                          String clientIp) throws Exception {
+        String result;
+        List<DBpediaResourceOccurrence> occs = getOccurrences(text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution, clientIp);
+        result = output.makeXML(text, occs, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
         LOG.info("XML format");
         return result;
     }

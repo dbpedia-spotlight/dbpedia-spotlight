@@ -21,6 +21,7 @@ import org.dbpedia.spotlight.string.ModifiedWikiUtil
 import java.io.Serializable
 
 
+@serializable
 class DBpediaResource(var uri : String,
                       var support : Int = 0,
                       var prior : Double = 0.0,

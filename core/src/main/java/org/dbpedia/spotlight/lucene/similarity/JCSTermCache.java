@@ -24,6 +24,7 @@ import org.apache.jcs.engine.control.CompositeCacheManager;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.util.OpenBitSet;
 import org.dbpedia.spotlight.lucene.LuceneManager;
+import org.dbpedia.spotlight.model.SpotlightConfiguration;
 
 import java.util.Properties;
 
@@ -42,11 +43,10 @@ public class JCSTermCache extends TermCache {
     //Singleton
     private static JCSTermCache instance;   //TODO this could be a map from IndexReader to JCSTermCache
     private static int checkedOut = 0;
-
     private static JCS termCache;
 
-    public JCSTermCache(LuceneManager mgr) throws CacheException {
-        super(mgr);
+    public JCSTermCache(LuceneManager mgr, long maxCacheSize) throws CacheException {
+        super(mgr, maxCacheSize);
         init();
     }
 
@@ -57,7 +57,7 @@ public class JCSTermCache extends TermCache {
         props.put("jcs.default","");
         props.put("jcs.default.cacheattributes","org.apache.jcs.engine.CompositeCacheAttributes");
         props.put("jcs.default.cacheattributes.MemoryCacheName","org.apache.jcs.engine.memory.lru.LRUMemoryCache");
-        props.put("jcs.default.cacheattributes.MaxObjects","5000");
+        props.put("jcs.default.cacheattributes.MaxObjects",mMaxCacheSize);
         ccm.configure(props);
 
         termCache = JCS.getInstance("termCache");
@@ -68,10 +68,10 @@ public class JCSTermCache extends TermCache {
     /**
 	 * Singleton access point to the manager.
 	 */
-	public static JCSTermCache getInstance(LuceneManager mgr) throws CacheException {
+	public static JCSTermCache getInstance(LuceneManager mgr, long maxCacheSize) throws CacheException {
 		synchronized (JCSTermCache.class) {
 			if (instance == null) {
-				instance = new JCSTermCache(mgr);
+				instance = new JCSTermCache(mgr, maxCacheSize);
 			}
 		}
 

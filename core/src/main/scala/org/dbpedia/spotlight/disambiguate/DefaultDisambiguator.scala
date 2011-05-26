@@ -37,18 +37,20 @@ import org.dbpedia.spotlight.lucene.disambiguate.{MixedWeightsDisambiguator, Mer
  * @author maxjakob
  * @author pablomendes
  */
-class DefaultDisambiguator(val indexDir : File) extends Disambiguator  {
+class DefaultDisambiguator(val configuration: SpotlightConfiguration) extends Disambiguator  {
 
     private val LOG = LogFactory.getLog(this.getClass)
 
     LOG.info("Initializing disambiguator object ...")
+
+    val indexDir = new File(configuration.getIndexDirectory)
 
     // Disambiguator
     val dir = LuceneManager.pickDirectory(indexDir)
 
     //val luceneManager = new LuceneManager(dir)                              // use this if surface forms in the index are case-sensitive
     val luceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(dir)  // use this if all surface forms in the index are lower-cased
-    val cache = new JCSTermCache(luceneManager);
+    val cache = new JCSTermCache(luceneManager, configuration.getMaxCacheSize);
     luceneManager.setContextSimilarity(new CachedInvCandFreqSimilarity(cache))        // set most successful Similarity
 
     val contextSearcher = new MergedOccurrencesContextSearcher(luceneManager)

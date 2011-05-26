@@ -25,6 +25,7 @@ import org.apache.lucene.search.DocIdSet;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.OpenBitSet;
 import org.dbpedia.spotlight.lucene.LuceneManager;
+import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SurfaceForm;
 import org.dbpedia.spotlight.model.Text;
 
@@ -40,11 +41,11 @@ public abstract class TermCache {
 
     Log LOG = LogFactory.getLog(TermCache.class);
 
-    long maxCacheSize;
+    long mMaxCacheSize;
     LuceneManager mLuceneManager;
 
-    public TermCache(LuceneManager mgr) {
-        setMaxCacheSize(Long.MAX_VALUE);
+    public TermCache(LuceneManager mgr, long maxCacheSize) {
+        setMaxCacheSize(maxCacheSize);
         this.mLuceneManager = mgr;
     }
 
@@ -77,7 +78,7 @@ public abstract class TermCache {
      */
     private DocIdSet getDocIdSet(IndexReader reader, Term term) throws IOException
     {
-        OpenBitSet contextTermDocIdSet = contextTermDocIdSet = get(term);
+        OpenBitSet contextTermDocIdSet = get(term);
         if (contextTermDocIdSet == null) {
             contextTermDocIdSet = createDocIdSet(reader, term);
             put(term, contextTermDocIdSet);
@@ -145,11 +146,11 @@ public abstract class TermCache {
     }
 
     public long getMaxCacheSize() {
-        return maxCacheSize;
+        return mMaxCacheSize;
     }
 
     public void setMaxCacheSize(long maxCacheSize) {
-        this.maxCacheSize = maxCacheSize;
+        this.mMaxCacheSize = maxCacheSize;
         LOG.info(String.format("Setting the SurrogateCache.maxCacheSize to %s", maxCacheSize));
     }
 

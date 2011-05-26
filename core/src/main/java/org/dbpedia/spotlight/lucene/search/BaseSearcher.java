@@ -316,23 +316,36 @@ public class BaseSearcher implements Closeable {
 
     /**
      * Warms up the index with the n most common terms.
+     *
+     * TODO warm up property with surface form + context
+     *      Currently this only gets the most common terms (which are all probably from CONTEXT field, so not much gain is seen for the ICF
+     *      Best would be to get a list of X most common surface forms and execute a query with that surface form and the top Y most common context terms
      * @param n
      * @return
      * @throws IOException
      */
     public void warmUp(int n) {
+
         try {
+            long start = System.nanoTime();
             List<Map.Entry<Term,Integer>> terms = getTopTerms(mReader);
             LOG.info(String.format("Index has %s terms. Will warm up cache with the %s top terms.", terms.size(), n));
+
             for (int i=0; i<n; i++) {
                 Term t = terms.get(i).getKey();
+                String[] commonSurfaceForms = {"*"}; //TODO get these surface forms from somewhere
+                for (String sf: commonSurfaceForms) {
+                    getHits(new CandidateResourceQuery(new Term(LuceneManager.DBpediaResourceField.SURFACE_FORM.toString(), sf), t));
+                }
                 //int count = terms.get(i).getValue();
-                getHits(new TermQuery(t));
+                //getHits(new TermQuery(t));
                 //LOG.trace(String.format("Text: %s, Count: %s", t.text(), count));
             }
 
-            //Files.write(Joiner.on("\n").join(terms), new File("/home/pablo/workspace/dbpa/trunk/src/web/topterms.tsv"), Charset.defaultCharset()); //TODO use one charset consistently throughout
 
+            String time = new Long( (System.nanoTime() - start) / 1000000000 ).toString();
+            //Files.write(Joiner.on("\n").join(terms), new File("/home/pablo/workspace/dbpa/trunk/src/web/topterms.tsv"), Charset.defaultCharset()); //TODO use one charset consistently throughout
+            LOG.info(String.format("Warm up took %s ms.",time));
         } catch (Exception e) {
             LOG.error("Error warming up the cache. Ignoring. "); //TODO Throw SetupException
             e.printStackTrace();

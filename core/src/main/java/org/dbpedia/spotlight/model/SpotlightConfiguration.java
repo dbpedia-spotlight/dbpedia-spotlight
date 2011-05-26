@@ -70,7 +70,7 @@ public class SpotlightConfiguration {
 	protected String candidateClassifierUnigram = "";
 	protected String candidateClassifierNGram = "";
 
-
+    protected long maxCacheSize = Long.MAX_VALUE;
 
 
 	public String getServerURI() {
@@ -125,6 +125,9 @@ public class SpotlightConfiguration {
 		return candidateClassifierUnigram;
 	}
 
+    public long getMaxCacheSize() {
+		return maxCacheSize;
+	}
 	
 	//final static String spotterFile= "/home/pablo/web/dbpedia36data/2.9.3/surface_forms-Wikipedia-TitRedDis.thresh3.spotterDictionary";
 	//final static String indexDirectory = "/home/pablo/web/dbpedia36data/2.9.3/Index.wikipediaTraining.Merged.SnowballAnalyzer.DefaultSimilarity";
@@ -138,9 +141,7 @@ public class SpotlightConfiguration {
 			throw new ConfigurationException("Cannot find configuration file "+fileName,e);
 		}
 		//set spotterFile, indexDir...
-		/*
-				jcs.default.cacheattributes.MaxObjects = 5000
-				 */
+
 		indexDirectory = config.getProperty("org.dbpedia.spotlight.index.dir").trim();
 		if(!new File(indexDirectory).isDirectory()) {
 			throw new ConfigurationException("Cannot find index directory "+indexDirectory);
@@ -199,6 +200,12 @@ public class SpotlightConfiguration {
 
 		sparqlEndpoint = config.getProperty("org.dbpedia.spotlight.sparql.endpoint").trim(); //TODO how to fail gracefully for endpoint?
 		sparqlMainGraph = config.getProperty("org.dbpedia.spotlight.sparql.graph").trim();
+
+
+        String maxCacheSizeString = config.getProperty("jcs.default.cacheattributes.MaxObjects").trim();
+        try {
+            maxCacheSize = new Long(maxCacheSizeString);
+        } catch (Exception ignored) { LOG.error(ignored); }
 
 		//...
 
