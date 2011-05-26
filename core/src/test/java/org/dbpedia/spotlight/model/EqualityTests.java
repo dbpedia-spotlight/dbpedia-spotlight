@@ -52,4 +52,6 @@ public class EqualityTests {
         assertEquals(1, set.size());
     }
 
+    //TODO DBpediaResourceOccurrence
+
 }
