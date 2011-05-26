@@ -110,7 +110,7 @@ public class AlchemyClient extends AnnotationClient {
 
         File manualEvalOutput = new File("/home/pablo/eval/manual/systems/AnnotationText-Alchemy.txt.list");
         File manualEvalInput = new File("/home/pablo/eval/manual/AnnotationText.txt");
-        //client.evaluateManual(manualEvalInput, manualEvalOutput);
+        //client.evaluate(manualEvalInput, manualEvalOutput);
 
         File cucerzanEvalInput = new File("/home/pablo/eval/cucerzan/cucerzan.txt");
         File cucerzanEvalOutput = new File("/home/pablo/eval/cucerzan/systems/cucerzan-Alchemy2.set");
@@ -118,7 +118,7 @@ public class AlchemyClient extends AnnotationClient {
         File input = new File("/home/pablo/eval/csaw/gold/paragraphs.txt");
         File output = new File("/home/pablo/eval/csaw/systems/Alchemy.list");
 
-        client.evaluateManual(input, output);
+        client.evaluate(input, output);
     }
 
 }

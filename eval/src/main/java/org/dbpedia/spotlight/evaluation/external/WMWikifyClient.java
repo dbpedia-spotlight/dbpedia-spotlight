@@ -16,9 +16,7 @@
 
 package org.dbpedia.spotlight.evaluation.external;
 
-import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
 import org.dbpedia.spotlight.exceptions.AnnotationException;
 import org.dbpedia.spotlight.model.DBpediaResource;
 import org.dbpedia.spotlight.model.Text;
@@ -27,11 +25,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -128,19 +123,19 @@ public class WMWikifyClient extends AnnotationClient {
 
         File manualEvalOutput = new File("/home/pablo/eval/manual/systems/WMWikify.list");
         File manualEvalInput = new File("/home/pablo/eval/manual/AnnotationText.txt");
-        client.evaluateManual(manualEvalInput, manualEvalOutput);
+        client.evaluate(manualEvalInput, manualEvalOutput);
 
         File cucerzanEvalInput = new File("/home/pablo/eval/cucerzan/cucerzan.txt");
         File cucerzanEvalOutput = new File("/home/pablo/eval/cucerzan/systems/WMWikify.list");
-//        client.evaluateManual(cucerzanEvalInput, cucerzanEvalOutput);
+//        client.evaluate(cucerzanEvalInput, cucerzanEvalOutput);
 
         File wikifyEvalInput = new File("/home/pablo/eval/wikify/gold/WikifyAllInOne.txt");
         File wikifyEvalOutput = new File("/home/pablo/eval/wikify/systems/WMWikify.list");
-        //client.evaluateManual(wikifyEvalInput, wikifyEvalOutput);
+        //client.evaluate(wikifyEvalInput, wikifyEvalOutput);
 
         File CSAWEvalInput = new File("/home/pablo/eval/csaw/gold/paragraphs.txt");
         File CSAWEvalOutput = new File("/home/pablo/eval/csaw/systems/WMWikify.list");
-        client.evaluateManual(CSAWEvalInput, CSAWEvalOutput);
+        client.evaluate(CSAWEvalInput, CSAWEvalOutput);
     }
 
 }

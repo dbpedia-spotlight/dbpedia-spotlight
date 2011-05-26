@@ -289,9 +289,9 @@ object EvaluateDisambiguationOnly
 
         val default : Disambiguator = new DefaultDisambiguator(new File(indexDir))
         val disSet = Set(
-                            default
-                            //getDefaultSnowballDisambiguator(indexDir) ,
-                            //getICFCachedDisambiguator(indexDir)
+                            default,
+                            getDefaultSnowballDisambiguator(indexDir) ,
+                            getICFCachedDisambiguator(indexDir),
                             //getICFCachedMixedDisambiguator(indexDir),
                             //getNewStopwordedDisambiguator(indexDir),
                             //getICFSnowballDisambiguator(indexDir)
@@ -314,8 +314,8 @@ object EvaluateDisambiguationOnly
                             //getICFIDFStandardDisambiguator,
 
                          // no analyzer
-                            //getPriorDisambiguator(indexDir),
-                            //getRandomDisambiguator(indexDir)
+                            getPriorDisambiguator(indexDir),
+                            getRandomDisambiguator(indexDir)
         )
 
         // Read some text to test.

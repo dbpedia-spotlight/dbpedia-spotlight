@@ -152,6 +152,7 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
                 {
                     try
                     {
+                        LOG.debug(disambiguator.name);
                         LOG.debug("Ambiguity for "+testOcc.surfaceForm+"="+ambiguity)
 
                         //val sfOccWrapped = List(new SurfaceFormOccurrence(testOcc.surfaceForm, testOcc.context, testOcc.textOffset, testOcc.provenance))
@@ -162,6 +163,8 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
                         val bestK = timed(storeTime(disambiguator)) {
                             disambiguator.bestK(sfOcc,outputTopK) //ATTENTION!!! the order of occurrences returned here will be used to assess if this was a correct or incorrect disambiguation
                         }
+
+                        val watch = bestK.map(o => "%s \t %.5f \t %.5f \t %.5f" .format(o.resource.uri, o.resource.prior, o.contextualScore, o.similarityScore) )
 
                         //val sptlDecision = sortedOccs.head
                         //score = sptlDecision.similarityScore.toString
@@ -184,12 +187,13 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
                             if(testOcc.resource equals sptlResultOcc.resource) {
                                 disambAccuracy = 1
                                 //correctScores ::= score.toDouble
-                                LOG.debug("  Correct: "+sptlResultOcc.surfaceForm + " -> " + sptlResultOcc.resource)
+                                //LOG.debug(sptlResultOcc.surfaceForm);
+                                LOG.debug("  **     correct: %.5f \t %.5f \t %.5f \t %s".format(sptlResultOcc.resource.prior, sptlResultOcc.contextualScore, sptlResultOcc.similarityScore, sptlResultOcc.resource))
                             }
                             else {
                                 //incorrectScores ::= score.toDouble
-                                LOG.debug("  WRONG: correct: "+testOcc.surfaceForm+" -> "+testOcc.resource);
-                                LOG.debug("       spotlight: "+sptlResultOcc.surfaceForm+" -> "+sptlResultOcc.resource);
+                                //LOG.debug("  WRONG: correct: " + testOcc.surfaceForm + " -> " + testOcc.resource);
+                                LOG.debug("       spotlight: %.5f \t %.5f \t %.5f \t %s".format(sptlResultOcc.resource.prior, sptlResultOcc.contextualScore, sptlResultOcc.similarityScore, sptlResultOcc.resource))
                                 //println(disambiguator.explain(testOcc, 100))
                             }
 

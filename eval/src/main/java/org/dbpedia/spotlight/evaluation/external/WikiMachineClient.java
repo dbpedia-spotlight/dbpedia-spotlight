@@ -26,14 +26,10 @@ import net.htmlparser.jericho.Element;
 import org.dbpedia.spotlight.exceptions.AnnotationException;
 import org.dbpedia.spotlight.model.DBpediaResource;
 import org.dbpedia.spotlight.model.Text;
-import org.junit.Test;
-import static org.junit.Assert.*;
 
-import java.util.Arrays;
 import java.util.List;
 
 import java.io.*;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 
 
@@ -112,19 +108,19 @@ public class WikiMachineClient extends AnnotationClient {
 
         //File manualEvalOutput = new File("/home/pablo/eval/manual/systems/WikiMachine.list");
         //File manualEvalInput = new File("/home/pablo/eval/manual/AnnotationText.txt");
-        //client.evaluateManual(manualEvalInput, manualEvalOutput);
+        //client.evaluate(manualEvalInput, manualEvalOutput);
 
         //File cucerzanEvalInput = new File("/home/pablo/eval/cucerzan/cucerzan.txt");
         //File cucerzanEvalOutput = new File("/home/pablo/eval/cucerzan/systems/WikiMachine.list");
-//        client.evaluateManual(cucerzanEvalInput, cucerzanEvalOutput);
+//        client.evaluate(cucerzanEvalInput, cucerzanEvalOutput);
 
 //        File wikifyEvalInput = new File("/home/pablo/eval/wikify/gold/WikifyAllInOne.txt");
 //        File wikifyEvalOutput = new File("/home/pablo/eval/wikify/systems/WikiMachine.list");
-//        client.evaluateManual(wikifyEvalInput, wikifyEvalOutput);
+//        client.evaluate(wikifyEvalInput, wikifyEvalOutput);
 
         File csawEvalInput = new File("/home/pablo/eval/csaw/gold/paragraphs.txt");
         File csawEvalOutput = new File("/home/pablo/eval/csaw/systems/WikiMachine.list");
-        client.evaluateManual(csawEvalInput, csawEvalOutput);
+        client.evaluate(csawEvalInput, csawEvalOutput);
 
     }
 

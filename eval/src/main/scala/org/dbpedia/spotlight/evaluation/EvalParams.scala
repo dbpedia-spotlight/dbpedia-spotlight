@@ -16,10 +16,15 @@
 
 package org.dbpedia.spotlight.evaluation
 
+import java.io.File
+
 object EvalParams {
     val confidenceInterval = List(0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.6, 0.7, 0.8, 0.9); //TODO , 0.99);
     val supportInterval = List(0,50,100,150,250,350,500,750,1000);
     val spotProbInterval = List(0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.6, 0.7, 0.8, 0.9);
 
+    val contextualScoreInterval = List(0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.6, 0.7, 0.8, 0.9);
+
+    val datasets = List("manual","cucerzan", "wikify", "grounder", "csaw");
 
 }

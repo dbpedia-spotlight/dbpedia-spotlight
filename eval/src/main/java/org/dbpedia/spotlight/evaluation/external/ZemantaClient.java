@@ -114,7 +114,7 @@ public class ZemantaClient extends AnnotationClient {
         File input = new File("/home/pablo/eval/csaw/gold/paragraphs.txt");
         File output = new File("/home/pablo/eval/csaw/systems/Zemanta.list");
 
-        c.evaluateManual(input, output);
+        c.evaluate(input, output);
 
 
 //        ZemantaClient c = new ZemantaClient(api_key);

@@ -104,7 +104,7 @@ public class HeadUpClient extends AnnotationClient {
 	private JSONArray request(String url) throws JSONException, AnnotationException {
 		GetMethod method = new GetMethod(url);
 		String response = request(method);
-        LOG.info("reponse: "+response);
+        LOG.info("reponse: " + response);
 		JSONArray json = new JSONArray(response);
 		return json;
 	}
@@ -115,19 +115,19 @@ public class HeadUpClient extends AnnotationClient {
 
          File manualEvalOutput = new File("/home/pablo/eval/manual/systems/HeadUp.list");
          File manualEvalInput = new File("/home/pablo/eval/manual/AnnotationText.txt");
-         client.evaluateManual(manualEvalInput, manualEvalOutput);
+         client.evaluate(manualEvalInput, manualEvalOutput);
 
          File cucerzanEvalInput = new File("/home/pablo/eval/cucerzan/cucerzan.txt");
          File cucerzanEvalOutput = new File("/home/pablo/eval/cucerzan/systems/HeadUp.list");
-//        client.evaluateManual(cucerzanEvalInput, cucerzanEvalOutput);
+//        client.evaluate(cucerzanEvalInput, cucerzanEvalOutput);
 
          File wikifyEvalInput = new File("/home/pablo/eval/wikify/gold/WikifyAllInOne.txt");
          File wikifyEvalOutput = new File("/home/pablo/eval/wikify/systems/HeadUp.list");
-         //client.evaluateManual(wikifyEvalInput, wikifyEvalOutput);
+         //client.evaluate(wikifyEvalInput, wikifyEvalOutput);
 
          File input = new File("/home/pablo/eval/csaw/gold/paragraphs.txt");
          File output = new File("/home/pablo/eval/csaw/systems/HeadUp.list");
-         client.evaluateManual(input, output);
+         client.evaluate(input, output);
      }
 
 

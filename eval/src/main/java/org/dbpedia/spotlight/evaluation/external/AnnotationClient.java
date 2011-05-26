@@ -156,7 +156,7 @@ public abstract class AnnotationClient {
     }
 
 
-    public void evaluateManual(File inputFile, File outputFile) throws Exception {
+    public void evaluate(File inputFile, File outputFile) throws Exception {
         evaluateManual(inputFile,outputFile,0);
     }
 

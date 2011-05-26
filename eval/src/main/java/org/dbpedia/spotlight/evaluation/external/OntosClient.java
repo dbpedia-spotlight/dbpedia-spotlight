@@ -265,7 +265,7 @@ public class OntosClient extends AnnotationClient {
 
         try {
             OntosClient client = new OntosClient(username,password);
-            client.evaluateManual(inputFile, outputFile);
+            client.evaluate(inputFile, outputFile);
         } catch (Exception e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }

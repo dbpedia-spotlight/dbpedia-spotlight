@@ -52,15 +52,18 @@ object SetEvaluation {
         "WMWikify",
         "WMWikify.0.3",
         "WMWikify.0.8",
-        "Zemanta"
+        "Spotlight",
+        "Zemanta",
+        "HeadUp"
     )
     val spotlight = Set(
         "SpotlightNoFilter",
-        "SpotlightTop10Score",
-        "SpotlightTop10Prior",
-        "SpotlightTop10Confusion",
-        "SpotlightTop10Confidence",
-        "SpotlightTop10TrialAndError"
+//        "SpotlightTop10Score",
+//        "SpotlightTop10Prior",
+//        "SpotlightTop10Confusion",
+//        "SpotlightTop10Confidence",
+//        "SpotlightTop10Context",
+        "SpotlightRandom"
     )
 
     def getSystemsResults(baseDir: String):  HashMap[String, Set[String]] = {
@@ -128,6 +131,8 @@ object SetEvaluation {
                 Map("wikify"->slurp(baseDir+"/gold/WikifyAllInOne.set"))
             case "grounder" =>
                 Map("grounder"->slurp(baseDir+"/gold/g1b_spotlight.set"))
+            case "csaw" =>
+                Map("csaw"->slurp(baseDir+"/gold/gold.set"))
             case _ => {
                 println("There is no loader method configured for a gold standard called "+goldStandardName)
                 Map()
@@ -181,18 +186,31 @@ object SetEvaluation {
     for (gk <- gold.keys) {
       var g = gold(gk);
       //System.out.println("Gold size: "+g.size+" ("+gk+")");
-      val out = new PrintStream(baseDir+"/"+gk+".lines");
-      out.println("System, Support, Confidence, Precision, Recall, F1" );
+      val out1 = new PrintStream(baseDir+"/"+gk+".byScore.lines");
+      out1.println("System, Support, Confidence, Precision, Recall, F1" );
       val system = "spotlight"
-      for (support <- EvalParams.supportInterval) {
-        for (confidence <- EvalParams.confidenceInterval) {
+      for (support <- EvalParams.supportInterval) {   //TODO make it contextualScore and prior
+        for (score <- EvalParams.contextualScoreInterval) {
           //val fileName = baseDir+"/spotlight/Spotlight.c"+confidence+"s"+support+".list";
-          val fileName = baseDir+"/spotlight/Spotlight.c"+confidence+"s"+support+".set";
+          val fileName = baseDir+"/spotlight/Spotlight.s"+score+"p"+support+".set";
           //val fileName = baseDir+"/spotlight/AnnotationText-Spotlight.c"+confidence+"s"+support+".txt.set";
-          printLine(out, fileName, system, g, support, confidence);
+          printLine(out1, fileName, system, g, support, score);
         }
       }
-      out.close();
+      out1.close();
+
+        val out2 = new PrintStream(baseDir+"/"+gk+".byConfidence.lines");
+        out2.println("System, Support, Confidence, Precision, Recall, F1" );
+        for (support <- EvalParams.supportInterval) {
+          for (confidence <- EvalParams.confidenceInterval) {
+            //val fileName = baseDir+"/spotlight/Spotlight.c"+confidence+"s"+support+".list";
+            val fileName = baseDir+"/spotlight/Spotlight.c"+confidence+"s"+support+".set";
+            //val fileName = baseDir+"/spotlight/AnnotationText-Spotlight.c"+confidence+"s"+support+".txt.set";
+            printLine(out2, fileName, system, g, support, confidence);
+          }
+        }
+        out2.close();
+
     }
   }
 
@@ -247,10 +265,10 @@ object SetEvaluation {
     //      }
 
 //    val baseDir = "/home/pablo/eval/cucerzan"
-//    val baseDir = "/home/pablo/eval/manual"
-      val baseDir = "/home/pablo/eval/wikify"
+    //val baseDir = "/home/pablo/eval/manual"
+//      val baseDir = "/home/pablo/eval/wikify"
 //      val baseDir = "/home/pablo/eval/grounder"
-
+      val baseDir = "/home/pablo/eval/csaw"
       run(baseDir)
 
   }
