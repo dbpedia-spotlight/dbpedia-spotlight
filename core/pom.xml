@@ -209,7 +209,7 @@
             <version>3.7.3</version>
         </dependency>
 
-        <!--dependency>
+        <dependency>
             <groupId>net.sf.jung</groupId>
             <artifactId>jung-graph-impl</artifactId>
             <version>2.0.1</version>
@@ -231,7 +231,7 @@
             <groupId>net.sf.jung</groupId>
             <artifactId>jung-io</artifactId>
             <version>2.0.1</version>
-        </dependency-->
+        </dependency>
 
         <dependency>
             <groupId>fastutil</groupId>

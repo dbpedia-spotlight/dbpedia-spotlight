@@ -35,17 +35,20 @@ import java.util.Scanner;
 
 /**
  * Class to index surrogates mapping (surface form -> set of resources) in lucene.
+ * This does not index context (paragraphs around an entity mention). For that see @link{org.dbpedia.spotlight.index.ContextIndexer}
+ * @author pablomendes
+ * @author maxjakob
  */
-public class SurrogateIndexer extends BaseIndexer<Surrogate> {
+public class CandidateIndexer extends BaseIndexer<Surrogate> {
 
     final static Log LOG = LogFactory.getLog(BaseIndexer.class);
 
     /**
-     * Constructs a surrogate indexer that follows the policy specified by the {@link LuceneManager} implementation used.
-     * @param indexManager For a caseInsensitive behavior, use {@link org.dbpedia.annotation.lucene.LuceneManager.CaseInsensitiveSurfaceForms}.
+     * Constructs a surrogate indexer that follows the policy specified by the {@link org.dbpedia.spotlight.lucene.LuceneManager} implementation used.
+     * @param indexManager For a caseInsensitive behavior, use {@link org.dbpedia.spotlight.lucene.LuceneManager.CaseInsensitiveSurfaceForms}.
      * @throws java.io.IOException
      */
-    public SurrogateIndexer(LuceneManager indexManager) throws IOException {
+    public CandidateIndexer(LuceneManager indexManager) throws IOException {
         super(indexManager);
     }
 
@@ -118,7 +121,7 @@ public class SurrogateIndexer extends BaseIndexer<Surrogate> {
 
         LuceneManager mLucene = new LuceneManager.CaseInsensitiveSurfaceForms(FSDirectory.open(new File(outputDirName)));
 
-        SurrogateIndexer si = new SurrogateIndexer(mLucene);
+        CandidateIndexer si = new CandidateIndexer(mLucene);
         if (inputFileName.toLowerCase().endsWith(".nt")) {
             si.addFromNTfile(new File(inputFileName));
         }

@@ -34,7 +34,7 @@ import org.dbpedia.spotlight.disambiguate._
 import mixtures.LinearRegressionMixture
 import org.dbpedia.spotlight.lucene.index.MergedOccurrencesContextIndexer
 import org.dbpedia.spotlight.lucene._
-import search.{SurrogateSearcher, MergedOccurrencesContextSearcher}
+import search.{CandidateSearcher, MergedOccurrencesContextSearcher}
 import org.dbpedia.spotlight.model.{SpotlightConfiguration, ContextSearcher}
 
 /**
@@ -222,7 +222,7 @@ object EvaluateDisambiguationOnly
         val luceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(directory)
         luceneManager.setContextAnalyzer(analyzer);
         luceneManager.setContextSimilarity(similarity);
-        val contextSearcher = new SurrogateSearcher(luceneManager);
+        val contextSearcher = new CandidateSearcher(luceneManager);
         LOG.info("Number of entries in merged resource index ("+contextSearcher.getClass()+"): "+ contextSearcher.getNumberOfEntries());
         new RandomDisambiguator(contextSearcher)
     }

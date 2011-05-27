@@ -21,7 +21,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.store.FSDirectory;
 import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.lucene.LuceneManager;
-import org.dbpedia.spotlight.lucene.search.SurrogateSearcher;
+import org.dbpedia.spotlight.lucene.search.CandidateSearcher;
 import org.dbpedia.spotlight.model.DBpediaResource;
 import org.dbpedia.spotlight.model.SurfaceForm;
 import org.semanticweb.yars.nx.Node;
@@ -253,7 +253,7 @@ public abstract class DatasetSplitter {
      * for all surface forms that can relate to this URI.
      * Return all surface forms found this way. 
      */
-    public static Set<String> getConfusableSurfaceForms(String targetType, File instancesFile, SurrogateSearcher surrogateSearcher) throws IOException, ParseException {
+    public static Set<String> getConfusableSurfaceForms(String targetType, File instancesFile, CandidateSearcher surrogateSearcher) throws IOException, ParseException {
         System.err.println("Getting all surface forms for "+targetType+"s...");
         Set<String> surfaceForms = new HashSet<String>();
         if (!targetType.startsWith("http://dbpedia.org/ontology/"))
@@ -306,7 +306,7 @@ public abstract class DatasetSplitter {
         File instancesFile = new File("data/dbpedia/instance_types_en.nt");
         File surrogateIndexDir = new File("data/SurrogateIndex.TitRedDisOcc.lowerCase");
         LuceneManager manager = new LuceneManager.CaseInsensitiveSurfaceForms(FSDirectory.open(surrogateIndexDir));
-        SurrogateSearcher surrogateSearcher = new SurrogateSearcher(manager);
+        CandidateSearcher surrogateSearcher = new CandidateSearcher(manager);
         Set<String> surfaceForms = getConfusableSurfaceForms(targetType, instancesFile, surrogateSearcher);
 
         DatasetSplitter splitter = new BySurfaceForm(trainingFile, testFile, minSize, percentageSplit, surfaceForms);

@@ -69,6 +69,7 @@ object AddPriorsToIndex {
             uriPriorMap += entry; // append entry to map
             total = total + entry._2
         });
+        total = Math.min(total, 11.5 * 1000000000) // http://www.cs.uiowa.edu/~asignori/papers/the-indexable-web-is-more-than-11.5-billion-pages/
         val priors = uriPriorMap.map( e => new DBpediaResource(e._1) -> new java.lang.Double(e._2 / total) ).asJava
         sfIndexer.enrichWithPriors(priors)
         sfIndexer.close

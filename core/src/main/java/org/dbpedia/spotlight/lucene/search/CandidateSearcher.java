@@ -29,16 +29,23 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-public class SurrogateSearcher extends BaseSearcher implements org.dbpedia.spotlight.model.SurrogateSearcher {
+/**
+ * Implements methods for searching an index that associates surface forms to (candidate) URIs.
+ * This searcher does not work with Context. In order to use context to help select the correct URI for a surface forms, @see{ContextSearcher}.
+ *
+ * NOTE: This was previously called CandidateSearcher, but we abandoned Surrogate from the terminology in favor of Candidate.
+ * @author pablomendes
+ */
+public class CandidateSearcher extends BaseSearcher implements org.dbpedia.spotlight.model.SurrogateSearcher {
 
-    final static Log LOG = LogFactory.getLog(SurrogateSearcher.class);
+    final static Log LOG = LogFactory.getLog(CandidateSearcher.class);
 
     /**
      * For a caseInsensitive behavior, use {@link org.dbpedia.spotlight.lucene.LuceneManager.CaseInsensitiveSurfaceForms}.
      * @param searchManager
      * @throws IOException
      */
-    public SurrogateSearcher(LuceneManager searchManager) throws IOException {
+    public CandidateSearcher(LuceneManager searchManager) throws IOException {
         super(searchManager);
     }
 

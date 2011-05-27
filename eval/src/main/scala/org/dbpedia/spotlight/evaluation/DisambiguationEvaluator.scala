@@ -21,7 +21,7 @@ import org.dbpedia.spotlight.model._
 import scala.collection.JavaConversions._
 import java.io.PrintStream
 
-import org.dbpedia.spotlight.evaluation.Profiling._
+import org.dbpedia.spotlight.util.Profiling._
 import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
 import org.dbpedia.spotlight.disambiguate._
 import org.dbpedia.spotlight.exceptions._

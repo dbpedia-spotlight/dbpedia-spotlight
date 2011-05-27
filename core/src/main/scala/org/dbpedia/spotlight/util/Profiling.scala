@@ -1,3 +1,5 @@
+package org.dbpedia.spotlight.util
+
 /**
  * Copyright 2011 Pablo Mendes, Max Jakob
  *
@@ -13,8 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.dbpedia.spotlight.evaluation
 
 /* http://www.matthiasmann.de/content/view/25/26/
  * Copyright (c) 2008-2009, Matthias Mann
