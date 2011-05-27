@@ -41,12 +41,13 @@ import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
 import java.io.File
 import org.dbpedia.spotlight.lucene.similarity._
 import org.apache.commons.logging.LogFactory
-import org.dbpedia.spotlight.exceptions.{SearchException, InputException}
 import org.apache.lucene.search.Explanation
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.lucene.disambiguate.MixedWeightsDisambiguator
 import scala.actors._
 import Actor._
+import java.util.concurrent.TimeoutException
+import org.dbpedia.spotlight.exceptions.{DisambiguationException, SearchException, InputException}
 
 /**
  * Default implementation of the disambiguation functionality.
@@ -76,14 +77,24 @@ class MultiThreadedDisambiguatorWrapper(val disambiguator: Disambiguator) extend
         val multiThreadedDisambiguator = actor {
             var i = 0;
             loopWhile( i < nOccurrences) {
-                reactWithin(2000) {
-                    case sfOccurrence: SurfaceFormOccurrence =>
+                reactWithin(3000) {
+                    case sfOccurrence: SurfaceFormOccurrence => {
                         //LOG.info("Disambiguate: "+sfOccurrence.surfaceForm)
                         i = i+1
                         // Send the disambiguated occurrence back to the caller
-                        caller ! disambiguator.disambiguate(sfOccurrence)
+                        try {
+                            val disambiguation = disambiguator.disambiguate(sfOccurrence)
+                            LOG.debug("Sent ["+(i-1).toString+"] "+ disambiguation.surfaceForm)
+                            caller ! disambiguation
+                        } catch {
+                            case ex:Throwable => 
+                                LOG.error("Caught exception trying to disambiguate ["+sfOccurrence.surfaceForm+"]: "+ex)
+                                LOG.debug("Stack trace: "+ex.getStackTrace.mkString("\n"))
+                                caller ! ex
+                        }
+                    }
                     case TIMEOUT =>
-                        LOG.error(" Timed out trying to disambiguate! ")
+                        caller ! new DisambiguationException("Timed out trying to disambiguate! i="+i)
                         i = i+1
                 }
             }
@@ -94,30 +105,29 @@ class MultiThreadedDisambiguatorWrapper(val disambiguator: Disambiguator) extend
 
         // Aggregate disambiguated occurrences
         val list = new java.util.ArrayList[DBpediaResourceOccurrence]()
-        for ( i <- 1 to nOccurrences) {
-            receiveWithin(10000) {
-                case disambiguation: DBpediaResourceOccurrence =>
-                   // LOG.info("Disambiguation "+disambiguation.resource)
-                  LOG.info(disambiguation)
-                  LOG.info(sfOccurrences.get(0))
-
+        for ( i <- 0 to nOccurrences-1) {
+            receiveWithin(120000) {  // each occurrence has up to 2min to arrive. That's a lot.
+                case disambiguation:DBpediaResourceOccurrence => {
+                    LOG.debug("Received ["+i+"] "+ sfOccurrences.get(i).surfaceForm + disambiguation.surfaceForm)
                     if(disambiguation.context.text.equals(sfOccurrences.get(0).context.text)) { //PATCH by Jo Daiber (temp)
-                      list.add(disambiguation)
+                        //LOG.trace("Occurrence came from the same context.");
+                        list.add(disambiguation)
                     }
-                case TIMEOUT =>
-                  LOG.error(" Timed out trying to aggregate disambiguations! ")
-                  exit()
+                }
+                case e: Throwable =>
+                    LOG.error("Received Exception "+e+" in result collector. i="+i)
+                case TIMEOUT => {
+                    LOG.error("Timed out trying to aggregate disambiguations! i="+i)
+                    exit()
+                }
             }
-
         }
 
         return list;
     }
 
     def bestK(sfOccurrence: SurfaceFormOccurrence, k: Int): java.util.List[DBpediaResourceOccurrence] = {
-        val list = disambiguator.bestK(sfOccurrence, k)
-        //addPriors(list)
-        list
+        disambiguator.bestK(sfOccurrence, k)
     }
 
     def name() : String = {
