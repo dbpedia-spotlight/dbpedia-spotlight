@@ -35,18 +35,11 @@ package org.dbpedia.spotlight.disambiguate
  */
 
 import scalaj.collection.Imports._
-import mixtures.LinearRegressionMixture
-import org.dbpedia.spotlight.lucene.LuceneManager
-import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
-import java.io.File
-import org.dbpedia.spotlight.lucene.similarity._
 import org.apache.commons.logging.LogFactory
 import org.apache.lucene.search.Explanation
 import org.dbpedia.spotlight.model._
-import org.dbpedia.spotlight.lucene.disambiguate.MixedWeightsDisambiguator
 import scala.actors._
 import Actor._
-import java.util.concurrent.TimeoutException
 import org.dbpedia.spotlight.exceptions.{DisambiguationException, SearchException, InputException}
 
 /**
@@ -89,7 +82,7 @@ class MultiThreadedDisambiguatorWrapper(val disambiguator: Disambiguator) extend
                         } catch {
                             case ex:Throwable => 
                                 LOG.error("Caught exception trying to disambiguate ["+sfOccurrence.surfaceForm+"]: "+ex)
-                                LOG.debug("Stack trace: "+ex.getStackTrace.mkString("\n"))
+                                LOG.debug("Stack trace: \n"+ex.getStackTrace.mkString("\n"))
                                 caller ! ex
                         }
                     }
@@ -106,7 +99,7 @@ class MultiThreadedDisambiguatorWrapper(val disambiguator: Disambiguator) extend
         // Aggregate disambiguated occurrences
         val list = new java.util.ArrayList[DBpediaResourceOccurrence]()
         for ( i <- 0 to nOccurrences-1) {
-            receiveWithin(120000) {  // each occurrence has up to 2min to arrive. That's a lot.
+            receiveWithin(9000) {  // time to wait before each occurrence arrives
                 case disambiguation:DBpediaResourceOccurrence => {
                     LOG.debug("Received ["+i+"] "+ sfOccurrences.get(i).surfaceForm + disambiguation.surfaceForm)
                     if(disambiguation.context.text.equals(sfOccurrences.get(0).context.text)) { //PATCH by Jo Daiber (temp)

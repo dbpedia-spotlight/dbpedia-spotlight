@@ -183,43 +183,6 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
         return ctxFreq;
     }
 
-
-    public List<Document> getFullDocuments(SurfaceForm sf, int k) {
-        //LOG.trace("Retrieving documents for surface form: "+sf);
-
-        // search index for surface form
-        List<Document> documents = new ArrayList<Document>();
-
-        // get documents containing the surface form
-        ScoreDoc[] hits;
-        try {
-            hits = getHits(mLucene.getQuery(sf), k);
-        } catch (SearchException e) {
-            LOG.debug(e);
-            return documents;
-        }
-
-        // Iterate through the results:
-        int i = 0;
-        for (ScoreDoc hit : hits) {
-            try {
-                if (i==k) break;
-                documents.add(getFullDocument(hit.doc));  //TODO can gain some speedup by lazy loading context
-                i++;
-            } catch (SearchException e) {
-                LOG.debug(e);
-            }
-        }
-        //LOG.debug(documents.size()+" documents found.");
-
-        // return set of surrogates
-        return documents;
-    }
-
-
-
-
-
     public List<Document> getDocuments(SurfaceForm sf, FieldSelector fieldSelector) throws SearchException {
         //LOG.trace("Retrieving documents for surface form: "+res);
 

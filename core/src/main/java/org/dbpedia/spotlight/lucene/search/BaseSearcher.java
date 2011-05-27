@@ -42,6 +42,7 @@ import org.dbpedia.spotlight.model.vsm.FeatureVector;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * This class manages an index from surface form to candidate resources (surrogates)
@@ -139,12 +140,28 @@ public class BaseSearcher implements Closeable {
         return documents;
     }
 
+    /**
+     * Basic search method used by all searches to the index.
+     * @param query
+     * @param n
+     * @return
+     * @throws SearchException
+     */
     public ScoreDoc[] getHits(Query query, int n) throws SearchException {
-
-        ScoreDoc[] hits;
+        long timeout = 100;
+        ScoreDoc[] hits = null;
         try {
-            hits = mSearcher.search(query, null, n).scoreDocs;
-        } catch (IOException e) {
+            LOG.debug("Start search. timeout="+timeout);
+            //hits = mSearcher.search(query, null, n).scoreDocs;
+            Filter filter = null; //TODO surfaceForm filter here?
+            TopScoreDocCollector collector = TopScoreDocCollector.create(n, false);
+            TimeLimitingCollector tCollector = new TimeLimitingCollector(collector, timeout);
+            mSearcher.search(query, filter, tCollector);
+            hits = collector.topDocs().scoreDocs;
+            LOG.debug("Done  search. hits.length="+hits.length);
+        } catch (TimeLimitingCollector.TimeExceededException timedOutException) {
+            throw new SearchException("Timeout (>"+timeout+"ms searching for surface form "+query.toString(),timedOutException);
+        } catch (Exception e) {
             throw new SearchException("Error searching for surface form "+query.toString(),e);
         }
         //LOG.debug(hits.length+" hits found.");
