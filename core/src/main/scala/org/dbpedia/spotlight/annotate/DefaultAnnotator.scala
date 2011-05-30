@@ -23,7 +23,8 @@ import org.dbpedia.spotlight.spot.Spotter
 import org.dbpedia.spotlight.disambiguate.{Disambiguator, DefaultDisambiguator}
 import org.dbpedia.spotlight.exceptions.InputException
 import org.dbpedia.spotlight.spot.lingpipe.{IndexLingPipeSpotter, LingPipeSpotter}
-import org.dbpedia.spotlight.candidate.{SpotSelector, CommonWordFilter}
+import org.dbpedia.spotlight.tagging.lingpipe.LingPipeTaggedTokenProvider
+import org.dbpedia.spotlight.candidate.{CoOccurrenceBasedSelector, SpotSelector, CommonWordFilter}
 
 /**
  * Annotates a text with DBpedia Resources
@@ -56,7 +57,14 @@ class DefaultAnnotator(val spotter : Spotter, val spotSelector: SpotSelector, va
     @throws(classOf[InputException])
     def annotate(text : String) : java.util.List[DBpediaResourceOccurrence] = {
         LOG.info("Spotting...")
-        val spottedSurfaceForms : java.util.List[SurfaceFormOccurrence] = spotter.extract(new Text(text))
+      
+        val textObject : Text = if(!spotSelector.isInstanceOf[CoOccurrenceBasedSelector]) {
+            new Text(text)
+        }else{
+            new TaggedText(text, new LingPipeTaggedTokenProvider())
+        }
+        val spottedSurfaceForms : java.util.List[SurfaceFormOccurrence] = spotter.extract(textObject)
+
 
         val selectedSpots = if (spotSelector==null) {
             LOG.info("Skipping candidate selection.");
