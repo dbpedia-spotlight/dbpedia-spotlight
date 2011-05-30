@@ -32,6 +32,10 @@ public class CoOccurrenceBasedSelector implements SpotSelector {
 		LOG.info("Initializing occurrence data provider.");
 		OccurrenceDataProviderSQL.getInstance(configuration);
 		LOG.info("Done.");
+
+		LOG.info("Initializing candidate classifiers.");
+		new CoOccurrenceBasedFactory(configuration);
+		LOG.info("Done.");
 	}
 
 	public List<SurfaceFormOccurrence> select(List<SurfaceFormOccurrence> surfaceFormOccurrences) {
