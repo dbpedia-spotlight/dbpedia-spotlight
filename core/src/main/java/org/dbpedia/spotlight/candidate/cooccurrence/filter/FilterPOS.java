@@ -35,6 +35,9 @@ public class FilterPOS extends Filter {
 
 	private boolean isOnUnigramBlacklist(SurfaceFormOccurrence surfaceFormOccurrence) {
 
+        if (! (surfaceFormOccurrence.context() instanceof TaggedText)) //FIXME added catch for when TaggedText was not created
+            return false;
+
 		List<TaggedToken> taggedTokens = ((TaggedText) surfaceFormOccurrence.context()).taggedTokenProvider()
 				.getTaggedTokens(surfaceFormOccurrence);
 

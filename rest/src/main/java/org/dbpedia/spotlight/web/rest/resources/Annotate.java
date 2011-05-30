@@ -19,6 +19,7 @@ package org.dbpedia.spotlight.web.rest.resources;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.web.rest.Server;
 import org.dbpedia.spotlight.web.rest.SpotlightInterface;
+import sun.util.LocaleServiceProviderPool;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -68,6 +69,7 @@ public class Annotate {
             String response = annotationInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp);
             return ok(response);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(e.getMessage()).type(MediaType.TEXT_HTML).build());
         }
     }

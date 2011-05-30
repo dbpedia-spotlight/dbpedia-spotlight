@@ -7,6 +7,7 @@ import org.dbpedia.spotlight.candidate.cooccurrence.features.data.OccurrenceData
 import org.dbpedia.spotlight.candidate.cooccurrence.filter.FilterPattern;
 import org.dbpedia.spotlight.candidate.cooccurrence.filter.FilterTermsize;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
+import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.json.JSONException;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
@@ -26,7 +27,7 @@ import java.util.ArrayList;
  */
 public class AnnotatedDatasetEnricherNGram extends AnnotatedDatasetEnricher {
 
-	public AnnotatedDatasetEnricherNGram() throws ConfigurationException, IOException {
+	public AnnotatedDatasetEnricherNGram(SpotlightConfiguration configuration) throws ConfigurationException, IOException {
 		super();
 
 		FilterTermsize filterTermsize = new FilterTermsize(FilterTermsize.Termsize.unigram);
@@ -37,7 +38,7 @@ public class AnnotatedDatasetEnricherNGram extends AnnotatedDatasetEnricher {
 		filters.add(filterPattern);
 		header = new Instances("NgramTraining", buildAttributeList(), buildAttributeList().size());
 
-		dataProvider  = OccurrenceDataProviderSQL.getInstance();
+		dataProvider  = OccurrenceDataProviderSQL.getInstance(configuration);
 
 	}
 
@@ -58,7 +59,7 @@ public class AnnotatedDatasetEnricherNGram extends AnnotatedDatasetEnricher {
 
 	public static void main(String[] args) throws ConfigurationException, IOException, JSONException {
 
-		AnnotatedDatasetEnricherNGram annotatedDatasetEnricherNGram = new AnnotatedDatasetEnricherNGram();
+		AnnotatedDatasetEnricherNGram annotatedDatasetEnricherNGram = new AnnotatedDatasetEnricherNGram(new SpotlightConfiguration("conf/server.properties"));
 
 		OccurrenceDataset trainingData = new OccurrenceDataset(new File("/Users/jodaiber/Documents/workspace/ba/BachelorThesis/01 Evaluation/02 Annotation/Software/custom/src/annotation/second_run.json"), OccurrenceDataset.Format.JSON);
 		annotatedDatasetEnricherNGram.writeDataset(trainingData, new File("/Users/jodaiber/Desktop/NgramTraining.xrff"));

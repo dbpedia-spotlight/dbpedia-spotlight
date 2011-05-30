@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.candidate.cooccurrence.classification.CandidateClassifier;
 import org.dbpedia.spotlight.candidate.cooccurrence.classification.CandidateClassifierNGram;
 import org.dbpedia.spotlight.candidate.cooccurrence.classification.CandidateClassifierUnigram;
+import org.dbpedia.spotlight.model.SpotlightConfiguration;
 
 /**
  * @author Joachim Daiber
@@ -17,17 +18,17 @@ public class CoOccurrenceBasedFactory {
 	private static CandidateClassifier classifierNGram;
 
 
-	public CoOccurrenceBasedFactory(String modelFileUnigram, String modelFileNGram) {
+	public CoOccurrenceBasedFactory(SpotlightConfiguration config) {
 
 		try{
-			classifierUnigram = new CandidateClassifierUnigram(modelFileUnigram);
+			classifierUnigram = new CandidateClassifierUnigram(config.getCandidateClassifierUnigram(), config);
 		}catch (Exception e) {
 			LOG.error("Could not initialize unigram classifier." + e);
 		}
 		classifierUnigram.setVerboseMode(true);
 
 		try{
-			classifierNGram = new CandidateClassifierNGram(modelFileNGram);
+			classifierNGram = new CandidateClassifierNGram(config.getCandidateClassifierNGram(), config);
 		}catch (Exception e) {
 			LOG.error("Could not initialize ngram classifier." + e);
 		}

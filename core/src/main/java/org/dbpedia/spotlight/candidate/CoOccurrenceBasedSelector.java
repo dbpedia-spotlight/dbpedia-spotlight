@@ -10,6 +10,7 @@ import org.dbpedia.spotlight.candidate.cooccurrence.features.data.OccurrenceData
 import org.dbpedia.spotlight.candidate.cooccurrence.filter.FilterPOS;
 import org.dbpedia.spotlight.candidate.cooccurrence.filter.FilterPattern;
 import org.dbpedia.spotlight.candidate.cooccurrence.filter.FilterTermsize;
+import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 import org.dbpedia.spotlight.model.TaggedText;
 import org.dbpedia.spotlight.tagging.TaggedToken;
@@ -27,9 +28,9 @@ public class CoOccurrenceBasedSelector implements SpotSelector {
 
 	private final Log LOG = LogFactory.getLog(this.getClass());
 
-	public CoOccurrenceBasedSelector() {
+	public CoOccurrenceBasedSelector(SpotlightConfiguration configuration) { //TODO use its own config instead of general one.
 		LOG.info("Initializing occurrence data provider.");
-		OccurrenceDataProviderSQL.getInstance();
+		OccurrenceDataProviderSQL.getInstance(configuration);
 		LOG.info("Done.");
 	}
 
@@ -51,6 +52,12 @@ public class CoOccurrenceBasedSelector implements SpotSelector {
 		//unigramClassifier.setVerboseMode(true);
 
 		for(SurfaceFormOccurrence surfaceFormOccurrence : surfaceFormOccurrences) {
+
+            if (! (surfaceFormOccurrence.context() instanceof TaggedText)) { //FIXME added this to avoid breaking, but code below will never run if we don't pass the taggedtext
+                LOG.warn("SurfaceFormOccurrence did not contain TaggedText. Cannot apply "+this.getClass());
+                selectedOccurrences.add(surfaceFormOccurrence);
+                continue;
+            }
 
 			if(unigramFilter.applies(surfaceFormOccurrence)) {
 
@@ -92,6 +99,7 @@ public class CoOccurrenceBasedSelector implements SpotSelector {
 						candidateClassification = unigramClassifier.classify(surfaceFormOccurrence);
 					} catch (Exception e) {
 						LOG.error("Exception when classyfing unigram candidate: " + e);
+                        e.printStackTrace();
 						continue;
 					}
 
@@ -116,6 +124,7 @@ public class CoOccurrenceBasedSelector implements SpotSelector {
 					candidateClassification = ngramClassifier.classify(surfaceFormOccurrence);
 				}catch (Exception e) {
 					LOG.error("Exception when classyfing ngram candidate: " + e);
+                    e.printStackTrace();
 					continue;
 				}
 

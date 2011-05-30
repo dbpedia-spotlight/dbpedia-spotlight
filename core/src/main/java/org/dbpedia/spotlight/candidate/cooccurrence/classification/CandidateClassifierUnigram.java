@@ -1,6 +1,7 @@
 package org.dbpedia.spotlight.candidate.cooccurrence.classification;
 
 import org.dbpedia.spotlight.candidate.cooccurrence.CandidateUtil;
+import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 import weka.core.DenseInstance;
 import weka.core.Instance;
@@ -12,8 +13,8 @@ import weka.core.Instance;
  */
 public class CandidateClassifierUnigram extends CandidateClassifier {
 
-	public CandidateClassifierUnigram(String modelFile) throws Exception {
-		super(modelFile);
+	public CandidateClassifierUnigram(String modelFile, SpotlightConfiguration configuration) throws Exception {
+		super(modelFile, configuration);
 	}
 
 	@Override

@@ -12,26 +12,22 @@ import java.util.List;
  * via a JDBC driver specified in the configuration file.
  *
  * @author Joachim Daiber
+ * @author pablomendes (changed initialization to accept configuration without hardcoded filename)
  */
 
 public class OccurrenceDataProviderSQL implements OccurrenceDataProvider {
 
 	Connection sqlConnection;
-	SpotlightConfiguration spotlightConfiguration;
 
-	private static final OccurrenceDataProviderSQL INSTANCE = new OccurrenceDataProviderSQL();
+	private static OccurrenceDataProviderSQL INSTANCE;
 
-	public static OccurrenceDataProviderSQL getInstance() {
+	public static OccurrenceDataProviderSQL getInstance(SpotlightConfiguration spotlightConfiguration) {
+        if (INSTANCE == null)
+            INSTANCE = new OccurrenceDataProviderSQL(spotlightConfiguration);
         return INSTANCE;
     }
 
-	private OccurrenceDataProviderSQL() {
-
-		try {
-			spotlightConfiguration = new SpotlightConfiguration("conf/server.properties");
-		} catch (ConfigurationException e) {
-			e.printStackTrace();
-		}
+	private OccurrenceDataProviderSQL(SpotlightConfiguration spotlightConfiguration) {
 
 		try {
 			Class.forName(spotlightConfiguration.getCandidateDatabaseDriver()).newInstance();
@@ -40,7 +36,7 @@ public class OccurrenceDataProviderSQL implements OccurrenceDataProvider {
 					spotlightConfiguration.getCandidateDatabaseUser(),
 					spotlightConfiguration.getCandidateDatabasePassword()
 					);
-			
+
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
@@ -50,8 +46,8 @@ public class OccurrenceDataProviderSQL implements OccurrenceDataProvider {
 		} catch (IllegalAccessException e) {
 			e.printStackTrace();
 		}
-		
-		
+
+
 	}
 
 
@@ -63,7 +59,7 @@ public class OccurrenceDataProviderSQL implements OccurrenceDataProvider {
 					= this.sqlConnection.prepareStatement("SELECT * FROM words WHERE word=? LIMIT 1;");
 			statement.setString(1, candidate);
 			ResultSet resultSet = statement.executeQuery();
-			
+
 			if(!resultSet.next())
 				throw new ItemNotFoundException("Could not find information about candidate \"" + candidate +  "\".");
 
@@ -78,7 +74,7 @@ public class OccurrenceDataProviderSQL implements OccurrenceDataProvider {
 	@Override
 	public CoOccurrenceData getBigramData(CandidateData word1, CandidateData word2) throws ItemNotFoundException {
 		try {
-		
+
 			Statement statement = this.sqlConnection.createStatement();
 			ResultSet resultSet = statement.executeQuery
 					("SELECT * FROM bigrams WHERE " +

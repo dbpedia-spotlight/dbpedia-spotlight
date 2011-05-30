@@ -3,6 +3,7 @@ package org.dbpedia.spotlight.candidate.cooccurrence.features.data;
 import junit.framework.TestCase;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
+import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.tagging.lingpipe.LingPipeFactory;
 
 import java.util.Arrays;
@@ -21,7 +22,8 @@ public class OccurrenceDataProviderSQLTest extends TestCase {
 
 	public OccurrenceDataProviderSQLTest(String name) throws ConfigurationException {
         super(name);
-		occurrenceDataProviderUnigram = OccurrenceDataProviderSQL.getInstance();
+        SpotlightConfiguration config = new SpotlightConfiguration("conf/server.properties");
+		occurrenceDataProviderUnigram = OccurrenceDataProviderSQL.getInstance(config);
 		String text = "PLEASANT GROVE, Ala. — The death toll in five Southern states rose sharply Thursday morning " +
 				"to nearly 200 after devastating storms ripped through the region, spawning a deadly tornado in " +
 				"downtown Tuscaloosa, Ala., and leaving a trail of flattened homes and buildings in an area already " +

@@ -18,8 +18,8 @@ import org.dbpedia.spotlight.lucene.LuceneManager.DBpediaResourceField
 import collection.JavaConversions._
 import org.dbpedia.spotlight.disambiguate.DefaultDisambiguator
 import org.dbpedia.spotlight.lucene.search.{BaseSearcher, MergedOccurrencesContextSearcher}
-import org.dbpedia.spotlight.candidate.{AtLeastOneNounFilter, CommonWordFilter, SpotSelector}
 import org.dbpedia.spotlight.exceptions.ConfigurationException
+import org.dbpedia.spotlight.candidate.{CoOccurrenceBasedSelector, AtLeastOneNounFilter, CommonWordFilter, SpotSelector}
 
 /**
  * Class containing methods to create model objects in many different ways
@@ -107,7 +107,8 @@ class LuceneFactory(val configuration: SpotlightConfiguration,
     }
 
     def spotSelector() = {
-        new AtLeastOneNounFilter(new File(configuration.getTaggerFile))
+        //new AtLeastOneNounFilter(new File(configuration.getTaggerFile))
+        new CoOccurrenceBasedSelector(configuration);
         //new CommonWordFilter(configuration.getCommonWordsFile)
         //null
     }

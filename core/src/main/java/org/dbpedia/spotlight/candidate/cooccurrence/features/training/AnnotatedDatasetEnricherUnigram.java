@@ -8,6 +8,7 @@ import org.dbpedia.spotlight.candidate.cooccurrence.filter.FilterPOS;
 import org.dbpedia.spotlight.candidate.cooccurrence.filter.FilterPattern;
 import org.dbpedia.spotlight.candidate.cooccurrence.filter.FilterTermsize;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
+import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.json.JSONException;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
@@ -27,7 +28,7 @@ import java.util.ArrayList;
  */
 public class AnnotatedDatasetEnricherUnigram extends AnnotatedDatasetEnricher {
 
-	public AnnotatedDatasetEnricherUnigram() throws ConfigurationException, IOException {
+	public AnnotatedDatasetEnricherUnigram(SpotlightConfiguration configuration) throws ConfigurationException, IOException {
 		super();
 
 		filters.add(new FilterTermsize(FilterTermsize.Termsize.unigram));
@@ -36,7 +37,7 @@ public class AnnotatedDatasetEnricherUnigram extends AnnotatedDatasetEnricher {
 
 		header = new Instances("UnigramTraining", buildAttributeList(), buildAttributeList().size());
 
-		dataProvider  = OccurrenceDataProviderSQL.getInstance();
+		dataProvider  = OccurrenceDataProviderSQL.getInstance(configuration);
 
 	}
 
@@ -54,7 +55,7 @@ public class AnnotatedDatasetEnricherUnigram extends AnnotatedDatasetEnricher {
 
 	public static void main(String[] args) throws ConfigurationException, IOException, JSONException {
 
-		AnnotatedDatasetEnricherUnigram annotatedDatasetEnricherUnigram = new AnnotatedDatasetEnricherUnigram();
+		AnnotatedDatasetEnricherUnigram annotatedDatasetEnricherUnigram = new AnnotatedDatasetEnricherUnigram(new SpotlightConfiguration("conf/server.properties"));
 
 		OccurrenceDataset trainingData = new OccurrenceDataset(new File("/Users/jodaiber/Documents/workspace/ba/BachelorThesis/01 Evaluation/02 Annotation/Software/custom/src/annotation/test.json"), OccurrenceDataset.Format.JSON);
 		annotatedDatasetEnricherUnigram.writeDataset(trainingData, new File("/Users/jodaiber/Desktop/UnigramTraining.xrff"));

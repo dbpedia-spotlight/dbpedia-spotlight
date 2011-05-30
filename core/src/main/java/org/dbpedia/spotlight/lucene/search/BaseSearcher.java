@@ -148,17 +148,16 @@ public class BaseSearcher implements Closeable {
      * @throws SearchException
      */
     public ScoreDoc[] getHits(Query query, int n) throws SearchException {
-        long timeout = 100;
+        long timeout = 300; //TODO make this configurable
         ScoreDoc[] hits = null;
         try {
-            LOG.debug("Start search. timeout="+timeout);
-            //hits = mSearcher.search(query, null, n).scoreDocs;
+            LOG.trace("Start search. timeout="+timeout);
             Filter filter = null; //TODO surfaceForm filter here?
             TopScoreDocCollector collector = TopScoreDocCollector.create(n, false);
             TimeLimitingCollector tCollector = new TimeLimitingCollector(collector, timeout);
             mSearcher.search(query, filter, tCollector);
             hits = collector.topDocs().scoreDocs;
-            LOG.debug("Done  search. hits.length="+hits.length);
+            LOG.trace("Done search. hits.length="+hits.length);
         } catch (TimeLimitingCollector.TimeExceededException timedOutException) {
             throw new SearchException("Timeout (>"+timeout+"ms searching for surface form "+query.toString(),timedOutException);
         } catch (Exception e) {
@@ -350,13 +349,17 @@ public class BaseSearcher implements Closeable {
 
             for (int i=0; i<n; i++) {
                 Term t = terms.get(i).getKey();
-                String[] commonSurfaceForms = {"*"}; //TODO get these surface forms from somewhere
-                for (String sf: commonSurfaceForms) {
-                    getHits(new CandidateResourceQuery(new Term(LuceneManager.DBpediaResourceField.SURFACE_FORM.toString(), sf), t));
-                }
+                //TODO For a second-level cache warmUp we need surface forms and context together, but this is app dependent
+//                String[] commonSurfaceForms = {"*"}; //get a list of surface forms from somewhere
+//                for (String sf: commonSurfaceForms) {
+//                    getHits(new CandidateResourceQuery(new Term(LuceneManager.DBpediaResourceField.SURFACE_FORM.toString(), sf), t));
+//                }
+
                 //int count = terms.get(i).getValue();
-                //getHits(new TermQuery(t));
                 //LOG.trace(String.format("Text: %s, Count: %s", t.text(), count));
+
+                getHits(new TermQuery(t)); // warm up first-level cache (lucene's own)
+
             }
 
 

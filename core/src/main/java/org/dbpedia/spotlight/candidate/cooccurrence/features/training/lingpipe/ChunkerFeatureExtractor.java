@@ -15,6 +15,7 @@ import org.dbpedia.spotlight.candidate.cooccurrence.features.data.CandidateData;
 import org.dbpedia.spotlight.candidate.cooccurrence.features.data.OccurrenceDataProviderSQL;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
+import org.dbpedia.spotlight.model.SpotlightConfiguration;
 
 import java.io.*;
 import java.util.List;
@@ -36,10 +37,12 @@ public class ChunkerFeatureExtractor
 
 	private final OccurrenceDataProviderSQL dataProvider;
 
+    static SpotlightConfiguration mConfiguration;
 
-
-	public ChunkerFeatureExtractor()
+	public ChunkerFeatureExtractor(SpotlightConfiguration configuration)
 			throws ClassNotFoundException, IOException, ConfigurationException {
+
+        this.mConfiguration = configuration;
 
 		@SuppressWarnings("unchecked")
 		HiddenMarkovModel posHmm
@@ -51,7 +54,7 @@ public class ChunkerFeatureExtractor
 				= new FastCache<String,double[]>(100000);
 		mPosTagger = new HmmDecoder(posHmm,null,emissionCache);
 
-		dataProvider = OccurrenceDataProviderSQL.getInstance();
+		dataProvider = OccurrenceDataProviderSQL.getInstance(configuration);
 	}
 
 	public ChainCrfFeatures<String> extract(List<String> tokens,
@@ -198,7 +201,7 @@ public class ChunkerFeatureExtractor
 				throws IOException, ClassNotFoundException {
 
 			try {
-				return new ChunkerFeatureExtractor();
+				return new ChunkerFeatureExtractor(mConfiguration);
 			} catch (ConfigurationException e) {
 				e.printStackTrace();
 				return null;

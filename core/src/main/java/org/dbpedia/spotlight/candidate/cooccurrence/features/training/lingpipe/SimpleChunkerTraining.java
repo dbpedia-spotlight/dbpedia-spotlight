@@ -22,6 +22,7 @@ import org.dbpedia.spotlight.candidate.cooccurrence.filter.Filter;
 import org.dbpedia.spotlight.candidate.cooccurrence.filter.FilterTermsize;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
+import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.tagging.lingpipe.LingPipeFactory;
 import org.json.JSONException;
 
@@ -34,6 +35,7 @@ public class SimpleChunkerTraining {
 
 	public static void main(String[] args) throws IOException, ItemNotFoundException, ClassNotFoundException, ConfigurationException, JSONException {
 
+        SpotlightConfiguration config = new SpotlightConfiguration("conf/server.properties");
 		LingPipeFactory.setSentenceModel(new IndoEuropeanSentenceModel());
 		LingPipeFactory.setTaggerModelFile(new File("/Users/jodaiber/Documents/workspace/ba/Bachelor Thesis/02 Implementation/Features/POS/pos-en-general-brown.HiddenMarkovModel"));
 
@@ -54,7 +56,7 @@ public class SimpleChunkerTraining {
 				enforceConsistency);
 
 		ChainCrfFeatureExtractor<String> featureExtractor
-				= new ChunkerFeatureExtractor();
+				= new ChunkerFeatureExtractor(config);
 
 		int minFeatureCount = 1;
 
