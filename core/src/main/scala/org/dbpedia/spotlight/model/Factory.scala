@@ -20,6 +20,8 @@ import org.dbpedia.spotlight.disambiguate.DefaultDisambiguator
 import org.dbpedia.spotlight.lucene.search.{BaseSearcher, MergedOccurrencesContextSearcher}
 import org.dbpedia.spotlight.exceptions.ConfigurationException
 import org.dbpedia.spotlight.candidate.{CoOccurrenceBasedSelector, AtLeastOneNounFilter, CommonWordFilter, SpotSelector}
+import org.dbpedia.spotlight.tagging.lingpipe.LingPipeFactory
+import com.aliasi.sentences.IndoEuropeanSentenceModel
 
 /**
  * Class containing methods to create model objects in many different ways
@@ -85,6 +87,13 @@ class LuceneFactory(val configuration: SpotlightConfiguration,
     def this(configuration: SpotlightConfiguration) {
         this(configuration, new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET))
         if (!new File(configuration.getTaggerFile).exists()) throw new ConfigurationException("POS tagger file does not exist! "+configuration.getTaggerFile);
+
+        //Initialize the part-of-speech tagger with the HMM model from the configuration:
+        LingPipeFactory.setTaggerModelFile(new File(configuration.getTaggerFile()));
+
+        //Initialize the sentence model:
+        LingPipeFactory.setSentenceModel(new IndoEuropeanSentenceModel());
+
     }
 
     val directory : Directory = LuceneManager.pickDirectory(new File(configuration.getIndexDirectory))
