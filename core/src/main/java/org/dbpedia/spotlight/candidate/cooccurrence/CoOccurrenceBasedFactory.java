@@ -25,14 +25,14 @@ public class CoOccurrenceBasedFactory {
 		}catch (Exception e) {
 			LOG.error("Could not initialize unigram classifier." + e);
 		}
-		classifierUnigram.setVerboseMode(true);
+		//classifierUnigram.setVerboseMode(true);
 
 		try{
 			classifierNGram = new CandidateClassifierNGram(config.getCandidateClassifierNGram(), config);
 		}catch (Exception e) {
 			LOG.error("Could not initialize ngram classifier." + e);
 		}
-		classifierNGram.setVerboseMode(true);
+		//classifierNGram.setVerboseMode(true);
 
 	}
 
