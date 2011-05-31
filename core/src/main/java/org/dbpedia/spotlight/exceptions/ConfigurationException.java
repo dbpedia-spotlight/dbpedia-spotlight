@@ -17,7 +17,7 @@
 package org.dbpedia.spotlight.exceptions;
 
 /**
- * Indicates that an error happen when getting configuration parameters for initializing objects.
+ * Indicates that an error happened when getting configuration parameters for initializing objects.
  * @author pablomendes
  */
 public class ConfigurationException extends Exception {
