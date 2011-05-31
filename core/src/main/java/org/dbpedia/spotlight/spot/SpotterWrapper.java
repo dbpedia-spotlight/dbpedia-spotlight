@@ -18,14 +18,10 @@
 
 package org.dbpedia.spotlight.spot;
 
-import com.aliasi.tag.Tagger;
-import org.dbpedia.spotlight.spot.SpotSelector;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 import org.dbpedia.spotlight.model.TaggedText;
 import org.dbpedia.spotlight.model.Text;
 import org.dbpedia.spotlight.tagging.TaggedTokenProvider;
-import org.dbpedia.spotlight.tagging.lingpipe.LingPipeTaggedTokenProvider;
-import weka.classifiers.evaluation.output.prediction.Null;
 
 import java.util.List;
 
@@ -85,7 +81,7 @@ public abstract class SpotterWrapper implements Spotter {
         }
         @Override
         protected Text buildText(Text text) {
-            return new TaggedText(text.text(), new LingPipeTaggedTokenProvider());
+            return new TaggedText(text.text(), tagger);
         }
     }
 
