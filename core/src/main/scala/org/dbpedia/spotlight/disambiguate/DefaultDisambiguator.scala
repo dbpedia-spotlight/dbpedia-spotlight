@@ -50,7 +50,7 @@ class DefaultDisambiguator(val configuration: SpotlightConfiguration) extends Di
 
     //val luceneManager = new LuceneManager(dir)                              // use this if surface forms in the index are case-sensitive
     val luceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(dir)  // use this if all surface forms in the index are lower-cased
-    val cache = new JCSTermCache(luceneManager, configuration.getMaxCacheSize);
+    val cache = JCSTermCache.getInstance(luceneManager, configuration.getMaxCacheSize);
     luceneManager.setContextSimilarity(new CachedInvCandFreqSimilarity(cache))        // set most successful Similarity
 
     val contextSearcher = new MergedOccurrencesContextSearcher(luceneManager)

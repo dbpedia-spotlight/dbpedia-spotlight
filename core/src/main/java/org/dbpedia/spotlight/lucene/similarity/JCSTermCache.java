@@ -38,14 +38,14 @@ import java.util.Properties;
  */
 public class JCSTermCache extends TermCache {
 
-    Log LOG = LogFactory.getLog(JCSTermCache.class);
+    static Log LOG = LogFactory.getLog(JCSTermCache.class);
 
     //Singleton
     private static JCSTermCache instance;   //TODO this could be a map from IndexReader to JCSTermCache
     private static int checkedOut = 0;
     private static JCS termCache;
 
-    public JCSTermCache(LuceneManager mgr, long maxCacheSize) throws CacheException {
+    private JCSTermCache(LuceneManager mgr, long maxCacheSize) throws CacheException {
         super(mgr, maxCacheSize);
         init();
     }
@@ -72,11 +72,14 @@ public class JCSTermCache extends TermCache {
 		synchronized (JCSTermCache.class) {
 			if (instance == null) {
 				instance = new JCSTermCache(mgr, maxCacheSize);
-			}
+			} else {
+                LOG.info("Reusing already initialized cache.");
+            }
 		}
 
 		synchronized (instance) {
 			instance.checkedOut++;
+            LOG.debug(String.format("Cache has been checked out %s times.", instance.checkedOut));
 		}
 
 		return instance;

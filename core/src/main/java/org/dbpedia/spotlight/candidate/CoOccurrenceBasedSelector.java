@@ -10,6 +10,7 @@ import org.dbpedia.spotlight.candidate.cooccurrence.features.data.OccurrenceData
 import org.dbpedia.spotlight.candidate.cooccurrence.filter.FilterPOS;
 import org.dbpedia.spotlight.candidate.cooccurrence.filter.FilterPattern;
 import org.dbpedia.spotlight.candidate.cooccurrence.filter.FilterTermsize;
+import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 import org.dbpedia.spotlight.model.TaggedText;
@@ -28,7 +29,7 @@ public class CoOccurrenceBasedSelector implements SpotSelector {
 
 	private final Log LOG = LogFactory.getLog(this.getClass());
 
-	public CoOccurrenceBasedSelector(SpotlightConfiguration configuration) { //TODO use its own config instead of general one.
+	public CoOccurrenceBasedSelector(SpotlightConfiguration configuration) throws ConfigurationException { //TODO use its own config instead of general one.
 		LOG.info("Initializing occurrence data provider.");
 		OccurrenceDataProviderSQL.getInstance(configuration);
 		LOG.info("Done.");

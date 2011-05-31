@@ -26,7 +26,7 @@ import org.apache.lucene.search.{Similarity, DefaultSimilarity}
 import org.dbpedia.spotlight.lucene.disambiguate._
 import org.dbpedia.spotlight.lucene.similarity._
 
-import  org.dbpedia.spotlight.evaluation.Profiling._
+import  org.dbpedia.spotlight.util.Profiling._
 import org.apache.lucene.store.{NIOFSDirectory, Directory, FSDirectory}
 import io.Source
 import scala.collection.JavaConversions._
@@ -107,7 +107,7 @@ object EvaluateDisambiguationOnly
       val analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET);
       //val directory = LuceneManager.pickDirectory(new File(indexDir+"."+analyzer.getClass.getSimpleName+".DefaultSimilarity"));
       val directory =  LuceneManager.pickDirectory(new File(indexDir));
-      val cache = new JCSTermCache(new LuceneManager.BufferedMerging(directory), 5000);
+      val cache = JCSTermCache.getInstance(new LuceneManager.BufferedMerging(directory), 5000);
       val similarity : Similarity = new CachedInvCandFreqSimilarity(cache);
       createMergedDisambiguator(indexDir, analyzer, similarity, directory)
     }
@@ -116,7 +116,7 @@ object EvaluateDisambiguationOnly
       val analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET);
       //val directory = LuceneManager.pickDirectory(new File(indexDir+"."+analyzer.getClass.getSimpleName+".DefaultSimilarity"));
       val directory =  LuceneManager.pickDirectory(new File(indexDir));
-      val cache = new JCSTermCache(new LuceneManager.BufferedMerging(directory),5000);
+      val cache = JCSTermCache.getInstance(new LuceneManager.BufferedMerging(directory),5000);
       //val similarity : Similarity = new CachedInvCandFreqSimilarity(cache);
       val similarity : Similarity = new InvCandFreqSimilarity
       val mixture = new LinearRegressionMixture
@@ -126,7 +126,7 @@ object EvaluateDisambiguationOnly
     def getNewDisambiguator(indexDir: String) : Disambiguator = {
       val analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET);
       val directory = LuceneManager.pickDirectory(new File(indexDir+"."+analyzer.getClass.getSimpleName+".DefaultSimilarity"));
-      val cache = new JCSTermCache(new LuceneManager.BufferedMerging(directory),5000);
+      val cache = JCSTermCache.getInstance(new LuceneManager.BufferedMerging(directory),5000);
       val similarity : Similarity = new NewSimilarity(cache);
       createMergedDisambiguator(indexDir, analyzer, similarity, directory)
     }

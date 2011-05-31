@@ -98,7 +98,7 @@ class LuceneFactory(val configuration: SpotlightConfiguration,
 
     val directory : Directory = LuceneManager.pickDirectory(new File(configuration.getIndexDirectory))
     val luceneManager : LuceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(directory)
-    val similarity : Similarity = new CachedInvCandFreqSimilarity(new JCSTermCache(luceneManager, configuration.getMaxCacheSize))
+    val similarity : Similarity = new CachedInvCandFreqSimilarity(JCSTermCache.getInstance(luceneManager, configuration.getMaxCacheSize))
 
     luceneManager.setContextAnalyzer(analyzer);
     luceneManager.setContextSimilarity(similarity);

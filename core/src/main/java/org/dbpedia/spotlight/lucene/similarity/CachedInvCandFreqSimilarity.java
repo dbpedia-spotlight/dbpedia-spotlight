@@ -140,7 +140,7 @@ public class CachedInvCandFreqSimilarity extends DefaultSimilarity implements Ca
                     } else {
                         if (surfaceFormTerm==null) {
                             sf = termCache.cardinality(reader, term); // This is the number of docs containing term
-                            LOG.debug("[OLD] Surface form is null:"+term);
+                            LOG.trace("[OLD] Surface form is null:"+term); // this can happen for queries only on context field (e.g. for warmUp)
                         } else {
                             sf = termCache.cardinality(reader, surfaceFormTerm, term); // This is the number of docs containing sf + term
                         }

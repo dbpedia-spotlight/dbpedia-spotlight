@@ -62,7 +62,7 @@ public class CandidateUtil {
 			 *
 			 */
 
-			System.out.println("Skipped candidate " + surfaceFormOccurrence.surfaceForm());
+			LOG.debug("Skipped candidate " + surfaceFormOccurrence.surfaceForm());
 		}
 
 		if (candidateData != null) {

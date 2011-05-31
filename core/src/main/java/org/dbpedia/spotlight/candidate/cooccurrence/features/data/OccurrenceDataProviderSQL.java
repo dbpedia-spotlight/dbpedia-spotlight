@@ -21,13 +21,13 @@ public class OccurrenceDataProviderSQL implements OccurrenceDataProvider {
 
 	private static OccurrenceDataProviderSQL INSTANCE;
 
-	public static OccurrenceDataProviderSQL getInstance(SpotlightConfiguration spotlightConfiguration) {
+	public static OccurrenceDataProviderSQL getInstance(SpotlightConfiguration spotlightConfiguration) throws ConfigurationException {
         if (INSTANCE == null)
             INSTANCE = new OccurrenceDataProviderSQL(spotlightConfiguration);
         return INSTANCE;
     }
 
-	private OccurrenceDataProviderSQL(SpotlightConfiguration spotlightConfiguration) {
+	private OccurrenceDataProviderSQL(SpotlightConfiguration spotlightConfiguration) throws ConfigurationException {
 
 		try {
 			Class.forName(spotlightConfiguration.getCandidateDatabaseDriver()).newInstance();
@@ -37,15 +37,18 @@ public class OccurrenceDataProviderSQL implements OccurrenceDataProvider {
 					spotlightConfiguration.getCandidateDatabasePassword()
 					);
 
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (InstantiationException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		}
+		} catch (Exception e) {
+			throw new ConfigurationException("Cannot get DB connection.", e);
+        }
+//        } catch (SQLException e) {
+//			e.printStackTrace();
+//		} catch (ClassNotFoundException e) {
+//			e.printStackTrace();
+//		} catch (InstantiationException e) {
+//			e.printStackTrace();
+//		} catch (IllegalAccessException e) {
+//			e.printStackTrace();
+//		}
 
 
 	}
