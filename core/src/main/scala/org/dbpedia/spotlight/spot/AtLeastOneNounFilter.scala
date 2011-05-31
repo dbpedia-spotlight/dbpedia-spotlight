@@ -1,3 +1,5 @@
+package org.dbpedia.spotlight.spot
+
 /*
  * *
  *  * Copyright 2011 Pablo Mendes, Max Jakob
@@ -16,8 +18,6 @@
  *
  */
 
-package org.dbpedia.spotlight.candidate
-
 import com.aliasi.sentences.IndoEuropeanSentenceModel
 import java.io.File
 import org.dbpedia.spotlight.tagging.lingpipe.{LingPipeTaggedTokenProvider, LingPipeFactory}
@@ -25,12 +25,13 @@ import scalaj.collection.Imports._
 
 import org.dbpedia.spotlight.model.{Provenance, SurfaceForm, Text, SurfaceFormOccurrence}
 import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.spot.SpotSelector
 
 /**
  *
  * @author pablomendes
  */
-class AtLeastOneNounFilter(val posTaggerModel: File) extends SpotSelector {
+class AtLeastOneNounFilter(val posTaggerModel: File) extends UntaggedSpotSelector {
 
     private val LOG = LogFactory.getLog(this.getClass)
 

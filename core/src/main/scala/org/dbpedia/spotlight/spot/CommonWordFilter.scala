@@ -1,4 +1,4 @@
-package org.dbpedia.spotlight.candidate
+package org.dbpedia.spotlight.spot
 
 import io.Source
 import com.officedepot.cdap2.collection.CompactHashSet
@@ -9,13 +9,14 @@ import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.apache.log4j.Logger
 import org.dbpedia.spotlight.io.WortschatzParser
+import org.dbpedia.spotlight.spot.SpotSelector
 
 /**
  * This is a temporary workaround to the common words problem. Pablo is working on the actual fix.
  *
  * @author pablomendes
  */
-class CommonWordFilter(val filename: String, val load: Boolean = true) extends SpotSelector {
+class CommonWordFilter(val filename: String, val load: Boolean = true) extends UntaggedSpotSelector {
 
     val LOG = Logger.getLogger(this.getClass);
 

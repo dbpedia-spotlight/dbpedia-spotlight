@@ -24,7 +24,8 @@ import org.dbpedia.spotlight.disambiguate.{Disambiguator, DefaultDisambiguator}
 import org.dbpedia.spotlight.exceptions.InputException
 import org.dbpedia.spotlight.spot.lingpipe.{IndexLingPipeSpotter, LingPipeSpotter}
 import org.dbpedia.spotlight.tagging.lingpipe.LingPipeTaggedTokenProvider
-import org.dbpedia.spotlight.candidate.{CoOccurrenceBasedSelector, SpotSelector, CommonWordFilter}
+import org.dbpedia.spotlight.candidate.CoOccurrenceBasedSelector
+import org.dbpedia.spotlight.spot.{SpotSelector}
 
 /**
  * Annotates a text with DBpedia Resources

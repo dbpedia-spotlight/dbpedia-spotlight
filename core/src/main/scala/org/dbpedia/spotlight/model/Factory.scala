@@ -19,7 +19,7 @@ import collection.JavaConversions._
 import org.dbpedia.spotlight.disambiguate.DefaultDisambiguator
 import org.dbpedia.spotlight.lucene.search.{BaseSearcher, MergedOccurrencesContextSearcher}
 import org.dbpedia.spotlight.exceptions.ConfigurationException
-import org.dbpedia.spotlight.candidate.{CoOccurrenceBasedSelector, AtLeastOneNounFilter, CommonWordFilter, SpotSelector}
+import org.dbpedia.spotlight.candidate.{CoOccurrenceBasedSelector, AtLeastOneNounFilter, CommonWordFilter}
 import org.dbpedia.spotlight.tagging.lingpipe.LingPipeFactory
 import com.aliasi.sentences.IndoEuropeanSentenceModel
 

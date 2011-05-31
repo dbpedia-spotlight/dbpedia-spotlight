@@ -14,6 +14,7 @@ import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 import org.dbpedia.spotlight.model.TaggedText;
+import org.dbpedia.spotlight.spot.SpotSelector;
 import org.dbpedia.spotlight.tagging.TaggedToken;
 
 import java.util.LinkedList;
