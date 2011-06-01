@@ -16,15 +16,13 @@
 
 package org.dbpedia.spotlight.web.rest;
 
+import com.sun.grizzly.http.SelectorThread;
+import com.sun.jersey.api.container.grizzly.GrizzlyWebContainerFactory;
 import org.dbpedia.spotlight.annotate.Annotator;
-import org.dbpedia.spotlight.annotate.DefaultAnnotator;
 import org.dbpedia.spotlight.disambiguate.Disambiguator;
-import org.dbpedia.spotlight.exceptions.ConfigurationException;
+import org.dbpedia.spotlight.exceptions.InitializationException;
 import org.dbpedia.spotlight.model.LuceneFactory;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
-
-import com.sun.grizzly.http.SelectorThread;
-import com.sun.jersey.api.container.grizzly.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,7 +50,7 @@ public class Server {
     static String usage = "usage: java -jar dbpedia-spotlight.jar org.dbpedia.spotlight.web.rest.Server [config file]"
                         + "   or: mvn scala:run \"-DaddArgs=[config file]\"";
 
-    public static void main(String[] args) throws IOException, InterruptedException, URISyntaxException, ClassNotFoundException, ConfigurationException {
+    public static void main(String[] args) throws IOException, InterruptedException, URISyntaxException, ClassNotFoundException, InitializationException {
 
         //Initialization, check values
         try {
@@ -66,7 +64,7 @@ public class Server {
 
         URI serverURI = new URI(configuration.getServerURI());       // "http://localhost:"+args[0]+"/rest/"
         File indexDir = new File(configuration.getIndexDirectory()); //"/home/pablo/web/dbpedia36data/2.9.3/small/Index.wikipediaTraining.Merged.SnowballAnalyzer.DefaultSimilarity"
-        File spotterFile = new File(configuration.getSpotterFile()); //"/home/pablo/eval/manual/Eval.spotterDictionary"
+        File spotterFile = new File(configuration.getSpotterConfiguration().getSpotterFile()); //"/home/pablo/eval/manual/Eval.spotterDictionary"
 
         // Set static annotator that will be used by Annotate and Disambiguate
         final LuceneFactory factory = new LuceneFactory(configuration);
@@ -114,11 +112,11 @@ public class Server {
 
     }
 
-    private static void setAnnotator(Annotator a) throws ConfigurationException {
+    private static void setAnnotator(Annotator a) throws InitializationException {
         if (annotator == null)
             annotator = a;
         else
-            throw new ConfigurationException("Trying to overwrite singleton Server.annotator. Something fishy happened!");
+            throw new InitializationException("Trying to overwrite singleton Server.annotator. Something fishy happened!");
     }
 
     public static Annotator getAnnotator() {

@@ -1,5 +1,5 @@
 /**
- * Copyright 2011 Pablo Mendes, Max Jakob
+ * Copyright 2011 Pablo Mendes, Max Jakob, Joachim Daiber
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,11 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
-
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
  */
 
 package org.dbpedia.spotlight.model;
@@ -51,7 +46,6 @@ public class SpotlightConfiguration {
 	public final static String DEFAULT_POLICY = "whitelist";
 	public final static String DEFAULT_COREFERENCE_RESOLUTION = "true";
 
-	protected String spotterFile    = "";
 	protected String indexDirectory = "";
 	protected List<Double> similarityThresholds;
 	protected String similarityThresholdsFile = "similarity-thresholds.txt";
@@ -61,24 +55,10 @@ public class SpotlightConfiguration {
 	protected String sparqlMainGraph = "http://dbpedia.org/sparql";
 	protected String sparqlEndpoint  = "http://dbpedia.org";
 
-
-	protected String candidateDatabaseDriver = "";
-	protected String candidateDatabaseConnector = "";
-	protected String candidateDatabaseUser = "";
-	protected String candidateDatabasePassword = "";
-
-	protected String candidateClassifierUnigram = "";
-	protected String candidateClassifierNGram = "";
-
     protected long maxCacheSize = Long.MAX_VALUE;
-
 
 	public String getServerURI() {
 		return serverURI;
-	}
-
-	public String getSpotterFile() {
-		return spotterFile;
 	}
 
 	public String getIndexDirectory() {
@@ -101,38 +81,25 @@ public class SpotlightConfiguration {
 		return taggerFile;
 	}
 
-	public String getCandidateDatabaseDriver() {
-		return candidateDatabaseDriver;
-	}
-
-	public String getCandidateDatabaseConnector() {
-		return candidateDatabaseConnector;
-	}
-
-	public String getCandidateDatabaseUser() {
-		return candidateDatabaseUser;
-	}
-
-	public String getCandidateDatabasePassword() {
-		return candidateDatabasePassword;
-	}
-
-	public String getCandidateClassifierNGram() {
-		return candidateClassifierNGram;
-	}
-
-	public String getCandidateClassifierUnigram() {
-		return candidateClassifierUnigram;
-	}
-
     public long getMaxCacheSize() {
 		return maxCacheSize;
 	}
+
 	
-	//final static String spotterFile= "/home/pablo/web/dbpedia36data/2.9.3/surface_forms-Wikipedia-TitRedDis.thresh3.spotterDictionary";
-	//final static String indexDirectory = "/home/pablo/web/dbpedia36data/2.9.3/Index.wikipediaTraining.Merged.SnowballAnalyzer.DefaultSimilarity";
+	/**
+	 * The Spotter configuration is read with the SpotlightConfiguration.
+	 * However, to make the configuration more modular and readable, the
+	 * configuration for Spotter and spot selection are stored in this object.
+	 */
+	protected SpotterConfiguration spotterConfiguration;
+
+	public SpotterConfiguration getSpotterConfiguration() {
+		return spotterConfiguration;
+	}
+
 
 	public SpotlightConfiguration(String fileName) throws ConfigurationException {
+
 		//read config properties
 		Properties config = new Properties();
 		try {
@@ -140,8 +107,11 @@ public class SpotlightConfiguration {
 		} catch (IOException e) {
 			throw new ConfigurationException("Cannot find configuration file "+fileName,e);
 		}
-		//set spotterFile, indexDir...
 
+		//Read the spotter configuration from the properties file
+		spotterConfiguration = new SpotterConfiguration(fileName);
+
+		//set spotterFile, indexDir...
 		indexDirectory = config.getProperty("org.dbpedia.spotlight.index.dir").trim();
 		if(!new File(indexDirectory).isDirectory()) {
 			throw new ConfigurationException("Cannot find index directory "+indexDirectory);
@@ -162,31 +132,10 @@ public class SpotlightConfiguration {
 			throw new ConfigurationException("Error reading '"+indexDirectory+"/"+similarityThresholdsFile,e);
 		}
 
-		spotterFile = config.getProperty("org.dbpedia.spotlight.spot.dictionary").trim();
-		if(!new File(spotterFile).isFile()) {
-			throw new ConfigurationException("Cannot find spotter file "+spotterFile);
-		}
-
-
         taggerFile = config.getProperty("org.dbpedia.spotlight.tagging.hmm").trim();
         if(!new File(taggerFile).isFile()) {
             throw new ConfigurationException("Cannot find POS tagger model file "+taggerFile);
         }
-
-		candidateDatabaseDriver =
-				config.getProperty("org.dbpedia.spotlight.candidate.cooccurence.database.jdbcdriver", "").trim();
-		candidateDatabaseConnector =
-				config.getProperty("org.dbpedia.spotlight.candidate.cooccurence.database.connector", "").trim();
-		candidateDatabaseUser =
-				config.getProperty("org.dbpedia.spotlight.candidate.cooccurence.database.user", "").trim();
-		candidateDatabasePassword =
-				config.getProperty("org.dbpedia.spotlight.candidate.cooccurence.database.password", "").trim();
-
-		candidateClassifierUnigram =
-				config.getProperty("org.dbpedia.spotlight.candidate.cooccurence.classifier.unigram", "").trim();
-		candidateClassifierNGram =
-				config.getProperty("org.dbpedia.spotlight.candidate.cooccurence.classifier.ngram", "").trim();
-
 
 		serverURI = config.getProperty("org.dbpedia.spotlight.web.rest.uri").trim();
 		if (!serverURI.endsWith("/")) {

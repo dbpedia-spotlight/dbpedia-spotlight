@@ -1,7 +1,7 @@
 package org.dbpedia.spotlight.candidate.cooccurrence.classification;
 
 /**
- * Simple candiate classification
+ * Simple candidate classification
  *
  * @author Joachim Daiber
  */

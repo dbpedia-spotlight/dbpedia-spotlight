@@ -3,8 +3,6 @@ package org.dbpedia.spotlight.candidate.cooccurrence.classification;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.candidate.cooccurrence.features.data.OccurrenceDataProvider;
-import org.dbpedia.spotlight.candidate.cooccurrence.features.data.OccurrenceDataProviderSQL;
-import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 import weka.classifiers.Classifier;
 import weka.core.Instance;
@@ -31,10 +29,9 @@ public abstract class CandidateClassifier {
 	protected boolean verboseMode = false;
 
 
-	public CandidateClassifier(String modelFile, SpotlightConfiguration configuration) throws Exception {
+	public CandidateClassifier(String modelFile, OccurrenceDataProvider dataProvider) throws Exception {
 		this.modelFile = modelFile;
-		this.dataProvider = OccurrenceDataProviderSQL.getInstance(configuration);
-
+		this.dataProvider = dataProvider;
 		initialize();
 	}
 

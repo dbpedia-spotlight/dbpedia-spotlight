@@ -1,8 +1,10 @@
 package org.dbpedia.spotlight.candidate.cooccurrence.features.data;
 
-import org.dbpedia.spotlight.exceptions.ConfigurationException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.dbpedia.spotlight.exceptions.InitializationException;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
-import org.dbpedia.spotlight.model.SpotlightConfiguration;
+import org.dbpedia.spotlight.model.SpotterConfiguration;
 
 import java.sql.*;
 import java.util.List;
@@ -18,41 +20,51 @@ import java.util.List;
 public class OccurrenceDataProviderSQL implements OccurrenceDataProvider {
 
 	Connection sqlConnection;
+	private final Log LOG = LogFactory.getLog(this.getClass());
 
 	private static OccurrenceDataProviderSQL INSTANCE;
 
-	public static OccurrenceDataProviderSQL getInstance(SpotlightConfiguration spotlightConfiguration) throws ConfigurationException {
-        if (INSTANCE == null)
-            INSTANCE = new OccurrenceDataProviderSQL(spotlightConfiguration);
-        return INSTANCE;
-    }
-
-	private OccurrenceDataProviderSQL(SpotlightConfiguration spotlightConfiguration) throws ConfigurationException {
+	public OccurrenceDataProviderSQL(SpotterConfiguration spotterConfiguration) throws InitializationException {
 
 		try {
-			Class.forName(spotlightConfiguration.getCandidateDatabaseDriver()).newInstance();
+			Class.forName(spotterConfiguration.getCandidateDatabaseDriver()).newInstance();
 
-			this.sqlConnection = DriverManager.getConnection(spotlightConfiguration.getCandidateDatabaseConnector(),
-					spotlightConfiguration.getCandidateDatabaseUser(),
-					spotlightConfiguration.getCandidateDatabasePassword()
-					);
+			this.sqlConnection = DriverManager.getConnection(spotterConfiguration.getCandidateDatabaseConnector(),
+					spotterConfiguration.getCandidateDatabaseUser(),
+					spotterConfiguration.getCandidateDatabasePassword()
+			);
 
-		} catch (Exception e) {
-			throw new ConfigurationException("Cannot get DB connection.", e);
-        }
-//        } catch (SQLException e) {
-//			e.printStackTrace();
-//		} catch (ClassNotFoundException e) {
-//			e.printStackTrace();
-//		} catch (InstantiationException e) {
-//			e.printStackTrace();
-//		} catch (IllegalAccessException e) {
-//			e.printStackTrace();
-//		}
+		} catch (SQLException e) {
+			throw new InitializationException("SQL Exception: Maybe wrong filename, incorrect JDBC connector String?", e);
+		} catch (ClassNotFoundException e) {
+			throw new InitializationException("Did not find SQL driver class specified in configuration file, " +
+					"is the driver in the classpath?", e);
+		} catch (InstantiationException e) {
+			throw new InitializationException("Could not instantiate SQL driver.", e);
+		} catch (IllegalAccessException e) {
+			throw new InitializationException("No access to SQL driver specified in configuration file.", e);
+		}
 
-
+		
 	}
 
+	public static OccurrenceDataProviderSQL getInstance() {
+		return INSTANCE;
+	}
+
+	/**
+	 * Initialize the occurrence data provider. In the singleton pattern, this would be equivalent to the
+	 * first call to getInstance(), however, since the initialization can fail for reasons of missing or
+	 * wrong configuration, this should be done in this method.
+	 *
+	 * @throws org.dbpedia.spotlight.exceptions.InitializationException there was in error in the configuration
+	 */
+
+	public static void initialize(SpotterConfiguration spotterConfiguration) throws InitializationException {
+
+		INSTANCE = new OccurrenceDataProviderSQL(spotterConfiguration);
+
+	}
 
 	@Override
 	public CandidateData getCandidateData(String candidate) throws ItemNotFoundException {
@@ -102,13 +114,13 @@ public class OccurrenceDataProviderSQL implements OccurrenceDataProvider {
 
 	@Override
 	public CoOccurrenceData getTrigramData(CandidateData word1, CandidateData word2, CandidateData word3) throws ItemNotFoundException {
-			try {
+		try {
 
 
 			Statement statement = this.sqlConnection.createStatement();
 			ResultSet resultSet = statement.executeQuery("SELECT * FROM trigrams WHERE " +
-							"word1=" + word1.getId() + " AND word2=" + word2.getId() + " AND word3="
-							+ word3.getId() + " LIMIT 1;");
+					"word1=" + word1.getId() + " AND word2=" + word2.getId() + " AND word3="
+					+ word3.getId() + " LIMIT 1;");
 
 
 			if(!resultSet.next())
@@ -123,9 +135,6 @@ public class OccurrenceDataProviderSQL implements OccurrenceDataProvider {
 
 		throw new ItemNotFoundException("Could not find trigram.");
 	}
-
-
-	
 
 	@Override
 	public List<CoOccurrenceData> getSentenceData(CandidateData candidate, List<String> tokens) {

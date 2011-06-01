@@ -17,6 +17,9 @@
 
 package org.dbpedia.spotlight.spot;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.dbpedia.spotlight.annotate.DefaultAnnotator;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 import org.dbpedia.spotlight.model.TaggedText;
 import org.dbpedia.spotlight.model.Text;
@@ -31,6 +34,8 @@ import java.util.List;
  * @author pablomendes
  */
 public abstract class SpotterWithSelector implements Spotter {
+
+	private final Log LOG = LogFactory.getLog(DefaultAnnotator.class);
 
 	protected Spotter spotter;
 	protected SpotSelector spotSelector;
@@ -53,7 +58,16 @@ public abstract class SpotterWithSelector implements Spotter {
 		List<SurfaceFormOccurrence> spottedSurfaceForms = spotter.extract(textObject);
 
 		if(spotSelector != null) {
-			return spotSelector.select(spottedSurfaceForms);
+			List<SurfaceFormOccurrence> selectedSpots = spotSelector.select(spottedSurfaceForms);
+
+			LOG.info("Selecting candidates...");
+			int previousSize = spottedSurfaceForms.size();
+			int count = previousSize - selectedSpots.size();
+			String percent = (count == 0) ? "0" : String.format("%1.0f", (((double) count) / previousSize) * 100);
+			LOG.info(String.format("Removed %s (%s percent) spots using spotSelector %s", count, percent, this.spotSelector.getClass().getSimpleName()));
+
+			return selectedSpots;
+
 		}else{
 			return spottedSurfaceForms;
 		}
@@ -61,8 +75,8 @@ public abstract class SpotterWithSelector implements Spotter {
 	}
 
 	public String name() {
-		String name = "SpotterWrapper:"+spotter.name();
-		if (spotSelector!=null) name+= spotSelector.getClass().toString();
+		String name = "SpotterWithSelector:"+spotter.name();
+		if (spotSelector!=null) name += ", " + spotSelector.getClass().toString();
 		return name;
 	}
 

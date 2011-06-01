@@ -8,20 +8,19 @@ import java.io.File
 import org.apache.lucene.search.Similarity
 import org.dbpedia.spotlight.lucene.similarity.{CachedInvCandFreqSimilarity, JCSTermCache}
 import org.apache.lucene.store.Directory
-import org.dbpedia.spotlight.disambiguate.mixtures.LinearRegressionMixture
-import org.dbpedia.spotlight.lucene.disambiguate.MixedWeightsDisambiguator
 import org.dbpedia.spotlight.annotate.DefaultAnnotator
 import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter
 import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters
-import org.apache.lucene.document.{Field, Document}
+import org.apache.lucene.document.Document
 import org.dbpedia.spotlight.lucene.LuceneManager.DBpediaResourceField
 import collection.JavaConversions._
 import org.dbpedia.spotlight.disambiguate.DefaultDisambiguator
 import org.dbpedia.spotlight.lucene.search.{BaseSearcher, MergedOccurrencesContextSearcher}
 import org.dbpedia.spotlight.exceptions.ConfigurationException
-import org.dbpedia.spotlight.candidate.{CoOccurrenceBasedSelector, AtLeastOneNounFilter, CommonWordFilter}
-import org.dbpedia.spotlight.tagging.lingpipe.LingPipeFactory
+import org.dbpedia.spotlight.candidate.{CoOccurrenceBasedSelector}
 import com.aliasi.sentences.IndoEuropeanSentenceModel
+import org.dbpedia.spotlight.tagging.lingpipe.{LingPipeTaggedTokenProvider, LingPipeFactory}
+import org.dbpedia.spotlight.spot.{SpotterWithSelector}
 
 /**
  * Class containing methods to create model objects in many different ways
@@ -78,7 +77,12 @@ object Factory {
         }
     }
 
+
+  
+
+
 }
+
 
 class LuceneFactory(val configuration: SpotlightConfiguration,
                     val analyzer: Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET)
@@ -93,6 +97,7 @@ class LuceneFactory(val configuration: SpotlightConfiguration,
 
         //Initialize the sentence model:
         LingPipeFactory.setSentenceModel(new IndoEuropeanSentenceModel());
+
 
     }
 
@@ -112,18 +117,18 @@ class LuceneFactory(val configuration: SpotlightConfiguration,
     }
 
     def spotter() ={
-        new LingPipeSpotter(new File(configuration.getSpotterFile));
-    }
 
-    def spotSelector() = {
-        //new AtLeastOneNounFilter(new File(configuration.getTaggerFile))
-        new CoOccurrenceBasedSelector(configuration);
-        //new CommonWordFilter(configuration.getCommonWordsFile)
-        //null
+        //SpotterWithSelector.getInstance(
+        //  new LingPipeSpotter(new File(configuration.getSpotterConfiguration().getSpotterFile())),
+        //  new CoOccurrenceBasedSelector(configuration.getSpotterConfiguration()),
+        //  new LingPipeTaggedTokenProvider()
+        //);
+
+        new LingPipeSpotter(new File(configuration.getSpotterConfiguration().getSpotterFile()));
     }
 
     def annotator() ={
-        new DefaultAnnotator(spotter(),spotSelector(),disambiguator())
+        new DefaultAnnotator(spotter(), disambiguator())
     }
 
     def filter() ={

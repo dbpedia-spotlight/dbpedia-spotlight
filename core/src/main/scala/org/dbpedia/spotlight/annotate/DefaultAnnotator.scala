@@ -16,76 +16,29 @@
 
 package org.dbpedia.spotlight.annotate
 
-import java.io.File
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.spot.Spotter
 import org.dbpedia.spotlight.disambiguate.{Disambiguator, DefaultDisambiguator}
 import org.dbpedia.spotlight.exceptions.InputException
 import org.dbpedia.spotlight.spot.lingpipe.{IndexLingPipeSpotter, LingPipeSpotter}
-import org.dbpedia.spotlight.tagging.lingpipe.LingPipeTaggedTokenProvider
-import org.dbpedia.spotlight.candidate.CoOccurrenceBasedSelector
-import org.dbpedia.spotlight.spot.{SpotSelector}
 
 /**
  * Annotates a text with DBpedia Resources
  */
 
-class DefaultAnnotator(val spotter : Spotter, val spotSelector: SpotSelector, val disambiguator: Disambiguator) extends Annotator {
-
-//    def this(spotter : Spotter, disambiguator : Disambiguator) = {
-//        this(spotter, null, disambiguator);
-//    }
-//
-//    def this(spotterFile: File, indexDir : File) {
-//        this(new LingPipeSpotter(spotterFile), new DefaultDisambiguator(indexDir))
-//    }
-//
-//    def this(spotterFile: File, spotSelectorFile: File, indexDir : File) {
-//        this(new LingPipeSpotter(spotterFile), new CommonWordFilter(spotSelectorFile.getPath), new DefaultDisambiguator(indexDir))
-//    }
-//
-//    def this(spotter : Spotter, indexDir : File) {
-//        this(spotter, new DefaultDisambiguator(indexDir))
-//    }
-//
-//    def this(spotterFile: File, disambiguator: Disambiguator) {
-//        this(new LingPipeSpotter(spotterFile), disambiguator)
-//    }
+class DefaultAnnotator(val spotter : Spotter, val disambiguator: Disambiguator) extends Annotator {
 
     private val LOG = LogFactory.getLog(this.getClass)
 
     @throws(classOf[InputException])
     def annotate(text : String) : java.util.List[DBpediaResourceOccurrence] = {
-        LOG.info("Spotting...")
-      
-        val textObject : Text = if(!spotSelector.isInstanceOf[CoOccurrenceBasedSelector]) {
-            new Text(text)
-        }else{
-            new TaggedText(text, new LingPipeTaggedTokenProvider())
-        }
-        val spottedSurfaceForms : java.util.List[SurfaceFormOccurrence] = spotter.extract(textObject)
 
-
-        val selectedSpots = if (spotSelector==null) {
-            LOG.info("Skipping candidate selection.");
-            spottedSurfaceForms
-        } else  {
-            LOG.info("Selecting candidates...");
-
-            // Old selector that we never quite finished coding
-            //val selectedSpots = disambiguator.spotProbability(spottedSurfaceForms);
-            val previousSize = spottedSurfaceForms.size
-            // New selector
-            val r = spotSelector.select(spottedSurfaceForms)
-            val count = previousSize-r.size
-            val percent = if (count==0) "0" else "%1.0f" format ((count.toDouble / previousSize) * 100)
-            LOG.info(String.format("Removed %s (%s percent) spots using spotSelector %s", count.toString, percent.toString, spotSelector.getClass().getSimpleName ))
-            r
-        };
+        LOG.info("Spotting... ("+spotter.name()+")")
+        val spottedSurfaceForms : java.util.List[SurfaceFormOccurrence] = spotter.extract(new Text(text))
 
         LOG.info("Disambiguating... ("+disambiguator.name+")")
-        val disambiguatedOccurrences : java.util.List[DBpediaResourceOccurrence] = disambiguator.disambiguate(selectedSpots)
+        val disambiguatedOccurrences : java.util.List[DBpediaResourceOccurrence] = disambiguator.disambiguate(spottedSurfaceForms)
 
         LOG.info("Done.")
         disambiguatedOccurrences

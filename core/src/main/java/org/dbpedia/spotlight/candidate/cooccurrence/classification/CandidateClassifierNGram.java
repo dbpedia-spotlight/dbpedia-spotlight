@@ -1,7 +1,7 @@
 package org.dbpedia.spotlight.candidate.cooccurrence.classification;
 
 import org.dbpedia.spotlight.candidate.cooccurrence.CandidateUtil;
-import org.dbpedia.spotlight.model.SpotlightConfiguration;
+import org.dbpedia.spotlight.candidate.cooccurrence.features.data.OccurrenceDataProvider;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 import weka.core.DenseInstance;
 import weka.core.Instance;
@@ -14,8 +14,8 @@ import weka.core.Instance;
 
 public class CandidateClassifierNGram extends CandidateClassifier {
 
-	public CandidateClassifierNGram(String modelFile, SpotlightConfiguration config) throws Exception {
-		super(modelFile, config);
+	public CandidateClassifierNGram(String modelFile, OccurrenceDataProvider dataProvider) throws Exception {
+		super(modelFile, dataProvider);
 	}
 
 	@Override

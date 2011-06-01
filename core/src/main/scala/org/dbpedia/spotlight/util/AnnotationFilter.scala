@@ -256,7 +256,7 @@ class AnnotationFilter(val config: SpotlightConfiguration)
 
         var config = new SpotlightConfiguration("conf/server.properties");
 
-        val spotterFile    = config.getSpotterFile;
+        val spotterFile    = config.getSpotterConfiguration.getSpotterFile;
         val indexDir = config.getIndexDirectory
 
         val disambiguator : Disambiguator = new DefaultDisambiguator(config)

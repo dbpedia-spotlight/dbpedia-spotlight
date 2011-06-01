@@ -68,7 +68,7 @@ object DBpediaSpotlightClient
     luceneManager.setContextSimilarity(similarity);
     val contextSearcher = new MergedOccurrencesContextSearcher(luceneManager);
 
-    val spotter = new LingPipeSpotter(new File(configuration.getSpotterFile));
+    val spotter = new LingPipeSpotter(new File(configuration.getSpotterConfiguration.getSpotterFile));
     val spotSelector: SpotSelector = null//new AtLeastOneNounFilter(configuration.getTaggerFile)
     val mixture = new LinearRegressionMixture
     val disambiguator = new MixedWeightsDisambiguator(contextSearcher,mixture);

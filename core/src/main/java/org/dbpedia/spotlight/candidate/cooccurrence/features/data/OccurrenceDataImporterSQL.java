@@ -3,7 +3,8 @@ package org.dbpedia.spotlight.candidate.cooccurrence.features.data;
 import au.com.bytecode.opencsv.CSVReader;
 import org.dbpedia.spotlight.candidate.cooccurrence.CandidateUtil;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
-import org.dbpedia.spotlight.model.SpotlightConfiguration;
+import org.dbpedia.spotlight.exceptions.InitializationException;
+import org.dbpedia.spotlight.model.SpotterConfiguration;
 
 import java.io.File;
 import java.io.FileReader;
@@ -21,32 +22,22 @@ import java.sql.*;
 public class OccurrenceDataImporterSQL {
 
 	Connection sqlConnection;
-	SpotlightConfiguration spotlightConfiguration;
+	SpotterConfiguration spotterConfiguration;
 
-	public OccurrenceDataImporterSQL() throws ConfigurationException {
+	public OccurrenceDataImporterSQL() throws InitializationException, ConfigurationException {
 
-		try {
-			spotlightConfiguration = new SpotlightConfiguration("conf/server.properties");
-		} catch (ConfigurationException e) {
-			e.printStackTrace();
-		}
+		spotterConfiguration = new SpotterConfiguration("conf/candidate.properties");
 
 		try {
-			Class.forName(spotlightConfiguration.getCandidateDatabaseDriver()).newInstance();
+			Class.forName(spotterConfiguration.getCandidateDatabaseDriver()).newInstance();
 
-			this.sqlConnection = DriverManager.getConnection(spotlightConfiguration.getCandidateDatabaseConnector(),
-					spotlightConfiguration.getCandidateDatabaseUser(),
-					spotlightConfiguration.getCandidateDatabasePassword()
+			this.sqlConnection = DriverManager.getConnection(spotterConfiguration.getCandidateDatabaseConnector(),
+					spotterConfiguration.getCandidateDatabaseUser(),
+					spotterConfiguration.getCandidateDatabasePassword()
 					);
 
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (InstantiationException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
+		} catch(Exception e) {
+			throw new InitializationException("Error in database initialization", e);
 		}
 
 	}
@@ -60,7 +51,6 @@ public class OccurrenceDataImporterSQL {
 				"create memory table words ( id Int, word Varchar(30) primary key,  count_corpus BigInt,  count_web BigInt, UNIQUE (id) );\n" +
 				"create memory table bigrams (word1 Int, word2 Int, count_corpus BigInt, significance_corpus Float, count_web BigInt, significance_web Float, Primary key (word1, word2));\n" +
 				"create memory table trigrams (word1 Int, word2 Int, word3 Int, count_web BigInt, Primary key (word1, word2, word3));");
-
 	}
 
 	public void importCSV(File unigrams, File bigrams, File trigrams) throws IOException, SQLException {
@@ -137,7 +127,7 @@ public class OccurrenceDataImporterSQL {
 
 	}
 
-	public static void main(String[] args) throws ConfigurationException, IOException, SQLException {
+	public static void main(String[] args) throws InitializationException, IOException, SQLException, ConfigurationException {
 
 		OccurrenceDataImporterSQL occurrenceDataImporterSQL = new OccurrenceDataImporterSQL();
 		occurrenceDataImporterSQL.createTables();

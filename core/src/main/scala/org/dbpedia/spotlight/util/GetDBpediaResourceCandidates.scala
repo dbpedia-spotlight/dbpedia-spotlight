@@ -6,8 +6,8 @@ import org.dbpedia.spotlight.model.DBpediaResource._
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.model.{SurfaceForm, DBpediaResource, LuceneFactory, SpotlightConfiguration}
 import scala.collection.JavaConversions._
-import org.dbpedia.spotlight.candidate.CommonWordFilter
-import org.dbpedia.spotlight.io.WortschatzParser
+//import org.dbpedia.spotlight.candidate.CommonWordFilter
+//import org.dbpedia.spotlight.io.WortschatzParser
 
 /**
  * Takes in a list of Common Words and queries the index to find classes that are confusable with those.
