@@ -6,7 +6,7 @@ import org.dbpedia.spotlight.model.DBpediaResource._
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.model.{SurfaceForm, DBpediaResource, LuceneFactory, SpotlightConfiguration}
 import scala.collection.JavaConversions._
-//import org.dbpedia.spotlight.candidate.CommonWordFilter
+//import org.dbpedia.spotlight.candidate.NonCommonWordSelector
 //import org.dbpedia.spotlight.io.WortschatzParser
 
 /**

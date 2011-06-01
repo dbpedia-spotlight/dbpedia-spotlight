@@ -9,14 +9,14 @@ import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.apache.log4j.Logger
 import org.dbpedia.spotlight.io.WortschatzParser
-import org.dbpedia.spotlight.spot.SpotSelector
+
 
 /**
  * This is a temporary workaround to the common words problem. Pablo is working on the actual fix.
  *
  * @author pablomendes
  */
-class CommonWordFilter(val filename: String, val load: Boolean = true) extends UntaggedSpotSelector {
+class NonCommonWordSelector(val filename: String, val load: Boolean = true) extends UntaggedSpotSelector {
 
     val LOG = Logger.getLogger(this.getClass);
 
@@ -64,10 +64,10 @@ class CommonWordFilter(val filename: String, val load: Boolean = true) extends U
     }
 
     def main(args: Array[String]) {
-        def usage = println(" Usage: scala -cp $CP CommonWordFilter words.txt ")
+        def usage = println(" Usage: scala -cp $CP NonCommonWordSelector words.txt ")
         args(0) match {
             case file: String => {
-                new CommonWordFilter(file)
+                new NonCommonWordSelector(file)
             }
             case _ => usage
         }

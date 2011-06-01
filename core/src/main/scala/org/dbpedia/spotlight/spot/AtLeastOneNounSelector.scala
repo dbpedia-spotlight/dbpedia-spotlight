@@ -25,13 +25,13 @@ import scalaj.collection.Imports._
 
 import org.dbpedia.spotlight.model.{Provenance, SurfaceForm, Text, SurfaceFormOccurrence}
 import org.apache.commons.logging.LogFactory
-import org.dbpedia.spotlight.spot.SpotSelector
+
 
 /**
  *
  * @author pablomendes
  */
-class AtLeastOneNounFilter(val posTaggerModel: File) extends UntaggedSpotSelector {
+class AtLeastOneNounSelector(val posTaggerModel: File) extends UntaggedSpotSelector {
 
     private val LOG = LogFactory.getLog(this.getClass)
 

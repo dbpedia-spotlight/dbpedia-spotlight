@@ -68,13 +68,13 @@ object DBpediaSpotlightClient
     val contextSearcher = new MergedOccurrencesContextSearcher(luceneManager);
 
     val spotter = new LingPipeSpotter(new File(configuration.getSpotterConfiguration.getSpotterFile));
-    val spotSelector: SpotSelector = null//new AtLeastOneNounFilter(configuration.getTaggerFile)
+    //val spotSelector: SpotSelector = new AtLeastOneNounSelector(configuration.getTaggerFile)
     val mixture = new LinearRegressionMixture
     val disambiguator = new MixedWeightsDisambiguator(contextSearcher,mixture);
-    val annotator = new DefaultAnnotator(spotter, spotSelector, disambiguator);
+    val annotator = new DefaultAnnotator(spotter, disambiguator);
     val filter = new AnnotationFilter(configuration)
 
-    val randomBaseline = new DefaultAnnotator(spotter, spotSelector, new RandomDisambiguator(contextSearcher))
+    val randomBaseline = new DefaultAnnotator(spotter, new RandomDisambiguator(contextSearcher))
 
 //    val tfidfLuceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(directory)
 //    tfidfLuceneManager.setContextSimilarity(new DefaultSimilarity())
