@@ -70,14 +70,14 @@ class MultiThreadedDisambiguatorWrapper(val disambiguator: Disambiguator) extend
         val multiThreadedDisambiguator = actor {
             var i = 0;
             loopWhile( i < nOccurrences) {
-                reactWithin(3000) {
+                reactWithin(3000) {  //TODO configurable
                     case sfOccurrence: SurfaceFormOccurrence => {
                         //LOG.info("Disambiguate: "+sfOccurrence.surfaceForm)
                         i = i+1
                         // Send the disambiguated occurrence back to the caller
                         try {
                             val disambiguation = disambiguator.disambiguate(sfOccurrence)
-                            LOG.debug("Sent ["+(i-1).toString+"] "+ disambiguation.surfaceForm)
+                            LOG.debug("Sent [%d of %d] %s.".format(i-1, nOccurrences-1, disambiguation.surfaceForm))
                             caller ! disambiguation
                         } catch {
                             case ex:Throwable => 
@@ -99,19 +99,19 @@ class MultiThreadedDisambiguatorWrapper(val disambiguator: Disambiguator) extend
         // Aggregate disambiguated occurrences
         val list = new java.util.ArrayList[DBpediaResourceOccurrence]()
         for ( i <- 0 to nOccurrences-1) {
-            receiveWithin(9000) {  // time to wait before each occurrence arrives
+            receiveWithin(9000) {  // time to wait before each occurrence arrives //TODO configurable
                 case disambiguation:DBpediaResourceOccurrence => {
-                    LOG.debug("Received ["+i+"] "+ sfOccurrences.get(i).surfaceForm + disambiguation.surfaceForm)
+                    LOG.debug("Received [%d of %d] ".format(i, nOccurrences - 1, sfOccurrences.get(i).surfaceForm , disambiguation.surfaceForm))
                     if(disambiguation.context.text.equals(sfOccurrences.get(0).context.text)) { //PATCH by Jo Daiber (temp)
                         //LOG.trace("Occurrence came from the same context.");
                         list.add(disambiguation)
                     }
                 }
                 case e: Throwable =>
-                    LOG.error("Received Exception "+e+" in result collector. i="+i)
+                    LOG.error("Received Exception %s in result collector. i=%d of %d".format(e.toString,i.toInt,(nOccurrences-1).toInt))
                 case TIMEOUT => {
-                    LOG.error("Timed out trying to aggregate disambiguations! i="+i)
-                    exit()
+                    LOG.error("Timed out trying to aggregate disambiguations! i=%d of %d".format(i.toInt,(nOccurrences-1).toInt))
+                    //exit()
                 }
             }
         }

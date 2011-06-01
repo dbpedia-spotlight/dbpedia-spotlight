@@ -31,7 +31,6 @@ import org.dbpedia.spotlight.lucene.similarity.{CachedInvCandFreqSimilarity, JCS
 import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter
 import java.io.{FileOutputStream, PrintStream, File}
 import org.dbpedia.spotlight.model.{LuceneFactory, SpotlightConfiguration, DBpediaResource, DBpediaResourceOccurrence}
-import org.dbpedia.spotlight.candidate.{AtLeastOneNounFilter, CommonWordFilter}
 import org.dbpedia.spotlight.disambiguate.RandomDisambiguator
 import org.dbpedia.spotlight.filter.annotations.{ContextualScoreFilter, SupportFilter, CoreferenceFilter, ConfidenceFilter}
 import org.dbpedia.spotlight.lucene.disambiguate.{MergedOccurrencesDisambiguator, MixedWeightsDisambiguator}

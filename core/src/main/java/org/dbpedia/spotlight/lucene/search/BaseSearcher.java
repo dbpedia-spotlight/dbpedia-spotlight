@@ -147,8 +147,7 @@ public class BaseSearcher implements Closeable {
      * @return
      * @throws SearchException
      */
-    public ScoreDoc[] getHits(Query query, int n) throws SearchException {
-        long timeout = 300; //TODO make this configurable
+    public ScoreDoc[] getHits(Query query, int n, int timeout) throws SearchException {
         ScoreDoc[] hits = null;
         try {
             LOG.trace("Start search. timeout="+timeout);
@@ -167,6 +166,12 @@ public class BaseSearcher implements Closeable {
         return hits;
     }
 
+    // Uses default timeout
+    public ScoreDoc[] getHits(Query query, int n) throws SearchException {
+       return getHits(query, n, 500);
+    }
+
+    // Uses default maxHits and timeout
     public ScoreDoc[] getHits(Query query) throws SearchException {
         return getHits(query, mLucene.topResultsLimit());
     }
@@ -358,7 +363,7 @@ public class BaseSearcher implements Closeable {
                 //int count = terms.get(i).getValue();
                 //LOG.trace(String.format("Text: %s, Count: %s", t.text(), count));
 
-                getHits(new TermQuery(t)); // warm up first-level cache (lucene's own)
+                getHits(new TermQuery(t), 3, 1000); // warm up first-level cache (lucene's own)
 
             }
 

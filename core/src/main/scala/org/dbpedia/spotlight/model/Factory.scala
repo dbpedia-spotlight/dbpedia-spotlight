@@ -117,14 +117,15 @@ class LuceneFactory(val configuration: SpotlightConfiguration,
     }
 
     def spotter() ={
+        //For the simple spotter
+//        new LingPipeSpotter(new File(configuration.getSpotterConfiguration().getSpotterFile()));
 
-        //SpotterWithSelector.getInstance(
-        //  new LingPipeSpotter(new File(configuration.getSpotterConfiguration().getSpotterFile())),
-        //  new CoOccurrenceBasedSelector(configuration.getSpotterConfiguration()),
-        //  new LingPipeTaggedTokenProvider()
-        //);
+        SpotterWithSelector.getInstance(
+          new LingPipeSpotter(new File(configuration.getSpotterConfiguration().getSpotterFile())),
+          new CoOccurrenceBasedSelector(configuration.getSpotterConfiguration()),
+          new LingPipeTaggedTokenProvider()
+        );
 
-        new LingPipeSpotter(new File(configuration.getSpotterConfiguration().getSpotterFile()));
     }
 
     def annotator() ={

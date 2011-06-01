@@ -2,7 +2,7 @@ Package: dbpedia-spotlight
 Version: 0.4.9
 Section: misc
 Priority: optional
-Architecture: all
+Architecture: i386
 Depends: openjdk-6-jre | sun-java6-jre
 Maintainer: Pablo Mendes <pablo.mendes@fu-berlin.de>
 Description: This is a first test of DBpedia Spotlight Packaging.
