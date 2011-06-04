@@ -23,37 +23,25 @@ import java.io.File
 import org.dbpedia.spotlight.tagging.lingpipe.{LingPipeTaggedTokenProvider, LingPipeFactory}
 import scalaj.collection.Imports._
 
-import org.dbpedia.spotlight.model.{Provenance, SurfaceForm, Text, SurfaceFormOccurrence}
 import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.model._
 
 
 /**
  *
  * @author pablomendes
+ * @author Joachim Daiber (removed tagging, changed to TaggedSpotSelector)
  */
-class AtLeastOneNounSelector(val posTaggerModel: File) extends UntaggedSpotSelector {
+class AtLeastOneNounSelector extends TaggedSpotSelector {
 
     private val LOG = LogFactory.getLog(this.getClass)
-
-    LingPipeFactory.setSentenceModel(new IndoEuropeanSentenceModel)
-    LingPipeFactory.setTaggerModelFile(posTaggerModel)
-    val tagger = new LingPipeTaggedTokenProvider
 
     var lastText = ""
     def select(occurrences: java.util.List[SurfaceFormOccurrence]) : java.util.List[SurfaceFormOccurrence] = {
         val occs = occurrences.asScala
-        lastText = occs.head.context.text
-        tagger.initialize(lastText);
         occs.filter(o => {
-            if (!(lastText equals o.context.text)) {
-                LOG.info("resetting text")
-                lastText = occs.head.context.text
-                tagger.initialize(lastText)
-            }
-            val tokens = tagger.getTaggedTokens(o.textOffset, o.textOffset + o.surfaceForm.name.length)
-            //println(tokens)
+            val tokens = o.context.asInstanceOf[TaggedText].taggedTokenProvider.getTaggedTokens(o.textOffset, o.textOffset + o.surfaceForm.name.length)
             val atLeastOneNoun = (None != tokens.asScala.find( t => t.getPOSTag.startsWith("n") )) // at least one token is a noun.
-            //if (!atLeastOneNoun) println("Contains no nouns: "+tokens) //LOG.trace(o.surfaceForm);
             atLeastOneNoun
         }).asJava
     }

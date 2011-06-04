@@ -20,7 +20,7 @@ import org.dbpedia.spotlight.exceptions.ConfigurationException
 import org.dbpedia.spotlight.candidate.{CoOccurrenceBasedSelector}
 import com.aliasi.sentences.IndoEuropeanSentenceModel
 import org.dbpedia.spotlight.tagging.lingpipe.{LingPipeTaggedTokenProvider, LingPipeFactory}
-import org.dbpedia.spotlight.spot.{SpotterWithSelector}
+import org.dbpedia.spotlight.spot.{AtLeastOneNounSelector, SpotterWithSelector}
 
 /**
  * Class containing methods to create model objects in many different ways
@@ -117,12 +117,12 @@ class LuceneFactory(val configuration: SpotlightConfiguration,
     }
 
     def spotter() ={
-        //For the simple spotter
-//        new LingPipeSpotter(new File(configuration.getSpotterConfiguration().getSpotterFile()));
+        //For the simple spotter (no spot selection)
+        //new LingPipeSpotter(new File(configuration.getSpotterConfiguration().getSpotterFile()));
 
         SpotterWithSelector.getInstance(
           new LingPipeSpotter(new File(configuration.getSpotterConfiguration().getSpotterFile())),
-          new CoOccurrenceBasedSelector(configuration.getSpotterConfiguration()),
+          new AtLeastOneNounSelector(),
           new LingPipeTaggedTokenProvider()
         );
 
