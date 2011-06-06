@@ -15,7 +15,8 @@ trait SpotSelector {
 }
 
 /**
- * This interface requires tagged objects within the SurfaceFormOccurrence
+ * This interface requires tagged objects within the SurfaceFormOccurrence.
+ * The @see{Spotter} is responsible for tagging and passing @see{TaggedText} objects downstream.
  */
 trait TaggedSpotSelector extends SpotSelector
 
