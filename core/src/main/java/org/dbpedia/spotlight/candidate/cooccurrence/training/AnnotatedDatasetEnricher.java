@@ -5,7 +5,7 @@ import org.dbpedia.spotlight.candidate.cooccurrence.weka.InstanceBuilder;
 import org.dbpedia.spotlight.candidate.cooccurrence.features.data.OccurrenceDataProvider;
 import org.dbpedia.spotlight.candidate.cooccurrence.filter.Filter;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
-import org.dbpedia.spotlight.model.LuceneFactory;
+import org.dbpedia.spotlight.model.SpotlightFactory;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.json.JSONException;
 import weka.core.Attribute;
@@ -34,10 +34,10 @@ public abstract class AnnotatedDatasetEnricher {
 	protected List<Filter> filters = new LinkedList<Filter>();
 	protected OccurrenceDataProvider dataProvider;
 	protected Instances header;
-	protected LuceneFactory luceneFactory;
+	protected SpotlightFactory luceneFactory;
 
 	protected AnnotatedDatasetEnricher(SpotlightConfiguration configuration) throws IOException, ConfigurationException {
-		luceneFactory = new LuceneFactory(configuration);
+		luceneFactory = new SpotlightFactory(configuration);
 	}
 
 

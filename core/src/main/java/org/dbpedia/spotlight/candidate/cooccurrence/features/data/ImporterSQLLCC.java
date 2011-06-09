@@ -18,7 +18,7 @@ import java.sql.*;
  *
  * @author Joachim Daiber
  */
-public class OccurrenceDataImporterSQL {
+public class ImporterSQLLCC {
 
 	Connection sqlConnection;
 	SpotterConfiguration spotterConfiguration;
@@ -28,7 +28,7 @@ public class OccurrenceDataImporterSQL {
 	private static final int TRIGRAM_LEFT_MIN_COUNT_WEB = 600000;
 	private static final int TRIGRAM_RIGHT_MIN_COUNT_WEB = 500000;
 
-	public OccurrenceDataImporterSQL() throws InitializationException, ConfigurationException {
+	public ImporterSQLLCC() throws InitializationException, ConfigurationException {
 
 		spotterConfiguration = new SpotterConfiguration("conf/server.properties");
 
@@ -134,7 +134,7 @@ public class OccurrenceDataImporterSQL {
 
 	public static void main(String[] args) throws InitializationException, IOException, SQLException, ConfigurationException {
 
-		OccurrenceDataImporterSQL occurrenceDataImporterSQL = new OccurrenceDataImporterSQL();
+		ImporterSQLLCC occurrenceDataImporterSQL = new ImporterSQLLCC();
 		occurrenceDataImporterSQL.createTables();
 		occurrenceDataImporterSQL.importCSV(
 				new File("/Applications/XAMPP/xamppfiles/var/mysql/leipzig2/words.csv"),

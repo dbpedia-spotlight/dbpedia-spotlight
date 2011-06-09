@@ -7,7 +7,7 @@ import java.util.List;
 
 
 /**
- * A TaggedTokenProvider provides Part-of-Speech data for a range specified by two text offsets.
+ * A TaggedTokenProvider provides part-of-speech data for a range specified by two text offsets.
  * <p/>
  * General interface for providing TaggedToken objects. A TaggedToken contains the token,
  * the proposed part-of-speech tag, a confidence value and possible alternative tags.

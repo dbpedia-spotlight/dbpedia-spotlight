@@ -4,7 +4,7 @@ import java.io.PrintWriter
 import io.Source
 import org.dbpedia.spotlight.model.DBpediaResource._
 import org.apache.commons.logging.LogFactory
-import org.dbpedia.spotlight.model.{SurfaceForm, DBpediaResource, LuceneFactory, SpotlightConfiguration}
+import org.dbpedia.spotlight.model.{SurfaceForm, DBpediaResource, SpotlightFactory, SpotlightConfiguration}
 import scala.collection.JavaConversions._
 //import org.dbpedia.spotlight.candidate.NonCommonWordSelector
 //import org.dbpedia.spotlight.io.WortschatzParser
@@ -30,7 +30,7 @@ object GetDBpediaResourceCandidates {
 
         val configuration = new SpotlightConfiguration(spotlightConfigFileName); //TODO move this to command line parameter
 
-        val factory = new LuceneFactory(configuration)
+        val factory = new SpotlightFactory(configuration)
         val searcher = factory.searcher
 
         val out = new PrintWriter(uriSetFile);

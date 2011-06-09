@@ -3,7 +3,7 @@ package org.dbpedia.spotlight.util
 import org.dbpedia.spotlight.string.ModifiedWikiUtil
 import org.apache.commons.logging.LogFactory
 import scala.collection.JavaConversions._
-import org.dbpedia.spotlight.model.{LuceneFactory, SpotlightConfiguration, DBpediaResource}
+import org.dbpedia.spotlight.model.{SpotlightFactory, SpotlightConfiguration, DBpediaResource}
 
 import java.net.{URLEncoder, Socket}
 import io.Source
@@ -20,7 +20,7 @@ class KeywordExtractor(val configuration: SpotlightConfiguration) {
 
     private val LOG = LogFactory.getLog(this.getClass)
 
-    val factory = new LuceneFactory(configuration)
+    val factory = new SpotlightFactory(configuration)
     val searcher = factory.searcher
 
     val nKeywords = 3;

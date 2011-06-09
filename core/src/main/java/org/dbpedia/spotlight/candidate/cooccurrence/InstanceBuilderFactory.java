@@ -9,7 +9,7 @@ import org.dbpedia.spotlight.candidate.cooccurrence.weka.ukwac.InstanceBuilderUn
 import org.dbpedia.spotlight.exceptions.InitializationException;
 
 /**
- * Factory for an InstanceBuilder, which is used for building a WEKA instance
+ * Factory for an {@link InstanceBuilder}, which is used for building a WEKA instance
  * for a spotted surface form occurrence.
  *
  * There are builders for unigram and n-gram (n>1) occurrences and the builders
@@ -17,6 +17,7 @@ import org.dbpedia.spotlight.exceptions.InitializationException;
  *
  * @author Joachim Daiber
  */
+
 public class InstanceBuilderFactory {
 
 

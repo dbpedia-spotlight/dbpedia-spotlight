@@ -5,7 +5,7 @@ import au.com.bytecode.opencsv.CSVWriter;
 import org.dbpedia.spotlight.candidate.cooccurrence.classification.CandidateClass;
 import org.dbpedia.spotlight.candidate.cooccurrence.filter.Filter;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
-import org.dbpedia.spotlight.model.LuceneFactory;
+import org.dbpedia.spotlight.model.SpotlightFactory;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.TaggedText;
 import org.json.JSONArray;
@@ -30,7 +30,7 @@ public class OccurrenceDataset {
 	 * Instances, i.e. annotated occurrences of a candidate
 	 */
 	private List<OccurrenceInstance> instances = new ArrayList<OccurrenceInstance>();
-	private LuceneFactory luceneFactory;
+	private SpotlightFactory luceneFactory;
 
 
 	/**
@@ -40,7 +40,7 @@ public class OccurrenceDataset {
 
 
 	public OccurrenceDataset() throws ConfigurationException {
-		luceneFactory = new LuceneFactory(new SpotlightConfiguration("conf/server.properties"));
+		luceneFactory = new SpotlightFactory(new SpotlightConfiguration("conf/server.properties"));
 	}
 
 	/**

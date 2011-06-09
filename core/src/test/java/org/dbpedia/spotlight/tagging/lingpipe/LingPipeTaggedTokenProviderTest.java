@@ -2,7 +2,7 @@ package org.dbpedia.spotlight.tagging.lingpipe;
 
 import junit.framework.TestCase;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
-import org.dbpedia.spotlight.model.LuceneFactory;
+import org.dbpedia.spotlight.model.SpotlightFactory;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.tagging.TaggedToken;
 
@@ -38,7 +38,7 @@ public class LingPipeTaggedTokenProviderTest extends TestCase {
 	public void setUp() throws Exception {
 		super.setUp();
 
-		LuceneFactory luceneFactory = new LuceneFactory(new SpotlightConfiguration("conf/server.properties"));
+		SpotlightFactory luceneFactory = new SpotlightFactory(new SpotlightConfiguration("conf/server.properties"));
 
 		lingPipeTaggedTokenProvider1 = luceneFactory.taggedTokenProvider();
 		lingPipeTaggedTokenProvider1.initialize(text1);

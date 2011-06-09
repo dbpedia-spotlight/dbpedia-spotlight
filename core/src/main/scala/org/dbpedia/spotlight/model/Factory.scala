@@ -85,7 +85,7 @@ object Factory {
 }
 
 
-class LuceneFactory(val configuration: SpotlightConfiguration,
+class SpotlightFactory(val configuration: SpotlightConfiguration,
                     val analyzer: Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET)
                     ) {
 

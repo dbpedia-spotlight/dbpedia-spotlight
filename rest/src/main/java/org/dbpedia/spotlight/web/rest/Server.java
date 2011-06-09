@@ -21,7 +21,7 @@ import com.sun.jersey.api.container.grizzly.GrizzlyWebContainerFactory;
 import org.dbpedia.spotlight.annotate.Annotator;
 import org.dbpedia.spotlight.disambiguate.Disambiguator;
 import org.dbpedia.spotlight.exceptions.InitializationException;
-import org.dbpedia.spotlight.model.LuceneFactory;
+import org.dbpedia.spotlight.model.SpotlightFactory;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 
 import java.io.File;
@@ -67,7 +67,7 @@ public class Server {
         File spotterFile = new File(configuration.getSpotterConfiguration().getSpotterFile()); //"/home/pablo/eval/manual/Eval.spotterDictionary"
 
         // Set static annotator that will be used by Annotate and Disambiguate
-        final LuceneFactory factory = new LuceneFactory(configuration);
+        final SpotlightFactory factory = new SpotlightFactory(configuration);
         setAnnotator(factory.annotator());
         //setAnnotator(new DefaultAnnotator(spotterFile,//commonWordsFile,indexDir));
 

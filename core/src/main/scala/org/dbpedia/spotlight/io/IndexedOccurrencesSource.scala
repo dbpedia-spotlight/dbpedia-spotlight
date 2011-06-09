@@ -24,7 +24,7 @@ import org.dbpedia.spotlight.lucene.search.{BaseSearcher, MergedOccurrencesConte
 object IndexedOccurrencesSource {
 
     def fromConfigFile(configFile : File) : OccurrenceSource = {
-        val factory = new LuceneFactory(new SpotlightConfiguration(configFile.getAbsolutePath))
+        val factory = new SpotlightFactory(new SpotlightConfiguration(configFile.getAbsolutePath))
         new IndexedOccurrencesSource(factory.searcher)
     }
 

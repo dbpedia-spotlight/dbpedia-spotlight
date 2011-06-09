@@ -51,9 +51,9 @@ public abstract class DatasetGenerator {
 	 */
 
 	private static final int RANDOM_SENTENCE_LIMIT = 50;
-	private LuceneFactory luceneFactory;
+	private SpotlightFactory luceneFactory;
 
-	public LuceneFactory getLuceneFactory() {
+	public SpotlightFactory getLuceneFactory() {
 		return luceneFactory;
 	}
 
@@ -74,7 +74,7 @@ public abstract class DatasetGenerator {
 
 		configuration = new SpotlightConfiguration("/Users/jodaiber/Documents/workspace/ba/workspace/DBPedia Spotlight/conf/server.properties");
 
-		luceneFactory = new LuceneFactory(configuration);
+		luceneFactory = new SpotlightFactory(configuration);
 		searcher = luceneFactory.searcher();
 
 	}
