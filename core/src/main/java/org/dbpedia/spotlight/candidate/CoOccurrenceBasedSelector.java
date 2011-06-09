@@ -30,27 +30,48 @@ public class CoOccurrenceBasedSelector implements TaggedSpotSelector {
 
 	private final Log LOG = LogFactory.getLog(this.getClass());
 
-	public CoOccurrenceBasedSelector(SpotterConfiguration configuration) throws InitializationException {
 
-		//TODO use its own config instead of general one.
+	/**
+	 * Creates a co-occurrence based selector. A SpotterConfiguration object must be
+	 * passed as a parameter since the selector must use and initialize an occurrence
+	 * data provider and a factory for classifiers.
+	 *
+	 * @see OccurrenceDataProviderSQL
+	 * @see ClassifierFactory
+	 *
+	 * @param spotterConfiguration SpotterConfiguration object with classifier paths and JDBC
+	 * 			description of occurrence data provider.
+	 * @throws InitializationException Either the OccurrenceDataProvider or the ClassifierFactory
+	 * 			could not be initialized.
+	 */
+	public CoOccurrenceBasedSelector(SpotterConfiguration spotterConfiguration) throws InitializationException {
 		
 		LOG.info("Initializing occurrence data provider.");
-		OccurrenceDataProviderSQL.initialize(configuration);
+		OccurrenceDataProviderSQL.initialize(spotterConfiguration);
 		LOG.info("Done.");
 
 		LOG.info("Initializing candidate classifiers.");
-		new ClassifierFactory(configuration.getCandidateClassifierUnigram(),
-				configuration.getCandidateClassifierNGram(),
+		new ClassifierFactory(spotterConfiguration.getCandidateClassifierUnigram(),
+				spotterConfiguration.getCandidateClassifierNGram(),
+				spotterConfiguration.getCandidateOccurrenceDataSource(),
 				OccurrenceDataProviderSQL.getInstance()
-				);
+			);
 		
 		LOG.info("Done.");
 		
 	}
+	
 
+	/**
+	 * Filter the list of surface form occurrences, removing all occurrences that are considered
+	 * common.
+	 *
+	 * @param surfaceFormOccurrences spotted surface form occurrences
+	 * @return List of non-common surface form occurrences
+	 */
 	public List<SurfaceFormOccurrence> select(List<SurfaceFormOccurrence> surfaceFormOccurrences) {
 
-		LinkedList<SurfaceFormOccurrence> selectedOccurrences = new LinkedList<SurfaceFormOccurrence>();
+		List<SurfaceFormOccurrence> selectedOccurrences = new LinkedList<SurfaceFormOccurrence>();
 
 		FilterPOS filterPOS = new FilterPOS();
 		FilterTermsize unigramFilter = new FilterTermsize(FilterTermsize.Termsize.unigram);
@@ -117,7 +138,7 @@ public class CoOccurrenceBasedSelector implements TaggedSpotSelector {
 						continue;
 					}
 
-					if(candidateClassification.getCandidateClass() == CandidateClass.term) {
+					if(candidateClassification.getCandidateClass() == CandidateClass.valid) {
 						selectedOccurrences.add(surfaceFormOccurrence);
 						//LOG.info(("Kept by UnigramClassifier (Confidence: " + candidateClassification.getConfidence() + "): " + surfaceFormOccurrence);
 					}else{
@@ -141,7 +162,7 @@ public class CoOccurrenceBasedSelector implements TaggedSpotSelector {
 					continue;
 				}
 
-				if(candidateClassification.getCandidateClass() == CandidateClass.term) {
+				if(candidateClassification.getCandidateClass() == CandidateClass.valid) {
 					selectedOccurrences.add(surfaceFormOccurrence);
 					//LOG.info("Kept by nGramClassifier (Confidence: " + candidateClassification.getConfidence() + "): " + surfaceFormOccurrence);
 				}else{

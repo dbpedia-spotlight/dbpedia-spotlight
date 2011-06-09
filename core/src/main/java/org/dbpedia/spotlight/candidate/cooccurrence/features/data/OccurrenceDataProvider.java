@@ -12,6 +12,7 @@ import java.util.List;
 
 public interface OccurrenceDataProvider {
 
+	
 	/**
 	 * Get information about the term candidate.
 	 *

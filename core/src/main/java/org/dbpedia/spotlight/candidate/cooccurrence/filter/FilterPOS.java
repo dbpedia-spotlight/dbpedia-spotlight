@@ -35,8 +35,8 @@ public class FilterPOS extends Filter {
 
 	private boolean isOnUnigramBlacklist(SurfaceFormOccurrence surfaceFormOccurrence) {
 
-        if (! (surfaceFormOccurrence.context() instanceof TaggedText)) //FIXME added catch for when TaggedText was not created
-            return false;
+		if (! (surfaceFormOccurrence.context() instanceof TaggedText)) //FIXME added catch for when TaggedText was not created
+			return false;
 
 		List<TaggedToken> taggedTokens = ((TaggedText) surfaceFormOccurrence.context()).taggedTokenProvider()
 				.getTaggedTokens(surfaceFormOccurrence);
@@ -58,16 +58,7 @@ public class FilterPOS extends Filter {
 
 	@Override
 	public boolean applies(SurfaceFormOccurrence surfaceFormOccurrence) {
-
-		switch (FilterTermsize.getTermSize(surfaceFormOccurrence.surfaceForm())) {
-
-			case unigram:
-				return !isOnUnigramBlacklist(surfaceFormOccurrence);
-			default:
-				return false;
-
-		}
-
+		return !isOnUnigramBlacklist(surfaceFormOccurrence);
 	}
 
 	@Override

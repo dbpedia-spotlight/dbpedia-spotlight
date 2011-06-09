@@ -20,13 +20,13 @@ import java.util.*;
 /**
  * TaggedToken provider based on LingPipe.
  * <p/>
- * This implementation uses LingPipe to do tokenization, sentence detection and Part-of-Speech
+ * This implementation uses LingPipe to do tokenization, sentence detection and part-of-speech
  * tagging.
  * <p/>
  * Once the text is tagged (initialize()), the part-of-speech tags for a range in the text can be
  * retrieved by using getTaggedTokens(int textOffsetStart, int textOffsetEnd) in O(log n) time.
  *
- * @author jodaiber
+ * @author Joachim Daiber
  */
 
 public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
@@ -35,14 +35,23 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 
 	private List<TaggedToken> taggedTokens;
 	private int[] sentenceBoundaries;
+	private LingPipeFactory lingPipeFactory;
 
-
-	public LingPipeTaggedTokenProvider() {
-
+	
+	/**
+	 * Create a new TaggedToken provider based on LingPipe. This class can only
+	 * be instantiated with an LingPipeFactory object, which contains the
+	 * part-of-speech tagger, sentence segmentizer and word tokenizer objects.
+	 *
+	 * @param lingPipeFactory
+	 */
+	public LingPipeTaggedTokenProvider(LingPipeFactory lingPipeFactory) {
+		this.lingPipeFactory = lingPipeFactory;
 	}
 
 
 	@Override
+	/** {@inheritDoc} */
 	public List<TaggedToken> getTaggedTokens(int textOffsetStart, int textOffsetEnd) {
 
 		int firstTaggedToken = getFirstTaggedTokenAfterOffset(textOffsetStart);
@@ -55,12 +64,11 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 			i++;
 		}
 
-		List<TaggedToken> taggedTokensInRange = taggedTokens.subList(firstTaggedToken, i);
-
-		return taggedTokensInRange;
+		return taggedTokens.subList(firstTaggedToken, i);
 	}
 
 	@Override
+	/** {@inheritDoc} */
 	public List<TaggedToken> getTaggedTokens(SurfaceFormOccurrence surfaceFormOccurrence) {
 		return getTaggedTokens(surfaceFormOccurrence.textOffset(),
 				surfaceFormOccurrence.textOffset() + surfaceFormOccurrence.surfaceForm().name().length());
@@ -101,6 +109,7 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 	}
 
 	@Override
+	/** {@inheritDoc} */
 	public TaggedToken getLeftNeighbourToken(int textOffsetStart, int textOffsetEnd) throws ItemNotFoundException {
 
 		try {
@@ -112,12 +121,14 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 	}
 
 	@Override
+	/** {@inheritDoc} */
 	public TaggedToken getLeftNeighbourToken(SurfaceFormOccurrence surfaceFormOccurrence) throws ItemNotFoundException {
 		return getLeftNeighbourToken(surfaceFormOccurrence.textOffset(),
 				surfaceFormOccurrence.textOffset() + surfaceFormOccurrence.surfaceForm().name().length());
 	}
 
 	@Override
+	/** {@inheritDoc} */
 	public TaggedToken getRightNeighbourToken(int textOffsetStart, int textOffsetEnd) throws ItemNotFoundException {
 
 		try {
@@ -131,6 +142,7 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 
 
 	@Override
+	/** {@inheritDoc} */
 	public TaggedToken getRightNeighbourToken(SurfaceFormOccurrence surfaceFormOccurrence) throws ItemNotFoundException {
 		return getRightNeighbourToken(surfaceFormOccurrence.textOffset(),
 				surfaceFormOccurrence.textOffset() + surfaceFormOccurrence.surfaceForm().name().length());
@@ -138,6 +150,7 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 	
 
 	@Override
+	/** {@inheritDoc} */
 	public List<TaggedToken> getLeftContext(SurfaceFormOccurrence surfaceFormOccurrence, int length) throws ItemNotFoundException {
 
 		return getLeftContext(surfaceFormOccurrence.textOffset(),
@@ -145,6 +158,7 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 
 	}
 
+	/** {@inheritDoc} */
 	public List<TaggedToken> getLeftContext(int textOffsetStart, int textOffsetEnd, int length) throws ItemNotFoundException {
 		Pair<Integer, Integer> sentencePosition = getSentencePosition(textOffsetStart, textOffsetEnd);
 
@@ -164,6 +178,7 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 
 
 	@Override
+	/** {@inheritDoc} */
 	public List<TaggedToken> getRightContext(SurfaceFormOccurrence surfaceFormOccurrence, int length) throws ItemNotFoundException {
 
 		return getRightContext(surfaceFormOccurrence.textOffset(),
@@ -171,6 +186,7 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 
 	}
 
+	/** {@inheritDoc} */
 	public List<TaggedToken> getRightContext(int textOffsetStart, int textOffsetEnd, int length) throws ItemNotFoundException {
 
 		Pair<Integer, Integer> sentencePosition = getSentencePosition(textOffsetStart, textOffsetEnd);
@@ -182,7 +198,7 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 	}
 
 
-
+	/** {@inheritDoc} */
 	private Pair<Integer, Integer> getSentencePosition(SurfaceFormOccurrence surfaceFormOccurrence)
 			throws ItemNotFoundException {
 		
@@ -190,7 +206,9 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 				surfaceFormOccurrence.textOffset() + surfaceFormOccurrence.surfaceForm().name().length());
 	}
 
-
+	/**
+	 * Retrieve the position of the sentence containing the text annotation. 
+	 **/
 	public Pair<Integer, Integer> getSentencePosition(int textOffsetStart, int textOffsetEnd) throws ItemNotFoundException {
 
 		int firstTaggedToken = getFirstTaggedTokenAfterOffset(textOffsetStart);
@@ -227,6 +245,7 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 
 	
 	@Override
+	/** {@inheritDoc} */
 	public List<TaggedToken> getSentenceTokens(int textOffsetStart, int textOffsetEnd)
 			throws ItemNotFoundException {
 
@@ -241,6 +260,7 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 	
 
 	@Override
+	/** {@inheritDoc} */
 	public List<TaggedToken> getSentenceTokens(SurfaceFormOccurrence surfaceFormOccurrence)
 			throws ItemNotFoundException {
 		
@@ -249,7 +269,8 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 	}
 
 	@Override
-	public Pair<String, Integer> getSentence(int textOffsetStart, int textOffsetEnd) throws ItemNotFoundException {
+	/** {@inheritDoc} */
+	public String getSentence(int textOffsetStart, int textOffsetEnd) throws ItemNotFoundException {
 
 		List<TaggedToken> sentenceTokens = getSentenceTokens(textOffsetStart, textOffsetEnd);
 
@@ -258,52 +279,53 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 			sentence.append(taggedToken.getToken());
 			sentence.append(taggedToken.getWhite());
 		}
+		//int sentenceOffset = sentenceTokens.get(0).getOffset();
 
-		int sentenceOffset = sentenceTokens.get(0).getOffset();
-
-		return new Pair<String, Integer>(sentence.toString(), sentenceOffset);
+		return sentence.toString();
 	}
 
 	@Override
-	public Pair<String, Integer> getSentence(SurfaceFormOccurrence surfaceFormOccurrence) throws ItemNotFoundException {
+	/** {@inheritDoc} */
+	public String getSentence(SurfaceFormOccurrence surfaceFormOccurrence) throws ItemNotFoundException {
 		return getSentence(surfaceFormOccurrence.textOffset(),
 				surfaceFormOccurrence.textOffset() + surfaceFormOccurrence.surfaceForm().name().length());
 	}
 
 
 	@Override
+	/** {@inheritDoc} */
 	public boolean isSentenceInitial(int textOffsetStart, int textOffsetEnd) {
 
 		int startToken = getFirstTaggedTokenAfterOffset(textOffsetStart);
-		boolean isSentenceInitial = Arrays.binarySearch(sentenceBoundaries, startToken - 1) > 0;
-
-		return isSentenceInitial;
+		return Arrays.binarySearch(sentenceBoundaries, startToken - 1) > 0;
 
 	}
+	
 
 	@Override
+	/** {@inheritDoc} */
 	public boolean isSentenceInitial(SurfaceFormOccurrence surfaceFormOccurrence) {
 
 		return isSentenceInitial(surfaceFormOccurrence.textOffset(),
 				surfaceFormOccurrence.textOffset() + surfaceFormOccurrence.surfaceForm().name().length());
 
-
 	}
 
 
 	@Override
+	/** {@inheritDoc} */
 	public void initialize(String text) {
 
 		taggedTokens = new ArrayList<TaggedToken>();
 
 		//Load the POS model:
-		Tagger posTagger = LingPipeFactory.createPOSTagger();
+		Tagger posTagger = lingPipeFactory.getPoSTaggerInstance();
 
 		//1.) Tokenization
 		long start = System.currentTimeMillis();
 		List<String> tokenList = new ArrayList<String>();
 		List<String> whiteList = new ArrayList<String>();
-		Tokenizer tokenizer = LingPipeFactory.getTokenizerFactory().tokenizer(text.toCharArray(),
+		Tokenizer tokenizer = lingPipeFactory.getTokenizerFactoryInstance().tokenizer(text.toCharArray(),
 				0, text.length());
 		tokenizer.tokenize(tokenList, whiteList);
 		LOG.trace("Tokenization took " + (System.currentTimeMillis() - start) + "ms.");
@@ -316,7 +338,7 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 		tokenList.toArray(tokens);
 		whiteList.toArray(whites);
 
-		SentenceModel sentenceModel = LingPipeFactory.createSentenceModel();
+		SentenceModel sentenceModel = lingPipeFactory.getSentenceModelInstance();
 		sentenceBoundaries = sentenceModel.boundaryIndices(tokens, whites);
 		LOG.trace("Sentence segmentation took " + (System.currentTimeMillis() - start) + "ms.");
 
@@ -361,6 +383,7 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 	}
 
 	@Override
+	/** {@inheritDoc} */
 	public List<SurfaceFormOccurrence> getUnigramCandidates() {
 		FilterPOS filterPOS = new FilterPOS();
 		List<SurfaceFormOccurrence> surfaceFormOccurrences = new LinkedList<SurfaceFormOccurrence>();

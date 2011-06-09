@@ -263,7 +263,7 @@ public class CandidateFeatures {
 
 	}
 
-	public static Integer inEnumeration(SurfaceFormOccurrence surfaceFormOccurrence) {
+	public static boolean isInEnumeration(SurfaceFormOccurrence surfaceFormOccurrence) {
 
 		TaggedToken leftNeighbour = null;
 		TaggedToken rightNeighbour = null;
@@ -274,13 +274,13 @@ public class CandidateFeatures {
 			rightNeighbour = ((TaggedText) surfaceFormOccurrence.context()).taggedTokenProvider()
 					.getRightNeighbourToken(surfaceFormOccurrence);
 		} catch (ItemNotFoundException e) {
-			return null;
+			return false;
 		}
 
 		if(leftNeighbour.getPOSTag().equals(",") &&  (rightNeighbour.getPOSTag().equals("cc") || rightNeighbour.getPOSTag().equals("m")))
-			return 0;
+			return true;
 		else
-			return null;
+			return false;
 
 
 	}
@@ -291,5 +291,10 @@ public class CandidateFeatures {
 				((TaggedText) surfaceFormOccurrence.context()).taggedTokenProvider().getTaggedTokens(surfaceFormOccurrence);
 
 		return taggedTokens.get(taggedTokens.size()-1).getPOSTag().contains("s");
+	}
+
+	public static boolean isPossessive(SurfaceFormOccurrence surfaceFormOccurrence) {
+		List<TaggedToken> taggedTokens = ((TaggedText) surfaceFormOccurrence.context()).taggedTokenProvider().getTaggedTokens(surfaceFormOccurrence);
+		return taggedTokens.size() > 0 && taggedTokens.get(0).getPOSTag().contains("$");
 	}
 }

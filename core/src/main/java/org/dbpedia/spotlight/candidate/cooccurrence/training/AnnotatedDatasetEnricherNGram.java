@@ -1,8 +1,6 @@
-package org.dbpedia.spotlight.candidate.cooccurrence.features.training;
+package org.dbpedia.spotlight.candidate.cooccurrence.training;
 
-import org.dbpedia.spotlight.candidate.cooccurrence.CandidateUtil;
-import org.dbpedia.spotlight.candidate.cooccurrence.features.AttributesNGram;
-import org.dbpedia.spotlight.candidate.cooccurrence.features.data.OccurrenceDataProvider;
+import org.dbpedia.spotlight.candidate.cooccurrence.InstanceBuilderFactory;
 import org.dbpedia.spotlight.candidate.cooccurrence.features.data.OccurrenceDataProviderSQL;
 import org.dbpedia.spotlight.candidate.cooccurrence.filter.FilterPattern;
 import org.dbpedia.spotlight.candidate.cooccurrence.filter.FilterTermsize;
@@ -10,14 +8,10 @@ import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.InitializationException;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.json.JSONException;
-import weka.core.Attribute;
-import weka.core.DenseInstance;
-import weka.core.Instance;
 import weka.core.Instances;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 
 /**
  * Generates training data for an ngram classifier.
@@ -29,33 +23,26 @@ import java.util.ArrayList;
 public class AnnotatedDatasetEnricherNGram extends AnnotatedDatasetEnricher {
 
 	public AnnotatedDatasetEnricherNGram(SpotlightConfiguration configuration) throws ConfigurationException, IOException, InitializationException {
-		super();
-
-		FilterTermsize filterTermsize = new FilterTermsize(FilterTermsize.Termsize.unigram);
-		FilterPattern filterPattern = new FilterPattern();
-		filterTermsize.inverse();
-
-		filters.add(filterTermsize);
-		filters.add(filterPattern);
-		header = new Instances("NgramTraining", buildAttributeList(), buildAttributeList().size());
+		super(configuration);
 
 		OccurrenceDataProviderSQL.initialize(configuration.getSpotterConfiguration());
 		dataProvider  = OccurrenceDataProviderSQL.getInstance();
 
-	}
+		instanceBuilder = InstanceBuilderFactory.createInstanceBuilderNGram(
+				configuration.getSpotterConfiguration().getCandidateOccurrenceDataSource(), dataProvider);
+		instanceBuilder.setVerboseMode(true);
 
-	@Override
-	public Instance buildInstance(OccurrenceInstance trainingInstance, OccurrenceDataProvider dataProvider) {
-		DenseInstance instance = new DenseInstance(buildAttributeList().size());
-		instance.setDataset(header);
-		header.attribute(AttributesNGram.i(AttributesNGram.ends_with)).setWeight(10);
-		return CandidateUtil.buildInstanceNGram(trainingInstance, dataProvider, instance, true);
-	}
+		/** Filter the data set: */
+		FilterTermsize filterTermsize = new FilterTermsize(FilterTermsize.Termsize.unigram, luceneFactory.textUtil());
+		filterTermsize.inverse();
 
-	@Override
-	protected ArrayList<Attribute> buildAttributeList() {
+		FilterPattern filterPattern = new FilterPattern();
 
-		return AttributesNGram.attributeList;
+		filters.add(filterTermsize);
+		filters.add(filterPattern);
+
+		/** Create a new header object: */
+		header = new Instances("NgramTraining", buildAttributeList(), buildAttributeList().size());
 
 	}
 

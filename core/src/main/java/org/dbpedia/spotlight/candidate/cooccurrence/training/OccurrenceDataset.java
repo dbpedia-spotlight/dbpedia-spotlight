@@ -1,11 +1,13 @@
-package org.dbpedia.spotlight.candidate.cooccurrence.features.training;
+package org.dbpedia.spotlight.candidate.cooccurrence.training;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 import org.dbpedia.spotlight.candidate.cooccurrence.classification.CandidateClass;
 import org.dbpedia.spotlight.candidate.cooccurrence.filter.Filter;
+import org.dbpedia.spotlight.exceptions.ConfigurationException;
+import org.dbpedia.spotlight.model.LuceneFactory;
+import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.TaggedText;
-import org.dbpedia.spotlight.tagging.lingpipe.LingPipeTaggedTokenProvider;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,9 +27,10 @@ public class OccurrenceDataset {
 
 
 	/**
-	 * Instances, i.e. annotated occurences of a term candidate
+	 * Instances, i.e. annotated occurrences of a candidate
 	 */
 	private List<OccurrenceInstance> instances = new ArrayList<OccurrenceInstance>();
+	private LuceneFactory luceneFactory;
 
 
 	/**
@@ -36,8 +39,8 @@ public class OccurrenceDataset {
 	public enum Format {JSON, TSV}
 
 
-	public OccurrenceDataset() {
-
+	public OccurrenceDataset() throws ConfigurationException {
+		luceneFactory = new LuceneFactory(new SpotlightConfiguration("conf/server.properties"));
 	}
 
 	/**
@@ -47,8 +50,9 @@ public class OccurrenceDataset {
 	 * @throws IOException
 	 */
 
-	public OccurrenceDataset(File file, Format format) throws IOException, JSONException {
+	public OccurrenceDataset(File file, Format format) throws IOException, JSONException, ConfigurationException {
 
+		this();
 
 		switch (format) {
 
@@ -64,7 +68,7 @@ public class OccurrenceDataset {
 
 					JSONObject jsonObject = jsonObjects.getJSONObject(i).getJSONObject("annotations");
 					String text = jsonObject.getString("@text");
-					TaggedText taggedText = new TaggedText(text, new LingPipeTaggedTokenProvider());
+					TaggedText taggedText = new TaggedText(text, luceneFactory.taggedTokenProvider());
 					JSONArray annotations = jsonObject.getJSONArray("Resources");
 
 					for (int j = 0; j < annotations.length(); j++) {
@@ -84,7 +88,7 @@ public class OccurrenceDataset {
 							else if(annotation.getString("annotation").contains("p"))
 								userAnnotation = CandidateClass.part;
 							else
-								userAnnotation = CandidateClass.term;
+								userAnnotation = CandidateClass.valid;
 
 							addInstance(annotation.getString("@surfaceForm"),
 								annotation.getInt("@offset"),
@@ -106,8 +110,8 @@ public class OccurrenceDataset {
 				String[] row;
 				while ((row = reader.readNext()) != null) {
 					try{
-						CandidateClass annotation = row[5].equals("t") ? CandidateClass.term : CandidateClass.common;
-						addInstance(row[0], Integer.parseInt(row[1]), new TaggedText(row[2], new LingPipeTaggedTokenProvider()), row[3], row[4], row[5], annotation);
+						CandidateClass annotation = row[5].equals("t") ? CandidateClass.valid : CandidateClass.common;
+						addInstance(row[0], Integer.parseInt(row[1]), new TaggedText(row[2], luceneFactory.taggedTokenProvider()), row[3], row[4], row[5], annotation);
 					}catch (ArrayIndexOutOfBoundsException e){
 
 					}
@@ -174,7 +178,7 @@ public class OccurrenceDataset {
 		CSVWriter writer = new CSVWriter(new FileWriter(tsvFile), '\t');
 
 		for (OccurrenceInstance instance : instances) {
-			String annotationString = instance.getCandidateClass() == CandidateClass.term ? "t" : "c";
+			String annotationString = instance.getCandidateClass() == CandidateClass.valid ? "t" : "c";
 			writer.writeNext(new String[] {instance.getSurfaceForm(), "" + instance.getOffset(), instance.getTextString(),
 					instance.getAnnotationTitle(), instance.getAnnotationAbstract(), annotationString});
 		}

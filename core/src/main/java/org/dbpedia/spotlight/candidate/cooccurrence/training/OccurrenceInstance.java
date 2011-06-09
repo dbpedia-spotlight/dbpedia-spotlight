@@ -1,4 +1,4 @@
-package org.dbpedia.spotlight.candidate.cooccurrence.features.training;
+package org.dbpedia.spotlight.candidate.cooccurrence.training;
 
 import org.dbpedia.spotlight.candidate.cooccurrence.classification.CandidateClass;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;

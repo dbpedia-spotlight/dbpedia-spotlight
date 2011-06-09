@@ -19,13 +19,14 @@ import org.dbpedia.spotlight.lucene.search.{BaseSearcher, MergedOccurrencesConte
 import org.dbpedia.spotlight.exceptions.ConfigurationException
 import org.dbpedia.spotlight.candidate.{CoOccurrenceBasedSelector}
 import com.aliasi.sentences.IndoEuropeanSentenceModel
-import org.dbpedia.spotlight.tagging.lingpipe.{LingPipeTaggedTokenProvider, LingPipeFactory}
 import org.dbpedia.spotlight.spot.{AtLeastOneNounSelector, SpotterWithSelector}
+import org.dbpedia.spotlight.tagging.lingpipe.{LingPipeTextUtil, LingPipeTaggedTokenProvider, LingPipeFactory}
 
 /**
  * Class containing methods to create model objects in many different ways
  *
  * @author pablomendes
+ * @author Joachim Daiber (Tagger and Spotter methods)
  */
 object Factory {
 
@@ -92,18 +93,13 @@ class LuceneFactory(val configuration: SpotlightConfiguration,
         this(configuration, new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET))
         if (!new File(configuration.getTaggerFile).exists()) throw new ConfigurationException("POS tagger file does not exist! "+configuration.getTaggerFile);
 
-        //Initialize the part-of-speech tagger with the HMM model from the configuration:
-        LingPipeFactory.setTaggerModelFile(new File(configuration.getTaggerFile()));
-
-        //Initialize the sentence model:
-        LingPipeFactory.setSentenceModel(new IndoEuropeanSentenceModel());
-
-
     }
 
     val directory : Directory = LuceneManager.pickDirectory(new File(configuration.getIndexDirectory))
     val luceneManager : LuceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(directory)
     val similarity : Similarity = new CachedInvCandFreqSimilarity(JCSTermCache.getInstance(luceneManager, configuration.getMaxCacheSize))
+
+    val lingPipeFactory : LingPipeFactory = new LingPipeFactory(new File(configuration.getTaggerFile), new IndoEuropeanSentenceModel())
 
     luceneManager.setContextAnalyzer(analyzer);
     luceneManager.setContextSimilarity(similarity);
@@ -118,12 +114,12 @@ class LuceneFactory(val configuration: SpotlightConfiguration,
 
     def spotter() ={
         //For the simple spotter (no spot selection)
-        //new LingPipeSpotter(new File(configuration.getSpotterConfiguration().getSpotterFile()));
+        //new LingPipeSpotter(new File(configuration.getSpotterConfiguration.getSpotterFile));
 
         SpotterWithSelector.getInstance(
-          new LingPipeSpotter(new File(configuration.getSpotterConfiguration().getSpotterFile())),
+          new LingPipeSpotter(new File(configuration.getSpotterConfiguration.getSpotterFile)),
           new AtLeastOneNounSelector(),
-          new LingPipeTaggedTokenProvider()
+          taggedTokenProvider()
         );
 
     }
@@ -136,4 +132,12 @@ class LuceneFactory(val configuration: SpotlightConfiguration,
         new CombineAllAnnotationFilters(configuration)
     }
 
+    def taggedTokenProvider() = {
+       new LingPipeTaggedTokenProvider(lingPipeFactory);
+    }
+
+    def textUtil() = {
+       new LingPipeTextUtil(lingPipeFactory);
+    }
+  
 }

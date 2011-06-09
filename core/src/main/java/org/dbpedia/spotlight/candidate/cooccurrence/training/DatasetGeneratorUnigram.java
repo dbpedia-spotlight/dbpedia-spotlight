@@ -1,12 +1,10 @@
-package org.dbpedia.spotlight.candidate.cooccurrence.features.training;
+package org.dbpedia.spotlight.candidate.cooccurrence.training;
 
-import com.aliasi.sentences.IndoEuropeanSentenceModel;
 import org.dbpedia.spotlight.candidate.cooccurrence.filter.FilterPOS;
 import org.dbpedia.spotlight.candidate.cooccurrence.filter.FilterTermsize;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.model.SurfaceForm;
-import org.dbpedia.spotlight.tagging.lingpipe.LingPipeFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -63,21 +61,23 @@ public class DatasetGeneratorUnigram extends DatasetGenerator {
 
 	public static void main(String[] args) throws ConfigurationException, SearchException, IOException {
 
-		LingPipeFactory.setSentenceModel(new IndoEuropeanSentenceModel());
-		LingPipeFactory.setTaggerModelFile(new File("/Users/jodaiber/dbpdata/pos-en-general-brown.HiddenMarkovModel"));
+		DatasetGenerator trainingDataGenerator = new DatasetGeneratorUnigram();
 
+		
 		/**
 		 * Load list of confusables and filter to only include unigrams.
 		 */
+		
 		List<String> confusables = loadConfusables(new File("/Users/jodaiber/Documents/workspace/ba/Bachelor Thesis/01 Evaluation/03 Training/Training Set/data/confusables_with_wiktionary.nt"));
 
-		FilterTermsize filter = new FilterTermsize(FilterTermsize.Termsize.unigram);
+		FilterTermsize filter = new FilterTermsize(FilterTermsize.Termsize.unigram, trainingDataGenerator.getLuceneFactory().textUtil());
 		filter.apply(confusables);
 
 
 		/**
 		 * Take NUMBER_OF_EXAMPLES random confusables from the list
 		 */
+		
 		Random random = new Random();
 		List<String> exampleConfusables = new ArrayList<String>();
 		
@@ -92,8 +92,8 @@ public class DatasetGeneratorUnigram extends DatasetGenerator {
 		/**
 		 * Gather information for each confusable and write to TSV
 		 */
+		
 		OccurrenceDataset occurrenceTrainingDataset = new OccurrenceDataset();
-		DatasetGenerator trainingDataGenerator = new DatasetGeneratorUnigram();
 
 		for(String exampleConfusable : exampleConfusables) {
 

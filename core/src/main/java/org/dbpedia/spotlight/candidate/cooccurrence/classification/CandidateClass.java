@@ -6,6 +6,6 @@ package org.dbpedia.spotlight.candidate.cooccurrence.classification;
 
 public enum CandidateClass {
 	common,
-	term,
+	valid,
 	part
 }

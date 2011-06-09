@@ -1,11 +1,11 @@
 package org.dbpedia.spotlight.tagging.lingpipe;
 
-import com.aliasi.sentences.IndoEuropeanSentenceModel;
 import junit.framework.TestCase;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
+import org.dbpedia.spotlight.model.LuceneFactory;
+import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.tagging.TaggedToken;
 
-import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -37,13 +37,13 @@ public class LingPipeTaggedTokenProviderTest extends TestCase {
 
 	public void setUp() throws Exception {
 		super.setUp();
-		LingPipeFactory.setSentenceModel(new IndoEuropeanSentenceModel());
-		LingPipeFactory.setTaggerModelFile(new File("/Users/jodaiber/Documents/workspace/ba/Bachelor Thesis/02 Implementation/Features/POS/pos-en-general-brown.HiddenMarkovModel"));
 
-		lingPipeTaggedTokenProvider1 = new LingPipeTaggedTokenProvider();
+		LuceneFactory luceneFactory = new LuceneFactory(new SpotlightConfiguration("conf/server.properties"));
+
+		lingPipeTaggedTokenProvider1 = luceneFactory.taggedTokenProvider();
 		lingPipeTaggedTokenProvider1.initialize(text1);
 
-		lingPipeTaggedTokenProvider2 = new LingPipeTaggedTokenProvider();
+		lingPipeTaggedTokenProvider2 = luceneFactory.taggedTokenProvider();
 		lingPipeTaggedTokenProvider2.initialize(text2);
 
 	}

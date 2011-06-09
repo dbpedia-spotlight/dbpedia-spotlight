@@ -10,29 +10,64 @@ import com.aliasi.util.Streams;
 
 import java.io.*;
 
+
 /**
- * Factory for LingPipe part-of-speech tagging, sentence and tokenization models.
+ * Factory for LingPipe part-of-speech tagging, sentence segmentation and tokenization models.
  *
- * @author jodaiber
+ * <p>Note that the part-of-speech tagger is currently held as Singleton instance.
+ * This is only possible if the underlying HM model is thread-safe, for more information
+ * on this issue, cf. the LingPipe
+ * <a href="http://alias-i.com/lingpipe/docs/api/com/aliasi/hmm/HmmDecoder.html">HmmDecoder class</a>.
+ * </p>
+ * 
+ * @author Joachim Daiber
  */
 
 public class LingPipeFactory {
 
-	private static TokenizerFactory tokenizerFactory
+	/**
+	 * Default RegEx-based word tokenizer.
+	 */
+	private TokenizerFactory tokenizerFactory
 			= new RegExTokenizerFactory("(-|'|\\d|\\p{L})+|\\S");
 
-	private static File sentenceModelFile;
-	private static SentenceModel sentenceModel;
+	private File sentenceModelFile;
+	private SentenceModel sentenceModel;
 
-	private static File taggerModelFile;
-	private static HiddenMarkovModel hmm;
-	private static HmmDecoder hmmDecoder;
+	
+	/**
+	 * The Hidden Markov model part-of-speech tagger.
+	 */
+	private HmmDecoder hmmDecoder;
 
-	public static void setTaggerModelFile(File taggerModelFile) throws IOException {
-		LingPipeFactory.taggerModelFile = taggerModelFile;
+	
+	/**
+	 * Create a new LingPipe factory with the tagger model file and sentence model provided
+	 * as parameters. On instantiation of the object, the HMM will be read from the tagger
+	 * model file and the part-of-speech tagger and sentence segmentizer are created.
+	 *
+	 * @param taggerModelFile File containing the serialized hidden Markov model for PoS tagging
+	 * @param sentenceModel Model for sentence segmentation
+	 * @throws IOException The file was not found or could not be read.
+	 */
 
-		FileInputStream fileIn = null;
-		HmmDecoder decoder = null;
+	public LingPipeFactory(File taggerModelFile, SentenceModel sentenceModel) throws IOException {
+		this.setTaggerModelFile(taggerModelFile);
+		this.setSentenceModel(sentenceModel);
+	}
+
+	/**
+	 * Set the tagger model file to taggerModelFile, read the model and
+	 * create the HmmDecoder.
+	 *
+	 * @param taggerModelFile serialized HM model file
+	 * @throws IOException The file was not found or could not be read.
+	 */
+	private void setTaggerModelFile(File taggerModelFile) throws IOException {
+
+		FileInputStream fileIn;
+		HiddenMarkovModel hmm;
+
 		try {
 			fileIn = new FileInputStream(taggerModelFile);
 			ObjectInputStream objIn = new ObjectInputStream(fileIn);
@@ -43,32 +78,51 @@ public class LingPipeFactory {
 		} catch (ClassNotFoundException e) {
 			throw new IOException("Could not decode POS tagger model in "+taggerModelFile,e);
 		}
+
 		hmmDecoder = new HmmDecoder(hmm);
 	}
 
 
-	public static void setSentenceModel(SentenceModel sentenceModel) {
-		LingPipeFactory.sentenceModel = sentenceModel;
+	private void setSentenceModel(SentenceModel sentenceModel) {
+		this.sentenceModel = sentenceModel;
 	}
 
-	public static void setSentenceModelFile(File sentenceModelFile) {
-		//TODO
-		LingPipeFactory.sentenceModelFile = sentenceModelFile;
+	private void setSentenceModelFile(File sentenceModelFile) {
+		this.sentenceModelFile = sentenceModelFile;
+		//TODO: enable serialized sentence models
 	}
 
-	public static Tagger createPOSTagger() {
+	/**
+	 * Get the Singleton part-of-speech tagger instance.
+	 *
+	 * @return part-of-speech tagger instance
+	 */
+	public Tagger getPoSTaggerInstance() {
 		return hmmDecoder;
 	}
 
-	public static SentenceModel createSentenceModel() {
+	/**
+	 * Get the Singleton sentence segmentizer instance.
+	 *
+	 * @return sentence segmentizer instance.
+	 */
+	public SentenceModel getSentenceModelInstance() {
 		return sentenceModel;
 	}
 
-	public static void setTokenizerFactory(TokenizerFactory tokenizerFactory) {
-		LingPipeFactory.tokenizerFactory = tokenizerFactory;
+	public void setTokenizerFactory(TokenizerFactory tokenizerFactory) {
+		tokenizerFactory = tokenizerFactory;
 	}
 
-	public static TokenizerFactory getTokenizerFactory() {
+
+	/**
+	 * Get the tokenizer factory instance that can be used for word
+	 * tokenization.
+	 *
+	 * @return word tokenizer instance.
+	 */
+	public TokenizerFactory getTokenizerFactoryInstance() {
 		return tokenizerFactory;
 	}
+
 }

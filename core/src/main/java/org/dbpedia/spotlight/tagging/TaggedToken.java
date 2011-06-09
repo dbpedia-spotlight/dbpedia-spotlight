@@ -7,8 +7,9 @@ package org.dbpedia.spotlight.tagging;
  * It includes the token, text offset and the part-of-speech tag. If the tagger
  * supports this feature, it may also include a confidence value.
  *
- * @author jodaiber
+ * @author Joachim Daiber
  */
+
 public class TaggedToken implements Comparable<Integer> {
 
 	public TaggedToken(String token, String white, String POSTag, int offset, Float confidence) {

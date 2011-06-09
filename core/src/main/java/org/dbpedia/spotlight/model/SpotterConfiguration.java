@@ -23,8 +23,9 @@ public class SpotterConfiguration {
 
 	protected String candidateClassifierUnigram = "";
 	protected String candidateClassifierNGram = "";
+	protected String candidateOccurrenceDataSource = "";
 
-		public String getCandidateDatabaseDriver() {
+	public String getCandidateDatabaseDriver() {
 		return candidateDatabaseDriver;
 	}
 
@@ -51,8 +52,6 @@ public class SpotterConfiguration {
 	public String getSpotterFile() {
 		return spotterFile;
 	}
-
-
 
 	public SpotterConfiguration(String fileName) throws ConfigurationException {
 
@@ -83,10 +82,16 @@ public class SpotterConfiguration {
 		candidateClassifierUnigram =
 				config.getProperty("org.dbpedia.spotlight.candidate.cooccurence.classifier.unigram", "").trim();
 		candidateClassifierNGram =
-				config.getProperty("org.dbpedia.spotlight.candidate.cooccurence.classifier.ngram", "").trim();
-				
+						config.getProperty("org.dbpedia.spotlight.candidate.cooccurence.classifier.ngram", "").trim();
+
+		candidateOccurrenceDataSource =
+				config.getProperty("org.dbpedia.spotlight.candidate.cooccurence.datasource", "").trim();
+
+
 	}
 
 
-
+	public String getCandidateOccurrenceDataSource() {
+		return candidateOccurrenceDataSource;
+	}
 }

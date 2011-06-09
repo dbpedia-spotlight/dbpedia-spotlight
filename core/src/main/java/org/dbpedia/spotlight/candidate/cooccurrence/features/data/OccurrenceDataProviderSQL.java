@@ -45,7 +45,10 @@ public class OccurrenceDataProviderSQL implements OccurrenceDataProvider {
 			throw new InitializationException("No access to SQL driver specified in configuration file.", e);
 		}
 
-		
+	}
+
+	public OccurrenceDataProviderSQL(Connection sqlConnection) {
+		this.sqlConnection = sqlConnection;
 	}
 
 	public static OccurrenceDataProviderSQL getInstance() {
@@ -100,8 +103,8 @@ public class OccurrenceDataProviderSQL implements OccurrenceDataProvider {
 				throw new ItemNotFoundException("Could not find bigram.");
 
 			return new CoOccurrenceData(
-					resultSet.getLong("count_corpus"), resultSet.getLong("count_web"),
-					resultSet.getFloat("significance_corpus"), resultSet.getFloat("significance_web"));
+					0, resultSet.getLong("count_web"),
+					0, 0);
 
 		} catch (SQLException e) {
 			//Could not retrieve bigram information

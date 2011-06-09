@@ -1,39 +1,36 @@
 package org.dbpedia.spotlight.candidate.cooccurrence;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.candidate.cooccurrence.classification.CandidateClassifier;
-import org.dbpedia.spotlight.candidate.cooccurrence.classification.CandidateClassifierNGram;
-import org.dbpedia.spotlight.candidate.cooccurrence.classification.CandidateClassifierUnigram;
 import org.dbpedia.spotlight.candidate.cooccurrence.features.data.OccurrenceDataProvider;
+import org.dbpedia.spotlight.exceptions.InitializationException;
 
 /**
+ * Factory for candidate classifiers (uni- and n-gram)
+ *
  * @author Joachim Daiber
  */
 public class ClassifierFactory {
 
-	private final Log LOG = LogFactory.getLog(this.getClass());
-
 	private static CandidateClassifier classifierUnigram;
 	private static CandidateClassifier classifierNGram;
 
+	public ClassifierFactory(String unigramModelFile, String ngramModelFile,
+							 String occurrenceDataSource, OccurrenceDataProvider dataProvider)
+			throws InitializationException {
 
-	public ClassifierFactory(String unigramModelFile, String ngramModelFile, OccurrenceDataProvider dataProvider) {
-
-		try{
-			classifierUnigram = new CandidateClassifierUnigram(unigramModelFile, dataProvider);
-		}catch (Exception e) {
-			LOG.error("Could not initialize unigram classifier." + e);
-		}
+		//Create the unigram classifier:
+		classifierUnigram = new CandidateClassifier(
+				unigramModelFile, dataProvider,
+				InstanceBuilderFactory.createInstanceBuilderUnigram(occurrenceDataSource, dataProvider));
 		//classifierUnigram.setVerboseMode(true);
 
-		try{
-			classifierNGram = new CandidateClassifierNGram(ngramModelFile, dataProvider);
-		}catch (Exception e) {
-			LOG.error("Could not initialize ngram classifier." + e);
-		}
+		//Create the n-gram classifier:
+		classifierNGram = new CandidateClassifier(
+				ngramModelFile, dataProvider,
+				InstanceBuilderFactory.createInstanceBuilderNGram(occurrenceDataSource, dataProvider));
 		//classifierNGram.setVerboseMode(true);
 
+		
 	}
 
 	public static CandidateClassifier getClassifierUnigram() {
@@ -43,4 +40,6 @@ public class ClassifierFactory {
 	public static CandidateClassifier getClassifierNGram() {
 		return classifierNGram;
 	}
+	
+	
 }

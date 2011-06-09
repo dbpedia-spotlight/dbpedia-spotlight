@@ -1,7 +1,6 @@
 package org.dbpedia.spotlight.candidate.cooccurrence.features.data;
 
 import au.com.bytecode.opencsv.CSVReader;
-import org.dbpedia.spotlight.candidate.cooccurrence.CandidateUtil;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.InitializationException;
 import org.dbpedia.spotlight.model.SpotterConfiguration;
@@ -24,9 +23,14 @@ public class OccurrenceDataImporterSQL {
 	Connection sqlConnection;
 	SpotterConfiguration spotterConfiguration;
 
+	private static final int BIGRAM_LEFT_MIN_SIGNIFICANCE_WEB = 10000;
+	private static final int BIGRAM_RIGHT_MIN_SIGNIFICANCE_WEB = 10000;
+	private static final int TRIGRAM_LEFT_MIN_COUNT_WEB = 600000;
+	private static final int TRIGRAM_RIGHT_MIN_COUNT_WEB = 500000;
+
 	public OccurrenceDataImporterSQL() throws InitializationException, ConfigurationException {
 
-		spotterConfiguration = new SpotterConfiguration("conf/candidate.properties");
+		spotterConfiguration = new SpotterConfiguration("conf/server.properties");
 
 		try {
 			Class.forName(spotterConfiguration.getCandidateDatabaseDriver()).newInstance();
@@ -82,8 +86,9 @@ public class OccurrenceDataImporterSQL {
 			float significance_web = Float.parseFloat(line[5]);
 
 			if(significance_web <
-					Math.max(CandidateUtil.BIGRAM_LEFT_SIGNIFICANCE_TRESH_WEB,
-							 CandidateUtil.BIGRAM_RIGHT_SIGNIFICANCE_TRESH_WEB))
+					Math.max(BIGRAM_LEFT_MIN_SIGNIFICANCE_WEB,
+							 BIGRAM_RIGHT_MIN_SIGNIFICANCE_WEB)
+					)
 				continue;
 
 			bigramInsert.setInt(1, Integer.parseInt(line[0]));
@@ -107,8 +112,8 @@ public class OccurrenceDataImporterSQL {
 			long count_web = Long.parseLong(line[3]);
 
 			if(count_web <
-						Math.max(CandidateUtil.TRIGRAM_LEFT_TRESH_COUNT_WEB,
-								 CandidateUtil.TRIGRAM_RIGHT_TRESH_COUNT_WEB)) {
+						Math.max(TRIGRAM_LEFT_MIN_COUNT_WEB, 
+								TRIGRAM_RIGHT_MIN_COUNT_WEB)) {
 				continue;
 			}
 
@@ -136,7 +141,7 @@ public class OccurrenceDataImporterSQL {
 				new File("/Applications/XAMPP/xamppfiles/var/mysql/leipzig2/bigrams.csv"),
 				new File("/Applications/XAMPP/xamppfiles/var/mysql/leipzig2/trigrams.csv")
 		);
-
+		
 	}
 
 

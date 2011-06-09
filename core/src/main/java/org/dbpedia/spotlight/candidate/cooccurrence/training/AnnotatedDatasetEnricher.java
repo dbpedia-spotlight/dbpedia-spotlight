@@ -1,14 +1,15 @@
-package org.dbpedia.spotlight.candidate.cooccurrence.features.training;
+package org.dbpedia.spotlight.candidate.cooccurrence.training;
 
 
-import com.aliasi.sentences.IndoEuropeanSentenceModel;
+import org.dbpedia.spotlight.candidate.cooccurrence.weka.InstanceBuilder;
 import org.dbpedia.spotlight.candidate.cooccurrence.features.data.OccurrenceDataProvider;
 import org.dbpedia.spotlight.candidate.cooccurrence.filter.Filter;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
+import org.dbpedia.spotlight.model.LuceneFactory;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
-import org.dbpedia.spotlight.tagging.lingpipe.LingPipeFactory;
 import org.json.JSONException;
 import weka.core.Attribute;
+import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.converters.XRFFSaver;
@@ -21,7 +22,7 @@ import java.util.List;
 
 /**
  * Reads an annotated dataset that contains surface form occurrences and
- * manual classifcation by a human annotator and produces an XRFF file
+ * manual classification by a human annotator and produces an XRFF file
  * for training a classifier.
  *
  * @author Joachim Daiber
@@ -29,21 +30,26 @@ import java.util.List;
 
 public abstract class AnnotatedDatasetEnricher {
 
+	protected InstanceBuilder instanceBuilder;
 	protected List<Filter> filters = new LinkedList<Filter>();
 	protected OccurrenceDataProvider dataProvider;
 	protected Instances header;
+	protected LuceneFactory luceneFactory;
 
-
-	protected AnnotatedDatasetEnricher() throws IOException, ConfigurationException {
-
-		SpotlightConfiguration spotlightConfiguration = new SpotlightConfiguration("conf/server.properties");
-
-		LingPipeFactory.setTaggerModelFile(new File(spotlightConfiguration.getTaggerFile()));
-		LingPipeFactory.setSentenceModel(new IndoEuropeanSentenceModel());
-
-				
+	protected AnnotatedDatasetEnricher(SpotlightConfiguration configuration) throws IOException, ConfigurationException {
+		luceneFactory = new LuceneFactory(configuration);
 	}
 
+
+	/**
+	 * Write the generated data set to the specified files.
+	 *
+	 * @param trainingData Generated training data set
+	 * @param targetFile File, the data set should be written to
+	 * @throws IOException Could not write file
+	 * @throws ConfigurationException There was a problem with loading from the Configuration
+	 * @throws JSONException Could not parse JSON-serialized annotation sheet.
+	 */
 	public void writeDataset(OccurrenceDataset trainingData, File targetFile) throws IOException, ConfigurationException, JSONException {
 
 		/*
@@ -65,7 +71,7 @@ public abstract class AnnotatedDatasetEnricher {
 
 			switch (trainingInstance.getCandidateClass()) {
 
-				case term:
+				case valid:
 					annotationValue = 0;
 					break;
 
@@ -80,10 +86,7 @@ public abstract class AnnotatedDatasetEnricher {
 			}
 
 			System.err.println(i + ": " + trainingInstance.getCandidateClass() + " #############################################");
-
-			Instance instance = null;
-			instance = buildInstance(trainingInstance, this.dataProvider);
-
+			Instance instance = buildInstance(trainingInstance);
 			instance.setValue(attributeList.size() - 1, annotationValue);
 
 			/** Add the instance */
@@ -106,7 +109,28 @@ public abstract class AnnotatedDatasetEnricher {
 		xrffSaver.writeBatch();
 	}
 
-	public abstract Instance buildInstance(OccurrenceInstance trainingInstance, OccurrenceDataProvider dataProvider);
-	protected abstract ArrayList<Attribute> buildAttributeList();
+	
+	/**
+	 * Build the instance with the suitable InstanceBuilder.
+	 *
+	 * @param trainingInstance surface form occurrence of the candidate
+	 * @return WEKA Instance for the surface form occurrence
+	 */
+	public Instance buildInstance(OccurrenceInstance trainingInstance) {
+		DenseInstance instance = new DenseInstance(buildAttributeList().size());
+		instance.setDataset(header);
+		return instanceBuilder.buildInstance(trainingInstance, instance);
+	}
 
+	
+	/**
+	 * Build the List of attributes. This must be an {@link ArrayList}, because of the method
+	 * signature in WEKA.
+	 *
+	 * @return List of Attributes
+	 */
+	protected ArrayList<Attribute> buildAttributeList() {
+		return instanceBuilder.buildAttributeList();
+	}
+	
 }

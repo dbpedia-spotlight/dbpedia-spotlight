@@ -4,8 +4,8 @@ import junit.framework.TestCase;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.InitializationException;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
-import org.dbpedia.spotlight.model.SpotterConfiguration;
-import org.dbpedia.spotlight.tagging.lingpipe.LingPipeFactory;
+import org.dbpedia.spotlight.model.LuceneFactory;
+import org.dbpedia.spotlight.model.SpotlightConfiguration;
 
 import java.util.Arrays;
 import java.util.List;
@@ -23,9 +23,11 @@ public class OccurrenceDataProviderSQLTest extends TestCase {
 
 	public OccurrenceDataProviderSQLTest(String name) throws InitializationException, ConfigurationException {
         super(name);
-        SpotterConfiguration config = new SpotterConfiguration("conf/server.properties");
+        SpotlightConfiguration config = new SpotlightConfiguration("conf/server.properties");
+		LuceneFactory luceneFactory = new LuceneFactory(config);
 
-		OccurrenceDataProviderSQL.initialize(config);
+
+		OccurrenceDataProviderSQL.initialize(config.getSpotterConfiguration());
 		occurrenceDataProviderUnigram = OccurrenceDataProviderSQL.getInstance();
 		String text = "PLEASANT GROVE, Ala. — The death toll in five Southern states rose sharply Thursday morning " +
 				"to nearly 200 after devastating storms ripped through the region, spawning a deadly tornado in " +
@@ -39,7 +41,7 @@ public class OccurrenceDataProviderSQLTest extends TestCase {
 				"Prosecutors had asked that Mr. Rajaratnam be placed in custody, arguing that he was a flight risk. They said that he had the means to leave the country, noting that he owned property in Sri Lanka and Singapore.";
 
 		words = Arrays.asList(
-				LingPipeFactory.getTokenizerFactory().tokenizer(text.toCharArray(), 0, text.length()).tokenize());
+				luceneFactory.lingPipeFactory().getTokenizerFactoryInstance().tokenizer(text.toCharArray(), 0, text.length()).tokenize());
 	}
 
     public void setUp() throws Exception {

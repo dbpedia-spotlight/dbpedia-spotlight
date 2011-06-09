@@ -47,5 +47,3 @@ class AtLeastOneNounSelector extends TaggedSpotSelector {
     }
 
 }
-
-

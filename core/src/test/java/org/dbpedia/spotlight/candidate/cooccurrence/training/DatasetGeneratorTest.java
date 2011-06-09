@@ -1,12 +1,10 @@
-package org.dbpedia.spotlight.candidate.cooccurrence.features.training;
+package org.dbpedia.spotlight.candidate.cooccurrence.training;
 
-import com.aliasi.sentences.IndoEuropeanSentenceModel;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.dbpedia.spotlight.model.DBpediaResource;
 import org.dbpedia.spotlight.model.SurfaceForm;
-import org.dbpedia.spotlight.tagging.lingpipe.LingPipeFactory;
 
 /**
  * TrainingDataGenerator Tester.
@@ -24,7 +22,6 @@ public class DatasetGeneratorTest extends TestCase {
 
     public void setUp() throws Exception {
         super.setUp();
-		LingPipeFactory.setSentenceModel(new IndoEuropeanSentenceModel());
 		trainingDataGenerator = new DatasetGeneratorUnigram();
 
     }
@@ -40,6 +37,7 @@ public class DatasetGeneratorTest extends TestCase {
      * Method: findExampleSentenceGeneric(String surfaceForm)
      *
      */
+	
     public void testFindExampleSentenceGeneric() throws Exception {
 		OccurrenceInstance occurrenceInstance
 				= trainingDataGenerator.findExampleSentenceGeneric("review");
@@ -52,6 +50,7 @@ public class DatasetGeneratorTest extends TestCase {
      * Method: findExampleSentenceWikipedia(String surfaceForm, DBpediaResource dbpediaResource)
      *
      */
+
     public void testFindExampleSentenceWikipedia() throws Exception {
 
 		OccurrenceInstance exampleSentenceWikipedia

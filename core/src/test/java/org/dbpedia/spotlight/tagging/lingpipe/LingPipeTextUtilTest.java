@@ -1,13 +1,17 @@
 package org.dbpedia.spotlight.tagging.lingpipe;
 
-import com.aliasi.sentences.IndoEuropeanSentenceModel;
 import junit.framework.TestCase;
+import org.dbpedia.spotlight.model.LuceneFactory;
+import org.dbpedia.spotlight.model.SpotlightConfiguration;
+import org.dbpedia.spotlight.tagging.TextUtil;
 
 /**
  * @author Joachim Daiber
  *
  */
-public class LingPipeUtilTest extends TestCase {
+public class LingPipeTextUtilTest extends TestCase {
+
+	private TextUtil textUtil;
 
 	String text = "Aguri Suzuki, a 44-year-old real estate agent, says she sometimes " +
 		"thinks the ground is shaking even when it is not. When she sees a tree branch swaying in the wind, " +
@@ -15,13 +19,15 @@ public class LingPipeUtilTest extends TestCase {
 		"experiencing such phantom quakes, as well as other symptoms of “earthquake sickness” " +
 		"like dizziness and anxiety.";
 
-    public LingPipeUtilTest(String name) {
+    public LingPipeTextUtilTest(String name) {
         super(name);
     }
 
     public void setUp() throws Exception {
-        super.setUp();	
-		LingPipeFactory.setSentenceModel(new IndoEuropeanSentenceModel());
+        super.setUp();
+
+		LuceneFactory luceneFactory = new LuceneFactory(new SpotlightConfiguration("conf/server.properties"));
+		textUtil = luceneFactory.textUtil();
     }
 
     public void tearDown() throws Exception {
@@ -31,12 +37,12 @@ public class LingPipeUtilTest extends TestCase {
     public void testGetSentence() throws Exception {
         assertEquals("Aguri Suzuki, a 44-year-old real estate agent, says she sometimes " +
 				"thinks the ground is shaking even when it is not.",
-				LingPipeUtil.getSentence(28, 45, text));
+				textUtil.getSentence(28, 45, text));
     }
 
 	 public void testGetSentence2() throws Exception {
         assertEquals("When she sees a tree branch swaying in the wind, she worries there has been an earthquake.",
-				LingPipeUtil.getSentence(122, 125, text));
+				textUtil.getSentence(122, 125, text));
 
     }
 

@@ -1,4 +1,4 @@
-package org.dbpedia.spotlight.candidate.cooccurrence.features.training;
+package org.dbpedia.spotlight.candidate.cooccurrence.training;
 
 import com.mongodb.*;
 import org.dbpedia.spotlight.candidate.cooccurrence.classification.CandidateClass;
@@ -8,7 +8,6 @@ import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher;
 import org.dbpedia.spotlight.model.*;
 import org.dbpedia.spotlight.tagging.lingpipe.AnnotatedString;
 import org.dbpedia.spotlight.tagging.lingpipe.LingPipeTaggedTokenProvider;
-import org.dbpedia.spotlight.tagging.lingpipe.LingPipeUtil;
 import org.dbpedia.spotlight.util.KeywordExtractor;
 import org.dbpedia.spotlight.util.WebSearchConfiguration;
 import org.dbpedia.spotlight.util.YahooBossSearcher;
@@ -41,6 +40,7 @@ public abstract class DatasetGenerator {
 	protected static final int NUMBER_OF_EXAMINED_SURFACE_FORMS = 100;
 	private String indexingConfigFileName = "/Users/jodaiber/Documents/workspace/ba/workspace/DBPedia Spotlight/conf/indexing.properties";
 
+	
 	/**
 	 * Maximum number of sentences that are analysed for a single surface form
 	 *
@@ -51,6 +51,11 @@ public abstract class DatasetGenerator {
 	 */
 
 	private static final int RANDOM_SENTENCE_LIMIT = 50;
+	private LuceneFactory luceneFactory;
+
+	public LuceneFactory getLuceneFactory() {
+		return luceneFactory;
+	}
 
 
 	/**
@@ -69,7 +74,7 @@ public abstract class DatasetGenerator {
 
 		configuration = new SpotlightConfiguration("/Users/jodaiber/Documents/workspace/ba/workspace/DBPedia Spotlight/conf/server.properties");
 
-		LuceneFactory luceneFactory = new LuceneFactory(configuration, null);
+		luceneFactory = new LuceneFactory(configuration);
 		searcher = luceneFactory.searcher();
 
 	}
@@ -92,11 +97,11 @@ public abstract class DatasetGenerator {
 		String sentence = ((BasicDBObject) random).getString("sentence");
 		int offset = sentence.indexOf(surfaceForm);
 
-		LingPipeTaggedTokenProvider lingPipeTaggedTokenProvider = new LingPipeTaggedTokenProvider();
+		LingPipeTaggedTokenProvider lingPipeTaggedTokenProvider = luceneFactory.taggedTokenProvider();
 		lingPipeTaggedTokenProvider.initialize(sentence);
 
 		OccurrenceInstance candidateOccurrence = new OccurrenceInstance(
-				surfaceForm, offset, new TaggedText(sentence, new LingPipeTaggedTokenProvider()), null, null, null, CandidateClass.common);
+				surfaceForm, offset, new TaggedText(sentence, luceneFactory.taggedTokenProvider()), null, null, null, CandidateClass.common);
 
 		return candidateOccurrence;
 	}
@@ -184,16 +189,17 @@ public abstract class DatasetGenerator {
 		}
 
 		String text = ((BasicDBObject) random).getString("text");
-		AnnotatedString sentence = LingPipeUtil.getSentence(offset, offset + surfaceForm.name().length(), text);
+		AnnotatedString sentence = luceneFactory.textUtil().getSentence(offset,
+				offset + surfaceForm.name().length(), text);
 
 		OccurrenceInstance occurrenceInstance = new OccurrenceInstance(surfaceForm.name(),
 				//The offset must be relative to the offset of the sentence:
 				offset - sentence.getOffsetFrom(),
-				new TaggedText(sentence.getAnnotation(), new LingPipeTaggedTokenProvider()),
+				new TaggedText(sentence.getAnnotation(), luceneFactory.taggedTokenProvider()),
 				dbpediaResource.uri(),
 				getAnnotationTitle(dbpediaResource),
 				getAnnotationAbstract(dbpediaResource),
-				CandidateClass.term
+				CandidateClass.valid
 		);
 
 		return occurrenceInstance;
