@@ -38,6 +38,9 @@ public class Resource {
     private double percentageOfSecondRank;
 
     @XStreamAsAttribute
+    private int support;
+
+    @XStreamAsAttribute
     private double priorScore;
 
     @XStreamAsAttribute
@@ -57,6 +60,10 @@ public class Resource {
         this.percentageOfSecondRank = percentageOfSecondRank;
     }
 
+    public void setSupport(int support) {
+        this.support = support;
+    }
+
     public void setPriorScore(double priorScore) {
         this.priorScore = priorScore;
     }
@@ -70,6 +77,7 @@ public class Resource {
         resource.setUri(occ.resource().uri());
         resource.setContextualScore(occ.contextualScore());
         resource.setPercentageOfSecondRank(occ.percentageOfSecondRank());
+        resource.setSupport(occ.resource().support());
         resource.setPriorScore(occ.resource().prior());
         resource.setFinalScore(occ.similarityScore());
         return resource;
