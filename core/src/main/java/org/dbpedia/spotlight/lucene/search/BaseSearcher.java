@@ -154,8 +154,8 @@ public class BaseSearcher implements Closeable {
             LOG.trace("Start search. timeout="+timeout);
             Filter filter = null; //TODO surfaceForm filter here?
             TopScoreDocCollector collector = TopScoreDocCollector.create(n, false);
-            TimeLimitingCollector tCollector = new TimeLimitingCollector(collector, timeout);
-            mSearcher.search(query, filter, tCollector);
+            //TimeLimitingCollector collector = new TimeLimitingCollector(tCollector, timeout);  //TODO try to bring this back later
+            mSearcher.search(query, filter, collector);
             hits = collector.topDocs().scoreDocs;
             LOG.trace("Done search. hits.length="+hits.length);
         } catch (TimeLimitingCollector.TimeExceededException timedOutException) {
