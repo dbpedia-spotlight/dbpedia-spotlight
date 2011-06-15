@@ -25,6 +25,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
 import org.dbpedia.spotlight.exceptions.SearchException;
+import org.dbpedia.spotlight.exceptions.TimeoutException;
 import org.dbpedia.spotlight.io.DataLoader;
 import org.dbpedia.spotlight.lucene.search.CandidateSearcher;
 import org.dbpedia.spotlight.model.*;
@@ -72,6 +73,8 @@ public class CustomScoresDisambiguator implements Disambiguator {
         for (SurfaceFormOccurrence sfOcc: sfOccurrences) {
             try {
                 disambiguated.add(disambiguate(sfOcc));
+            } catch (TimeoutException e) {
+                LOG.error("Could not disambiguate. Surface form took too long: "+sfOcc.surfaceForm()+": "+e);
             } catch (ItemNotFoundException e) {
                 LOG.error("Could not disambiguate. Surface form not found: "+sfOcc.surfaceForm()+": "+e);
             }

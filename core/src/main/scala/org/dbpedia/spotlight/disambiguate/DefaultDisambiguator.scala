@@ -54,9 +54,9 @@ class DefaultDisambiguator(val configuration: SpotlightConfiguration) extends Di
     luceneManager.setContextSimilarity(new CachedInvCandFreqSimilarity(cache))        // set most successful Similarity
 
     val contextSearcher = new MergedOccurrencesContextSearcher(luceneManager)
-    //val disambiguator : Disambiguator = new MergedOccurrencesDisambiguator(contextSearcher)
 
-    val disambiguator : Disambiguator = new MixedWeightsDisambiguator(contextSearcher, new LinearRegressionMixture())
+    val disambiguator : Disambiguator = new MergedOccurrencesDisambiguator(contextSearcher)
+    //val disambiguator : Disambiguator = new MixedWeightsDisambiguator(contextSearcher, new LinearRegressionMixture())
 
     //TODO fix MultiThreading
     //val disambiguator : Disambiguator = new MultiThreadedDisambiguatorWrapper(new MixedWeightsDisambiguator(contextSearcher, new LinearRegressionMixture()))

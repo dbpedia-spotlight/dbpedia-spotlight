@@ -57,23 +57,23 @@ public class CandidateSearcher extends BaseSearcher implements org.dbpedia.spotl
      */
     @Override
     public Set<DBpediaResource> getCandidates(SurfaceForm sf) throws SearchException {
-        Set<DBpediaResource> surrogates = new HashSet<DBpediaResource>();
+        Set<DBpediaResource> candidates = new HashSet<DBpediaResource>();
 
         // search index for surface form, iterate through the results
         for (ScoreDoc hit : getHits(mLucene.getQuery(sf))) {
             int docNo = hit.doc;
             DBpediaResource resource = getDBpediaResource(docNo);
-            surrogates.add(resource);
+            candidates.add(resource);
         }
 
-        LOG.debug("Surrogates for "+sf+"("+surrogates.size()+"): "+surrogates);
+        LOG.debug("Candidates for "+sf+"("+candidates.size()+"): "+candidates);
 
         //TODO for the evaluation, this exception creates problems. But maybe we want to have it at a later stage.
         //if (surrogates.size() == 0)
         //    throw new SearchException("Problem retrieving surrogates for "+sf, new ItemNotFoundException(sf + " not found in (surrogate) index"));
 
         // return set of surrogates
-        return surrogates;
+        return candidates;
     }
 
     public Set<SurfaceForm> getSurfaceForms(DBpediaResource res) throws SearchException {

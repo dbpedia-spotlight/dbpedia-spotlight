@@ -27,16 +27,49 @@ import java.util.List;
 
 /**
  * Interface for disambiguators.
+ * TODO consider separating the disambiguation per occurrence and disambiguation per paragraph (list<occ>)
+ * @author pablomendes
+ * @author maxjakob
  */
-
 public interface Disambiguator {
 
     public List<SurfaceFormOccurrence> spotProbability(List<SurfaceFormOccurrence> sfOccurrences) throws SearchException;
 
+    /**
+     * Executes disambiguation per individual occurrence.
+     * Can be seen as a classification task: unlabeled instance in, labeled instance out.
+     *
+     * @param sfOccurrence
+     * @return
+     * @throws SearchException
+     * @throws ItemNotFoundException
+     * @throws InputException
+     */
     public DBpediaResourceOccurrence disambiguate(SurfaceFormOccurrence sfOccurrence) throws SearchException, ItemNotFoundException, InputException; //TODO DisambiguationException
 
+    /**
+     * Executes disambiguation per paragraph (collection of occurrences).
+     * Can be seen as a classification task: unlabeled instances in, labeled instances out.
+     *
+     * @param sfOccurrences
+     * @return
+     * @throws SearchException
+     * @throws InputException
+     */
     public List<DBpediaResourceOccurrence> disambiguate(List<SurfaceFormOccurrence> sfOccurrences) throws SearchException, InputException; //TODO DisambiguationException
 
+
+    /**
+     * Executes disambiguation per occurrence, returns a list of possible candidates.
+     * Can be seen as a ranking (rather than classification) task: query instance in, ranked list of target URIs out.
+     *
+     * @param sfOccurrence
+     * @param k
+     * @return
+     * @throws SearchException
+     * @throws ItemNotFoundException
+     * @throws InputException
+     */
     //TODO consider moving this to CandidateSelector / CandidateSearcher interface
     public List<DBpediaResourceOccurrence> bestK(SurfaceFormOccurrence sfOccurrence, int k) throws SearchException, ItemNotFoundException, InputException;
 
@@ -49,7 +82,7 @@ public interface Disambiguator {
     /**
      * Every disambiguator should know how to measure the ambiguity of a surface form.
      * @param sf
-     * @return ambiguity of surface form (number of surrogates)
+     * @return ambiguity of surface form (number of candidates)
      */
     public int ambiguity(SurfaceForm sf) throws SearchException;
 

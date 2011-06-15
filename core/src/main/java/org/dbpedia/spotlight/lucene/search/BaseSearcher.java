@@ -31,6 +31,7 @@ import org.apache.lucene.index.TermFreqVector;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.*;
 import org.dbpedia.spotlight.exceptions.SearchException;
+import org.dbpedia.spotlight.exceptions.TimeoutException;
 import org.dbpedia.spotlight.lucene.LuceneFeatureVector;
 import org.dbpedia.spotlight.lucene.LuceneManager;
 import org.dbpedia.spotlight.model.DBpediaResource;
@@ -158,7 +159,7 @@ public class BaseSearcher implements Closeable {
             hits = collector.topDocs().scoreDocs;
             LOG.trace("Done search. hits.length="+hits.length);
         } catch (TimeLimitingCollector.TimeExceededException timedOutException) {
-            throw new SearchException("Timeout (>"+timeout+"ms searching for surface form "+query.toString(),timedOutException);
+            throw new TimeoutException("Timeout (>"+timeout+"ms searching for surface form "+query.toString(),timedOutException);
         } catch (Exception e) {
             throw new SearchException("Error searching for surface form "+query.toString(),e);
         }
@@ -168,7 +169,7 @@ public class BaseSearcher implements Closeable {
 
     // Uses default timeout
     public ScoreDoc[] getHits(Query query, int n) throws SearchException {
-       return getHits(query, n, 500);
+       return getHits(query, n, 5000);
     }
 
     // Uses default maxHits and timeout

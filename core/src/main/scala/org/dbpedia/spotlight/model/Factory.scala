@@ -14,13 +14,13 @@ import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters
 import org.apache.lucene.document.Document
 import org.dbpedia.spotlight.lucene.LuceneManager.DBpediaResourceField
 import collection.JavaConversions._
-import org.dbpedia.spotlight.disambiguate.DefaultDisambiguator
 import org.dbpedia.spotlight.lucene.search.{BaseSearcher, MergedOccurrencesContextSearcher}
 import org.dbpedia.spotlight.exceptions.ConfigurationException
 import org.dbpedia.spotlight.candidate.{CoOccurrenceBasedSelector}
 import com.aliasi.sentences.IndoEuropeanSentenceModel
 import org.dbpedia.spotlight.spot.{AtLeastOneNounSelector, SpotterWithSelector}
 import org.dbpedia.spotlight.tagging.lingpipe.{LingPipeTextUtil, LingPipeTaggedTokenProvider, LingPipeFactory}
+import org.dbpedia.spotlight.disambiguate.{GraphCentralityDisambiguator, DefaultDisambiguator}
 
 /**
  * Class containing methods to create model objects in many different ways
@@ -30,11 +30,29 @@ import org.dbpedia.spotlight.tagging.lingpipe.{LingPipeTextUtil, LingPipeTaggedT
  */
 object Factory {
 
-    def createSurfaceFormFromDBpediaResourceURI(resource: DBpediaResource, lowercased: Boolean) = {
-        val name = ModifiedWikiUtil.cleanPageTitle(resource.uri)
-        val surfaceForm = if (lowercased) new SurfaceForm(name.toLowerCase) else new SurfaceForm(name)
-        surfaceForm;
+    /*
+    * I like this style for the factory. group by return type and offer many .from* methods
+    */
+    object SurfaceFormOccurrence {
+        def fromDBpediaResourceOccurrence(occ: DBpediaResourceOccurrence) : SurfaceFormOccurrence = {
+            new SurfaceFormOccurrence(occ.surfaceForm, occ.context, occ.textOffset)
+        }
     }
+
+    object SurfaceForm {
+        def fromDBpediaResourceURI(resource: DBpediaResource, lowercased: Boolean) = {
+            val name = ModifiedWikiUtil.cleanPageTitle(resource.uri)
+            val surfaceForm = if (lowercased) new SurfaceForm(name.toLowerCase) else new SurfaceForm(name)
+            surfaceForm;
+        }
+    }
+
+    /*** left here for compatibility with Java. used by IndexEnricher ****/
+    def createSurfaceFormFromDBpediaResourceURI(resource: DBpediaResource, lowercased: Boolean) = {
+        SurfaceForm.fromDBpediaResourceURI(resource, lowercased)
+    }
+
+    /*** TODO old style factory methods that need to be changed ****/
 
     def createMergedDBpediaResourceOccurrenceFromDocument(doc : Document, id: Int, searcher: BaseSearcher) = {
         // getField: If multiple fields exists with this name, this method returns the first value added.
@@ -43,7 +61,7 @@ object Factory {
 
         Array(new DBpediaResourceOccurrence( //TODO add document id as occurrence id
             resource,
-            createSurfaceFormFromDBpediaResourceURI(resource, false), // this is sort of the "official" surface form, since it's the cleaned up title
+            SurfaceForm.fromDBpediaResourceURI(resource, false), // this is sort of the "official" surface form, since it's the cleaned up title
             context,
             -1,
             Provenance.Wikipedia // Ideally grab this from index, if we have sources other than Wikipedia
@@ -58,7 +76,7 @@ object Factory {
         occContexts.map(context =>
             new DBpediaResourceOccurrence( //TODO add document id as occurrence id
                 resource,
-                createSurfaceFormFromDBpediaResourceURI(resource, false), // this is sort of the "official" surface form, since it's the cleaned up title
+                SurfaceForm.fromDBpediaResourceURI(resource, false), // this is sort of the "official" surface form, since it's the cleaned up title
                 context,
                 -1, //TODO find offset
                 Provenance.Wikipedia // Ideally grab this from index, if we have sources other than Wikipedia
@@ -109,7 +127,8 @@ class SpotlightFactory(val configuration: SpotlightConfiguration,
     def disambiguator() = {
         //val mixture = new LinearRegressionMixture
         //new MixedWeightsDisambiguator(searcher,mixture);
-        new DefaultDisambiguator(configuration)
+        //new DefaultDisambiguator(configuration)
+        new GraphCentralityDisambiguator(configuration)
     }
 
     def spotter() ={
@@ -121,7 +140,6 @@ class SpotlightFactory(val configuration: SpotlightConfiguration,
           new AtLeastOneNounSelector(),
           taggedTokenProvider()
         );
-
     }
 
     def annotator() ={
