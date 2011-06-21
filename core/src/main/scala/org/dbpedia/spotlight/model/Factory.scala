@@ -20,7 +20,7 @@ import org.dbpedia.spotlight.candidate.{CoOccurrenceBasedSelector}
 import com.aliasi.sentences.IndoEuropeanSentenceModel
 import org.dbpedia.spotlight.spot.{AtLeastOneNounSelector, SpotterWithSelector}
 import org.dbpedia.spotlight.tagging.lingpipe.{LingPipeTextUtil, LingPipeTaggedTokenProvider, LingPipeFactory}
-import org.dbpedia.spotlight.disambiguate.{GraphCentralityDisambiguator, DefaultDisambiguator}
+import org.dbpedia.spotlight.disambiguate.{ DefaultDisambiguator}
 
 /**
  * Class containing methods to create model objects in many different ways
