@@ -45,6 +45,9 @@ object Factory {
             val surfaceForm = if (lowercased) new SurfaceForm(name.toLowerCase) else new SurfaceForm(name)
             surfaceForm;
         }
+        def fromString(name: String) = {
+            new SurfaceForm(name.toString)
+        }
     }
 
     /*** left here for compatibility with Java. used by IndexEnricher ****/
@@ -127,8 +130,8 @@ class SpotlightFactory(val configuration: SpotlightConfiguration,
     def disambiguator() = {
         //val mixture = new LinearRegressionMixture
         //new MixedWeightsDisambiguator(searcher,mixture);
-        //new DefaultDisambiguator(configuration)
-        new GraphCentralityDisambiguator(configuration)
+        new DefaultDisambiguator(configuration)
+        //new GraphCentralityDisambiguator(configuration)
     }
 
     def spotter() ={

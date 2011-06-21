@@ -12,7 +12,10 @@ import org.dbpedia.spotlight.io.WortschatzParser
 
 
 /**
- * This is a temporary workaround to the common words problem. Pablo is working on the actual fix.
+ * This is a temporary workaround to the common words problem.
+ * It works as a blacklist of surface forms.
+ * It currently packs also a parser and a serializer besides the filter.
+ * TODO factor out the parser/serializer to a class in io or util.
  *
  * @author pablomendes
  */
