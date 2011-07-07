@@ -27,7 +27,7 @@ import org.apache.commons.lang.NotImplementedException
  * @author maxjakob
  * @author pablomendes
  */
-class AnnotatedText(val id : String,
+class AnnotatedParagraph(val id : String,
                 val text : Text,
                 val occurrences : List[DBpediaResourceOccurrence]) {
 
@@ -35,13 +35,17 @@ class AnnotatedText(val id : String,
         this("", text, occurrences) // allow empty ids
     }
 
-    def equals(that : AnnotatedText) : Boolean = {
+    def equals(that : AnnotatedParagraph) : Boolean = {
         throw new NotImplementedException("no equality for paragraphs defined yet") //TODO test for text only or text and occs?
     }
 
     override def toString = {
         val textLen = text.text.length
-        if (!id.isEmpty) id+": " else "" + "Text[" + text.text.substring(0, scala.math.min(textLen, 50)) + " ...]" + occurrences.mkString("\n")
+        if (!id.isEmpty) id+": " else "" +
+            //"[Text " + text.text.substring(0, scala.math.min(textLen, 50)) + " ..]" +
+            "<text>\n" + text.text + "\n</text>" +
+            "\n<occurrences>\n"+occurrences.map(o => "'%s'@%d => [%s].".format(o.surfaceForm.name,o.textOffset,o.resource.uri)).mkString("\n")+
+            "\n</occurrences>\n"
     }
 
 }

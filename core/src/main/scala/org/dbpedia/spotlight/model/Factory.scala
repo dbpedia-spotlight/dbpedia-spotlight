@@ -5,7 +5,6 @@ import org.dbpedia.spotlight.lucene.LuceneManager
 import org.apache.lucene.util.Version
 import org.apache.lucene.analysis.{StopAnalyzer, Analyzer}
 import java.io.File
-import org.apache.lucene.search.Similarity
 import org.dbpedia.spotlight.lucene.similarity.{CachedInvCandFreqSimilarity, JCSTermCache}
 import org.apache.lucene.store.Directory
 import org.dbpedia.spotlight.annotate.DefaultAnnotator
@@ -15,12 +14,13 @@ import org.apache.lucene.document.Document
 import org.dbpedia.spotlight.lucene.LuceneManager.DBpediaResourceField
 import collection.JavaConversions._
 import org.dbpedia.spotlight.lucene.search.{BaseSearcher, MergedOccurrencesContextSearcher}
-import org.dbpedia.spotlight.exceptions.ConfigurationException
 import org.dbpedia.spotlight.candidate.{CoOccurrenceBasedSelector}
 import com.aliasi.sentences.IndoEuropeanSentenceModel
 import org.dbpedia.spotlight.spot.{AtLeastOneNounSelector, SpotterWithSelector}
 import org.dbpedia.spotlight.tagging.lingpipe.{LingPipeTextUtil, LingPipeTaggedTokenProvider, LingPipeFactory}
 import org.dbpedia.spotlight.disambiguate.{ DefaultDisambiguator}
+import org.apache.lucene.search.{ScoreDoc, Similarity}
+import org.dbpedia.spotlight.exceptions.{ItemNotFoundException, ConfigurationException}
 
 /**
  * Class containing methods to create model objects in many different ways
@@ -34,7 +34,7 @@ object Factory {
     * I like this style for the factory. group by return type and offer many .from* methods
     */
     object SurfaceFormOccurrence {
-        def fromDBpediaResourceOccurrence(occ: DBpediaResourceOccurrence) : SurfaceFormOccurrence = {
+        def from(occ: DBpediaResourceOccurrence) : SurfaceFormOccurrence = {
             new SurfaceFormOccurrence(occ.surfaceForm, occ.context, occ.textOffset)
         }
     }
@@ -47,6 +47,32 @@ object Factory {
         }
         def fromString(name: String) = {
             new SurfaceForm(name.toString)
+        }
+    }
+
+    object DBpediaResourceOccurrence {
+        def from(sfOcc: SurfaceFormOccurrence, resource: DBpediaResource) = {
+            new DBpediaResourceOccurrence("",  // there is no way to know this here
+                resource,
+                sfOcc.surfaceForm,
+                sfOcc.context,
+                sfOcc.textOffset,
+                Provenance.Annotation,
+                -1, // there is no way to know this here
+                -1, // there is no way to know this here
+                -1) // there is no way to know this here
+        }
+        def from(sfOcc: SurfaceFormOccurrence, hit: ScoreDoc, contextSearcher: BaseSearcher) = {
+            var resource: DBpediaResource = contextSearcher.getDBpediaResource(hit.doc)
+            if (resource == null) throw new ItemNotFoundException("Could not choose a URI for " + sfOcc.surfaceForm)
+            val percentageOfSecond = -1;
+            new DBpediaResourceOccurrence("", resource, sfOcc.surfaceForm, sfOcc.context, sfOcc.textOffset, Provenance.Annotation, hit.score, percentageOfSecond, hit.score)
+        }
+    }
+
+    object Paragraph {
+        def from(a: AnnotatedParagraph) = {
+            new Paragraph(a.id,a.text,a.occurrences.map( dro => Factory.SurfaceFormOccurrence.from(dro)))
         }
     }
 

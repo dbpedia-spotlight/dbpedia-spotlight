@@ -28,11 +28,17 @@ class SurfaceFormOccurrence(val surfaceForm : SurfaceForm,
         this(surfaceForm, context, textOffset, provenance = Provenance.Undefined)
     }
 
-    def equals(that : SurfaceFormOccurrence) : Boolean =
+    override def equals(that : Any) : Boolean =
     {
-        (  this.surfaceForm.equals(that.surfaceForm)
-        && this.context.equals(that.context)
-        && (this.textOffset == that.textOffset) )
+        that match {
+            case sfo: SurfaceFormOccurrence => {
+                (this.surfaceForm.equals(sfo.surfaceForm)
+                && this.context.equals(sfo.context)
+                && (this.textOffset == sfo.textOffset) )
+            }
+            case _ => false;
+        }
+
     }
     
     override def toString = {

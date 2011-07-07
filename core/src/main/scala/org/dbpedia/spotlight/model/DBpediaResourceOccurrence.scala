@@ -53,12 +53,17 @@ class DBpediaResourceOccurrence(val id : String,
         if (c==0) str1.compare(str2) else c;
     }
 
-    def equals(that : DBpediaResourceOccurrence) : Boolean = {
-        (  resource.equals(that.resource)
-        && surfaceForm.equals(that.surfaceForm)
-        && context.equals(that.context)
-        //&& (textOffset == that.textOffset )
-        )
+
+    override def equals(obj : Any) : Boolean = {
+        obj match {
+            case that: DBpediaResourceOccurrence =>
+                (  resource.equals(that.resource)
+                && surfaceForm.equals(that.surfaceForm)
+                && context.equals(that.context)
+                //&& (textOffset == that.textOffset )
+                )
+            case _ => false;
+        }
     }
 
     override def toString = {

@@ -1,22 +1,4 @@
-package org.dbpedia.spotlight.util
-
-/**
- * Copyright 2011 Pablo Mendes, Max Jakob
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-/* http://www.matthiasmann.de/content/view/25/26/
+/*
  * Copyright (c) 2008-2009, Matthias Mann
  *
  * All rights reserved.
@@ -44,8 +26,13 @@ package org.dbpedia.spotlight.util
  * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
+ */
+package org.dbpedia.spotlight.util
 
+import org.apache.commons.logging.LogFactory
+
+/**
+From: http://www.matthiasmann.de/content/view/25/26/
 In nearly every project you have the need to do some simple profiling. Scala makes this very easy and flexible.
 
 Let's assume we load a potentially large XML file:
@@ -61,6 +48,9 @@ Now instead of adding a lot of timing code to your application we can simple do:
 
  */
 object Profiling {
+
+    val LOG = LogFactory.getLog(this.getClass)
+
     def timed[T](report: Long=>Unit)(body: =>T) = {
         val start = System.nanoTime
         val r = body
@@ -80,6 +70,6 @@ object Profiling {
         formatTime(delta, timeUnits, Nil).mkString(" ")
     }
     def printTime(msg:String) = (delta:Long) => {
-        println(msg + formatTime(delta))
+        LOG.info(msg + formatTime(delta))
     }
 }
