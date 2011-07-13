@@ -26,8 +26,8 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Interface for disambiguators.
- * TODO consider separating the disambiguation per occurrence and disambiguation per paragraph (list<occ>)
+ * Interface for occurrence-based disambiguators.
+ * TODO consider renaming to OccurrenceDisambiguator
  * @author pablomendes
  * @author maxjakob
  */

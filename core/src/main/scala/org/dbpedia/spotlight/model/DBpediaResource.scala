@@ -54,7 +54,7 @@ class DBpediaResource(var uri : String,
     override def equals(obj : Any) : Boolean = {
         obj match {
             case that: DBpediaResource => this.uri.equals(that.uri)
-            case _ => this.equals(obj)
+            case _ => obj.equals(this)
         }
     }
 

@@ -22,14 +22,19 @@ import org.dbpedia.spotlight.exceptions.SearchException;
 import java.util.Set;
 
 /**
- * Created by IntelliJ IDEA.
- * User: PabloMendes
- * Date: Jul 6, 2010
- * Time: 4:00:26 PM
- * To change this template use File | Settings | File Templates.
+ * Interface describing the functionality of a candidate map (surface form -> URIs)
+ *
+ * @author pablomendes
  */
-public interface SurrogateSearcher {
+public interface CandidateSearcher {
 
+    /**
+     * Retrieves all DBpedia Resources that can be confused with surface form sf.
+     * @param sf
+     * @return
+     * @throws SearchException
+     * @throws ItemNotFoundException
+     */
     public Set<DBpediaResource> getCandidates(SurfaceForm sf) throws SearchException, ItemNotFoundException;
 
 }

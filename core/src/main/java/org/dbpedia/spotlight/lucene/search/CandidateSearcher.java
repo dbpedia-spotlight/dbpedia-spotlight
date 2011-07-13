@@ -36,7 +36,7 @@ import java.util.Set;
  * NOTE: This was previously called CandidateSearcher, but we abandoned Surrogate from the terminology in favor of Candidate.
  * @author pablomendes
  */
-public class CandidateSearcher extends BaseSearcher implements org.dbpedia.spotlight.model.SurrogateSearcher {
+public class CandidateSearcher extends BaseSearcher implements org.dbpedia.spotlight.model.CandidateSearcher {
 
     final static Log LOG = LogFactory.getLog(CandidateSearcher.class);
 

@@ -20,6 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.jcs.JCS;
 import org.apache.jcs.access.exception.CacheException;
+import org.apache.jcs.engine.behavior.IElementAttributes;
 import org.apache.jcs.engine.control.CompositeCacheManager;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.util.OpenBitSet;
@@ -61,6 +62,10 @@ public class JCSTermCache extends TermCache {
         ccm.configure(props);
 
         termCache = JCS.getInstance("termCache");
+        IElementAttributes attributes = termCache.getDefaultElementAttributes();
+        //attributes.setIsEternal( true );
+        attributes.setSize(5000);
+        termCache.setDefaultElementAttributes( attributes );
     }
 
     //public static JCSTermCache getInstance(IndexReader mgr)

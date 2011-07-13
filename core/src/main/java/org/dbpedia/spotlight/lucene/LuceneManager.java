@@ -20,10 +20,12 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.*;
+import org.apache.lucene.search.similar.MoreLikeThis;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.NIOFSDirectory;
@@ -33,8 +35,10 @@ import org.dbpedia.spotlight.lucene.search.CandidateResourceQuery;
 import org.dbpedia.spotlight.util.MemUtil;
 import org.dbpedia.spotlight.model.*;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -362,6 +366,31 @@ public class LuceneManager {
                 resource.uri()));
     }
 
+    /**
+     * Query to retrieve all DBpedia Resources in the index that are within a set of allowed URIs and match the input text.\
+     * Uses Lucene's MoreLikeThis rather than ICF as defined in DBpedia Spotlight's paper.
+     * It is faster, but doesn't take into account selectional preferences of words wrt resources.
+     *
+     * @param text
+     * @param allowedUris
+     * @return
+     */
+    public Query getQuery(Text text, Set<DBpediaResource> allowedUris, IndexReader reader) throws IOException {
+        //val filter = new FieldCacheTermsFilter(DBpediaResourceField.CONTEXT.toString,allowedUris)
+        TermsFilter filter = new org.apache.lucene.search.TermsFilter();
+        for (DBpediaResource u:  allowedUris) {
+            filter.addTerm(new Term(DBpediaResourceField.URI.toString(),u.uri()) );
+        }
+        MoreLikeThis mlt = new MoreLikeThis(reader);
+        String[] fields = {DBpediaResourceField.CONTEXT.toString()};
+        mlt.setFieldNames(fields);
+        mlt.setAnalyzer(this.mContextAnalyzer);
+        InputStream inputStream = new ByteArrayInputStream(text.text().getBytes("UTF-8"));
+        Query query = mlt.like(inputStream);
+        return query;
+    }
+
+
 
     /* ---------------------- Basic methods for indexing correction ------------------------------- */
     //TODO move to LuceneFieldFactory
@@ -457,19 +486,6 @@ public class LuceneManager {
         return query;
     }
 
-    public Query getQuery(Set<DBpediaResource> resources, Text context) throws SearchException {
-        //TODO is this the correct query for the following behavior?
-        //(+URI:Political_philosophy CONTEXT:media) OR (+URI:Mass_Media CONTEXT:media) works with QueryParser (?)
-        BooleanQuery query = new BooleanQuery(); //TODO don't know what happens here. Have to look closer
-        for (DBpediaResource res : resources) {
-            BooleanClause resClause = new BooleanClause(getQuery(res), BooleanClause.Occur.SHOULD);
-            query.add(resClause);
-        }
-        BooleanClause ctxClause = new BooleanClause(getQuery(context), BooleanClause.Occur.SHOULD);
-        query.add(ctxClause);
-        return query;
-    }
-
     /*---------------------- Composed methods for indexing correctly -------------------------------*/
     
     /**
@@ -498,6 +514,18 @@ public class LuceneManager {
         doc.add(getField(wikiPageContext.resource()));
         return doc;
     }
+
+    /**
+     * Creates a new document from a paragraph
+     * @param text
+     * @return
+     */
+    public Document createDocument(Text text) {
+        Document doc = new Document();
+        doc.add(getField(text));
+        return doc;
+    }
+
 
     /**
      * Creates a new document from surface form and resource (to be stored in index)

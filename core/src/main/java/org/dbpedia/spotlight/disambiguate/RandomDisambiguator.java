@@ -2,9 +2,6 @@ package org.dbpedia.spotlight.disambiguate;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
-import org.dbpedia.spotlight.exceptions.SearchException;
-import org.dbpedia.spotlight.io.DataLoader;
 import org.dbpedia.spotlight.model.*;
 
 import java.util.*;
@@ -20,7 +17,7 @@ public class RandomDisambiguator extends CustomScoresDisambiguator {
     Log LOG = LogFactory.getLog(this.getClass());
     RandomGaussian gaussian = new RandomGaussian();
 
-    public RandomDisambiguator(SurrogateSearcher surrogates) {
+    public RandomDisambiguator(CandidateSearcher surrogates) {
         super(surrogates, null);
     }
 

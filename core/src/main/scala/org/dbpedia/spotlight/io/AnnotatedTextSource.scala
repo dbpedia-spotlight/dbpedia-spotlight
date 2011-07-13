@@ -35,7 +35,7 @@ import java.text.ParseException
  *
  * @author pablomendes
  */
-trait AnnotatedTextSource extends Traversable[AnnotatedText]
+trait AnnotatedTextSource extends Traversable[AnnotatedParagraph]
 
 object AnnotatedTextSource {
 
@@ -85,7 +85,7 @@ object AnnotatedTextSource {
     private class TSVOccurrences(linesIterator: Iterator[String]) extends AnnotatedTextSource {
 
         // This method assumes sorting of occurrences by paragraph (or occurrence id when they are equivalent)
-        override def foreach[U](f : AnnotatedText => U) {
+        override def foreach[U](f : AnnotatedParagraph => U) {
 
             var currentText = new Text("")
             var occs = List[DBpediaResourceOccurrence]()
@@ -103,7 +103,7 @@ object AnnotatedTextSource {
                     if (currentText.text == "" || t.text == currentText.text) {
                         occs = occ :: occs
                     } else {
-                        f( new AnnotatedText(currentText, occs) )
+                        f( new AnnotatedParagraph(currentText, occs) )
                         occs = List(occ)
                     }
                     currentText = t
@@ -112,7 +112,7 @@ object AnnotatedTextSource {
                     throw new IOException("line must have 5 tab separated fields; got %d in line %d: %s".format(elements.length,i,line))
                 }
             }
-            f( new AnnotatedText(currentText, occs) ) // for the last occurrence
+            f( new AnnotatedParagraph(currentText, occs) ) // for the last occurrence
         }
     }
 

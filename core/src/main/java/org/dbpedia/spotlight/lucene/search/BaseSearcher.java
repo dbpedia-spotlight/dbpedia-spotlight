@@ -57,7 +57,7 @@ public class BaseSearcher implements Closeable {
 
     LuceneManager mLucene;
     IndexSearcher mSearcher;
-    protected IndexReader mReader;
+    public IndexReader mReader;
 
     //TODO create method that iterates over all documents in the index and computes this. (if takes too long, think about storing somewhere at indexing time)
     private double mNumberOfOccurrences = 69772256;
@@ -148,11 +148,10 @@ public class BaseSearcher implements Closeable {
      * @return
      * @throws SearchException
      */
-    public ScoreDoc[] getHits(Query query, int n, int timeout) throws SearchException {
+    public ScoreDoc[] getHits(Query query, int n, int timeout, Filter filter) throws SearchException {
         ScoreDoc[] hits = null;
         try {
             LOG.trace("Start search. timeout="+timeout);
-            Filter filter = null; //TODO surfaceForm filter here?
             TopScoreDocCollector collector = TopScoreDocCollector.create(n, false);
             //TimeLimitingCollector collector = new TimeLimitingCollector(tCollector, timeout);  //TODO try to bring this back later
             mSearcher.search(query, filter, collector);
@@ -167,6 +166,18 @@ public class BaseSearcher implements Closeable {
         return hits;
     }
 
+    /**
+     * Search method with default filter
+     * @param query
+     * @param n
+     * @return
+     * @throws SearchException
+     */
+    public ScoreDoc[] getHits(Query query, int n, int timeout) throws SearchException {
+        Filter filter = null; //TODO surfaceForm filter here?
+        return getHits(query, n, timeout, filter);
+    }
+
     // Uses default timeout
     public ScoreDoc[] getHits(Query query, int n) throws SearchException {
        return getHits(query, n, 5000);
@@ -177,8 +188,21 @@ public class BaseSearcher implements Closeable {
         return getHits(query, mLucene.topResultsLimit());
     }
 
-    public ScoreDoc[] getHits(Set<DBpediaResource> resources, Text context) throws SearchException {
-        return getHits(mLucene.getQuery(resources, context));
+    /**
+     * Retrieves all DBpedia Resources in the index that are within a set of allowed URIs and match the input text.
+     * Uses Lucene's MoreLikeThis rather than ICF as defined in DBpedia Spotlight's paper.
+     * It is faster, but doesn't take into account selectional preferences of words wrt resources.
+     *
+     * @param context text containing a URI mention
+     * @param resources allowed URIs
+     * @return
+     */
+    public ScoreDoc[] getHits(Text context, Set<DBpediaResource> resources) throws SearchException {
+        try {
+            return getHits(mLucene.getQuery(context, resources, this.mReader));
+        } catch (IOException e) {
+            throw new SearchException("Error while executing query. ",e);
+        }
     }
 
     public TermFreqVector getVector(int docNo) throws SearchException {
@@ -203,10 +227,12 @@ public class BaseSearcher implements Closeable {
 
     /**
      * Creates a DBpediaResource with all fields stored in the index
+     * @deprecated  Use getDBpediaResource(int docNo, String[] fieldsToLoad)
      * TODO REMOVE. This is bad because the fields being loaded are opaque to the caller. Some need only URI, others need everything.
      * @param docNo
      * @return
      */
+    @Deprecated
     public DBpediaResource getDBpediaResource(int docNo) throws SearchException {
         String[] fields = {LuceneManager.DBpediaResourceField.TYPE.toString(),
                 LuceneManager.DBpediaResourceField.URI.toString(),

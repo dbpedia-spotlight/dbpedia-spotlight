@@ -24,7 +24,6 @@ import org.junit.Test;
 import java.util.HashSet;
 
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 /**
  * We overrode hashCode and equals in our Scala classes. We want to make sure that it works in Java fine.
@@ -41,6 +40,12 @@ public class EqualityTests {
     public void testDBpediaResourceEquals() {
         assertEquals(r1,r2);
         assertEquals(r1,r3);
+    }
+
+    @Test
+    public void testStringEquals() {
+        assertNotSame(r1,"DBpedia");
+        assertNotSame("DBpedia", r1);
     }
 
     @Test

@@ -18,10 +18,6 @@ package org.dbpedia.spotlight.lucene.search;
 
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.Ints;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.lucene.analysis.Token;
-import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.document.MapFieldSelector;
@@ -31,19 +27,16 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Similarity;
 import org.dbpedia.spotlight.exceptions.InputException;
-import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
 import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.lucene.LuceneFeatureVector;
 import org.dbpedia.spotlight.lucene.LuceneManager;
 import org.dbpedia.spotlight.lucene.similarity.CachedSimilarity;
 import org.dbpedia.spotlight.model.*;
-import org.dbpedia.spotlight.model.SurrogateSearcher;
+import org.dbpedia.spotlight.model.CandidateSearcher;
 import org.dbpedia.spotlight.model.vsm.FeatureVector;
 import org.dbpedia.spotlight.string.ContextExtractor;
-import org.hsqldb.lib.*;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.*;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -55,7 +48,7 @@ import java.util.Set;
  * - Allows prior disambiguator to get a quick "default sense" based on the most popular URI for a given surface form
  * @author pablomendes
  */
-public class MergedOccurrencesContextSearcher extends BaseSearcher implements ContextSearcher, SurrogateSearcher {
+public class MergedOccurrencesContextSearcher extends BaseSearcher implements ContextSearcher, CandidateSearcher {
 
     String[] onlyUriCount = {LuceneManager.DBpediaResourceField.URI_COUNT.toString()};
     String[] uriAndCount = {LuceneManager.DBpediaResourceField.URI.toString(),
@@ -207,6 +200,11 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
     public ScoreDoc[] getHits(SurfaceFormOccurrence sfOcc) throws SearchException, InputException {
         Text narrowContext = contextExtractor.narrowContext(sfOcc).context();
         ScoreDoc[] hits = getHits(mLucene.getQuery(sfOcc.surfaceForm(), narrowContext));
+        return hits;
+    }
+    public ScoreDoc[] getHitsSurfaceFormHack(SurfaceFormOccurrence sfOcc, SurfaceForm hackedSf) throws SearchException, InputException { //TODO this hack attempts to null the effect of another hack that disappears with determiners at index time
+        Text narrowContext = contextExtractor.narrowContext(sfOcc).context();
+        ScoreDoc[] hits = getHits(mLucene.getQuery(hackedSf, narrowContext));
         return hits;
     }
 

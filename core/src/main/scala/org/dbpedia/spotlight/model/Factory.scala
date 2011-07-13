@@ -51,16 +51,16 @@ object Factory {
     }
 
     object DBpediaResourceOccurrence {
-        def from(sfOcc: SurfaceFormOccurrence, resource: DBpediaResource) = {
+        def from(sfOcc: SurfaceFormOccurrence, resource: DBpediaResource, score: Double) = {
             new DBpediaResourceOccurrence("",  // there is no way to know this here
                 resource,
                 sfOcc.surfaceForm,
                 sfOcc.context,
                 sfOcc.textOffset,
                 Provenance.Annotation,
-                -1, // there is no way to know this here
-                -1, // there is no way to know this here
-                -1) // there is no way to know this here
+                score,
+                -1,         // there is no way to know percentage of second here
+                score)      // to be set later
         }
         def from(sfOcc: SurfaceFormOccurrence, hit: ScoreDoc, contextSearcher: BaseSearcher) = {
             var resource: DBpediaResource = contextSearcher.getDBpediaResource(hit.doc)

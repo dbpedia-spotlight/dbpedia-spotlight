@@ -34,11 +34,16 @@ class SurfaceFormOccurrence(val surfaceForm : SurfaceForm,
             case sfo: SurfaceFormOccurrence => {
                 (this.surfaceForm.equals(sfo.surfaceForm)
                 && this.context.equals(sfo.context)
-                && (this.textOffset == sfo.textOffset) )
+                && (this.textOffset == sfo.textOffset)
+                    )
             }
             case _ => false;
         }
 
+    }
+
+    override def hashCode() = {
+        3 * this.surfaceForm.hashCode() + 5 * this.context.hashCode() + 7 * this.textOffset.hashCode()
     }
     
     override def toString = {
