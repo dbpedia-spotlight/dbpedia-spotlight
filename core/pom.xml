@@ -94,20 +94,6 @@
                             <file>${basedir}/../lib/weka-trunk.jar</file>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>install-sjson-jar</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <groupId>sjson</groupId>
-                            <artifactId>sjson</artifactId>
-                            <version>0.6-SNAPSHOT</version>
-                            <packaging>jar</packaging>
-                            <file>${basedir}/../lib/sjson-0.6-SNAPSHOT.jar</file>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
 
