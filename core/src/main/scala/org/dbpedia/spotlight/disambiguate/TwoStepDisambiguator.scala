@@ -87,7 +87,7 @@ class TwoStepDisambiguator(val configuration: SpotlightConfiguration) extends Pa
         bestK(paragraph, 5).map( kv => kv._2(0) ).toList
     }
 
-    // This method could go to base searcher if it performs well.
+    //WARNING: this is repetition of BaseSearcher.getHits
     def query(text: Text, allowedUris: Array[DBpediaResource]) = {
         //val filter = new FieldCacheTermsFilter(DBpediaResourceField.CONTEXT.toString,allowedUris)
         val filter = new org.apache.lucene.search.TermsFilter()
@@ -95,7 +95,7 @@ class TwoStepDisambiguator(val configuration: SpotlightConfiguration) extends Pa
         //val filter = null;
         val mlt = new MoreLikeThis(contextSearcher.mReader);
         mlt.setFieldNames(Array(DBpediaResourceField.CONTEXT.toString))
-        mlt.setAnalyzer(luceneManager.contextAnalyzer)
+        mlt.setAnalyzer(luceneManager.defaultAnalyzer)
         val inputStream = new ByteArrayInputStream(text.text.getBytes("UTF-8"));
         val query = mlt.like(inputStream);
         contextSearcher.getHits(query, allowedUris.size, 50000, filter)

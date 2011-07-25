@@ -31,9 +31,11 @@ class LinearRegressionMixture extends Mixture(0) {
 //    val priorWeight = 109.8291
 //    val c = 0.7257
 
-    val priorWeight = 661.7888
+
+    val priorWeight = 6617.888
     override val contextWeight = 0.7886
     val c = 0.2214
+
 
     val totalOccurrenceCount = 69772256
 
@@ -45,8 +47,18 @@ class LinearRegressionMixture extends Mixture(0) {
     def getScore(occurrence: DBpediaResourceOccurrence) : Double = {
         val contextualScore = occurrence.contextualScore
         val prior = occurrence.resource.prior
-        priorWeight * prior + contextWeight * contextualScore + c
+//        priorWeight * prior + contextWeight * contextualScore + c
+
+// .47 beats prior!
+   1234.3989 * prior +
+      0.9968 * contextualScore +
+     -0.0275
+
+//341.6602 * prior +
+//      2.8665 * contextualScore +
+//      0.1877
     }
+
 
     override def toString = "LinearRegressionMixture[priorWeight="+priorWeight+",c="+c+"]("+contextWeight+")"
 

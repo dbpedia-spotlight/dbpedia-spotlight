@@ -17,6 +17,7 @@
 package org.dbpedia.spotlight.lucene;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -57,7 +58,7 @@ import java.util.Set;
  */
 public class LuceneManager {
 
-    /*TODO isnt it bad practice to have public fields?
+    /*TODO yes, we know we shouldn't have public fields floating around.
     "Tips on Choosing an Access Level: (from http://download.oracle.com/docs/cd/E17409_01/javase/tutorial/java/javaOO/accesscontrol.html)
     If other programmers use your class, you want to ensure that errors from misuse cannot happen.
     Access levels can help you do this.
@@ -65,8 +66,8 @@ public class LuceneManager {
     Use private unless you have a good reason not to."
     */
 
-    // How to break down the input text
-    private Analyzer mContextAnalyzer = new StandardAnalyzer(Version.LUCENE_29);
+    // How to break down the input text (used in BaseIndexer when creating the IndexWriter and at query time inside getQuery)
+    protected Analyzer mDefaultAnalyzer = new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_29));
 
     // How to compare contexts
     private Similarity mContextSimilarity = new DefaultSimilarity();
@@ -119,13 +120,12 @@ public class LuceneManager {
         }
     }
 
-    public Analyzer contextAnalyzer() {
-        return mContextAnalyzer;
+    public Analyzer defaultAnalyzer() {
+        return mDefaultAnalyzer;
     }
 
-
-    public void setContextAnalyzer(Analyzer contextAnalyzer) {
-        this.mContextAnalyzer = contextAnalyzer;
+    public void setDefaultAnalyzer(Analyzer analyzer) {
+        this.mDefaultAnalyzer = analyzer;
     }
 
     public void setContextSimilarity(Similarity contextSimilarity) {
@@ -326,7 +326,7 @@ public class LuceneManager {
         //}
         // return this.queryTimeAnalyzer();
 
-        return this.contextAnalyzer();
+        return this.defaultAnalyzer();
     }
 
     public Query getQuery(Text context) throws SearchException {
@@ -356,7 +356,7 @@ public class LuceneManager {
         return ctxQuery;
     }
 
-    public Query getQuery(SurfaceForm sf) {
+    public Query getQuery(SurfaceForm sf) throws SearchException {
         Term sfTerm = new Term(DBpediaResourceField.SURFACE_FORM.toString(),sf.name());
         return new TermQuery(sfTerm); //TODO FIXME PABLO CandidateResourceQuery
     }
@@ -384,7 +384,7 @@ public class LuceneManager {
         MoreLikeThis mlt = new MoreLikeThis(reader);
         String[] fields = {DBpediaResourceField.CONTEXT.toString()};
         mlt.setFieldNames(fields);
-        mlt.setAnalyzer(this.mContextAnalyzer);
+        mlt.setAnalyzer(this.mDefaultAnalyzer);
         InputStream inputStream = new ByteArrayInputStream(text.text().getBytes("UTF-8"));
         Query query = mlt.like(inputStream);
         return query;
@@ -529,7 +529,7 @@ public class LuceneManager {
 
     /**
      * Creates a new document from surface form and resource (to be stored in index)
-     * TODO why do we need this in addition to DBpediaResourceOccurrence which already encapsulates both?
+     * TODO why do we need this in addition to DBpediaResourceOccurrence which already encapsulates both? because CandidateIndexer does not have Text. Want to abuse?
      * @param surfaceForm
      * @param resource
      * @return
@@ -539,6 +539,14 @@ public class LuceneManager {
         doc.add(getField(surfaceForm));
         doc.add(getField(resource));
         doc.add(getUriCountField(resource.support()));
+        doc.add(getUriPriorField(resource.prior()));
+        return doc;
+    }
+    public Document createDocument(SurfaceForm surfaceForm, DBpediaResource resource, int nTimes) {
+        Document doc = new Document();
+        for (int i=0; i<nTimes; i++) doc.add(getField(surfaceForm));
+        doc.add(getField(resource));
+        doc.add(getUriCountField(nTimes));
         doc.add(getUriPriorField(resource.prior()));
         return doc;
     }
@@ -567,10 +575,66 @@ public class LuceneManager {
 
         // Make getQuery case insensitive
         @Override
-        public Query getQuery(SurfaceForm sf) {
+        public Query getQuery(SurfaceForm sf) throws SearchException {
             return super.getQuery(new SurfaceForm(sf.name().toLowerCase()));
         }
     }
+
+    /**
+     * LuceneManager subclass that uses an EdgeNGramAnalyzer to do approximate matching of surface forms
+     * @author pablomendes
+     */
+    public static class CaseSensitiveSurfaceForms extends LuceneManager {
+
+        // How to break down the input text
+        private Analyzer mSurfaceFormAnalyzer = new NGramAnalyzer(3,3);
+
+        public CaseSensitiveSurfaceForms(Directory dir) throws IOException {
+            super(dir);
+            PerFieldAnalyzerWrapper perFieldAnalyzer = new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_29));
+            perFieldAnalyzer.addAnalyzer(LuceneManager.DBpediaResourceField.SURFACE_FORM.toString(),mSurfaceFormAnalyzer);
+            setDefaultAnalyzer(perFieldAnalyzer);
+        }
+
+        @Override
+        public Field getField(SurfaceForm surfaceForm) {
+            return new Field(LuceneManager.DBpediaResourceField.SURFACE_FORM.toString(),
+                            surfaceForm.name(),
+                            Field.Store.YES,
+                            Field.Index.ANALYZED);
+        }
+
+        @Override
+        public Query getQuery(SurfaceForm sf) throws SearchException {
+
+            QueryParser parser = new QueryParser(Version.LUCENE_29, DBpediaResourceField.SURFACE_FORM.toString(), mSurfaceFormAnalyzer);
+            Query ctxQuery = null;
+            //TODO escape (instead of remove) special characters in Text before querying
+            // + - && || ! ( ) { } [ ] ^ " ~ * ? : \
+            //http://lucene.apache.org/java/3_0_2/queryparsersyntax.html#Escaping
+            String queryText = sf.name().replaceAll("[\\+\\-\\|!\\(\\)\\{\\}\\[\\]\\^~\\*\\?\"\\\\:&]", " ");
+            queryText = QueryParser.escape(queryText);
+            try {
+                ctxQuery = parser.parse(queryText);
+            } catch (ParseException e) {
+                StringBuffer msg = new StringBuffer();
+                msg.append("Error parsing surface form. ");
+                if (e.getMessage().contains("too many boolean clauses")) {
+                    msg.append(String.format("QueryParser broke with %s tokens.",queryText.split("\\W+").length));
+                }
+                msg.append("\n");
+                msg.append(sf);
+                msg.append("\n");
+                e.printStackTrace();
+                throw new SearchException(msg.toString(),e);
+            }
+            return ctxQuery;
+        }
+
+    }
+
+
+
 
     /**
      * LuceneManager subclass used by the {@link org.dbpedia.spotlight.lucene.index.MergedOccurrencesContextIndexer}

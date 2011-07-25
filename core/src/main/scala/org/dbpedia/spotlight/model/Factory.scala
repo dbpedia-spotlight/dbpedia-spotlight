@@ -137,9 +137,8 @@ class SpotlightFactory(val configuration: SpotlightConfiguration,
                     ) {
 
     def this(configuration: SpotlightConfiguration) {
-        this(configuration, new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET))
+        this(configuration, new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", configuration.getStopWords))
         if (!new File(configuration.getTaggerFile).exists()) throw new ConfigurationException("POS tagger file does not exist! "+configuration.getTaggerFile);
-
     }
 
     val directory : Directory = LuceneManager.pickDirectory(new File(configuration.getIndexDirectory))
@@ -148,7 +147,7 @@ class SpotlightFactory(val configuration: SpotlightConfiguration,
 
     val lingPipeFactory : LingPipeFactory = new LingPipeFactory(new File(configuration.getTaggerFile), new IndoEuropeanSentenceModel())
 
-    luceneManager.setContextAnalyzer(analyzer);
+    luceneManager.setDefaultAnalyzer(analyzer);
     luceneManager.setContextSimilarity(similarity);
 
     val searcher = new MergedOccurrencesContextSearcher(luceneManager);

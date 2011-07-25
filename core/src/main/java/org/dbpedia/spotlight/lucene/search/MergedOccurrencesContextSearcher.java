@@ -413,7 +413,7 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
         Set<String> seenWords = new HashSet<String>();
 
 //        StringReader sr = new StringReader(context.text());
-//        TokenStream ts = mLucene.contextAnalyzer().tokenStream(LuceneManager.DBpediaResourceField.CONTEXT.toString(), sr);
+//        TokenStream ts = mLucene.defaultAnalyzer().tokenStream(LuceneManager.DBpediaResourceField.CONTEXT.toString(), sr);
 //        Token t;
 //        while((t = ts.next()) != null) {
 //            String word = t.term();

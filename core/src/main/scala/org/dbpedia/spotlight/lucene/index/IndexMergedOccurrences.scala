@@ -71,7 +71,7 @@ object IndexMergedOccurrences
                                                         minNumDocsBeforeFlush,
                                                         lastOptimize)
         lucene.setContextSimilarity(similarity);
-        lucene.setContextAnalyzer(analyzer);
+        lucene.setDefaultAnalyzer(analyzer);
 
         val vectorBuilder = new MergedOccurrencesContextIndexer(lucene)
 

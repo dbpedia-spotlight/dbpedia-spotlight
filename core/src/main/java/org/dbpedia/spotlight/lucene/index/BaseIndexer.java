@@ -50,7 +50,7 @@ public abstract class BaseIndexer<T> implements FeatureVectorBuilder, Closeable 
         this.mLucene = lucene;
         //TODO PABLO we can make the LuceneManager construct this guy, and all classes use the manager to obtain it. This renders BaseIndexer moot
         this.mWriter = new IndexWriter(lucene.directory(),
-                                       lucene.contextAnalyzer(),
+                                       lucene.defaultAnalyzer(),
                                        create,
                                        new IndexWriter.MaxFieldLength(25000)); //TODO is 25000 enough?
 

@@ -18,14 +18,13 @@ package org.dbpedia.spotlight.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.lucene.analysis.StopAnalyzer;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Holds all configuration parameters needed to run the DBpedia Spotlight Server
@@ -50,6 +49,9 @@ public class SpotlightConfiguration {
 	protected List<Double> similarityThresholds;
 	protected String similarityThresholdsFile = "similarity-thresholds.txt";
     protected String taggerFile = "";
+
+    protected String stopWordsFile = "";
+    protected Set<String> stopWords = new HashSet<String>();
 
 	protected String serverURI       = "http://localhost:2222/rest/";
 	protected String sparqlMainGraph = "http://dbpedia.org/sparql";
@@ -80,6 +82,10 @@ public class SpotlightConfiguration {
 	public String getTaggerFile() {
 		return taggerFile;
 	}
+
+    public Set<String> getStopWords() {
+        return stopWords;
+    }
 
     public long getMaxCacheSize() {
 		return maxCacheSize;
@@ -135,6 +141,24 @@ public class SpotlightConfiguration {
         taggerFile = config.getProperty("org.dbpedia.spotlight.tagging.hmm").trim();
         if(!new File(taggerFile).isFile()) {
             throw new ConfigurationException("Cannot find POS tagger model file "+taggerFile);
+        }
+
+        stopWordsFile = config.getProperty("org.dbpedia.spotlight.data.stopWords");
+        if( (stopWordsFile==null) || !new File(stopWordsFile.trim()).isFile()) {
+            LOG.warn("Cannot find stopwords file "+taggerFile+". Using default Lucene English StopWords.");
+            stopWords = StopAnalyzer.ENGLISH_STOP_WORDS_SET;
+        } else {
+            try {
+                BufferedReader bufferedReader = new BufferedReader(new FileReader(stopWordsFile));
+                String line = null;
+                while ((line = bufferedReader.readLine()) != null) {
+                    stopWords.add(line.trim());
+                }
+                bufferedReader.close();
+            } catch (Exception e1) {
+                LOG.error("Could not read stopwords file.");
+                stopWords = StopAnalyzer.ENGLISH_STOP_WORDS_SET;
+            }
         }
 
 		serverURI = config.getProperty("org.dbpedia.spotlight.web.rest.uri").trim();

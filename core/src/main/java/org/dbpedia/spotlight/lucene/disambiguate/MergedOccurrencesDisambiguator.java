@@ -127,13 +127,18 @@ public class MergedOccurrencesDisambiguator implements Disambiguator {
     public List<DBpediaResourceOccurrence> bestK(SurfaceFormOccurrence sfOccurrence, int k) throws SearchException, ItemNotFoundException, InputException {
         LOG.debug("Disambiguating "+sfOccurrence.surfaceForm());
 
-        //TODO test with narrow context to see if it's faster, better, worse
-        //ContextExtractor ce = new ContextExtractor();
-        //Text narrowContext = ce.narrowContext(sfOccurrence.surfaceForm(), sfOccurrence.context());
-        //LOG.trace(String.format("Narrowed from: \n\t %s t0 \n\t %s", sfOccurrence.context(), narrowContext));
-        
         // search index for surface form
         ScoreDoc[] hits = mMergedSearcher.getHits(sfOccurrence);
+
+        if (hits.length == 0) {
+            String sfName = sfOccurrence.surfaceForm().name();
+            if (sfName.toLowerCase().startsWith("the ")) {
+                LOG.debug("Trying to HACK -> not found in index: "+sfOccurrence);
+                String newName = sfName.substring(3).trim();
+                hits = mMergedSearcher.getHitsSurfaceFormHack(sfOccurrence, new SurfaceForm(newName));
+                LOG.debug("New sfName="+newName+" hits="+hits.length);
+            }
+        }
 
         if (hits.length == 0)
             throw new ItemNotFoundException("Not found in index: "+sfOccurrence);
