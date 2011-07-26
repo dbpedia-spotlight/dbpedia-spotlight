@@ -54,7 +54,7 @@ object IndexMergedOccurrences
         // Command line options
         val baseDir = config.get("org.dbpedia.spotlight.index.dir")   //getBaseDir(args(1))
         val similarity = config.getSimilarity("InvCandFreqSimilarity")  //config.getSimilarity(args(2))
-        val analyzer = config.getAnalyzer("StandardAnalyzer")  //config.getAnalyzer(args(3))
+        val analyzer = config.getAnalyzer  //config.getAnalyzer(args(3))
 
         LOG.info("Using dataset under: "+baseDir);
         LOG.info("Similarity class: "+similarity.getClass);
@@ -65,7 +65,8 @@ object IndexMergedOccurrences
         val minNumDocsBeforeFlush : Int = 200000 //IndexConfiguration.properties.getProperty("minNumDocsBeforeFlush").toDouble
         val lastOptimize = false;
 
-        val indexOutputDir = baseDir+"2.9.3/Index.wikipediaTraining.Merged."+analyzer.getClass.getSimpleName+"."+similarity.getClass.getSimpleName;
+        //val indexOutputDir = baseDir+"2.9.3/Index.wikipediaTraining.Merged."+analyzer.getClass.getSimpleName+"."+similarity.getClass.getSimpleName;
+        val indexOutputDir = baseDir
 
         val lucene = new LuceneManager.BufferedMerging(FSDirectory.open(new File(indexOutputDir)),
                                                         minNumDocsBeforeFlush,

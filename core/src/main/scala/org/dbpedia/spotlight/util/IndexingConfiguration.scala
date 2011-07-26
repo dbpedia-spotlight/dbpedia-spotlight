@@ -25,10 +25,11 @@ import org.dbpedia.spotlight.lucene.similarity.InvCandFreqSimilarity
 import org.apache.lucene.misc.SweetSpotSimilarity
 import org.apache.lucene.analysis.snowball.SnowballAnalyzer
 import org.apache.lucene.util.Version
-import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.analysis.{Analyzer, StopAnalyzer}
 import org.dbpedia.spotlight.exceptions.ConfigurationException
 import java.io._
+import collection.immutable.List._
+import org.apache.lucene.analysis.standard.StandardAnalyzer
 
 /**
  * Class that holds configurations of the project.
@@ -44,6 +45,9 @@ class IndexingConfiguration(val configFile: File) {
     def this(fileName: String) {
         this(new File(fileName))
     }
+
+    var language = "English";
+    var analyzer : Analyzer = new StandardAnalyzer(Version.LUCENE_29)
 
     private val properties : Properties = new Properties()
 
@@ -93,8 +97,8 @@ class IndexingConfiguration(val configFile: File) {
         out.close
     }
 
-    def getStopWords : Set[String] = {
-        val f = new File(get("org.dbpedia.spotlight.data.stopWords", ""))
+    def getStopWords(language: String) : Set[String] = {
+        val f = new File(get("org.dbpedia.spotlight.data.stopWords."+language.toLowerCase, ""))
         try {
             Source.fromFile(f, "UTF-8").getLines.toSet
         }
@@ -103,14 +107,16 @@ class IndexingConfiguration(val configFile: File) {
         }
     }
 
-    def getAnalyzer(analyzerName : String) : Analyzer = {
-        val stopWords = getStopWords
+    def getAnalyzer(analyzerName : String, language: String) : Analyzer = {
+        val stopWords = getStopWords(language)
 
-        (new StandardAnalyzer(Version.LUCENE_29, stopWords) :: new SnowballAnalyzer(Version.LUCENE_29, "English", stopWords) :: Nil)
-                .map(a => (a.getClass.getSimpleName, a))
-                .toMap
-                .get(analyzerName)
-                .getOrElse(throw new ConfigurationException("Unknown Analyzer: "+analyzerName))
+        (new StandardAnalyzer(Version.LUCENE_29, stopWords) ::
+         new SnowballAnalyzer(Version.LUCENE_29, language, stopWords) ::
+         Nil)
+            .map(a => (a.getClass.getSimpleName, a))
+            .toMap
+            .get(analyzerName)
+            .getOrElse(throw new ConfigurationException("Unknown Analyzer: "+analyzerName))
     }
 
     def getSimilarity(similarityName : String) : Similarity = {
@@ -121,6 +127,13 @@ class IndexingConfiguration(val configFile: File) {
                 .getOrElse(throw new ConfigurationException("Unknown Similarity: "+similarityName))
     }
 
+    def getLanguage() = {
+        language
+    }
+
+    def getAnalyzer = {
+        analyzer
+    }
 
     private def validate {
 
@@ -149,10 +162,21 @@ class IndexingConfiguration(val configFile: File) {
             throw new ConfigurationException("specified instance types dataset not found: "+instFile)
         }
 
+        language = get("org.dbpedia.spotlight.language")
+        if(language==null || language.size==0) {
+            throw new ConfigurationException("Parameter org.dbpedia.spotlight.language not specified in config")
+        }
 
-        val stopwordsFile = new File(get("org.dbpedia.spotlight.data.stopWords"))
+        val stopwordsFile = new File(get("org.dbpedia.spotlight.data.stopWords."+language.toLowerCase))
         if(!stopwordsFile.isFile) {
             throw new ConfigurationException("specified stop words file not found: "+stopwordsFile)
+        }
+
+        val analyzerName = get("org.dbpedia.spotlight.lucene.analyzer")
+        if(analyzerName==null) {
+            throw new ConfigurationException("Analyzer not specified")
+        } else {
+            analyzer = getAnalyzer(analyzerName, language)
         }
 
     }
