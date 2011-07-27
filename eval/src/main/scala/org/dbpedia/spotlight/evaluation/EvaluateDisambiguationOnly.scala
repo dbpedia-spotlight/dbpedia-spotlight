@@ -65,7 +65,7 @@ object EvaluateDisambiguationOnly
 //        val queryTimeAnalyzer = new QueryAutoStopWordAnalyzer(Version.LUCENE_29, analyzer);
         val queryTimeAnalyzer = analyzer;
 
-        luceneManager.setContextAnalyzer(queryTimeAnalyzer);
+        luceneManager.setDefaultAnalyzer(queryTimeAnalyzer);
         luceneManager.setContextSimilarity(similarity);
         //------------ ICF DISAMBIGUATOR
         val contextSearcher = new MergedOccurrencesContextSearcher(luceneManager);
@@ -163,7 +163,6 @@ object EvaluateDisambiguationOnly
         createMergedDisambiguator(indexDir, analyzer, similarity)
     }
 
-
     // the next two use an own disambiguator, while the two before just use a different similarity class
 
 //    def getDefaultScorePlusPriorSnowballDisambiguator(indexDir: String) : Disambiguator = {
@@ -174,7 +173,7 @@ object EvaluateDisambiguationOnly
 //        ensureExists(directory)
 //        val luceneManager = new LuceneManager.BufferedMerging(directory)
 //        //val isfLuceneManager = new LuceneManager.BufferedMerging(new RAMDirectory())
-//        luceneManager.setContextAnalyzer(analyzer);
+//        luceneManager.setDefaultAnalyzer(analyzer);
 //        luceneManager.setContextSimilarity(similarity);
 //        //------------ ICF DISAMBIGUATOR
 //        val contextSearcher = new MergedOccurrencesContextSearcher(luceneManager);
@@ -207,7 +206,7 @@ object EvaluateDisambiguationOnly
         val directory = new NIOFSDirectory(new File(indexDir));//+"."+analyzer.getClass.getSimpleName+"."+similarity.getClass.getSimpleName));
         //val luceneManager = new LuceneManager.BufferedMerging(directory)
         val luceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(directory)
-        luceneManager.setContextAnalyzer(analyzer);
+        luceneManager.setDefaultAnalyzer(analyzer);
         luceneManager.setContextSimilarity(similarity);
         val contextSearcher = new MergedOccurrencesContextSearcher(luceneManager);
         LOG.info("Number of entries in merged resource index ("+contextSearcher.getClass()+"): "+ contextSearcher.getNumberOfEntries());
@@ -220,7 +219,7 @@ object EvaluateDisambiguationOnly
         val directory = new NIOFSDirectory(new File(indexDir));//+"."+analyzer.getClass.getSimpleName+"."+similarity.getClass.getSimpleName));
         //val luceneManager = new LuceneManager.BufferedMerging(directory)
         val luceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(directory)
-        luceneManager.setContextAnalyzer(analyzer);
+        luceneManager.setDefaultAnalyzer(analyzer);
         luceneManager.setContextSimilarity(similarity);
         val contextSearcher = new CandidateSearcher(luceneManager);
         LOG.info("Number of entries in merged resource index ("+contextSearcher.getClass()+"): "+ contextSearcher.getNumberOfEntries());
@@ -267,7 +266,7 @@ object EvaluateDisambiguationOnly
         val resultsFileName: String = testFileName+".log"
 
 
-        val out = new PrintStream(resultsFileName, "UTF-8");
+        //val out = new PrintStream(resultsFileName, "UTF-8");
 
         //exists(indexDir);
         exists(testFileName);
@@ -291,7 +290,12 @@ object EvaluateDisambiguationOnly
         //val indexDir = baseDir+"/2.9.3/Index.wikipediaTraining.Merged";
 
         val default : Disambiguator = new DefaultDisambiguator(config)
-        val disSet = Set(
+
+        //val test : Disambiguator = new GraphCentralityDisambiguator(config)
+        val disSet = Set(default);
+
+        /*val disSet = Set(
+
                             default,
                             getDefaultSnowballDisambiguator(indexDir) ,
                             getICFCachedDisambiguator(indexDir),
@@ -320,6 +324,7 @@ object EvaluateDisambiguationOnly
                             getPriorDisambiguator(indexDir),
                             getRandomDisambiguator(indexDir)
         )
+         */
 
         // Read some text to test.
         val testSource = FileOccurrenceSource.fromFile(new File(testFileName))
@@ -335,9 +340,9 @@ object EvaluateDisambiguationOnly
         //        LOG.info("=================================");
 
           //testSource.view(10000,15000)
-          val evaluator = new DisambiguationEvaluator(testSource, disSet, out);
+          val evaluator = new DisambiguationEvaluator(testSource, disSet, resultsFileName);
           evaluator.evaluate()
-          out.close();
+
 
     }
 

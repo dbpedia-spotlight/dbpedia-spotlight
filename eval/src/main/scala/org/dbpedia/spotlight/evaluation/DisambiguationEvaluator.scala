@@ -19,17 +19,16 @@ package org.dbpedia.spotlight.evaluation
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.model._
 import scala.collection.JavaConversions._
-import java.io.PrintStream
-
 import org.dbpedia.spotlight.util.Profiling._
 import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
 import org.dbpedia.spotlight.disambiguate._
 import org.dbpedia.spotlight.exceptions._
+import java.io.{File, PrintStream}
 
 /**
  * Evaluation class. 
  */
-class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurrence], val disambiguatorSet : Set[Disambiguator], val output : PrintStream)
+class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurrence], val disambiguatorSet : Set[Disambiguator], val outputFileName : String)
 {
     // moved to BaseSearcher.getNumberOfOccurrences
     //val PRIOR_DENOMINATOR : Double = 69772256.0
@@ -44,6 +43,9 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
     var unambiguityCounters    = Map[String,Int]()
     var sfNotFoundCounters    = Map[String,Int]()
     var timeCounters          = Map[String,Long]()
+
+    val output = new PrintStream(new File(outputFileName));
+    val sfNotFoundOutput = new PrintStream(new File(outputFileName+".sfNotFound"))
 
     def listToJavaList[T](l: List[T]) = l.foldLeft(new java.util.ArrayList[T](l.size)){(al, e) => al.add(e); al}
 
@@ -130,7 +132,7 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
             if(totalOccurrenceCount%10 == 0) {
                 LOG.info("=="+totalOccurrenceCount)
             }
-            //LOG.trace("Processed "+totalOccurrenceCount+" occurrences. Current text: ["+testOcc.context.text.substring(0,scala.math.min(current.length, 100))+"...]")
+            //LOG.trace("Processed "+totalOccurrenceCount+" occurrences. Current text: ["+correctOccurrence.context.text.substring(0,scala.math.min(current.length, 100))+"...]")
 
             for (disambiguator <- disambiguatorSet)
             {
@@ -140,10 +142,10 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
                 val ambiguity = disambiguator.ambiguity(testOcc.surfaceForm)
 
                 val spotProb : java.lang.Double = disambiguator match {
-                    //case d: MergedOccurrencesDisambiguator => d.spotProbability(testOcc.surfaceForm);
+                    //case d: MergedOccurrencesDisambiguator => d.spotProbability(correctOccurrence.surfaceForm);
                     case _ => 1.0; //TODO implement for other disambiguators
                 }
-                //LOG.info("Spot probability for "+testOcc.surfaceForm+"="+spotProb)
+                //LOG.info("Spot probability for "+correctOccurrence.surfaceForm+"="+spotProb)
 
                 var unambiguous = 0
                 var sfNotFound = 0
@@ -155,7 +157,7 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
                         LOG.debug(disambiguator.name);
                         LOG.debug("Ambiguity for "+testOcc.surfaceForm+"="+ambiguity)
 
-                        //val sfOccWrapped = List(new SurfaceFormOccurrence(testOcc.surfaceForm, testOcc.context, testOcc.textOffset, testOcc.provenance))
+                        //val sfOccWrapped = List(new SurfaceFormOccurrence(correctOccurrence.surfaceForm, correctOccurrence.context, correctOccurrence.textOffset, correctOccurrence.provenance))
                         //val resList = disambiguate(disambiguator, sfOccWrapped)
 
                         val sfOcc = new SurfaceFormOccurrence(testOcc.surfaceForm, testOcc.context, testOcc.textOffset, testOcc.provenance)
@@ -177,7 +179,7 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
                         // simple tokenization and counting of terms
                         val queryWordTypes = testOcc.context.text.split("\\W+").toSet.size
 
-                        val averageIdf = "NA"  // disambiguator.averageIdf(testOcc.context)
+                        val averageIdf = "NA"  // disambiguator.averageIdf(correctOccurrence.context)
 
                         val sortedOccs = bestK.sortBy( o => o.resource.prior ) // Change order here for training data.
 
@@ -192,14 +194,15 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
                             }
                             else {
                                 //incorrectScores ::= score.toDouble
-                                //LOG.debug("  WRONG: correct: " + testOcc.surfaceForm + " -> " + testOcc.resource);
+                                //LOG.debug("  WRONG: correct: " + correctOccurrence.surfaceForm + " -> " + correctOccurrence.resource);
                                 LOG.debug("       spotlight: %.5f \t %.5f \t %.5f \t %s".format(sptlResultOcc.resource.prior, sptlResultOcc.contextualScore, sptlResultOcc.similarityScore, sptlResultOcc.resource))
-                                //println(disambiguator.explain(testOcc, 100))
+                                //println(disambiguator.explain(correctOccurrence, 100))
                             }
-
+                            if (disambAccuracy==0)
+                                LOG.debug("  **   not found: %.5s \t %.5s \t %.5s \t %s".format("NA", "NA", "NA", testOcc.resource))
 
                             val trainingSetSize = testOcc.resource.support //disambiguator.support(sptlResultOcc.resource)
-                            //val prior = (testOcc.resource.support / 69772256)
+                            //val prior = (correctOccurrence.resource.support / 69772256)
                             val trainingVectorLength = "NA" //disambiguator.contextTermsNumber(sptlResultOcc.resource)  //TODO bring this back when TermVectors are stored in the CONTEXT field
 
                             // write stats for this disambiguator
@@ -231,6 +234,7 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
                 } else {
                     if (ambiguity==0) {  // ambiguity of zero means that the surface form was not found
                         sfNotFound = 1
+                        sfNotFoundOutput.println(testOcc.surfaceForm)
                         LOG.debug("Nothing to disambiguate. Surface Form not found ("+testOcc.surfaceForm+"). Skipping.");
                     }
                     if (ambiguity==1) {
@@ -251,6 +255,9 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
 
         LOG.info("===== TOTAL RESULTS:");
         stats()
+
+        output.close();
+        sfNotFoundOutput.close();
     }
 
     def storeTime(disambiguator: Disambiguator) = (delta:Long) => {

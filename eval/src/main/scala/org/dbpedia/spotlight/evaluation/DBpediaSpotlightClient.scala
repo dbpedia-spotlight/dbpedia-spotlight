@@ -31,7 +31,6 @@ import org.dbpedia.spotlight.lucene.similarity.{CachedInvCandFreqSimilarity, JCS
 import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter
 import java.io.{FileOutputStream, PrintStream, File}
 import org.dbpedia.spotlight.model.{SpotlightFactory, SpotlightConfiguration, DBpediaResource, DBpediaResourceOccurrence}
-import org.dbpedia.spotlight.disambiguate.RandomDisambiguator
 import org.dbpedia.spotlight.filter.annotations.{ContextualScoreFilter, SupportFilter, CoreferenceFilter, ConfidenceFilter}
 import org.dbpedia.spotlight.lucene.disambiguate.{MergedOccurrencesDisambiguator, MixedWeightsDisambiguator}
 import org.apache.lucene.search.{DefaultSimilarity, Similarity}
@@ -63,7 +62,7 @@ object DBpediaSpotlightClient
     val similarity : Similarity = new CachedInvCandFreqSimilarity(cache);
     //val similarity : Similarity = new InvCandFreqSimilarity
     val luceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(directory)
-    luceneManager.setContextAnalyzer(analyzer);
+    luceneManager.setDefaultAnalyzer(analyzer);
     luceneManager.setContextSimilarity(similarity);
     val contextSearcher = new MergedOccurrencesContextSearcher(luceneManager);
 
@@ -74,11 +73,11 @@ object DBpediaSpotlightClient
     val annotator = new DefaultAnnotator(spotter, disambiguator);
     val filter = new AnnotationFilter(configuration)
 
-    val randomBaseline = new DefaultAnnotator(spotter, new RandomDisambiguator(contextSearcher))
+    //val randomBaseline = new DefaultAnnotator(spotter, new RandomDisambiguator(contextSearcher))
 
 //    val tfidfLuceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(directory)
 //    tfidfLuceneManager.setContextSimilarity(new DefaultSimilarity())
-//    tfidfLuceneManager.setContextAnalyzer(analyzer);
+//    tfidfLuceneManager.setDefaultAnalyzer(analyzer);
 //    val tfidfBaseline  = new DefaultAnnotator(spotter, spotSelector, new MergedOccurrencesDisambiguator(new MergedOccurrencesContextSearcher(tfidfLuceneManager)))
 
 //    val factory = new LuceneFactory(configuration)
@@ -190,13 +189,23 @@ object DBpediaSpotlightClient
         val top10Context = new PrintStream(baseDir+prefix+"Top10Context.set");
         //val out = new PrintStream(matrixOutputFile);
 
+        var i = 0;
         for (text <- plainText.split("\n\n")) {
             val cleanText = WikiLinkParser.eraseMarkup(text);
 
-            val baselineOcc = randomBaseline.annotate(cleanText).toList
-            randomBaselineResults.append("\n"+baselineOcc.map(o => o.resource.uri).toSet.mkString("\n")+"\n")
+            //TODO run baselines
+            //val baselineOcc = randomBaseline.annotate(cleanText).toList
+            //randomBaselineResults.append("\n"+baselineOcc.map(o => o.resource.uri).toSet.mkString("\n")+"\n")
 
-            val occ = annotator.annotate(cleanText).toList;
+            i = i + 1
+            var occ = List[DBpediaResourceOccurrence]()
+            try {
+                LOG.info("Paragraph "+i)
+                occ = annotator.annotate(cleanText).toList;
+            } catch {
+                case e: Exception =>
+                    LOG.error("Exception: "+e);
+            }
 
             allOut.append("\n"+occ.map(o => o.resource.uri).toSet.mkString("\n")+"\n")
 

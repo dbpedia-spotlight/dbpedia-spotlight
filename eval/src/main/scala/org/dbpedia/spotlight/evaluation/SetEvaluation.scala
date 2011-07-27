@@ -267,7 +267,7 @@ object SetEvaluation {
 //    val baseDir = "/home/pablo/eval/cucerzan"
     //val baseDir = "/home/pablo/eval/manual"
 //      val baseDir = "/home/pablo/eval/wikify"
-//      val baseDir = "/home/pablo/eval/grounder"
+      //val baseDir = "/home/pablo/eval/grounder"
       val baseDir = "/home/pablo/eval/csaw"
       run(baseDir)
 
