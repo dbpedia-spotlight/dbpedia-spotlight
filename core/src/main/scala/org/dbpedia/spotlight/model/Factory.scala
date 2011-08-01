@@ -141,7 +141,7 @@ class SpotlightFactory(val configuration: SpotlightConfiguration,
         if (!new File(configuration.getTaggerFile).exists()) throw new ConfigurationException("POS tagger file does not exist! "+configuration.getTaggerFile);
     }
 
-    val directory : Directory = LuceneManager.pickDirectory(new File(configuration.getIndexDirectory))
+    val directory : Directory = LuceneManager.pickDirectory(new File(configuration.getContextIndexDirectory))
     val luceneManager : LuceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(directory)
     val similarity : Similarity = new CachedInvCandFreqSimilarity(JCSTermCache.getInstance(luceneManager, configuration.getMaxCacheSize))
 

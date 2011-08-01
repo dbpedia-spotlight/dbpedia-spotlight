@@ -45,7 +45,9 @@ public class SpotlightConfiguration {
 	public final static String DEFAULT_POLICY = "whitelist";
 	public final static String DEFAULT_COREFERENCE_RESOLUTION = "true";
 
-	protected String indexDirectory = "";
+	protected String contextIndexDirectory = "";
+    protected String candidateMapDirectory = "";
+
 	protected List<Double> similarityThresholds;
 	protected String similarityThresholdsFile = "similarity-thresholds.txt";
     protected String taggerFile = "";
@@ -63,9 +65,13 @@ public class SpotlightConfiguration {
 		return serverURI;
 	}
 
-	public String getIndexDirectory() {
-		return indexDirectory;
+	public String getContextIndexDirectory() {
+		return contextIndexDirectory;
 	}
+
+    public String getCandidateIndexDirectory() {
+        return candidateMapDirectory;
+    }
 
 	public List<Double> getSimilarityThresholds() {
 		return similarityThresholds;
@@ -118,24 +124,30 @@ public class SpotlightConfiguration {
 		spotterConfiguration = new SpotterConfiguration(fileName);
 
 		//set spotterFile, indexDir...
-		indexDirectory = config.getProperty("org.dbpedia.spotlight.index.dir").trim();
-		if(!new File(indexDirectory).isDirectory()) {
-			throw new ConfigurationException("Cannot find index directory "+indexDirectory);
+		contextIndexDirectory = config.getProperty("org.dbpedia.spotlight.index.dir").trim();
+		if(!new File(contextIndexDirectory).isDirectory()) {
+			throw new ConfigurationException("Cannot find index directory "+ contextIndexDirectory);
+		}
+
+		//set spotterFile, indexDir...
+		candidateMapDirectory = config.getProperty("org.dbpedia.spotlight.candidateMap.dir").trim();
+		if(!new File(candidateMapDirectory).isDirectory()) {
+			throw new ConfigurationException("Cannot find candidate map directory "+ candidateMapDirectory);
 		}
 
 		try {
-			BufferedReader r = new BufferedReader(new FileReader(new File(indexDirectory, similarityThresholdsFile)));
+			BufferedReader r = new BufferedReader(new FileReader(new File(contextIndexDirectory, similarityThresholdsFile)));
 			String line;
 			similarityThresholds = new ArrayList<Double>();
 			while((line = r.readLine()) != null) {
 				similarityThresholds.add(Double.parseDouble(line));
 			}
 		} catch (FileNotFoundException e) {
-			throw new ConfigurationException("Similarity threshold file '"+similarityThresholdsFile+"' not found in index directory "+indexDirectory,e);
+			throw new ConfigurationException("Similarity threshold file '"+similarityThresholdsFile+"' not found in index directory "+ contextIndexDirectory,e);
 		} catch (NumberFormatException e) {
-			throw new ConfigurationException("Error parsing similarity value in '"+indexDirectory+"/"+similarityThresholdsFile,e);
+			throw new ConfigurationException("Error parsing similarity value in '"+ contextIndexDirectory +"/"+similarityThresholdsFile,e);
 		} catch (IOException e) {
-			throw new ConfigurationException("Error reading '"+indexDirectory+"/"+similarityThresholdsFile,e);
+			throw new ConfigurationException("Error reading '"+ contextIndexDirectory +"/"+similarityThresholdsFile,e);
 		}
 
         taggerFile = config.getProperty("org.dbpedia.spotlight.tagging.hmm").trim();

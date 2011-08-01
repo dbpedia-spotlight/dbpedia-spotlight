@@ -20,10 +20,10 @@ import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.lucene.index.{BaseIndexer, OccurrenceContextIndexer, MergedOccurrencesContextIndexer}
 
 /**
- * Writes Lucene index.
+ * Writes Lucene index from DBpediaResourceOccurrence objects in an OccurrenceSource.
+ * @author maxjakob
+ * @author pablomendes (catching exceptions)
  */
-
-
 object LuceneIndexWriter
 {
     private val LOG = LogFactory.getLog(this.getClass)
@@ -33,13 +33,21 @@ object LuceneIndexWriter
         var indexDisplay = 0
         LOG.info("Indexing with " + indexer.getClass + " in Lucene ...")
 
-        for (occ <- occSource.view)
-        {
-            indexer.add(occ)
+        val it = occSource.toIterator
+        while(it.hasNext) {
+            try {
+
+            indexer.add(it.next())
 
             indexDisplay += 1
             if (indexDisplay % 10000 == 0) {
                 LOG.debug("  indexed " + indexDisplay + " occurrences")
+            }
+            } catch {
+                case e: Exception => {
+                    LOG.error("Error parsing %s. ".format(indexDisplay))
+                    e.printStackTrace()
+                }
             }
         }
         indexer.close  // important

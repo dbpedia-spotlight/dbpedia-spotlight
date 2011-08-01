@@ -71,12 +71,12 @@ public abstract class BaseIndexer<T> implements FeatureVectorBuilder, Closeable 
 
     /**
      * Base class with the indexing functionality used by the subclasses {@link SeparateOccurrencesIndexer} and {@link MergedOccurrencesContextIndexer}}.
-     * By default ({@link org.dbpedia.spotlight.lucene.LuceneManager#shouldOverride}=true) it creates the index or overwrites the existing one.
+     * By default ({@link org.dbpedia.spotlight.lucene.LuceneManager#shouldOverwrite}=true) it creates the index or overwrites the existing one.
      * @param lucene
      * @throws IOException
      */
      public BaseIndexer(LuceneManager lucene) throws IOException {
-        this(lucene, lucene.shouldOverride);
+        this(lucene, lucene.shouldOverwrite);
     }
 
     public abstract void add(T item) throws IndexException;

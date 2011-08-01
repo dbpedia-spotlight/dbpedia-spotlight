@@ -84,7 +84,7 @@ public class LuceneManager {
 
     // what to do if lucene.mContextIndexDir already exists (so we do not unvoluntary add to an existing index).
     // true to create the index or overwrite the existing one; false to append to the existing index
-    public boolean shouldOverride = false;  //BE CAREFUL: indices will be overwritten if true !!!!!
+    public boolean shouldOverwrite = false;  //BE CAREFUL: indices will be overwritten if true !!!!!
 
     // this value specifies how many top results Lucene should return
     public int topResultsLimit = 100;
@@ -140,7 +140,7 @@ public class LuceneManager {
     }
 
     public boolean shouldOverride() {
-        return shouldOverride;
+        return shouldOverwrite;
     }
 
     public int topResultsLimit() {
@@ -588,9 +588,17 @@ public class LuceneManager {
 
         // How to break down the input text
         private Analyzer mSurfaceFormAnalyzer = new NGramAnalyzer(3,3);
+        Directory mCandidateIndexDir;
 
         public CaseSensitiveSurfaceForms(Directory dir) throws IOException {
             super(dir);
+            PerFieldAnalyzerWrapper perFieldAnalyzer = new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_29));
+            perFieldAnalyzer.addAnalyzer(LuceneManager.DBpediaResourceField.SURFACE_FORM.toString(),mSurfaceFormAnalyzer);
+            setDefaultAnalyzer(perFieldAnalyzer);
+        }
+
+        public CaseSensitiveSurfaceForms(Directory contextIndexDir, Directory sfIndexDir) throws IOException {
+            super(contextIndexDir);
             PerFieldAnalyzerWrapper perFieldAnalyzer = new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_29));
             perFieldAnalyzer.addAnalyzer(LuceneManager.DBpediaResourceField.SURFACE_FORM.toString(),mSurfaceFormAnalyzer);
             setDefaultAnalyzer(perFieldAnalyzer);
@@ -608,14 +616,14 @@ public class LuceneManager {
         public Query getQuery(SurfaceForm sf) throws SearchException {
 
             QueryParser parser = new QueryParser(Version.LUCENE_29, DBpediaResourceField.SURFACE_FORM.toString(), mSurfaceFormAnalyzer);
-            Query ctxQuery = null;
+            Query sfQuery = null;
             //TODO escape (instead of remove) special characters in Text before querying
             // + - && || ! ( ) { } [ ] ^ " ~ * ? : \
             //http://lucene.apache.org/java/3_0_2/queryparsersyntax.html#Escaping
             String queryText = sf.name().replaceAll("[\\+\\-\\|!\\(\\)\\{\\}\\[\\]\\^~\\*\\?\"\\\\:&]", " ");
             queryText = QueryParser.escape(queryText);
             try {
-                ctxQuery = parser.parse(queryText);
+                sfQuery = parser.parse(queryText);
             } catch (ParseException e) {
                 StringBuffer msg = new StringBuffer();
                 msg.append("Error parsing surface form. ");
@@ -628,7 +636,7 @@ public class LuceneManager {
                 e.printStackTrace();
                 throw new SearchException(msg.toString(),e);
             }
-            return ctxQuery;
+            return sfQuery;
         }
 
     }

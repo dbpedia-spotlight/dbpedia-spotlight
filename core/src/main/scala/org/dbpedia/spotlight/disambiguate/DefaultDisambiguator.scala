@@ -43,7 +43,7 @@ class DefaultDisambiguator(val configuration: SpotlightConfiguration) extends Di
 
     LOG.info("Initializing disambiguator object ...")
 
-    val indexDir = new File(configuration.getIndexDirectory)
+    val indexDir = new File(configuration.getContextIndexDirectory)
 
     // Disambiguator
     val dir = LuceneManager.pickDirectory(indexDir)

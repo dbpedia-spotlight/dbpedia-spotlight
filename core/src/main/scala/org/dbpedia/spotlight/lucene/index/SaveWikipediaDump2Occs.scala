@@ -29,8 +29,9 @@ import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
  * Saves Occurrences to a TSV file.
  * - Surface forms are taken from anchor texts
  * - Redirects are resolved
+ * @author maxjakob
+ * @author pablomendes (small fixes)
  */
-
 object SaveWikipediaDump2Occs {
 
     private val LOG = LogFactory.getLog(this.getClass)
@@ -67,7 +68,7 @@ object SaveWikipediaDump2Occs {
 
         val occs = filters.foldLeft(occSource){ (o,f) => f.filterOccs(o) }
 
-        FileOccurrenceSource.writeToFile(occs.asInstanceOf[OccurrenceSource], new File(targetFileName))
+        FileOccurrenceSource.writeToFile(occs, new File(targetFileName))
 
         config.set("org.dbpedia.spotlight.index.occurrences", targetFileName)
 

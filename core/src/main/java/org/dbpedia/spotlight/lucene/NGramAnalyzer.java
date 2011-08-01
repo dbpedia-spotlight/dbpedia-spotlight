@@ -25,6 +25,7 @@ import java.io.StringReader;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.ngram.NGramTokenizer;
+import org.apache.lucene.analysis.position.PositionFilter;
 
 /**
  * @author pablomendes
@@ -41,7 +42,9 @@ public class NGramAnalyzer extends Analyzer {
 
     @Override
     public TokenStream tokenStream(String fieldName, Reader reader) {
-        return new NGramTokenizer(reader, minGram, maxGram);
+        TokenStream s = new NGramTokenizer(reader, minGram, maxGram);
+        s = new PositionFilter(s);
+        return s;
     }
 
     public static void main(String[] args) throws IOException {

@@ -160,7 +160,7 @@ public class CandidateIndexer extends BaseIndexer<Surrogate> {
         try { minCount = Integer.valueOf(args[2]); } catch(ArrayIndexOutOfBoundsException ignored) {}
 
         LuceneManager mLucene = new LuceneManager.CaseSensitiveSurfaceForms(FSDirectory.open(new File(outputDirName)));
-        mLucene.shouldOverride = true;
+        mLucene.shouldOverwrite = true;
 
         CandidateIndexer si = new CandidateIndexer(mLucene);
 

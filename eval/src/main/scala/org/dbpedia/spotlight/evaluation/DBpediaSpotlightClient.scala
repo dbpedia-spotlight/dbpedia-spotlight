@@ -57,7 +57,7 @@ object DBpediaSpotlightClient
 
     val analyzer : Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET);
     //val directory = LuceneManager.pickDirectory(new File(indexDir+"."+analyzer.getClass.getSimpleName+".DefaultSimilarity"));
-    val directory =  LuceneManager.pickDirectory(new File(configuration.getIndexDirectory));
+    val directory =  LuceneManager.pickDirectory(new File(configuration.getContextIndexDirectory));
     val cache = JCSTermCache.getInstance(new LuceneManager.BufferedMerging(directory), configuration.getMaxCacheSize);
     val similarity : Similarity = new CachedInvCandFreqSimilarity(cache);
     //val similarity : Similarity = new InvCandFreqSimilarity

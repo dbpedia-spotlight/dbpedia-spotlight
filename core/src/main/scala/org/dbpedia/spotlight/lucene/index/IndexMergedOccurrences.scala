@@ -49,6 +49,12 @@ object IndexMergedOccurrences
         val indexingConfigFileName = args(0)
         val trainingInputFileName = args(1)
 
+        var shouldOverwrite = false
+        if (args.length>2) {
+            if (args(2).toLowerCase.contains("overwrite"))
+                shouldOverwrite = true;
+        }
+
         val config = new IndexingConfiguration(indexingConfigFileName)
 
         // Command line options
@@ -73,6 +79,14 @@ object IndexMergedOccurrences
                                                         lastOptimize)
         lucene.setContextSimilarity(similarity);
         lucene.setDefaultAnalyzer(analyzer);
+        // If the index directory does not exist, tell lucene to overwrite.
+        // If it exists, the user has to indicate in command line that he/she wants to overwrite it.
+        // I chose command line instead of configuration file to force the user to look at it before running the command.
+        if (!new File(indexOutputDir).exists()) {
+            lucene.shouldOverwrite = true
+        } else {
+            lucene.shouldOverwrite = shouldOverwrite
+        }
 
         val vectorBuilder = new MergedOccurrencesContextIndexer(lucene)
 

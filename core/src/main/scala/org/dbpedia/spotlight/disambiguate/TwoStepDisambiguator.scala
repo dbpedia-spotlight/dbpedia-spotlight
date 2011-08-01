@@ -1,23 +1,3 @@
-/*
- * *
- *  * Copyright 2011 Pablo Mendes, Max Jakob
- *  *
- *  * Licensed under the Apache License, Version 2.0 (the "License");
- *  * you may not use this file except in compliance with the License.
- *  * You may obtain a copy of the License at
- *  *
- *  * http://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  * Unless required by applicable law or agreed to in writing, software
- *  * distributed under the License is distributed on an "AS IS" BASIS,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
- *
- */
-
-package org.dbpedia.spotlight.disambiguate
-
 /**
  * Copyright 2011 Pablo Mendes, Max Jakob
  *
@@ -34,8 +14,9 @@ package org.dbpedia.spotlight.disambiguate
  * limitations under the License.
  */
 
+package org.dbpedia.spotlight.disambiguate
+
 import org.dbpedia.spotlight.lucene.LuceneManager
-import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
 import org.dbpedia.spotlight.lucene.similarity._
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
@@ -49,12 +30,13 @@ import collection.mutable.{HashMap, HashSet}
 import java.io.{ByteArrayInputStream, File}
 import org.dbpedia.spotlight.model._
 import org.apache.lucene.index.Term
+import org.dbpedia.spotlight.lucene.search.{CandidateSearcher, MergedOccurrencesContextSearcher}
 
 /**
  * Paragraph disambiguator that queries paragraphs once and uses candidate map to filter results.
  * 1) performs candidate selection: searches sf -> uri
  * 2) context score: searches context with filter(uri)
- * 3) disambiguates
+ * 3) disambiguates by ranking candidates found in 1 according to score from 2.
  *
  * @author pablomendes
  */
@@ -64,18 +46,17 @@ class TwoStepDisambiguator(val configuration: SpotlightConfiguration) extends Pa
 
     LOG.info("Initializing disambiguator object ...")
 
-    val indexDir = new File(configuration.getIndexDirectory)
+    val contextIndexDir = LuceneManager.pickDirectory(new File(configuration.getContextIndexDirectory))
+    val candidateIndexDir = LuceneManager.pickDirectory(new File(configuration.getCandidateIndexDirectory))
 
-    // Disambiguator
-    val dir = LuceneManager.pickDirectory(indexDir)
+    val contextLuceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(contextIndexDir) // use this if all surface forms in the index are lower-cased
+    val cache = JCSTermCache.getInstance(contextLuceneManager, configuration.getMaxCacheSize);
+    contextLuceneManager.setContextSimilarity(new CachedInvCandFreqSimilarity(cache))        // set most successful Similarity
+    val contextSearcher = new MergedOccurrencesContextSearcher(contextLuceneManager)
 
-    //val luceneManager = new LuceneManager(dir)                              // use this if surface forms in the index are case-sensitive
-    val luceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(dir)  // use this if all surface forms in the index are lower-cased
-    val cache = JCSTermCache.getInstance(luceneManager, configuration.getMaxCacheSize);
-    luceneManager.setContextSimilarity(new CachedInvCandFreqSimilarity(cache))        // set most successful Similarity
-
-    val contextSearcher = new MergedOccurrencesContextSearcher(luceneManager)
-    val candidateSearcher : CandidateSearcher = contextSearcher; // here we can reuse the same object because it implements both CandidateSearcher and ContextSearcher interfaces
+    //val candidateSearcher : CandidateSearcher = contextSearcher; // here we can reuse the same object because it implements both CandidateSearcher and ContextSearcher interfaces
+    val candLuceneManager = new LuceneManager.CaseSensitiveSurfaceForms(candidateIndexDir) // use this if surface forms in the index are case-sensitive
+    val candidateSearcher = new CandidateSearcher(candLuceneManager) // or we can provide different functionality for surface forms (e.g. n-gram search)
 
     val disambiguator : Disambiguator = new MergedOccurrencesDisambiguator(contextSearcher)
 
@@ -95,7 +76,7 @@ class TwoStepDisambiguator(val configuration: SpotlightConfiguration) extends Pa
         //val filter = null;
         val mlt = new MoreLikeThis(contextSearcher.mReader);
         mlt.setFieldNames(Array(DBpediaResourceField.CONTEXT.toString))
-        mlt.setAnalyzer(luceneManager.defaultAnalyzer)
+        mlt.setAnalyzer(contextLuceneManager.defaultAnalyzer)
         val inputStream = new ByteArrayInputStream(text.text.getBytes("UTF-8"));
         val query = mlt.like(inputStream);
         contextSearcher.getHits(query, allowedUris.size, 50000, filter)
@@ -109,7 +90,7 @@ class TwoStepDisambiguator(val configuration: SpotlightConfiguration) extends Pa
 
         if (paragraph.occurrences.size==0) return Map[SurfaceFormOccurrence,List[DBpediaResourceOccurrence]]()
 
-        // get candidates for all surface forms (TODO here building allCandidates directly, but could extract from occs)
+        // step1: get candidates for all surface forms (TODO here building allCandidates directly, but could extract from occs)
         var allCandidates = collection.mutable.HashSet[DBpediaResource]();
         val occs = paragraph.occurrences
             .foldLeft( Map[SurfaceFormOccurrence,List[DBpediaResource]]())(
@@ -121,7 +102,7 @@ class TwoStepDisambiguator(val configuration: SpotlightConfiguration) extends Pa
             });
 
 
-        // query once for the paragraph context, get scores for each candidate resource
+        // step2: query once for the paragraph context, get scores for each candidate resource
         val hits = query(paragraph.text, allCandidates.toArray)
         //LOG.debug("Hits (%d): %s".format(hits.size, hits.map( sd => "%s=%s".format(sd.doc,sd.score) ).mkString(",")))
         val scores = hits

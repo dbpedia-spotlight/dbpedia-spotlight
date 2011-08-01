@@ -21,6 +21,7 @@ import io.Source
 import org.apache.commons.logging.LogFactory
 import java.io._
 import java.util.zip.{GZIPOutputStream, GZIPInputStream}
+import java.text.ParseException
 
 /**
  * Gets DBpediaResourceOccurrences from TSV files.
@@ -43,7 +44,7 @@ object FileOccurrenceSource
     /**
      * Saves DBpediaResourceOccurrence to a tab-separated file.
      */
-    def writeToFile(occSource : OccurrenceSource, tsvFile : File) {
+    def writeToFile(occSource : Traversable[DBpediaResourceOccurrence], tsvFile : File) {
         var indexDisplay = 0
         LOG.info("Writing occurrences to file "+tsvFile+" ...")
 
@@ -131,7 +132,8 @@ object FileOccurrenceSource
                     f( new DBpediaResourceOccurrence(id, res, sf, t, offset, Provenance.Wikipedia) )
                 }
                 else {
-                    throw new Exception("line must have 4 tab separators; got "+(elements.length-1)+" in line: "+line)
+                    throw new ParseException("line must have 4 tab separators; got "+(elements.length-1)+" in line: "+line, elements.length-1)
+                    //LOG.error("line must have 4 tab separators; got "+(elements.length-1)+" in line: "+line)
                 }
 
             }

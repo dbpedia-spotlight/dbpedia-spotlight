@@ -258,7 +258,7 @@ object EvaluateDisambiguationOnly
 
         //val indexDir: String = args(0)  //"e:\\dbpa\\data\\index\\index-that-works\\Index.wikipediaTraining.Merged."
         val config = new SpotlightConfiguration(args(0));
-        val indexDir = config.getIndexDirectory
+        val indexDir = config.getContextIndexDirectory
 
         val simScoresFileName: String = ""
 
