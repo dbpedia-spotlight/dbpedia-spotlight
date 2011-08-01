@@ -132,8 +132,8 @@ object FileOccurrenceSource
                     f( new DBpediaResourceOccurrence(id, res, sf, t, offset, Provenance.Wikipedia) )
                 }
                 else {
-                    throw new ParseException("line must have 4 tab separators; got "+(elements.length-1)+" in line: "+line, elements.length-1)
-                    //LOG.error("line must have 4 tab separators; got "+(elements.length-1)+" in line: "+line)
+                    //throw new ParseException("line must have 4 tab separators; got "+(elements.length-1)+" in line: "+line, elements.length-1)
+                    LOG.error("line must have 4 tab separators; got "+(elements.length-1)+" in line: "+line)
                 }
 
             }
