@@ -18,7 +18,11 @@ package org.dbpedia.spotlight.lucene.search;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.store.RAMDirectory;
 import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.model.DBpediaResource;
 import org.dbpedia.spotlight.model.SurfaceForm;
@@ -33,7 +37,7 @@ import java.util.Set;
  * Implements methods for searching an index that associates surface forms to (candidate) URIs.
  * This searcher does not work with Context. In order to use context to help select the correct URI for a surface forms, @see{ContextSearcher}.
  *
- * NOTE: This was previously called CandidateSearcher, but we abandoned Surrogate from the terminology in favor of Candidate.
+ * NOTE: This was previously called SurrogateSearcher, but we abandoned Surrogate from the terminology in favor of Candidate.
  * @author pablomendes
  */
 public class CandidateSearcher extends BaseSearcher implements org.dbpedia.spotlight.model.CandidateSearcher {
@@ -46,11 +50,18 @@ public class CandidateSearcher extends BaseSearcher implements org.dbpedia.spotl
      * @throws IOException
      */
     public CandidateSearcher(LuceneManager searchManager) throws IOException {
-        super(searchManager);
+        this.mLucene = searchManager;
+        LOG.info("Creating in-memory searcher for candidates.");
+        this.mLucene.mContextIndexDir = new RAMDirectory(this.mLucene.mContextIndexDir);
+        LOG.info("Using index at: "+this.mLucene.mContextIndexDir);
+        LOG.debug("Opening IndexSearcher and IndexReader for Lucene directory "+this.mLucene.mContextIndexDir+" ...");
+        this.mReader = IndexReader.open(this.mLucene.mContextIndexDir, true); // read-only=true
+        this.mSearcher = new IndexSearcher(this.mReader);
+        LOG.debug("Done.");
     }
 
     /**
-     * SURROGATE SEARCHER
+     * CandidateSearcher method.
      * @param sf
      * @return
      * @throws org.dbpedia.spotlight.exceptions.SearchException
@@ -59,8 +70,10 @@ public class CandidateSearcher extends BaseSearcher implements org.dbpedia.spotl
     public Set<DBpediaResource> getCandidates(SurfaceForm sf) throws SearchException {
         Set<DBpediaResource> candidates = new HashSet<DBpediaResource>();
 
+        Query q = mLucene.getQuery(sf);
+        LOG.debug("Query: "+q);
         // search index for surface form, iterate through the results
-        for (ScoreDoc hit : getHits(mLucene.getQuery(sf))) {
+        for (ScoreDoc hit : getHits(q)) {
             int docNo = hit.doc;
             DBpediaResource resource = getDBpediaResource(docNo);
             candidates.add(resource);

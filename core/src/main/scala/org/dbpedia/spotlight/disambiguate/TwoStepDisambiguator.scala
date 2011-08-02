@@ -55,7 +55,7 @@ class TwoStepDisambiguator(val configuration: SpotlightConfiguration) extends Pa
     val contextSearcher = new MergedOccurrencesContextSearcher(contextLuceneManager)
 
     //val candidateSearcher : CandidateSearcher = contextSearcher; // here we can reuse the same object because it implements both CandidateSearcher and ContextSearcher interfaces
-    val candLuceneManager = new LuceneManager.CaseSensitiveSurfaceForms(candidateIndexDir) // use this if surface forms in the index are case-sensitive
+    val candLuceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(candidateIndexDir) // use this if surface forms in the index are case-sensitive
     val candidateSearcher = new CandidateSearcher(candLuceneManager) // or we can provide different functionality for surface forms (e.g. n-gram search)
 
     val disambiguator : Disambiguator = new MergedOccurrencesDisambiguator(contextSearcher)

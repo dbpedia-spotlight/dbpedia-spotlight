@@ -62,6 +62,8 @@ public class BaseSearcher implements Closeable {
     //TODO create method that iterates over all documents in the index and computes this. (if takes too long, think about storing somewhere at indexing time)
     private double mNumberOfOccurrences = 69772256;
 
+    protected BaseSearcher() {}  // allow subclasses to rewrite the super below
+
     public BaseSearcher(LuceneManager lucene) throws IOException {
         this.mLucene = lucene;
         LOG.info("Using index at: "+this.mLucene.mContextIndexDir);

@@ -25,16 +25,19 @@ import org.semanticweb.yars.nx.parser.NxParser
 import org.dbpedia.spotlight.string.ModifiedWikiUtil
 import org.semanticweb.yars.nx.{Node, Literal, Resource, Triple}
 import collection.JavaConversions._
+import util.matching.Regex
+import java.net.URI
 
 /**
- * Created by IntelliJ IDEA.
- * User: Max
- * Date: 11.08.2010
- * Time: 15:55:38
  * Functions to create Concept URIs (possible targets of disambiguations)
  *                     transitive closure of redirects that end at Concept URIs
  *                     surface forms for Concept URIs
  * from DBpedia data sets and Wikipedia.
+ *
+ * Contains logic of what to index wrt. URIs and SurfaceForms.
+ *
+ * @author maxjakob
+ * @author pablomendes (created blacklisted URI patterns for language-specific List_of, among others)
  */
 
 
@@ -48,6 +51,7 @@ object SurrogatesUtil
     var titlesFileName          = ""
     var redirectsFileName       = ""
     var disambiguationsFileName = ""
+    var blacklistedURIPatterns = Set[Regex]()
 
     // output
     var conceptURIsFileName     = ""
@@ -98,15 +102,17 @@ object SurrogatesUtil
     }
 
     private def looksLikeAGoodURI(uri : String) : Boolean = {
-        if (uri contains "List_of_")
-            return false
+        // cannot contain a slash (/)
         if (uri contains "/")
             return false
-        if (uri contains "%23") // #
+        // cannot contain a hash (#)
+        if (uri contains "%23")
             return false
-        // contains a letter
+        // has to contain a letter
         if ("""^[\\W\\d]+$""".r.findFirstIn(uri) != None)
             return false
+        // cannot be a list, or any other pattern specified in the blacklist
+        blacklistedURIPatterns.foreach(p => if (p.pattern.matcher(uri).matches) return false) // generalizes: if (uri contains "List_of_") return false
         true
     }
 
@@ -294,9 +300,7 @@ object SurrogatesUtil
 
     // Returns a cleaned surface form if it is considered to be worth keeping
     def getCleanSurfaceForm(surfaceForm : String, stopWords : Set[String], lowerCased : Boolean=false) : Option[String] = {
-        var cleanedSurfaceForm = ModifiedWikiUtil.wikiDecode(surfaceForm) //TODO MAX please prefer ModifiedWikiUtil.cleanSurfaceForm
-        cleanedSurfaceForm = cleanedSurfaceForm.replaceAll(""" \(.+?\)$""", "")
-        cleanedSurfaceForm = cleanedSurfaceForm.replaceAll("""^(The|THE|A) """, "")
+        var cleanedSurfaceForm = ModifiedWikiUtil.cleanPageTitle(surfaceForm)
         //TODO also clean quotation marks??
         if (lowerCased) {
             cleanedSurfaceForm = cleanedSurfaceForm.toLowerCase
@@ -308,21 +312,6 @@ object SurrogatesUtil
             None
         }
     }
-
-    def getCleanSurfaceForm(surfaceForm : String, lowerCased : Boolean) : Option[String] = {
-        getCleanSurfaceForm(surfaceForm, Set[String](), lowerCased)
-    }
-
-    def getCleanSurfaceForm(surfaceForm : String) : Option[String] = {
-        getCleanSurfaceForm(surfaceForm, Set[String](), false)
-    }
-
-    def getSurfaceForm(resource : DBpediaResource) : SurfaceForm = {
-        new SurfaceForm(ModifiedWikiUtil.wikiDecode(resource.uri)  //TODO MAX please prefer ModifiedWikiUtil.cleanSurfaceForm
-                        .replaceAll(""" \(.+?\)$""", "")
-                        .replaceAll("""^(The|A) """, ""))
-    }
-
 
     // map from URI to list of surface forms
     // used by IndexEnricher
@@ -416,6 +405,8 @@ object SurrogatesUtil
         val indexingConfigFileName = args(0)
         val config = new IndexingConfiguration(indexingConfigFileName)
 
+        val language = config.getLanguage().toLowerCase
+
         // DBpedia input
         titlesFileName          = config.get("org.dbpedia.spotlight.data.labels")
         redirectsFileName       = config.get("org.dbpedia.spotlight.data.redirects")
@@ -426,6 +417,13 @@ object SurrogatesUtil
         redirectTCFileName      = config.get("org.dbpedia.spotlight.data.redirectsTC")
         surfaceFormsFileName    = config.get("org.dbpedia.spotlight.data.surfaceForms")
 
+        //Bad URIs
+        val blacklistedURIPatternsFileName = config.get("org.dbpedia.spotlight.data.badURIs."+language)
+        blacklistedURIPatterns = Source.fromFile(blacklistedURIPatternsFileName).getLines.map( u => u.r ).toSet
+
+        //Stopwords (bad surface forms)
+        val stopWordsFileName = config.get("org.dbpedia.spotlight.data.stopWords."+language)
+        val stopWords = Source.fromFile(stopWordsFileName, "UTF-8").getLines.toSet
 
         // get concept URIs
         saveConceptURIs
@@ -434,14 +432,12 @@ object SurrogatesUtil
         saveRedirectsTransitiveClosure
 
         // get surface forms 
-        val stopWordsFileName = config.get("org.dbpedia.spotlight.data.stopWords")
-        val stopWords = Source.fromFile(stopWordsFileName, "UTF-8").getLines.toSet
         saveSurfaceForms(stopWords)
 
 
         // export to NT format (DBpedia and Lexvo.org)
-        val dbpediaSurfaceFormsNTFileName = new File("e:/dbpa/data/surface_forms/surface_forms-Wikipedia-TitRedDis.nt")
-        val lexvoSurfaceFormsNTFileName   = new File("e:/dbpa/data/surface_forms/lexicalizations-Wikipedia-TitRedDis.nt")
+        //val dbpediaSurfaceFormsNTFileName = new File("e:/dbpa/data/surface_forms/surface_forms-Wikipedia-TitRedDis.nt")
+        //val lexvoSurfaceFormsNTFileName   = new File("e:/dbpa/data/surface_forms/lexicalizations-Wikipedia-TitRedDis.nt")
         //exportSurfaceFormsTsvToDBpediaNt(dbpediaSurfaceFormsNTFileName)
         //exportSurfaceFormsTsvToLexvoNt(lexvoSurfaceFormsNTFileName)
     }

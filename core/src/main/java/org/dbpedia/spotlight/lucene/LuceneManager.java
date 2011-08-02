@@ -18,6 +18,7 @@ package org.dbpedia.spotlight.lucene;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
+import org.apache.lucene.analysis.SimpleAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -29,6 +30,7 @@ import org.apache.lucene.search.*;
 import org.apache.lucene.search.similar.MoreLikeThis;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.MMapDirectory;
 import org.apache.lucene.store.NIOFSDirectory;
 import org.apache.lucene.util.Version;
 import org.dbpedia.spotlight.exceptions.SearchException;
@@ -112,9 +114,18 @@ public class LuceneManager {
         return mContextIndexDir;
     }
 
+    /**
+     * Implementation to open the implementation of Directory that we found to work best.
+     * TODO test MMapDirectory
+     * @param indexDir
+     * @return
+     * @throws IOException
+     */
     public static Directory pickDirectory(File indexDir) throws IOException {
-        if (System.getProperty("os.name").equals("Linux")) {
-            return new NIOFSDirectory(indexDir); 
+        if (System.getProperty("os.name").equals("Linux") && System.getProperty("os.arch").contains("64")) {
+            return new MMapDirectory(indexDir);
+        } else if (System.getProperty("os.name").equals("Linux") ) {
+            return new NIOFSDirectory(indexDir);
         } else {
             return FSDirectory.open(indexDir);
         }
@@ -361,6 +372,12 @@ public class LuceneManager {
         return new TermQuery(sfTerm); //TODO FIXME PABLO CandidateResourceQuery
     }
 
+    //TODO migrate to 4.0 http://blog.mikemccandless.com/2011/03/lucenes-fuzzyquery-is-100-times-faster.html
+    public Query getFuzzyQuery(SurfaceForm sf) throws SearchException {
+        Term sfTerm = new Term(DBpediaResourceField.SURFACE_FORM.toString(),sf.name());
+        return new FuzzyQuery(sfTerm, 0.9F);
+    }
+
     public Query getQuery(DBpediaResource resource) {
         return new TermQuery(new Term(DBpediaResourceField.URI.toString(),
                 resource.uri()));
@@ -576,7 +593,7 @@ public class LuceneManager {
         // Make getQuery case insensitive
         @Override
         public Query getQuery(SurfaceForm sf) throws SearchException {
-            return super.getQuery(new SurfaceForm(sf.name().toLowerCase()));
+            return super.getFuzzyQuery(new SurfaceForm(sf.name().toLowerCase()));
         }
     }
 
@@ -588,17 +605,9 @@ public class LuceneManager {
 
         // How to break down the input text
         private Analyzer mSurfaceFormAnalyzer = new NGramAnalyzer(3,3);
-        Directory mCandidateIndexDir;
 
         public CaseSensitiveSurfaceForms(Directory dir) throws IOException {
             super(dir);
-            PerFieldAnalyzerWrapper perFieldAnalyzer = new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_29));
-            perFieldAnalyzer.addAnalyzer(LuceneManager.DBpediaResourceField.SURFACE_FORM.toString(),mSurfaceFormAnalyzer);
-            setDefaultAnalyzer(perFieldAnalyzer);
-        }
-
-        public CaseSensitiveSurfaceForms(Directory contextIndexDir, Directory sfIndexDir) throws IOException {
-            super(contextIndexDir);
             PerFieldAnalyzerWrapper perFieldAnalyzer = new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_29));
             perFieldAnalyzer.addAnalyzer(LuceneManager.DBpediaResourceField.SURFACE_FORM.toString(),mSurfaceFormAnalyzer);
             setDefaultAnalyzer(perFieldAnalyzer);

@@ -152,15 +152,32 @@ public class CandidateIndexer extends BaseIndexer<Surrogate> {
         LOG.info("Done.");
     }
 
-
+    /**
+     * Example:
+     * java CandidateIndexer candidateMap.count candidateMapCI 2 --case-sensitive --overwrite
+     *
+     * @param args
+     * @throws IOException
+     * @throws IndexException
+     */
     public static void main(String[] args) throws IOException, IndexException {
         String inputFileName = args[0];  // DBpedia surface forms mapping
 		String outputDirName = args[1];  // target Lucene mContextIndexDir
         int minCount = 3;
-        try { minCount = Integer.valueOf(args[2]); } catch(ArrayIndexOutOfBoundsException ignored) {}
+        boolean shouldOverwrite = false;
+        String luceneManagerType = "case-insensitive"; //case-insensitive
 
-        LuceneManager mLucene = new LuceneManager.CaseSensitiveSurfaceForms(FSDirectory.open(new File(outputDirName)));
-        mLucene.shouldOverwrite = true;
+        try { minCount = Integer.valueOf(args[2]); } catch(ArrayIndexOutOfBoundsException ignored) {}
+        try { luceneManagerType = args[3]; } catch(ArrayIndexOutOfBoundsException ignored) {}
+        try { shouldOverwrite = args[4].contains("overwrite"); } catch(Exception ignored) {}
+
+        LuceneManager mLucene;
+        if (luceneManagerType.contains("case-sensitive")) {
+            mLucene = new LuceneManager.CaseSensitiveSurfaceForms(FSDirectory.open(new File(outputDirName)));
+        } else {
+            mLucene = new LuceneManager.CaseInsensitiveSurfaceForms(FSDirectory.open(new File(outputDirName)));
+        }
+        mLucene.shouldOverwrite = shouldOverwrite;
 
         CandidateIndexer si = new CandidateIndexer(mLucene);
 
