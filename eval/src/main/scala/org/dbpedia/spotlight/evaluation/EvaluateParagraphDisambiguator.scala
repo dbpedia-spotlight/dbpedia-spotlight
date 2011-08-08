@@ -63,15 +63,18 @@ object EvaluateParagraphDisambiguator {
         var nZeros = 0
         var nCorrects = 0
         var nOccurrences = 0
+        var totalParagraphs = testSource.size
         //testSource.view(10000,15000)
         val mrrResults = testSource.map(a => {
             i = i + 1
-            LOG.info("Paragraph %d: %s".format(i, a.id))
+            LOG.info("Paragraph %d/%d: %s.".format(i, totalParagraphs, a.id))
             val paragraph = Factory.Paragraph.from(a)
             //LOG.debug(a)
             val bestK = disambiguator.bestK(paragraph,100)
             var acc = 0.0
-            a.occurrences.foreach( correctOccurrence => {
+            a.occurrences
+                .filterNot(o => o.id.endsWith("DISAMBIG")) // discounting URIs from gold standard that we know are disambiguations
+                .foreach( correctOccurrence => {
                 nOccurrences = nOccurrences + 1
                 val rank = getRank(correctOccurrence,                                                     // correct
                                    bestK.getOrElse(Factory.SurfaceFormOccurrence.from(correctOccurrence), // predicted
@@ -97,7 +100,7 @@ object EvaluateParagraphDisambiguator {
         LOG.info("Elapsed time: %s sec".format( (endTime-startTime) / 1000000000))
         LOG.info("********************")
 
-        output.append("********************" +
+        output.append("\n********************" +
             "\nDisambiguator: %s".format(disambiguator.name)+
             "\nCorrect URI not found = %d / %d = %.3f".format(nZeros,nOccurrences,nZeros.toDouble/nOccurrences)+
             "\nAccuracy = %d / %d = %.3f".format(nCorrects,nOccurrences,nCorrects.toDouble/nOccurrences) +
@@ -116,13 +119,15 @@ object EvaluateParagraphDisambiguator {
 
         //val default : Disambiguator = new DefaultDisambiguator(config)
         //val test : Disambiguator = new GraphCentralityDisambiguator(config)
-        val twostep = new TwoStepDisambiguator(config)
-        val cutting = new CuttingEdgeDisambiguator(config)
 
-        val disambiguators = Set(twostep,cutting);
+        val disambiguators = Set(//new TwoStepDisambiguator(config),
+                                 new CuttingEdgeDisambiguator(config))
+
+        val paragraphs = AnnotatedTextSource
+                            .fromOccurrencesFile(new File(testFileName))
 
         // Read some text to test.
-        disambiguators.foreach( d => evaluate(AnnotatedTextSource.fromOccurrencesFile(new File(testFileName)), d, output))
+        disambiguators.foreach( d => evaluate(paragraphs, d, output))
 
         output.close
     }

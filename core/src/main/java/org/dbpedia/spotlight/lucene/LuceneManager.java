@@ -19,6 +19,7 @@ package org.dbpedia.spotlight.lucene;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.SimpleAnalyzer;
+import org.apache.lucene.analysis.StopAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -42,9 +43,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * This class defines a policy for storing/searching in lucene.
@@ -69,7 +68,9 @@ public class LuceneManager {
     */
 
     // How to break down the input text (used in BaseIndexer when creating the IndexWriter and at query time inside getQuery)
-    protected Analyzer mDefaultAnalyzer = new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_29));
+    protected Map<String,Analyzer> mPerFieldAnalyzers = new HashMap<String,Analyzer>();
+    protected Analyzer mDefaultAnalyzer = new StandardAnalyzer(Version.LUCENE_29);
+
 
     // How to compare contexts
     private Similarity mContextSimilarity = new DefaultSimilarity();
@@ -94,6 +95,9 @@ public class LuceneManager {
 
     public LuceneManager(Directory directory) throws IOException {
         this.mContextIndexDir = directory;
+        this.mPerFieldAnalyzers.put(DBpediaResourceField.SURFACE_FORM.toString(), new StopAnalyzer(Version.LUCENE_29));
+        this.mPerFieldAnalyzers.put(DBpediaResourceField.CONTEXT.toString(), new StandardAnalyzer(Version.LUCENE_29));
+        this.mDefaultAnalyzer = new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_29), mPerFieldAnalyzers);
     }
 
     // this file contains a bunch of useful config info for searching indexes
@@ -465,23 +469,34 @@ public class LuceneManager {
 //        return query;
 //    }
 
+    public Set<Term> getTerms(SurfaceForm sf) {
+        Set<Term> sfTerms = new HashSet<Term>();
+        sfTerms.add(new Term(DBpediaResourceField.SURFACE_FORM.toString(), sf.name()));
+        return sfTerms;
+    }
+
     /**
+     * This query is for merged indexes that contain both the surface form and the context.
      * Builds a Lucene Query object (CandidateResourceQuery) that uses the SurfaceForm to compute ICF for context terms
      * @param sf
      * @param context
      * @return
      * @throws SearchException
      */
-    public BooleanQuery getQuery(SurfaceForm sf, Text context) throws SearchException {
+    public BooleanQuery getQueryOld(SurfaceForm sf, Text context) throws SearchException, UnsupportedOperationException {
         // First get all terms in the context
         Set<Term> ctxTerms = new HashSet<Term>();
         Query contextQuery = getQuery(context);
         contextQuery.extractTerms(ctxTerms);
 
         // Then get the surface form terms
-        Query sfQuery = getQuery(sf);
+        Query sfQuery = getQuery(sf); // calls the sf querying behavior defined in the LuceneManager implementation chosen
         Set<Term> sfTerms = new HashSet<Term>();
-        sfQuery.extractTerms(sfTerms);   //TODO FUTURE if we have an ngram analyzer for SF, passing this set down to the similarity class enables its usage. For now we have only one term.
+        try {
+            sfQuery.extractTerms(sfTerms); // adds terms to set
+        } catch (UnsupportedOperationException e) { // FuzzyQuery does not support this, so we have to improvise
+            sfTerms = getTerms(sf);
+        }
 
         // Now create CandidateResourceQueries that associate the surface form to each context term
         BooleanQuery orQuery = new BooleanQuery();
@@ -493,6 +508,34 @@ public class LuceneManager {
         }
         return orQuery;
     }
+
+    public Query getQuery(SurfaceForm sf, Text context) throws SearchException, UnsupportedOperationException {
+        // First get all terms in the context
+        Set<Term> ctxTerms = new HashSet<Term>();
+        Query contextQuery = getQuery(context);
+        contextQuery.extractTerms(ctxTerms);
+
+        // Then get the surface form terms
+        Query sfQuery = getQuery(sf); // calls the sf querying behavior defined in the LuceneManager implementation chosen
+        Set<Term> sfTerms = new HashSet<Term>();
+        try {
+            sfQuery.extractTerms(sfTerms); // adds terms to set
+        } catch (UnsupportedOperationException e) { // FuzzyQuery does not support this, so we have to improvise
+            sfTerms = getTerms(sf);
+        }
+
+        // Now create CandidateResourceQueries that associate the surface form to each context term
+        BooleanQuery orQuery = new BooleanQuery();
+        for (Term sfTerm: sfTerms) { //FIXME this is not correct in the context of the ICF similarity. better to pass the full set downstream and let they handle it there. but for now, we have only one term..
+            for (Term t: ctxTerms) {
+                orQuery.add(new CandidateResourceQuery(sfTerm, t), BooleanClause.Occur.SHOULD);
+            }
+        }
+        // Apply fuzzy surface forms filter to the orQuery
+        FilteredQuery filteredQuery = new FilteredQuery(orQuery, new CachingWrapperFilter(new QueryWrapperFilter(sfQuery)));
+        return filteredQuery;
+    }
+
 
     public Query getQuery(DBpediaResource resource, Text context) throws SearchException {
         BooleanQuery query = new BooleanQuery(); //TODO look closer at the behavior of BooleanQuery
@@ -582,6 +625,8 @@ public class LuceneManager {
 
         public CaseInsensitiveSurfaceForms(Directory dir) throws IOException {
             super(dir);
+            this.mPerFieldAnalyzers.put(DBpediaResourceField.SURFACE_FORM.toString(), new StopAnalyzer(Version.LUCENE_29));
+            setDefaultAnalyzer(new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_29), mPerFieldAnalyzers));
         }
 
         // Make getField case insensitive
@@ -590,15 +635,22 @@ public class LuceneManager {
             return super.getField(new SurfaceForm(sf.name().toLowerCase()));
         }
 
-        // Make getQuery case insensitive
+        // Make getQuery case insensitive and fuzzy matching
         @Override
         public Query getQuery(SurfaceForm sf) throws SearchException {
             return super.getFuzzyQuery(new SurfaceForm(sf.name().toLowerCase()));
         }
+
+        @Override
+        public Set<Term> getTerms(SurfaceForm sf) {
+            Set<Term> sfTerms = new HashSet<Term>();
+            sfTerms.add(new Term(DBpediaResourceField.SURFACE_FORM.toString(), sf.name().toLowerCase()));
+            return sfTerms;
+        }
     }
 
     /**
-     * LuceneManager subclass that uses an EdgeNGramAnalyzer to do approximate matching of surface forms
+     * LuceneManager subclass that uses a character NGramAnalyzer to do approximate matching of surface forms
      * @author pablomendes
      */
     public static class CaseSensitiveSurfaceForms extends LuceneManager {
@@ -608,9 +660,8 @@ public class LuceneManager {
 
         public CaseSensitiveSurfaceForms(Directory dir) throws IOException {
             super(dir);
-            PerFieldAnalyzerWrapper perFieldAnalyzer = new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_29));
-            perFieldAnalyzer.addAnalyzer(LuceneManager.DBpediaResourceField.SURFACE_FORM.toString(),mSurfaceFormAnalyzer);
-            setDefaultAnalyzer(perFieldAnalyzer);
+            mPerFieldAnalyzers.put(LuceneManager.DBpediaResourceField.SURFACE_FORM.toString(), mSurfaceFormAnalyzer);
+            setDefaultAnalyzer(new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_29), mPerFieldAnalyzers));
         }
 
         @Override
@@ -623,7 +674,6 @@ public class LuceneManager {
 
         @Override
         public Query getQuery(SurfaceForm sf) throws SearchException {
-
             QueryParser parser = new QueryParser(Version.LUCENE_29, DBpediaResourceField.SURFACE_FORM.toString(), mSurfaceFormAnalyzer);
             Query sfQuery = null;
             //TODO escape (instead of remove) special characters in Text before querying
@@ -647,6 +697,13 @@ public class LuceneManager {
             }
             return sfQuery;
         }
+
+//        @Override
+//        public Set<Term> getTerms(SurfaceForm sf) {
+//            Set<Term> sfTerms = new HashSet<Term>();
+//            //TODO run sf through analyzers
+//            return sfTerms;
+//        }
 
     }
 

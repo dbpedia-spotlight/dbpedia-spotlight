@@ -18,7 +18,7 @@ package org.dbpedia.spotlight.evaluation
 
 import org.apache.lucene.analysis.{StopAnalyzer, Analyzer}
 import org.apache.lucene.util.Version
-import org.dbpedia.spotlight.io.{LuceneIndexWriter, FileOccurrenceSource}
+import org.dbpedia.spotlight.io.{FileOccurrenceSource}
 import org.apache.commons.logging.LogFactory
 import java.io.{PrintStream, File}
 import org.apache.lucene.misc.SweetSpotSimilarity
@@ -32,7 +32,6 @@ import io.Source
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.disambiguate._
 import mixtures.LinearRegressionMixture
-import org.dbpedia.spotlight.lucene.index.MergedOccurrencesContextIndexer
 import org.dbpedia.spotlight.lucene._
 import search.{CandidateSearcher, MergedOccurrencesContextSearcher}
 import org.dbpedia.spotlight.model.{SpotlightConfiguration, ContextSearcher}
@@ -57,7 +56,9 @@ object EvaluateDisambiguationOnly
     }
 
     def createDisambiguator(outputFileName: String, analyzer: Analyzer, similarity: Similarity, directory: Directory, dis: (MergedOccurrencesContextSearcher => Disambiguator)) : Disambiguator = {
-        ensureExists(directory)
+
+        //ensureExists(directory)
+
         //val luceneManager = new LuceneManager.BufferedMerging(directory)
         val luceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(directory)
         //val isfLuceneManager = new LuceneManager.BufferedMerging(new RAMDirectory())
@@ -226,25 +227,6 @@ object EvaluateDisambiguationOnly
         new RandomDisambiguator(contextSearcher)
     }
 
-    def ensureExists(directory: Directory)() {
-        // Lucene Indexer - Needs an index in disk to be used in disambiguation
-//        if (!directory.getFile.exists)
-//        {
-////                LOG.info("Index directory does not exist. Will index.");
-////                index(trainingFile, isfLuceneManager);
-//            System.err.println("Index directory does not exist. "+directory.getFile);
-//            exit();
-//        } else {
-//            LOG.info("Index directory exists ("+directory.getFile+"). Will not reindex.");
-//        }
-    }
-
-    def index(trainingFile: File, luceneManager: LuceneManager.BufferedMerging) {
-            val trainSource = FileOccurrenceSource.fromFile(trainingFile)
-            val vectorBuilder = new MergedOccurrencesContextIndexer(luceneManager);
-            LuceneIndexWriter.writeLuceneIndex(vectorBuilder, trainSource)
-            LOG.info("Number of entries indexed: "+vectorBuilder.numEntriesProcessed);
-    }
 
     def exists(fileName: String) {
         if (!new File(fileName).exists) {

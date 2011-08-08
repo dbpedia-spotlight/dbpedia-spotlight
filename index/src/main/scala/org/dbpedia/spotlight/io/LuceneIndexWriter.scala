@@ -1,3 +1,5 @@
+package org.dbpedia.spotlight.io
+
 /**
  * Copyright 2011 Pablo Mendes, Max Jakob
  *
@@ -13,8 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.dbpedia.spotlight.io
 
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.lucene.index.{BaseIndexer, OccurrenceContextIndexer, MergedOccurrencesContextIndexer}
