@@ -1,3 +1,5 @@
+package org.dbpedia.spotlight.io
+
 /**
  * Copyright 2011 Pablo Mendes, Max Jakob
  *
@@ -14,8 +16,6 @@
  * limitations under the License.
  */
 
-package org.dbpedia.spotlight.io
-
 import org.dbpedia.spotlight.string.WikiMarkupStripper
 import org.dbpedia.spotlight.model._
 import org.dbpedia.extraction.wikiparser._
@@ -26,9 +26,9 @@ import xml.{XML, Elem}
 import org.dbpedia.extraction.mappings.DisambiguationExtractor
 
 /**
- * Loads Disambiguations from a wiki dump.
+ * Loads descriptive text that occurs around entries in disambiguation pages from a wiki dump.
+ * @author maxjakob
  */
-
 object DisambiguationContextSource
 {
     private val LOG = LogFactory.getLog(this.getClass)
@@ -89,7 +89,7 @@ object DisambiguationContextSource
                 val pageNode = wikiParser( wikiPage.copy(source = cleanSource) )
 
                 if (pageNode.isDisambiguation) {
-                    val surfaceForm = new SurfaceForm(wikiPage.title.decoded.replace(" (disambiguation)", ""))
+                    val surfaceForm = new SurfaceForm(wikiPage.title.decoded.replace(" (disambiguation)", "")) //TODO language-specific
 
                     // split the page node into list items
                     val listItems = NodeUtil.splitNodes(pageNode.children, splitDisambiguations)
