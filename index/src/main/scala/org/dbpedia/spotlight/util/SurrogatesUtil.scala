@@ -1,3 +1,5 @@
+package org.dbpedia.spotlight.util
+
 /**
  * Copyright 2011 Pablo Mendes, Max Jakob
  *
@@ -13,8 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.dbpedia.spotlight.util
 
 import io.Source
 import org.apache.commons.logging.LogFactory
@@ -74,11 +74,8 @@ object SurrogatesUtil
         LOG.info("  collecting bad URIs from redirects in "+redirectsFileName+" and disambiguations in "+disambiguationsFileName+" ...")
         // redirects and disambiguations are bad URIs
         for (fileName <- List(redirectsFileName, disambiguationsFileName)) {
-            //val parser = new NxParser(new FileInputStream(fileName))
-            //while (parser.hasNext) {
-            //    val triple = parser.next
             for(triple <- new NxParser(new FileInputStream(fileName))) {
-                val badUri = triple(0).toString.replace("http://dbpedia.org/resource/", "")
+                val badUri = triple(0).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "") //TODO why not use "new DBpediaResource(triple(0))"?
                 badURIs += badUri
                 badURIStream.println(badUri)
             }
@@ -90,7 +87,7 @@ object SurrogatesUtil
         val parser = new NxParser(new FileInputStream(titlesFileName))
         while (parser.hasNext) {
             val triple = parser.next
-            val uri = triple(0).toString.replace("http://dbpedia.org/resource/", "")
+            val uri = triple(0).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "") //TODO why not use "new DBpediaResource(triple(0))"?
             if (looksLikeAGoodURI(uri) && !badURIs.contains(uri))
                 conceptURIStream.println(uri)
         }
@@ -135,8 +132,8 @@ object SurrogatesUtil
         val parser = new NxParser(new FileInputStream(redirectsFileName))
         while (parser.hasNext) {
             val triple = parser.next
-            val subj = triple(0).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
-            val obj = triple(2).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
+            val subj = triple(0).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "") //TODO why not use "new DBpediaResource(triple(0))"?
+            val obj = triple(2).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")  //TODO why not use "new DBpediaResource(triple(0))"?
             linkMap = linkMap.updated(subj, obj)
         }
 
@@ -214,8 +211,8 @@ object SurrogatesUtil
             val parser = new NxParser(new FileInputStream(fileName))
             while (parser.hasNext) {
                 val triple = parser.next
-                val surfaceFormUri = triple(0).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
-                val uri = triple(2).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
+                val surfaceFormUri = triple(0).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "") //TODO why not use "new DBpediaResource(triple(0))"?
+                val uri = triple(2).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")            //TODO why not use "new DBpediaResource(triple(0))"?
 
                 if (conceptURIs contains uri) {
                     getCleanSurfaceForm(surfaceFormUri, stopWords, lowerCased) match {
@@ -262,8 +259,8 @@ object SurrogatesUtil
             val parser = new NxParser(new FileInputStream(fileName))
             while (parser.hasNext) {
                 val triple = parser.next
-                val subj = triple(0).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
-                val obj = triple(2).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
+                val subj = triple(0).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")  //TODO why not use "new DBpediaResource(triple(0))"?
+                val obj = triple(2).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")   //TODO why not use "new DBpediaResource(triple(0))"?
                 linkMap = linkMap.updated(obj, linkMap.get(obj).getOrElse(List[String]()) ::: List(subj))
             }
         }

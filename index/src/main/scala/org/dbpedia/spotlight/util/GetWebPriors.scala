@@ -1,3 +1,5 @@
+package org.dbpedia.spotlight.util
+
 /*
  * *
  *  * Copyright 2011 Pablo Mendes, Max Jakob
@@ -15,8 +17,6 @@
  *  * limitations under the License.
  *
  */
-
-package org.dbpedia.spotlight.util
 
 import java.io.PrintWriter
 import io.Source

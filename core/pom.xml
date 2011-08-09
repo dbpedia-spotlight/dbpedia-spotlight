@@ -245,6 +245,12 @@
             <version>1.0</version>
         </dependency>        
 
+        <dependency>
+            <groupId>it.unimi.dsi</groupId>
+            <artifactId>fastutil</artifactId>
+            <version>6.3</version>
+        </dependency>
+
     </dependencies>
 
 </project>

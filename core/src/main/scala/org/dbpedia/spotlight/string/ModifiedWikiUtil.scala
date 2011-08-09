@@ -19,13 +19,11 @@ package org.dbpedia.spotlight.string
 import java.net.{URLDecoder, URLEncoder}
 
 /**
- * Created by IntelliJ IDEA.
- * User: Max
- * Date: 28.01.11
- * Time: 11:32
+ * Contains code for processing URLs from Wikipedia, performing cleaning, etc.
  * Partially copied and modified from DBpedia 3.6
+ * @author maxjakob
+ * @author pablomendes - started changing for i18n
  */
-
 object ModifiedWikiUtil {
 
     def cleanSpace( string : String ) : String = {
@@ -80,7 +78,10 @@ object ModifiedWikiUtil {
     }
 
     def cleanDisambiguation(title : String) = {
-        title.replaceAll(""" \([D|d]isambiguation\)$""", "")
+        //TODO LANG move to config file
+        // see org.dbpedia.extraction.config.mappings.DisambiguationExtractorConfig
+        val disambiguationSuffixes = List(""" \([D|d]isambiguation\)$""", """ \([D|d]esambiguação\)$""", """ \([D|d]esambiguación\)$""");
+        disambiguationSuffixes.foldLeft(title)( (acc,s) => title.replaceAll(s, "") )
     }
 
     // Used by the KeywordExtractor to query the Web for a resource title

@@ -130,11 +130,22 @@ public class MergedOccurrencesDisambiguator implements Disambiguator {
         // search index for surface form
         ScoreDoc[] hits = mMergedSearcher.getHits(sfOccurrence);
 
-        if (hits.length == 0) {
-            String sfName = sfOccurrence.surfaceForm().name();
+        if (hits.length == 0) { //TODO this hack can be implemented correctly as an analyzer that sits within getQuery in LuceneManager.
+            String sfName = sfOccurrence.surfaceForm().name().trim();
             if (sfName.toLowerCase().startsWith("the ")) {
-                LOG.debug("Trying to HACK -> not found in index: "+sfOccurrence);
+                LOG.debug("Trying to HACK(the) -> not found in index: "+sfOccurrence);
                 String newName = sfName.substring(3).trim();
+                hits = mMergedSearcher.getHitsSurfaceFormHack(sfOccurrence, new SurfaceForm(newName));
+                LOG.debug("New sfName="+newName+" hits="+hits.length);
+            } else if (sfName.toLowerCase().startsWith("a ")) {
+                LOG.debug("Trying to HACK(a) -> not found in index: "+sfOccurrence);
+                String newName = sfName.substring(1).trim();
+                hits = mMergedSearcher.getHitsSurfaceFormHack(sfOccurrence, new SurfaceForm(newName));
+                LOG.debug("New sfName="+newName+" hits="+hits.length);
+            }
+            if (hits.length == 0 && sfName.toLowerCase().endsWith("s")) {
+                LOG.debug("Trying to HACK(s) -> not found in index: "+sfOccurrence);
+                String newName = sfName.substring(0,sfName.length()-1).trim();
                 hits = mMergedSearcher.getHitsSurfaceFormHack(sfOccurrence, new SurfaceForm(newName));
                 LOG.debug("New sfName="+newName+" hits="+hits.length);
             }
