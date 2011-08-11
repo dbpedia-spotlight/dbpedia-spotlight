@@ -40,7 +40,7 @@ class TypeFilter(var dbpediaTypes : List[DBpediaType], val blacklistOrWhitelist 
 
     private val showUntyped = dbpediaTypes.find(t => DBpediaType.UNKNOWN equals t) != None
 
-    def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
+    override def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
         if(dbpediaTypes.isEmpty) {   // hack, because web demo does not guarantee to check all types when loading!
             Some(occ)
         }

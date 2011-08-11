@@ -24,7 +24,7 @@ class SupportFilter(val targetSupport : Int) extends AnnotationFilter  {
 
     private val LOG = LogFactory.getLog(this.getClass)
 
-    def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
+    override def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
         if (occ.resource.support > targetSupport) {
             Some(occ)
         }

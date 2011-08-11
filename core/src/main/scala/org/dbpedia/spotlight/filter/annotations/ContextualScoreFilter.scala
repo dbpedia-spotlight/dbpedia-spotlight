@@ -25,7 +25,7 @@ class ContextualScoreFilter(val simThreshold : Double) extends AnnotationFilter 
 
     private val LOG = LogFactory.getLog(this.getClass)
 
-    def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
+    override def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
         if(occ.contextualScore < simThreshold) {
             LOG.info("filtered out by similarity score threshold (%.3f<%.3f): %s".format(occ.similarityScore, simThreshold, occ))
             None

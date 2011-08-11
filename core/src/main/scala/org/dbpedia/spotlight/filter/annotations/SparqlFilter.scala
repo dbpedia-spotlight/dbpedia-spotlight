@@ -41,7 +41,7 @@ class SparqlFilter(val executer : SparqlQueryExecuter, val sparqlQuery: String, 
         case FilterPolicy.Blacklist => (resource : DBpediaResource) => !uriSet.contains(resource.uri)
     }
 
-    def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
+    override def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
         if(sparqlQuery == null || sparqlQuery == "") {
             Some(occ)
         }

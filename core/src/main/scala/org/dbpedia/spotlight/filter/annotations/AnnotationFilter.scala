@@ -17,10 +17,14 @@
 package org.dbpedia.spotlight.filter.annotations
 
 import org.dbpedia.spotlight.filter.Filter
+import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
 
 /**
  * Filter result annotations based on scores, types, SPARQL queries etc.
  * These filters ought to be applied after the annotation or disambiguation process to increase precision.
+ * @author maxjakob
  */
 
-trait AnnotationFilter extends Filter
+trait AnnotationFilter extends Filter {
+    def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence]
+}

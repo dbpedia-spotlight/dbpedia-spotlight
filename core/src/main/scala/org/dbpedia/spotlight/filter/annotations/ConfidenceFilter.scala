@@ -28,7 +28,7 @@ class ConfidenceFilter(val simThresholds : List[Double], val confidence : Double
     val simThreshold = simThresholds(math.max(((simThresholds.length-1)*confidence).round.toInt, 0))
     val squaredConfidence = confidence*confidence
 
-    def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
+    override def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
         if(occ.similarityScore < simThreshold) {
             LOG.info("filtered out by similarity score threshold (%.3f<%.3f): %s".format(occ.similarityScore, simThreshold, occ))
             None
