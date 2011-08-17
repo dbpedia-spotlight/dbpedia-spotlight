@@ -44,9 +44,7 @@
         <module>core</module>
         <module>rest</module>
         <module>demo</module>
-        <module>eval</module>
         <module>index</module>
-
     </modules>
 
     <build>
@@ -332,13 +330,6 @@
             </dependency>
 
             
-            <dependency>
-                <groupId>net.sf.jung</groupId>
-                <artifactId>jung2</artifactId>
-                <version>2.0.1</version>
-                <type>pom</type>
-            </dependency>
-
             <!--
 
             <dependency>
