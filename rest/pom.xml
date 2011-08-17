@@ -54,66 +54,6 @@
                 </configuration>
             </plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>${maven.assembly.plugin.version}</version>
-                <configuration>
-                    <finalName>dbpedia-spotlight-${dbpedia.spotlight.version}</finalName>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                    <archive>
-                        <manifest>
-                            <mainClass>org.dbpedia.spotlight.web.rest.Server</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id> <!-- this is used for inheritance merges -->
-                        <phase>package</phase> <!-- bind to the packaging phase -->
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <artifactId>jdeb</artifactId>
-                <groupId>org.vafer</groupId>
-                <version>0.8</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jdeb</goal>
-                        </goals>
-                        <configuration>
-                            <deb>dbpedia-spotlight-${dbpedia.spotlight.version}.deb</deb>
-                            <changesIn>CHANGES.txt</changesIn>
-                            <changesOut>dbpedia-spotlight-${dbpedia.spotlight.version}.changes</changesOut>
-                            <dataSet>
-                                <data>
-                                    <!--TODO CREATE SYMBOLIC LINK -->
-                                    <src>${project.build.directory}/dbpedia-spotlight-${dbpedia.spotlight.version}-jar-with-dependencies.jar</src>
-                                    <type>file</type>
-                                    <mapper>
-                                        <type>perm</type>
-                                        <prefix>/usr/share/java</prefix>
-                                    </mapper>
-                                </data>
-                                <data>
-                                    <src>src/deb/control/data</src>
-                                    <type>directory</type>
-                                </data>
-                            </dataSet>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
         </plugins>
     </build>
 

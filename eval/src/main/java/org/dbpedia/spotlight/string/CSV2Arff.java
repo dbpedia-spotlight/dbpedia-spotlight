@@ -59,6 +59,9 @@ public class CSV2Arff {
      * takes 2 arguments:
      * - CSV input file
      * - ARFF output file
+     *
+     * Example:
+     * /home/pablo/data/DisambiguationLog/20110415/spotlight-training.tsv /home/pablo/data/DisambiguationLog/20110415/spotlight-training.arff
      */
     public static void main(String[] args) throws Exception {
 

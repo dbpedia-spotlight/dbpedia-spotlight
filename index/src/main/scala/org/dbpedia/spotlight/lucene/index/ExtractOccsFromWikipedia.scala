@@ -29,10 +29,15 @@ import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
  * Saves Occurrences to a TSV file.
  * - Surface forms are taken from anchor texts
  * - Redirects are resolved
+ *
+ * TODO think about having a two file output, one with (id, sf, uri) and another with (id, context)
+ *
+ * Used to be called SurrogatesUtil
+ *
  * @author maxjakob
  * @author pablomendes (small fixes)
  */
-object SaveWikipediaDump2Occs {
+object ExtractOccsFromWikipedia {
 
     private val LOG = LogFactory.getLog(this.getClass)
 
@@ -44,6 +49,8 @@ object SaveWikipediaDump2Occs {
         val wikiDumpFileName    = config.get("org.dbpedia.spotlight.data.wikipediaDump")
         val conceptURIsFileName = config.get("org.dbpedia.spotlight.data.conceptURIs")
         val redirectTCFileName  = config.get("org.dbpedia.spotlight.data.redirectsTC")
+        val maxContextWindowSize  = config.get("org.dbpedia.spotlight.data.maxContextWindowSize").toInt
+        val minContextWindowSize  = config.get("org.dbpedia.spotlight.data.minContextWindowSize").toInt
 
         LOG.info("Loading concept URIs from "+conceptURIsFileName+"...")
         val conceptUrisSet = Source.fromFile(conceptURIsFileName, "UTF-8").getLines.toSet
@@ -56,13 +63,13 @@ object SaveWikipediaDump2Occs {
         }.toMap
         val redirectResolver = new RedirectResolveFilter(redirectsTCMap)
 
-        val narrowContext = new ContextExtractor(0, 200)
+        val narrowContext = new ContextExtractor(minContextWindowSize, maxContextWindowSize)
         val contextNarrowFilter = new ContextNarrowFilter(narrowContext)
 
         val filters = (conceptUriFilter :: redirectResolver :: contextNarrowFilter :: Nil)
 
         //TODO these two asInstanceOf calls are not that nice:
-        val occSource = AllOccurrenceSource.fromXMLDumpFile(new File(wikiDumpFileName)).asInstanceOf[Traversable[DBpediaResourceOccurrence]]
+        val occSource : Traversable[DBpediaResourceOccurrence] = AllOccurrenceSource.fromXMLDumpFile(new File(wikiDumpFileName))
         //val filter = new OccurrenceFilter(redirectsTC = redirectsTCMap, conceptURIs = conceptUrisSet, contextExtractor = narrowContext)
         //val occs = filter.filter(occSource)
 

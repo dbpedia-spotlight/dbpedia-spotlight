@@ -131,7 +131,7 @@ class TwoStepDisambiguator(val configuration: SpotlightConfiguration) extends Pa
     }
 
     def ambiguity(sf : SurfaceForm) : Int = {
-        disambiguator.ambiguity(sf)
+        candidateSearcher.getAmbiguity(sf)
     }
 
     def support(resource : DBpediaResource) : Int = {

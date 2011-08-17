@@ -85,7 +85,7 @@ class DBpediaResourceOccurrence(val id : String,
     }
 
     def toTsvString = {
-        id+"\t"+resource.uri+"\t"+surfaceForm.name+"\t"+context.text.replaceAll("\t", " ")+"\t"+textOffset+"\t"+resource.types.map(_.name).mkString(",")
+        id+"\t"+resource.uri+"\t"+surfaceForm.name+"\t"+context.text.replaceAll("\\s+", " ")+"\t"+textOffset+"\t"+resource.types.map(_.name).mkString(",")
     }
 
 

@@ -707,9 +707,6 @@ public class LuceneManager {
 
     }
 
-
-
-
     /**
      * LuceneManager subclass used by the {@link org.dbpedia.spotlight.lucene.index.MergedOccurrencesContextIndexer}
      * It stores buffering configuration information.

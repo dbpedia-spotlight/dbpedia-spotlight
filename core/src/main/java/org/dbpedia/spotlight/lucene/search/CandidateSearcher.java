@@ -109,9 +109,9 @@ public class CandidateSearcher extends BaseSearcher implements org.dbpedia.spotl
         return surfaceForms;
     }
 
-    public Double getAmbiguity(SurfaceFormOccurrence sfOcc) throws SearchException {
-        ScoreDoc[] hits = getHits(mLucene.getQuery(sfOcc.surfaceForm()));
-        return new Double(hits.length);
+    public int getAmbiguity(SurfaceForm sf) throws SearchException {
+        ScoreDoc[] hits = getHits(mLucene.getQuery(sf));
+        return hits.length;
     }
     
 }

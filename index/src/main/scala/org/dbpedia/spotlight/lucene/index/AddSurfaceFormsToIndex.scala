@@ -24,11 +24,12 @@ import org.dbpedia.spotlight.model.SurfaceForm
 import org.dbpedia.spotlight.util.{IndexingConfiguration, SurrogatesUtil}
 
 /**
- * Created by IntelliJ IDEA.
- * User: Max
- * Date: 30.08.2010
- * Time: 11:13:10
- * To change this template use File | Settings | File Templates.
+ * In our first implementation we used to index all anchor text found in Wikipedia as surface forms to a target URI.
+ * We have since moved to indexing without surface forms, then pre-processing the anchors before indexing.
+ * Some possible pre-processing steps: eliminating low count surface forms, adding acronyms, name variations, etc.
+ * TODO think of some stemming to provide more alternative matches for a sf (e.g. http://www.mpi-inf.mpg.de/yago-naga/javatools/doc/javatools/parsers/PlingStemmer.html)
+ *
+ * @author maxjakob
  */
 
 object AddSurfaceFormsToIndex
@@ -45,7 +46,7 @@ object AddSurfaceFormsToIndex
 
         val indexFile = new File(indexFileName)
         if (!indexFile.exists)
-            throw new IllegalArgumentException("index dir "+indexFile+" does not exists; can't add surface forms")
+            throw new IllegalArgumentException("index dir "+indexFile+" does not exist; can't add surface forms")
         val luceneManager = new LuceneManager.BufferedMerging(FSDirectory.open(indexFile))
 
         val sfIndexer = new IndexEnricher(luceneManager)

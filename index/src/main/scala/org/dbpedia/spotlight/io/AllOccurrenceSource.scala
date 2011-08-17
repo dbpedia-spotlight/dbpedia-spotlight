@@ -88,7 +88,7 @@ object AllOccurrenceSource
                     pageNode = wikiParser( wikiPage.copy(source = cleanSource) )
 
                     val surfaceForm = new SurfaceForm(
-                            wikiPage.title.decoded.replace(" (disambiguation)", "").replaceAll("""^(The|A) """, ""))
+                            wikiPage.title.decoded.replace(" (disambiguation)", "").replaceAll("""^(The|A) """, ""))   //TODO i18n
 
 
                     // split the page node into list items

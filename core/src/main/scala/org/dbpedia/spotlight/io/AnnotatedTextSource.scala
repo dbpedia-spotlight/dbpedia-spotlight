@@ -42,7 +42,7 @@ object AnnotatedTextSource {
     private val LOG = LogFactory.getLog(this.getClass)
 
     def fromOccurrencesString(text: String) : AnnotatedTextSource = {
-        new TSVOccurrences(text.split("\n").iterator)
+        new TSVOccurrencesSortedByText(text.split("\n").iterator)
     }
 
     /**
@@ -62,7 +62,7 @@ object AnnotatedTextSource {
             case e: java.nio.charset.MalformedInputException => linesIterator = Source.fromInputStream(input).getLines
         }
 
-        new TSVOccurrences(linesIterator)
+        new TSVOccurrencesSortedByText(linesIterator)
     }
 
     /**
@@ -82,7 +82,7 @@ object AnnotatedTextSource {
     /**
      * Builds paragraphs from DBpediaResourceOccurrences saved as TSV
      */
-    private class TSVOccurrences(linesIterator: Iterator[String]) extends AnnotatedTextSource {
+    private class TSVOccurrencesSortedByText(linesIterator: Iterator[String]) extends AnnotatedTextSource {
 
         // This method assumes sorting of occurrences by paragraph (or occurrence id when they are equivalent)
         override def foreach[U](f : AnnotatedParagraph => U) {
@@ -113,6 +113,45 @@ object AnnotatedTextSource {
                 }
             }
             f( new AnnotatedParagraph(currentText, occs) ) // for the last occurrence
+        }
+    }
+
+    /**
+     * Builds paragraphs from DBpediaResourceOccurrences saved as TSV, sorted by ID (used in TAC KBP for example)
+     */
+    private class TSVOccurrencesSortedById(linesIterator: Iterator[String]) extends AnnotatedTextSource {
+
+        // This method assumes sorting of occurrences by id
+        override def foreach[U](f : AnnotatedParagraph => U) {
+
+            var currentId = ""
+            var currentText = ""
+            var occs = List[DBpediaResourceOccurrence]()
+            var i = 0;
+            for (line <- linesIterator) {
+                i = i + 1
+                val elements = line.trim.split("\t")
+                if (elements.length == 5) {
+                    val id = elements(0)
+                    val res = new DBpediaResource(elements(1))
+                    val sf = new SurfaceForm(elements(2))
+                    val t = new Text(elements(3).trim())
+                    val offset = elements(4).toInt
+                    val occ = new DBpediaResourceOccurrence(id, res, sf, t, offset, Provenance.Wikipedia)
+                    if (currentId == "" || id == currentId) {
+                        occs = occ :: occs
+                    } else {
+                        f( new AnnotatedParagraph(currentId, new Text(currentText), occs) )
+                        occs = List(occ)
+                    }
+                    currentId = id
+                    currentText = currentText.concat(t.text)
+                }
+                else {
+                    throw new IOException("line must have 5 tab separated fields; got %d in line %d: %s".format(elements.length,i,line))
+                }
+            }
+            f( new AnnotatedParagraph(currentId, new Text(currentText), occs) ) // for the last occurrence
         }
     }
 

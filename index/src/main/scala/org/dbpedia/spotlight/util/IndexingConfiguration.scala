@@ -32,10 +32,10 @@ import collection.immutable.List._
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 
 /**
- * Class that holds configurations of the project.
+ * Class that holds configuration values for indexing tasks.
  *
- * Defaults are not defined. All classes asking for properties have to take care
- * of the case that a property is not specified in the configuration file.
+ * @author maxjakob
+ * @author pablomendes (added getters, multi-language support)
  */
 
 class IndexingConfiguration(val configFile: File) {
@@ -135,7 +135,7 @@ class IndexingConfiguration(val configFile: File) {
         analyzer
     }
 
-    private def validate {
+    private def validate { //TODO move validation to finer grained factory classes that have specific purposes (e.g. candidate mapping, lucene indexing, etc.)
 
         val dumpFile = new File(get("org.dbpedia.spotlight.data.wikipediaDump"))
         if(!dumpFile.isFile) {

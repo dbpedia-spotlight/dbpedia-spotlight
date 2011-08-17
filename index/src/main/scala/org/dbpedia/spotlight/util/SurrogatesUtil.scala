@@ -36,16 +36,16 @@ import java.net.URI
  *
  * Contains logic of what to index wrt. URIs and SurfaceForms.
  *
+ * //TODO rename to ExtractCandidateMap.
+ *
  * @author maxjakob
- * @author pablomendes (created blacklisted URI patterns for language-specific List_of, among others)
+ * @author pablomendes (created blacklisted URI patterns for language-specific stuff (e.g. List_of, etc.)
  */
-
-
 object SurrogatesUtil
 {
     private val LOG = LogFactory.getLog(this.getClass)
 
-    val MAXIMUM_SURFACE_FORM_LENGTH = 50
+    var maximumSurfaceFormLength = 100
 
     // DBpedia input
     var titlesFileName          = ""
@@ -75,7 +75,7 @@ object SurrogatesUtil
         // redirects and disambiguations are bad URIs
         for (fileName <- List(redirectsFileName, disambiguationsFileName)) {
             for(triple <- new NxParser(new FileInputStream(fileName))) {
-                val badUri = triple(0).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "") //TODO why not use "new DBpediaResource(triple(0))"?
+                val badUri = triple(0).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
                 badURIs += badUri
                 badURIStream.println(badUri)
             }
@@ -87,7 +87,7 @@ object SurrogatesUtil
         val parser = new NxParser(new FileInputStream(titlesFileName))
         while (parser.hasNext) {
             val triple = parser.next
-            val uri = triple(0).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "") //TODO why not use "new DBpediaResource(triple(0))"?
+            val uri = triple(0).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
             if (looksLikeAGoodURI(uri) && !badURIs.contains(uri))
                 conceptURIStream.println(uri)
         }
@@ -103,7 +103,7 @@ object SurrogatesUtil
         if (uri contains "/")
             return false
         // cannot contain a hash (#)
-        if (uri contains "%23")
+        if (uri contains "%23") //TODO re-evaluate this decision in context of DBpedia 3.7
             return false
         // has to contain a letter
         if ("""^[\\W\\d]+$""".r.findFirstIn(uri) != None)
@@ -132,8 +132,8 @@ object SurrogatesUtil
         val parser = new NxParser(new FileInputStream(redirectsFileName))
         while (parser.hasNext) {
             val triple = parser.next
-            val subj = triple(0).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "") //TODO why not use "new DBpediaResource(triple(0))"?
-            val obj = triple(2).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")  //TODO why not use "new DBpediaResource(triple(0))"?
+            val subj = triple(0).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
+            val obj = triple(2).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
             linkMap = linkMap.updated(subj, obj)
         }
 
@@ -164,14 +164,14 @@ object SurrogatesUtil
 
     def isGoodSurfaceForm(surfaceForm : String, stopWords : Set[String]) : Boolean = {
         // not longer than limit
-        if (surfaceForm.length > MAXIMUM_SURFACE_FORM_LENGTH) {
+        if (surfaceForm.length > maximumSurfaceFormLength) {
             return false
         }
         // contains a letter
         if ("""^[\W\d]+$""".r.findFirstIn(surfaceForm) != None) {
             return false
         }
-        // contains a non-stopWord
+        // contains a non-stopWord  //TODO Remove when case sensitivity and common-word/idiom detection is in place. This restriction will eliminate many works (books, movies, etc.) like Just_One_Fix, We_Right_Here, etc.
         if (stopWords.nonEmpty
                 && surfaceForm.split(" ").filterNot(
                     sfWord => stopWords.map(stopWord => stopWord.toLowerCase)
@@ -211,8 +211,8 @@ object SurrogatesUtil
             val parser = new NxParser(new FileInputStream(fileName))
             while (parser.hasNext) {
                 val triple = parser.next
-                val surfaceFormUri = triple(0).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "") //TODO why not use "new DBpediaResource(triple(0))"?
-                val uri = triple(2).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")            //TODO why not use "new DBpediaResource(triple(0))"?
+                val surfaceFormUri = triple(0).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
+                val uri = triple(2).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
 
                 if (conceptURIs contains uri) {
                     getCleanSurfaceForm(surfaceFormUri, stopWords, lowerCased) match {
@@ -259,8 +259,8 @@ object SurrogatesUtil
             val parser = new NxParser(new FileInputStream(fileName))
             while (parser.hasNext) {
                 val triple = parser.next
-                val subj = triple(0).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")  //TODO why not use "new DBpediaResource(triple(0))"?
-                val obj = triple(2).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")   //TODO why not use "new DBpediaResource(triple(0))"?
+                val subj = triple(0).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
+                val obj = triple(2).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
                 linkMap = linkMap.updated(obj, linkMap.get(obj).getOrElse(List[String]()) ::: List(subj))
             }
         }
@@ -397,7 +397,6 @@ object SurrogatesUtil
         LOG.info("Done.")
     }
 
-
     def main(args : Array[String]) {
         val indexingConfigFileName = args(0)
         val config = new IndexingConfiguration(indexingConfigFileName)
@@ -413,6 +412,8 @@ object SurrogatesUtil
         conceptURIsFileName     = config.get("org.dbpedia.spotlight.data.conceptURIs")
         redirectTCFileName      = config.get("org.dbpedia.spotlight.data.redirectsTC")
         surfaceFormsFileName    = config.get("org.dbpedia.spotlight.data.surfaceForms")
+
+        maximumSurfaceFormLength = config.get("org.dbpedia.spotlight.data.maxSurfaceFormLength").toInt
 
         //Bad URIs
         val blacklistedURIPatternsFileName = config.get("org.dbpedia.spotlight.data.badURIs."+language)
@@ -431,7 +432,7 @@ object SurrogatesUtil
         // get surface forms 
         saveSurfaceForms(stopWords)
 
-
+        //TODO create another class called CreateLexicalizationsDataset
         // export to NT format (DBpedia and Lexvo.org)
         //val dbpediaSurfaceFormsNTFileName = new File("e:/dbpa/data/surface_forms/surface_forms-Wikipedia-TitRedDis.nt")
         //val lexvoSurfaceFormsNTFileName   = new File("e:/dbpa/data/surface_forms/lexicalizations-Wikipedia-TitRedDis.nt")
