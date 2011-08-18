@@ -11,8 +11,9 @@ class TaggedText(text : String, var taggedTokenProvider : TaggedTokenProvider) e
   //Initialize the Tagged Text by pos-tagging it with the current TaggedTokenProvider
   taggedTokenProvider.initialize(text)
 
-  override def equals(that : Text) =
+  override def equals(that : Any) =
   {
-    text.equals(that.text)
+    that.isInstanceOf[Text] &&
+    text.equals(that.asInstanceOf[Text].text)
   }
 }

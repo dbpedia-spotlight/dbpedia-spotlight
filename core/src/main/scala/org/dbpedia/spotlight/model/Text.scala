@@ -17,7 +17,7 @@
 package org.dbpedia.spotlight.model
 
 /**
- * Text represents a the input string for spotlight. It can be a document, paragraph or just a text snippet.
+ * Text represents an input string for spotlight. It can be a document, paragraph or just a text snippet.
  * It basically holds a string and an optional identifier. Subclasses can add more attributes.
  * Our pipeline operates on objects of this class by adding annotations.
  */
@@ -28,9 +28,14 @@ class Text(var text : String)
     text = text.replace("’", "'")
 
 
-    def equals(that : Text) =
+    override def equals(that : Any) =
     {
-        text.equals(that.text)
+        text.isInstanceOf[Text] &&
+        text.equals(that.asInstanceOf[Text].text)
+    }
+
+    override def hashCode() : Int = {
+      (if (text != null) text.hashCode else 0)
     }
     
     override def toString = "Text["+text+"]"
