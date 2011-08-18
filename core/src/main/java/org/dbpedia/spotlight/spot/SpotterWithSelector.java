@@ -89,7 +89,10 @@ public abstract class SpotterWithSelector implements Spotter {
 		}
 		@Override
 		protected Text buildText(Text text) {
-			return new TaggedText(text.text(), tagger);
+			if(text instanceof TaggedText)
+				return text;
+			else
+				return new TaggedText(text.text(), tagger);
 		}
 	}
 

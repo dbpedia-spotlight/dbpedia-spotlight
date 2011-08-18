@@ -41,7 +41,7 @@ class AtLeastOneNounSelector extends TaggedSpotSelector {
         val occs = occurrences.asScala
         occs.filter(o => {
             val tokens = o.context.asInstanceOf[TaggedText].taggedTokenProvider.getTaggedTokens(o.textOffset, o.textOffset + o.surfaceForm.name.length)
-            val atLeastOneNoun = (None != tokens.asScala.find( t => t.getPOSTag.startsWith("n") )) // at least one token is a noun.
+            val atLeastOneNoun = (None != tokens.asScala.find( t => t.getPOSTag.startsWith("n") || t.getPOSTag.startsWith("fw")  )) // at least one token is a noun.
             atLeastOneNoun
         }).asJava
     }
