@@ -28,6 +28,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * Proof-of-concept implementation of an extractor of linguistic knowledge from Wiktionary.
+ *
  * @author Joachim Daiber
  */
 public class WiktionaryExtractor extends DefaultHandler {

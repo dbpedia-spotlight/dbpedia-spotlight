@@ -1,7 +1,5 @@
 package org.dbpedia.spotlight.candidate.cooccurrence.training;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.candidate.cooccurrence.InstanceBuilderFactory;
 import org.dbpedia.spotlight.candidate.cooccurrence.features.data.OccurrenceDataProviderSQL;
 import org.dbpedia.spotlight.candidate.cooccurrence.filter.FilterPOS;
@@ -10,6 +8,7 @@ import org.dbpedia.spotlight.candidate.cooccurrence.filter.FilterTermsize;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.InitializationException;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
+import org.dbpedia.spotlight.model.SpotlightFactory;
 import org.json.JSONException;
 import weka.core.Instances;
 
@@ -23,11 +22,19 @@ import java.io.IOException;
  *
  * @author Joachim Daiber
  */
-public class AnnotatedDatasetEnricherUnigram extends AnnotatedDatasetEnricher {
+public class  AnnotatedDatasetEnricherUnigram extends AnnotatedDatasetEnricher {
 
-	Log LOG = LogFactory.getLog(this.getClass());
-
-	public AnnotatedDatasetEnricherUnigram(SpotlightConfiguration configuration) throws ConfigurationException, IOException, InitializationException {
+	/**
+	 * Create a new AnnotatedDatasetEnricher for unigrams.
+	 *
+	 * @param configuration Spotlight configuration object
+	 * @throws ConfigurationException Error in configuration.
+	 * @throws IOException Error when reading file.
+	 * @throws InitializationException Error in Initialization.
+	 */
+	public AnnotatedDatasetEnricherUnigram(SpotlightConfiguration configuration) throws ConfigurationException,
+			IOException, InitializationException {
+		
 		super(configuration);
 
 		LOG.info("Loading occurrence data...");
@@ -51,10 +58,15 @@ public class AnnotatedDatasetEnricherUnigram extends AnnotatedDatasetEnricher {
 
 	public static void main(String[] args) throws ConfigurationException, IOException, JSONException, InitializationException {
 
-		AnnotatedDatasetEnricherUnigram annotatedDatasetEnricherUnigram = new AnnotatedDatasetEnricherUnigram(new SpotlightConfiguration("conf/server.properties"));
+		SpotlightConfiguration configuration = new SpotlightConfiguration("conf/server.properties");
+		SpotlightFactory spotlightFactory = new SpotlightFactory(configuration);
 
-		OccurrenceDataset trainingData = new OccurrenceDataset(new File("/Users/jodaiber/Documents/workspace/ba/BachelorThesis/01 Evaluation/02 Annotation/Software/custom/src/annotation/test.json"), OccurrenceDataset.Format.JSON);
-		annotatedDatasetEnricherUnigram.writeDataset(trainingData, new File("/Users/jodaiber/Desktop/UnigramTraining.xrff"));
+		AnnotatedDatasetEnricherUnigram annotatedDatasetEnricherUnigram = new AnnotatedDatasetEnricherUnigram(configuration);
+		AnnotatedDataset trainingData = new AnnotatedDataset(
+				new File("/Users/jodaiber/Documents/workspace/ba/BachelorThesis/01 Evaluation/02 Annotation/Software/custom/src/annotation/final.train.json"),
+				AnnotatedDataset.Format.JSON, spotlightFactory);
+		
+		annotatedDatasetEnricherUnigram.writeDatasetXRFF(trainingData, new File("/Users/jodaiber/Desktop/final.unigram.xrff"));
 		
 	}
 

@@ -87,7 +87,7 @@ public abstract class DatasetGenerator {
 	 * @return
 	 */
 
-	protected OccurrenceInstance findExampleSentenceGeneric(String surfaceForm) {
+	protected AnnotatedSurfaceFormOccurrence findExampleSentenceGeneric(String surfaceForm) {
 
 		DBCursor cursor = getMongoDBCursorGeneric(surfaceForm);
 
@@ -100,7 +100,7 @@ public abstract class DatasetGenerator {
 		LingPipeTaggedTokenProvider lingPipeTaggedTokenProvider = luceneFactory.taggedTokenProvider();
 		lingPipeTaggedTokenProvider.initialize(sentence);
 
-		OccurrenceInstance candidateOccurrence = new OccurrenceInstance(
+		AnnotatedSurfaceFormOccurrence candidateOccurrence = new AnnotatedSurfaceFormOccurrence(
 				surfaceForm, offset, new TaggedText(sentence, luceneFactory.taggedTokenProvider()), null, null, null, CandidateClass.common);
 
 		return candidateOccurrence;
@@ -167,7 +167,7 @@ public abstract class DatasetGenerator {
 	 * @return DBpediaResourceOccurrence including the sentence
 	 */
 
-	protected OccurrenceInstance findExampleSentenceWikipedia(SurfaceForm surfaceForm, DBpediaResource dbpediaResource){
+	protected AnnotatedSurfaceFormOccurrence findExampleSentenceWikipedia(SurfaceForm surfaceForm, DBpediaResource dbpediaResource){
 
 		DBCursor cursor = getMongoDBCursorWikipedia(surfaceForm, dbpediaResource);
 
@@ -192,7 +192,7 @@ public abstract class DatasetGenerator {
 		AnnotatedString sentence = luceneFactory.textUtil().getSentence(offset,
 				offset + surfaceForm.name().length(), text);
 
-		OccurrenceInstance occurrenceInstance = new OccurrenceInstance(surfaceForm.name(),
+		AnnotatedSurfaceFormOccurrence occurrenceInstance = new AnnotatedSurfaceFormOccurrence(surfaceForm.name(),
 				//The offset must be relative to the offset of the sentence:
 				offset - sentence.getOffsetFrom(),
 				new TaggedText(sentence.getAnnotation(), luceneFactory.taggedTokenProvider()),
@@ -213,12 +213,12 @@ public abstract class DatasetGenerator {
 	 * @return
 	 */
 
-	protected List<OccurrenceInstance> findExampleSentencesGeneric(SurfaceForm surfaceForm, int numberOfExamples) {
+	protected List<AnnotatedSurfaceFormOccurrence> findExampleSentencesGeneric(SurfaceForm surfaceForm, int numberOfExamples) {
 
 		int totalCount = countExampleSentencesGeneric(surfaceForm.name());
-		List<OccurrenceInstance> genericExamples = new LinkedList<OccurrenceInstance>();
+		List<AnnotatedSurfaceFormOccurrence> genericExamples = new LinkedList<AnnotatedSurfaceFormOccurrence>();
 
-		Set<OccurrenceInstance> exampleSet = new HashSet<OccurrenceInstance>();
+		Set<AnnotatedSurfaceFormOccurrence> exampleSet = new HashSet<AnnotatedSurfaceFormOccurrence>();
 
 
 		/**
@@ -235,7 +235,7 @@ public abstract class DatasetGenerator {
 			i++;
 
 
-			OccurrenceInstance exampleSentenceGeneric = findExampleSentenceGeneric(surfaceForm.name());
+			AnnotatedSurfaceFormOccurrence exampleSentenceGeneric = findExampleSentenceGeneric(surfaceForm.name());
 
 			if(!genericExamples.contains(exampleSentenceGeneric) && isValidExampleSentence(exampleSentenceGeneric))
 				genericExamples.add(exampleSentenceGeneric);
@@ -254,7 +254,7 @@ public abstract class DatasetGenerator {
 	 * @return
 	 */
 	
-	protected abstract boolean isValidExampleSentence(OccurrenceInstance exampleSentenceGeneric);
+	protected abstract boolean isValidExampleSentence(AnnotatedSurfaceFormOccurrence exampleSentenceGeneric);
 	
 
 	/**
@@ -268,22 +268,22 @@ public abstract class DatasetGenerator {
 	 * @throws SearchException
 	 */
 
-	protected List<OccurrenceInstance> findExampleSentencesWikipedia(SurfaceForm surfaceForm, Map<DBpediaResource, Long> wikipediaResourceCountEstimate) throws SearchException {
+	protected List<AnnotatedSurfaceFormOccurrence> findExampleSentencesWikipedia(SurfaceForm surfaceForm, Map<DBpediaResource, Long> wikipediaResourceCountEstimate) throws SearchException {
 
-		List<OccurrenceInstance> wikipediaExamplesForAllResources = new LinkedList<OccurrenceInstance>();
+		List<AnnotatedSurfaceFormOccurrence> wikipediaExamplesForAllResources = new LinkedList<AnnotatedSurfaceFormOccurrence>();
 
 		for(DBpediaResource dbpediaResourceCandidate : wikipediaResourceCountEstimate.keySet()) {
 
 			/**
 			 * Contains all examples to be returned
 			 */
-			List<OccurrenceInstance> wikipediaExamplesForResource = new LinkedList<OccurrenceInstance>();
+			List<AnnotatedSurfaceFormOccurrence> wikipediaExamplesForResource = new LinkedList<AnnotatedSurfaceFormOccurrence>();
 
 			
 			/**
 			 * Contains all examples that were already observed, weather they were valid or not.
 			 */
-			Set<OccurrenceInstance> wikipediaExamplesObserved = new HashSet<OccurrenceInstance>();
+			Set<AnnotatedSurfaceFormOccurrence> wikipediaExamplesObserved = new HashSet<AnnotatedSurfaceFormOccurrence>();
 
 
 			/**
@@ -300,7 +300,7 @@ public abstract class DatasetGenerator {
 					break;
 				i++;
 
-				OccurrenceInstance exampleSentenceWikipedia = findExampleSentenceWikipedia(surfaceForm,
+				AnnotatedSurfaceFormOccurrence exampleSentenceWikipedia = findExampleSentenceWikipedia(surfaceForm,
 						dbpediaResourceCandidate);
 
 				if(!wikipediaExamplesObserved.contains(exampleSentenceWikipedia)
@@ -439,14 +439,14 @@ public abstract class DatasetGenerator {
 	}
 
 
-	public List<OccurrenceInstance> findExampleSentences(SurfaceForm exampleSF) throws SearchException, ConfigurationException {
+	public List<AnnotatedSurfaceFormOccurrence> findExampleSentences(SurfaceForm exampleSF) throws SearchException, ConfigurationException {
 
 		Set<DBpediaResource> candidates = searcher.getCandidates(exampleSF);
 
 		Map<DBpediaResource, Long> webPriors = getWebPrior(exampleSF, candidates);
 		Map<DBpediaResource, Long> wikipediaResourceCountEstimate = getWikipediaResourceCountEstimate(EXAMPLES_WIKIPEDIA, webPriors);
 
-		LinkedList<OccurrenceInstance> exampleSentences = new LinkedList<OccurrenceInstance>();
+		LinkedList<AnnotatedSurfaceFormOccurrence> exampleSentences = new LinkedList<AnnotatedSurfaceFormOccurrence>();
 
 		//Add Wikipedia examples:
 		exampleSentences.addAll(findExampleSentencesWikipedia(exampleSF, wikipediaResourceCountEstimate));

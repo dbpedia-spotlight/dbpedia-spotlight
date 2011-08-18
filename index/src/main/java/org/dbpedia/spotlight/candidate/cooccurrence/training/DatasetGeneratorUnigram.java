@@ -47,7 +47,7 @@ public class DatasetGeneratorUnigram extends DatasetGenerator {
 	}
 
 	@Override
-	protected boolean isValidExampleSentence(OccurrenceInstance exampleSentenceGeneric) {
+	protected boolean isValidExampleSentence(AnnotatedSurfaceFormOccurrence exampleSentenceGeneric) {
 
 		System.out.println("Looking at " + exampleSentenceGeneric);
 
@@ -93,7 +93,7 @@ public class DatasetGeneratorUnigram extends DatasetGenerator {
 		 * Gather information for each confusable and write to TSV
 		 */
 		
-		OccurrenceDataset occurrenceTrainingDataset = new OccurrenceDataset();
+		AnnotatedDataset occurrenceTrainingDataset = new AnnotatedDataset();
 
 		for(String exampleConfusable : exampleConfusables) {
 

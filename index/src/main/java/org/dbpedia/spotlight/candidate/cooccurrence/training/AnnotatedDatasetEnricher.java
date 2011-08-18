@@ -1,6 +1,8 @@
 package org.dbpedia.spotlight.candidate.cooccurrence.training;
 
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.candidate.cooccurrence.weka.InstanceBuilder;
 import org.dbpedia.spotlight.candidate.cooccurrence.features.data.OccurrenceDataProvider;
 import org.dbpedia.spotlight.candidate.cooccurrence.filter.Filter;
@@ -20,6 +22,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+
 /**
  * Reads an annotated dataset that contains surface form occurrences and
  * manual classification by a human annotator and produces an XRFF file
@@ -30,14 +33,23 @@ import java.util.List;
 
 public abstract class AnnotatedDatasetEnricher {
 
+	Log LOG = LogFactory.getLog(this.getClass());
+
 	protected InstanceBuilder instanceBuilder;
 	protected List<Filter> filters = new LinkedList<Filter>();
 	protected OccurrenceDataProvider dataProvider;
 	protected Instances header;
-	protected SpotlightFactory luceneFactory;
+	protected SpotlightFactory spotlightFactory;
 
+	/**
+	 * Constuctor for subclasses.
+	 *
+	 * @param configuration SpotlightConfiguration to create a SpotlightFactory from
+	 * @throws IOException Error in reading annotation files.
+	 * @throws ConfigurationException Error in Configuration.
+	 */
 	protected AnnotatedDatasetEnricher(SpotlightConfiguration configuration) throws IOException, ConfigurationException {
-		luceneFactory = new SpotlightFactory(configuration);
+		spotlightFactory = new SpotlightFactory(configuration);
 	}
 
 
@@ -50,7 +62,7 @@ public abstract class AnnotatedDatasetEnricher {
 	 * @throws ConfigurationException There was a problem with loading from the Configuration
 	 * @throws JSONException Could not parse JSON-serialized annotation sheet.
 	 */
-	public void writeDataset(OccurrenceDataset trainingData, File targetFile) throws IOException, ConfigurationException, JSONException {
+	public void writeDatasetXRFF(AnnotatedDataset trainingData, File targetFile) throws IOException, ConfigurationException, JSONException {
 
 		/*
 		 * From a Java best practices point of view, this should be
@@ -64,7 +76,7 @@ public abstract class AnnotatedDatasetEnricher {
 		Instances instances = new Instances("Training", attributeList, trainingData.size());
 		int i = 1;
 
-		for(OccurrenceInstance trainingInstance : trainingData.getInstances()) {
+		for(AnnotatedSurfaceFormOccurrence trainingInstance : trainingData.getInstances()) {
 
 			/** Set the annotation */
 			int annotationValue = -1;
@@ -116,7 +128,7 @@ public abstract class AnnotatedDatasetEnricher {
 	 * @param trainingInstance surface form occurrence of the candidate
 	 * @return WEKA Instance for the surface form occurrence
 	 */
-	public Instance buildInstance(OccurrenceInstance trainingInstance) {
+	public Instance buildInstance(AnnotatedSurfaceFormOccurrence trainingInstance) {
 		DenseInstance instance = new DenseInstance(buildAttributeList().size());
 		instance.setDataset(header);
 		return instanceBuilder.buildInstance(trainingInstance, instance);

@@ -2,22 +2,20 @@ package org.dbpedia.spotlight.candidate.cooccurrence.training;
 
 import org.dbpedia.spotlight.candidate.cooccurrence.classification.CandidateClass;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
-import org.dbpedia.spotlight.model.SurfaceForm;
-import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
-import org.dbpedia.spotlight.model.TaggedText;
+import org.dbpedia.spotlight.model.*;
 import org.dbpedia.spotlight.tagging.TaggedToken;
 
 import java.util.List;
 
 /**
- * An instance of a surface form occurrence is a single surface form occurence that contains relevant
+ * An instance of a surface form occurrence is a single surface form occurrence that contains relevant
  * information for a human annotator.
  *
  * @author Joachim Daiber
  */
 
-public class OccurrenceInstance extends SurfaceFormOccurrence {
-	
+public class AnnotatedSurfaceFormOccurrence extends SurfaceFormOccurrence {
+
 	private String annotationURI;
 	private String annotationTitle;
 	private String annotationAbstract;
@@ -27,9 +25,9 @@ public class OccurrenceInstance extends SurfaceFormOccurrence {
 	private TaggedText text;
 
 
-	public OccurrenceInstance(String surfaceForm, int offset, TaggedText text, String annotationURI,
-							  String annotationTitle, String annotationAbstract,
-							  CandidateClass candidateClass) {
+	public AnnotatedSurfaceFormOccurrence(String surfaceForm, int offset, TaggedText text, String annotationURI,
+										  String annotationTitle, String annotationAbstract,
+										  CandidateClass candidateClass) {
 
 		super(new SurfaceForm(surfaceForm), text, offset);
 
@@ -76,10 +74,10 @@ public class OccurrenceInstance extends SurfaceFormOccurrence {
 
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof OccurrenceInstance)) return false;
+		if (!(o instanceof AnnotatedSurfaceFormOccurrence)) return false;
 		if (!super.equals(o)) return false;
 
-		OccurrenceInstance that = (OccurrenceInstance) o;
+		AnnotatedSurfaceFormOccurrence that = (AnnotatedSurfaceFormOccurrence) o;
 
 		if (annotationAbstract != null ? !annotationAbstract.equals(that.annotationAbstract) : that.annotationAbstract != null)
 			return false;
@@ -90,6 +88,25 @@ public class OccurrenceInstance extends SurfaceFormOccurrence {
 		if (candidateClass != that.candidateClass) return false;
 
 		return true;
+	}
+
+	/**
+	 * Equality test for surface form occurrences.
+	 *
+	 * @param surfaceFormOccurrence
+	 * @return
+	 */
+	public boolean equals(SurfaceFormOccurrence surfaceFormOccurrence) {
+
+		if(!surfaceFormOccurrence.context().equals(text))
+			return false;
+		if(!surfaceFormOccurrence.surfaceForm().equals(surfaceForm))
+			return false;
+		if(!(surfaceFormOccurrence.textOffset() == offset))
+			return false;
+
+		return true;
+
 	}
 
 	public int hashCode() {
@@ -129,15 +146,23 @@ public class OccurrenceInstance extends SurfaceFormOccurrence {
 			return "";
 		}
 
-		StringBuilder taggedSentenceBuilder = new StringBuilder();
+		StringBuilder taggedSentenceStringBuilder = new StringBuilder();
 		for (TaggedToken taggedToken : taggedSentence) {
-			taggedSentenceBuilder.append(taggedToken);
+			taggedSentenceStringBuilder.append(taggedToken);
 		}
 
 
-	return "OccurrenceInstance["
-			+ surfaceForm + ", "
-			+ taggedSentenceBuilder.toString()
-			+ ']';
+		return "AnnotatedSurfaceFormOccurrence["
+				+ surfaceForm + ", "
+				+ taggedSentenceStringBuilder.toString()
+				+ ']';
+	}
+
+	public SurfaceFormOccurrence toSurfaceFormOccurrence() {
+		return new SurfaceFormOccurrence(new SurfaceForm(this.surfaceForm), this.text, offset);
+	}
+
+	public DBpediaResourceOccurrence toDBpediaResourceOccurrence() {
+		return new DBpediaResourceOccurrence(new DBpediaResource(this.annotationURI), new SurfaceForm(this.surfaceForm), this.text, this.offset);
 	}
 }

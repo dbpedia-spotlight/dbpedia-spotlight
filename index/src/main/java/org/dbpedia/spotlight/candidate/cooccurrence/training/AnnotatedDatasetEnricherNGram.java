@@ -7,6 +7,7 @@ import org.dbpedia.spotlight.candidate.cooccurrence.filter.FilterTermsize;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.InitializationException;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
+import org.dbpedia.spotlight.model.SpotlightFactory;
 import org.json.JSONException;
 import weka.core.Instances;
 
@@ -22,6 +23,15 @@ import java.io.IOException;
  */
 public class AnnotatedDatasetEnricherNGram extends AnnotatedDatasetEnricher {
 
+
+	/**
+	 * Create a new AnnotatedDatasetEnricher for ngrams.
+	 *
+	 * @param configuration Spotlight configuration object
+	 * @throws ConfigurationException Error in configuration.
+	 * @throws IOException Error when reading file.
+	 * @throws InitializationException Error in Initialization.
+	 */
 	public AnnotatedDatasetEnricherNGram(SpotlightConfiguration configuration) throws ConfigurationException, IOException, InitializationException {
 		super(configuration);
 
@@ -33,7 +43,7 @@ public class AnnotatedDatasetEnricherNGram extends AnnotatedDatasetEnricher {
 		instanceBuilder.setVerboseMode(true);
 
 		/** Filter the data set: */
-		FilterTermsize filterTermsize = new FilterTermsize(FilterTermsize.Termsize.unigram, luceneFactory.textUtil());
+		FilterTermsize filterTermsize = new FilterTermsize(FilterTermsize.Termsize.unigram, spotlightFactory.textUtil());
 		filterTermsize.inverse();
 
 		FilterPattern filterPattern = new FilterPattern();
@@ -46,12 +56,19 @@ public class AnnotatedDatasetEnricherNGram extends AnnotatedDatasetEnricher {
 
 	}
 
+	
 	public static void main(String[] args) throws ConfigurationException, IOException, JSONException, InitializationException {
 
-		AnnotatedDatasetEnricherNGram annotatedDatasetEnricherNGram = new AnnotatedDatasetEnricherNGram(new SpotlightConfiguration("conf/server.properties"));
+		SpotlightConfiguration configuration = new SpotlightConfiguration("conf/server.properties");
 
-		OccurrenceDataset trainingData = new OccurrenceDataset(new File("/Users/jodaiber/Documents/workspace/ba/BachelorThesis/01 Evaluation/02 Annotation/Software/custom/src/annotation/second_run.json"), OccurrenceDataset.Format.JSON);
-		annotatedDatasetEnricherNGram.writeDataset(trainingData, new File("/Users/jodaiber/Desktop/NgramTraining.xrff"));
+
+		AnnotatedDatasetEnricherNGram annotatedDatasetEnricherNGram = new AnnotatedDatasetEnricherNGram(configuration);
+		SpotlightFactory spotlightFactory = new SpotlightFactory(configuration);
+		
+		AnnotatedDataset trainingData = new AnnotatedDataset(
+				new File("/Users/jodaiber/Documents/workspace/ba/BachelorThesis/01 Evaluation/02 Annotation/Software/custom/src/annotation/final.train.json"),
+				AnnotatedDataset.Format.JSON, spotlightFactory);
+		annotatedDatasetEnricherNGram.writeDatasetXRFF(trainingData, new File("/Users/jodaiber/Desktop/final.ngram.xrff"));
 
 	}
 
