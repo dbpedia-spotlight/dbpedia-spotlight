@@ -10,7 +10,6 @@ import com.aliasi.util.Streams;
 
 import java.io.*;
 
-
 /**
  * Factory for LingPipe part-of-speech tagging, sentence segmentation and tokenization models.
  *

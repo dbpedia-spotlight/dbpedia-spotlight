@@ -40,10 +40,10 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 	
 	/**
 	 * Create a new TaggedToken provider based on LingPipe. This class can only
-	 * be instantiated with an LingPipeFactory object, which contains the
+	 * be instantiated with a LingPipeFactory object, which contains the
 	 * part-of-speech tagger, sentence segmentizer and word tokenizer objects.
 	 *
-	 * @param lingPipeFactory
+	 * @param lingPipeFactory factory LingPipe models, tools
 	 */
 	public LingPipeTaggedTokenProvider(LingPipeFactory lingPipeFactory) {
 		this.lingPipeFactory = lingPipeFactory;
@@ -67,6 +67,7 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 		return taggedTokens.subList(firstTaggedToken, i);
 	}
 
+	
 	@Override
 	/** {@inheritDoc} */
 	public List<TaggedToken> getTaggedTokens(SurfaceFormOccurrence surfaceFormOccurrence) {
@@ -108,6 +109,7 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 		return firstTaggedToken;
 	}
 
+
 	@Override
 	/** {@inheritDoc} */
 	public TaggedToken getLeftNeighbourToken(int textOffsetStart, int textOffsetEnd) throws ItemNotFoundException {
@@ -120,12 +122,14 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 
 	}
 
+
 	@Override
 	/** {@inheritDoc} */
 	public TaggedToken getLeftNeighbourToken(SurfaceFormOccurrence surfaceFormOccurrence) throws ItemNotFoundException {
 		return getLeftNeighbourToken(surfaceFormOccurrence.textOffset(),
 				surfaceFormOccurrence.textOffset() + surfaceFormOccurrence.surfaceForm().name().length());
 	}
+
 
 	@Override
 	/** {@inheritDoc} */
@@ -157,6 +161,7 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 				surfaceFormOccurrence.textOffset() + surfaceFormOccurrence.surfaceForm().name().length(), length);
 
 	}
+	
 
 	/** {@inheritDoc} */
 	public List<TaggedToken> getLeftContext(int textOffsetStart, int textOffsetEnd, int length) throws ItemNotFoundException {
@@ -186,6 +191,7 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 
 	}
 
+
 	/** {@inheritDoc} */
 	public List<TaggedToken> getRightContext(int textOffsetStart, int textOffsetEnd, int length) throws ItemNotFoundException {
 
@@ -205,6 +211,7 @@ public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 		return getSentencePosition(surfaceFormOccurrence.textOffset(),
 				surfaceFormOccurrence.textOffset() + surfaceFormOccurrence.surfaceForm().name().length());
 	}
+	
 
 	/**
 	 * Retrieve the position of the sentence containing the text annotation. 
