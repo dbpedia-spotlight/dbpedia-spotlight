@@ -25,6 +25,4 @@ import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
  * @author maxjakob
  */
 
-trait AnnotationFilter extends Filter {
-    def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence]
-}
+trait AnnotationFilter extends Filter
