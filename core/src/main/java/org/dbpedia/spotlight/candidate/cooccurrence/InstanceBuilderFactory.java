@@ -9,11 +9,21 @@ import org.dbpedia.spotlight.candidate.cooccurrence.weka.ukwac.InstanceBuilderUn
 import org.dbpedia.spotlight.exceptions.InitializationException;
 
 /**
+ * <p>
  * Factory for an {@link InstanceBuilder}, which is used for building a WEKA instance
  * for a spotted surface form occurrence.
+ * </p>
  *
+ * <p>
  * There are builders for unigram and n-gram (n>1) occurrences and the builders
  * must be specific to the occurrence data source used.
+ * </p>
+ *
+ * <p>
+ * To add a new data source, add a configuration id for your data source to both builder
+ * methods and create instances of your custom {@link InstanceBuilder}s in
+ * {@link org.dbpedia.spotlight.candidate.cooccurrence.weka}
+ * </p>
  *
  * @author Joachim Daiber
  */
@@ -25,7 +35,7 @@ public class InstanceBuilderFactory {
 	 * The configuration ids of the possible data sources:
 	 */
 	private static final String UKWAC = "ukwac";
-	private static final String GOOGLE_NGRAM = "googlengram";
+	private static final String GOOGLE_NGRAM = "google";
 	
 
 	/**

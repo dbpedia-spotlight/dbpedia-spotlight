@@ -17,6 +17,8 @@ import java.util.List;
 
 
 /**
+ * Abstract Builder for WEKA instances for n-grams.
+ *
  * @author Joachim Daiber
  */
 public abstract class InstanceBuilderUnigram extends InstanceBuilder {
@@ -39,13 +41,13 @@ public abstract class InstanceBuilderUnigram extends InstanceBuilder {
 	public static Attribute trigram_middle_count_web = new Attribute("middle_trigram_count_web");
 
 	public static Attribute next_to_uppercase = new Attribute("next_to_uppercase", Arrays.asList("not_next_to_uppercase", "next_to_uppercase"));
-	public static Attribute non_sentence_initial_uppercase = new Attribute("non_sentence_initial_uppercase", Arrays.asList("lowercase", "starts_with_uppercase", "all_uppercase"));
+	public static Attribute candidateCase = new Attribute("case", Arrays.asList("lowercase", "starts_with_uppercase", "all_uppercase", "sentence_initial_uppercase"));
 
 	public static Attribute quoted = new Attribute("quoted", Arrays.asList("quoted", "not_quoted"));
 	public static Attribute in_enumeration = new Attribute("in_enumeration", Arrays.asList("yes"));
 
-	public static Attribute pre_pos = new Attribute("pre_POS", Arrays.asList("pp$", "prep", "of", "a", "the", "adj"));
-	public static Attribute next_pos = new Attribute("next_POS", Arrays.asList("verb", "of", "for"));
+	public static Attribute pre_pos = new Attribute("token_left", Arrays.asList("pp$", "prep", "of", "a", "the", "jj"));
+	public static Attribute next_pos = new Attribute("token_right", Arrays.asList("verb", "of", "for"));
 
 	public static Attribute possesive = new Attribute("possesive", Arrays.asList("yes"));
 
@@ -62,11 +64,17 @@ public abstract class InstanceBuilderUnigram extends InstanceBuilder {
 	protected long trigramMiddleWebMin = 0;
 
 
+	/**
+	 * Create an instance builder for unigrams.
+	 *
+	 * @param dataProvider occurrence data provider
+	 */
 	protected InstanceBuilderUnigram(OccurrenceDataProvider dataProvider) {
 		super(dataProvider);
 	}
 
-
+	@Override
+	/** {@inheritDoc} */
 	public ArrayList<Attribute> buildAttributeList() {
 
 		ArrayList<Attribute> attributeList = new ArrayList<Attribute>();
@@ -79,10 +87,10 @@ public abstract class InstanceBuilderUnigram extends InstanceBuilder {
 		attributeList.add(unigram_count_web);
 
 		//Left neighbour:
-		attributeList.add(bigram_left_count_web);
+		attributeList.add(bigram_left_significance_web);
 
 		//Right neighbour:
-		attributeList.add(bigram_right_count_web);
+		attributeList.add(bigram_right_significance_web);
 
 		trigram_left_count_web.setWeight(10);
 		attributeList.add(trigram_left_count_web);
@@ -102,7 +110,7 @@ public abstract class InstanceBuilderUnigram extends InstanceBuilder {
 
 
 		//Case:
-		attributeList.add(non_sentence_initial_uppercase);
+		attributeList.add(candidateCase);
 		attributeList.add(next_to_uppercase);
 
 
@@ -118,6 +126,7 @@ public abstract class InstanceBuilderUnigram extends InstanceBuilder {
 	}
 
 	@Override
+	/** {@inheritDoc} */
 	public Instance buildInstance(SurfaceFormOccurrence surfaceFormOccurrence, Instance instance) {
 
 		List<Attribute> attributeList = buildAttributeList();
@@ -138,7 +147,7 @@ public abstract class InstanceBuilderUnigram extends InstanceBuilder {
 			 * This means that no co-occurrence data can be gathered for the candidate.
 			 */
 
-			LOG.debug("Skipped candidate " + surfaceFormOccurrence.surfaceForm());
+			LOG.debug("No occurrence data for " + surfaceFormOccurrence.surfaceForm());
 		}
 
 		if (candidateData != null) {
@@ -183,8 +192,8 @@ public abstract class InstanceBuilderUnigram extends InstanceBuilder {
 
 
 			try{
-				if(candidateData.getCountCorpus() != null && candidateData.getCountCorpus() < this.unigramCorpusMax)
-					instance.setValue(unigram_count_corpus, candidateData.getCountCorpus());
+				if(candidateData.getCountWikipedia() != null && candidateData.getCountWikipedia() < this.unigramCorpusMax)
+					instance.setValue(unigram_count_corpus, candidateData.getCountWikipedia());
 				//else
 					//instance.setValue(i(unigram_count_corpus, buildAttributeList()), this.unigramCorpusMax);
 			}catch (ArrayIndexOutOfBoundsException ignored) {}
@@ -204,24 +213,10 @@ public abstract class InstanceBuilderUnigram extends InstanceBuilder {
 				try {
 					CoOccurrenceData leftBigram = dataProvider.getBigramData(left1, candidateData);
 
-					if(leftBigram.getUnitCountWeb() > this.bigramLeftWebMin) {
-
-						try {
-							instance.setValue(i(bigram_left_count_corpus, buildAttributeList()), leftBigram.getUnitCountCorpus());
-						}catch (ArrayIndexOutOfBoundsException ignored) {}
-
-						try{
-							instance.setValue(i(bigram_left_significance_web, buildAttributeList()), leftBigram.getUnitSignificanceWeb());
-						}catch (ArrayIndexOutOfBoundsException ignored) {}
-
-
-						try {
-							instance.setValue(i(bigram_left_count_web, buildAttributeList()), leftBigram.getUnitCountWeb());
-						}catch (ArrayIndexOutOfBoundsException ignored) {}
-
-						try {
-							instance.setValue(i(bigram_left_significance_corpus, buildAttributeList()), leftBigram.getUnitSignificanceCorpus());
-						}catch (ArrayIndexOutOfBoundsException ignored) {}
+					if(leftBigram != null){
+					try{
+						instance.setValue(i(bigram_left_significance_web, buildAttributeList()), leftBigram.getUnitSignificanceWeb());
+					}catch (ArrayIndexOutOfBoundsException ignored) {}
 					}
 
 				} catch (ItemNotFoundException ignored) {}
@@ -294,17 +289,17 @@ public abstract class InstanceBuilderUnigram extends InstanceBuilder {
 
 			if(right1 != null && !rightContext.get(0).getPOSTag().matches(FUNCTION_WORD_PATTERN)) {
 
-				CoOccurrenceData rightNeighbourData = null;
+				CoOccurrenceData rightBigram = null;
 				try {
-					rightNeighbourData = dataProvider.getBigramData(candidateData, right1);
+					rightBigram = dataProvider.getBigramData(candidateData, right1);
 				} catch (ItemNotFoundException e) {
 					//No right neighbour token found or no data for the token
 				}
 
-				if (rightNeighbourData != null && rightNeighbourData.getUnitCountWeb() > this.bigramRightWebMin) {
+				if (rightBigram != null) {
 
 					try {
-						instance.setValue(i(bigram_right_count_web, buildAttributeList()), rightNeighbourData.getUnitCountWeb());
+						instance.setValue(i(bigram_right_significance_web, buildAttributeList()), rightBigram.getUnitSignificanceWeb());
 					}catch (ArrayIndexOutOfBoundsException ignored) {}
 
 				}
@@ -313,7 +308,7 @@ public abstract class InstanceBuilderUnigram extends InstanceBuilder {
 
 		try {
 			int uppercaseValue = CandidateFeatures.nonSentenceInitialUppercase(surfaceFormOccurrence);
-			instance.setValue(i(non_sentence_initial_uppercase, buildAttributeList()), uppercaseValue);
+			instance.setValue(i(candidateCase, buildAttributeList()), uppercaseValue);
 		}catch (ArrayIndexOutOfBoundsException e) {
 			//value does not exist in header: ignore
 		}

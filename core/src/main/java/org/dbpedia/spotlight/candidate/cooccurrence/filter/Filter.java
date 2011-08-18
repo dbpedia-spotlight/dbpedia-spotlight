@@ -4,13 +4,12 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
- * Base class for filters for surface form occurrences.
- *
- * TODO: merge with Spotlight filters
- *
+ * Base class for filters for surface form occurrences
+ * for spot selection.
+ * 
  * @author Joachim Daiber
  */
 
@@ -44,6 +43,7 @@ public abstract class Filter {
 		
 	}
 
+
 	/**
 	 * Does the filter apply to a given surface form occurrence?
 	 *
@@ -52,14 +52,16 @@ public abstract class Filter {
 	 */
 	public abstract boolean applies(SurfaceFormOccurrence surfaceFormOccurrence);
 
+
 	/**
 	 * Filters a List in-place.
 	 *
 	 * @param surfaceFormOccurrences list of surface form occurrences to be filtered
 	 */
-	public void apply(List<?> surfaceFormOccurrences) {
+	public void apply(Collection<?> surfaceFormOccurrences) {
 		CollectionUtils.filter(surfaceFormOccurrences, getPredicate());
 	}
+
 
 	/**
 	 * Every filter has a name.

@@ -4,6 +4,9 @@ import org.dbpedia.spotlight.candidate.cooccurrence.features.data.OccurrenceData
 import org.dbpedia.spotlight.candidate.cooccurrence.weka.InstanceBuilderUnigram;
 
 /**
+ * Instance builder for instances based on co-occurrence data from the
+ * UKWAC corpus.
+ *
  * @author Joachim Daiber
  */
 public class InstanceBuilderUnigramUKWAC extends InstanceBuilderUnigram {

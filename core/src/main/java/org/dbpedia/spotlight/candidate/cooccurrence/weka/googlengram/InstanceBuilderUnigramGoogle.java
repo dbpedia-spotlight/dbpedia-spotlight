@@ -4,6 +4,8 @@ import org.dbpedia.spotlight.candidate.cooccurrence.features.data.OccurrenceData
 import org.dbpedia.spotlight.candidate.cooccurrence.weka.InstanceBuilderUnigram;
 
 /**
+ * InstanceBuilder for instances based on the Google n-gram corpus.
+ *
  * @author Joachim Daiber
  */
 public class InstanceBuilderUnigramGoogle extends InstanceBuilderUnigram {

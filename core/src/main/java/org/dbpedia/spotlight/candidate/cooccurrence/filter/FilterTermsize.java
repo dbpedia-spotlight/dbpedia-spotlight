@@ -10,7 +10,7 @@ import org.dbpedia.spotlight.tagging.TextUtil;
 
 
 /**
- * A filter for candidate term size (unigram, bigram, trigram, ...)
+ * Filter for candidate term size (unigram, bigram, trigram, ...)
  *
  * @author Joachim Daiber
  */

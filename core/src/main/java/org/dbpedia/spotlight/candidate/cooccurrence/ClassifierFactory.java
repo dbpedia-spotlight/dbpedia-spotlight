@@ -5,7 +5,7 @@ import org.dbpedia.spotlight.candidate.cooccurrence.features.data.OccurrenceData
 import org.dbpedia.spotlight.exceptions.InitializationException;
 
 /**
- * Factory for candidate classifiers (uni- and n-gram)
+ * Factory for candidate classifiers (unigram and n-gram).
  *
  * @author Joachim Daiber
  */
@@ -14,6 +14,17 @@ public class ClassifierFactory {
 	private static CandidateClassifier classifierUnigram;
 	private static CandidateClassifier classifierNGram;
 
+	
+	/**
+	 * Create a new ClassfifierFactory with the provided occurrence data provider and model files.
+	 *  
+	 * @param unigramModelFile path to serialized classifier model file for unigrams
+	 * @param ngramModelFile path to serialized classifier model file for n-grams
+	 * @param occurrenceDataSource the source of the occurrence data, which will be used
+	 * to select the proper {@link org.dbpedia.spotlight.candidate.cooccurrence.weka.InstanceBuilder}.
+	 * @param dataProvider occurrence data provider used in the InstanceBuilder.
+	 * @throws InitializationException Error during 
+	 */
 	public ClassifierFactory(String unigramModelFile, String ngramModelFile,
 							 String occurrenceDataSource, OccurrenceDataProvider dataProvider)
 			throws InitializationException {
@@ -30,16 +41,24 @@ public class ClassifierFactory {
 				InstanceBuilderFactory.createInstanceBuilderNGram(occurrenceDataSource, dataProvider));
 		//classifierNGram.setVerboseMode(true);
 
-		
-	}
-
-	public static CandidateClassifier getClassifierUnigram() {
-		return classifierUnigram;
-	}
-
-	public static CandidateClassifier getClassifierNGram() {
-		return classifierNGram;
 	}
 	
+	
+	/**
+	 * Retrieve an instance of a unigram classifier.
+	 * @return unigram classifier
+	 */
+	public static CandidateClassifier getClassifierInstanceUnigram() {
+		return classifierUnigram;
+	}
+	
+
+	/**
+	 * Retrieve an instance of a ngram classifier.
+	 * @return n-gram classifier
+	 */
+	public static CandidateClassifier getClassifierInstanceNGram() {
+		return classifierNGram;
+	}
 	
 }

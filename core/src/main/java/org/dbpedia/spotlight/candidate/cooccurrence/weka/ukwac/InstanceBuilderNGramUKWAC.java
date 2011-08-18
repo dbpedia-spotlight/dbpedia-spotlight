@@ -4,6 +4,9 @@ import org.dbpedia.spotlight.candidate.cooccurrence.features.data.OccurrenceData
 import org.dbpedia.spotlight.candidate.cooccurrence.weka.InstanceBuilderNGram;
 
 /**
+ * Instance builder for instances based on co-occurrence data from the
+ * UKWAC corpus.
+ *
  * @author Joachim Daiber
  */
 public class InstanceBuilderNGramUKWAC extends InstanceBuilderNGram {
@@ -11,9 +14,9 @@ public class InstanceBuilderNGramUKWAC extends InstanceBuilderNGram {
 	public InstanceBuilderNGramUKWAC(OccurrenceDataProvider dataProvider) {
 		super(dataProvider);
 		
-		this.bigramLeftWebMin 	= 40;
-		this.bigramRightWebMin 	= 130;
-		this.trigramLeftWebMin 	= 100;
+		this.bigramLeftWebMin 	= -100;
+		this.bigramRightWebMin 	= -100;
+		this.trigramLeftWebMin 	= 200;
 		this.trigramRightWebMin = 50;
 
 	}

@@ -8,12 +8,12 @@ import org.dbpedia.spotlight.tagging.TaggedToken;
 import java.util.List;
 
 /**
- * Collection of utility methods for describing the features of a surface form occurrence.
+ * Collection of utility methods for calculating features of surface form occurrences.
  *
  * @author Joachim Daiber
  */
-public class CandidateFeatures {
 
+public class CandidateFeatures {
 
 	private static final String QUOTE_PATTERN = "[”“\"']";
 	private static final String PRE_QUOTE_PUNC = "[\\.,]";
@@ -41,6 +41,8 @@ public class CandidateFeatures {
 			return 2;
 		else if (!isSentenceInitial && isUppercase )
 			return 1;
+		else if (isSentenceInitial && isUppercase )
+			return 3;
 		else
 			return 0;
 
@@ -76,20 +78,12 @@ public class CandidateFeatures {
 
 	}
 
-
 	/**
+	 * Surface form occurrence is followed by "of"
 	 *
-	 *
-	 * @param textOffsetStart
-	 * @param textOffsetEnd
-	 * @return
+	 * @param surfaceFormOccurrence the surface form in context
+	 * @return is surface form followed by "of"?
 	 */
-	public static int isAcronym(int textOffsetStart, int textOffsetEnd) {
-		//TODO implement
-		return 0;
-	}
-
-
 	public static int followedByOf(SurfaceFormOccurrence surfaceFormOccurrence) {
 
 		String rightNeighbourToken = null;
@@ -108,6 +102,12 @@ public class CandidateFeatures {
 
 	}
 
+	/**
+	 * Surface form occurrence is followed by preposition.
+	 * 
+	 * @param surfaceFormOccurrence the surface form in context
+	 * @return is surface form followed by preposition?
+	 */
 	public static int followedByPrep(SurfaceFormOccurrence surfaceFormOccurrence) {
 
 		TaggedToken rightNeighbourToken = null;
@@ -126,6 +126,13 @@ public class CandidateFeatures {
 
 	}
 
+	/**
+	 * Surface form occurs next to an uppercase word
+	 *
+	 * @param surfaceFormOccurrence the surface form in context
+	 * @return does surface form occur next to uppercase word?
+	 */
+
 	public static int nextToUppercase(SurfaceFormOccurrence surfaceFormOccurrence) {
 
 		if(nonSentenceInitialUppercase(surfaceFormOccurrence) == 0)
@@ -136,7 +143,7 @@ public class CandidateFeatures {
 		try {
 			leftNeighbourToken = ((TaggedText) surfaceFormOccurrence.context()).taggedTokenProvider()
 					.getLeftNeighbourToken(surfaceFormOccurrence).getToken();
-		} catch (ItemNotFoundException e) {
+		} catch (ItemNotFoundException ignored) {
 		}
 
 		String rightNeighbourToken = null;
@@ -144,7 +151,7 @@ public class CandidateFeatures {
 		try {
 			rightNeighbourToken = ((TaggedText) surfaceFormOccurrence.context()).taggedTokenProvider()
 					.getRightNeighbourToken(surfaceFormOccurrence).getToken();
-		} catch (ItemNotFoundException e) {
+		} catch (ItemNotFoundException ignored) {
 		}
 
 
@@ -159,6 +166,12 @@ public class CandidateFeatures {
 
 	}
 
+	/**
+	 * Surface form is preceded by "of".
+	 * 
+	 * @param surfaceFormOccurrence the surface form in context
+	 * @return is surface form preceded by "of"?
+	 */
 	public static int precededByOf(SurfaceFormOccurrence surfaceFormOccurrence) {
 
 		String leftNeighbourToken = null;
@@ -176,6 +189,13 @@ public class CandidateFeatures {
 
 	}
 
+
+	/**
+	 * The surface form precedes an active verb.
+	 *
+	 * @param surfaceFormOccurrence the surface form in context
+	 * @return does surface form precede active verb?
+	 */
 	public static int precedesActiveVerb(SurfaceFormOccurrence surfaceFormOccurrence) {
 
 		String rightNeighbourPOS = null;
@@ -193,6 +213,12 @@ public class CandidateFeatures {
 
 	}
 
+	/**
+	 * The surface form is preceded by a reflexive pronoun.
+	 *
+	 * @param surfaceFormOccurrence the surface form in context
+	 * @return is surface form preceded by reflexive pronoun?
+	 */
 	public static int precededByReflexivePronoun(SurfaceFormOccurrence surfaceFormOccurrence) {
 		String leftNeighbourPOS = null;
 		try {
@@ -208,6 +234,13 @@ public class CandidateFeatures {
 			return 0;
 	}
 
+
+	/**
+	 * The POS tag of the previous token.
+	 * 
+	 * @param surfaceFormOccurrence the surface form in context
+	 * @return POS tag of the previous token
+	 */
 	public static Integer prePOS(SurfaceFormOccurrence surfaceFormOccurrence) {
 		TaggedToken leftNeighbour = null;
 
@@ -244,6 +277,12 @@ public class CandidateFeatures {
 
 	}
 
+	/**
+	 * The POS tag of the next token.
+	 * 
+	 * @param surfaceFormOccurrence the surface form in context
+	 * @return POS tag of the next token
+	 */
 	public static Integer nextPOS(SurfaceFormOccurrence surfaceFormOccurrence) {
 		TaggedToken rightNeighbour = null;
 
@@ -263,10 +302,16 @@ public class CandidateFeatures {
 
 	}
 
+	/**
+	 * Is the surface form part of an enumeration?
+	 * 
+	 * @param surfaceFormOccurrence the surface form in context
+	 * @return surface form is part of enumeration
+	 */
 	public static boolean isInEnumeration(SurfaceFormOccurrence surfaceFormOccurrence) {
 
-		TaggedToken leftNeighbour = null;
-		TaggedToken rightNeighbour = null;
+		TaggedToken leftNeighbour;
+		TaggedToken rightNeighbour;
 
 		try {
 			leftNeighbour = ((TaggedText) surfaceFormOccurrence.context()).taggedTokenProvider()
@@ -281,11 +326,14 @@ public class CandidateFeatures {
 			return true;
 		else
 			return false;
-
-
 	}
+	
 
-
+	/**
+	 * Is surface form in plural? (unigram)
+	 * @param surfaceFormOccurrence the surface form in context
+	 * @return surface form is in plural
+	 */
 	public static boolean isPlural(SurfaceFormOccurrence surfaceFormOccurrence) {
 		List<TaggedToken> taggedTokens =
 				((TaggedText) surfaceFormOccurrence.context()).taggedTokenProvider().getTaggedTokens(surfaceFormOccurrence);
@@ -293,8 +341,16 @@ public class CandidateFeatures {
 		return taggedTokens.get(taggedTokens.size()-1).getPOSTag().contains("s");
 	}
 
+	
+	/**
+	 * Is the surface form possessive? (unigram)
+	 *
+	 * @param surfaceFormOccurrence the surface form in context
+	 * @return surface form is possessive
+	 */
 	public static boolean isPossessive(SurfaceFormOccurrence surfaceFormOccurrence) {
 		List<TaggedToken> taggedTokens = ((TaggedText) surfaceFormOccurrence.context()).taggedTokenProvider().getTaggedTokens(surfaceFormOccurrence);
 		return taggedTokens.size() > 0 && taggedTokens.get(0).getPOSTag().contains("$");
 	}
+	
 }

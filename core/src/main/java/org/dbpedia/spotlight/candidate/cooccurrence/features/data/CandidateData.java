@@ -1,19 +1,29 @@
 package org.dbpedia.spotlight.candidate.cooccurrence.features.data;
 
 /**
- * Occurrence data for a term candidate.
+ * Occurrence data for a surface form.
  * 
  * @author Joachim Daiber
  */
 
 public class CandidateData {
 
-	public CandidateData(long id, String token, long countCorpus, long countWeb) {
+	
+	/**
+	 * Create occurrence data for a candidate.
+	 * 
+	 * @param id id of the candidate in the database
+	 * @param token String representation of the candidate
+	 * @param countWikipedia frequency in the Wikipedia corpus
+	 * @param countWeb count frequency in the Web corpus
+	 */
+	public CandidateData(long id, String token, long countWikipedia, long countWeb) {
 		this.id = id;
 		this.token = token;
-		this.countCorpus = countCorpus;
+		this.countCorpus = countWikipedia;
 		this.countWeb = countWeb;
 	}
+
 
 	/**
 	 * ID and token of the candidate.
@@ -26,20 +36,41 @@ public class CandidateData {
 	 */
 	private Long countCorpus;
 	private Long countWeb;
-	
 
+
+	/**
+	 * Get the database id of the candidate.
+	 * 
+	 * @return database id
+	 */
 	public long getId() {
 		return id;
 	}
 
+
+	/**
+	 * Get the String representation of the candidate.
+	 *
+	 * @return candidate String
+	 */
 	public String getToken() {
 		return token;
 	}
 
-	public Long getCountCorpus() {
+
+	/**
+	 * Get the frequency of the candidate in Wikipedia.
+	 * @return frequency in Wikipedia corpus
+	 */
+	public Long getCountWikipedia() {
 		return countCorpus;
 	}
 
+
+	/**
+	 * Get the frequency of the candidate in the Web corpus.
+	 * @return frequency in Web corpus
+	 */
 	public Long getCountWeb() {
 		return countWeb;
 	}

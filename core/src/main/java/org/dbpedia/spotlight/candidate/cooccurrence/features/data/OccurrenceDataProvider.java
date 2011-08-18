@@ -7,25 +7,22 @@ import java.util.List;
 
 /**
  * Provides occurrence data for tokens.
- * 
  */
 
 public interface OccurrenceDataProvider {
 
-	
 	/**
-	 * Get information about the term candidate.
+	 * Get occurrence and query data for a candidate.
 	 *
 	 * @param candidate String representation of a term candidate.
 	 * @return information about the occurrence of the term candidate
 	 * @throws ItemNotFoundException no information about the term candidate is available
 	 */
-
 	public CandidateData getCandidateData(String candidate) throws ItemNotFoundException;
 
 
 	/**
-	 * Get information about a bigram.
+	 * Get occurrence data for a bigram.
 	 *
 	 * @param word1 CandidateData of the first word.
 	 * @param word2 CandidateData of the second word.
@@ -37,7 +34,7 @@ public interface OccurrenceDataProvider {
 
 
 	/**
-	 * Get information about a trigram.
+	 * Get occurrence data for a trigram.
 	 *
 	 * @param word1 CandidateData of the first word.
 	 * @param word2 CandidateData of the second word.
@@ -52,12 +49,11 @@ public interface OccurrenceDataProvider {
 	/**
 	 * Get information about the co-occurrence of the candidate with any token in the sentence.
 	 *
-	 * @param candidate
-	 * @param tokens
-	 * @return
+	 * @param candidate CandidateData of the first word.
+	 * @param tokens a list of possibly co-occurring tokens.
+	 * @return information about the co-occurrence of the candidate and the tokens in the List.
 	 */
 	public List<CoOccurrenceData> getSentenceData(CandidateData candidate, List<String> tokens);
 
 
-	
 }

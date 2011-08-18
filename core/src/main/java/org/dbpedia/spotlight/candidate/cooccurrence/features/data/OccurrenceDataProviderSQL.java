@@ -60,6 +60,7 @@ public class OccurrenceDataProviderSQL implements OccurrenceDataProvider {
 	 * first call to getInstance(), however, since the initialization can fail for reasons of missing or
 	 * wrong configuration, this should be done in this method.
 	 *
+	 * @param spotterConfiguration SpotterConfiguration with JDBC configuration.
 	 * @throws org.dbpedia.spotlight.exceptions.InitializationException there was in error in the configuration
 	 */
 
@@ -103,8 +104,8 @@ public class OccurrenceDataProviderSQL implements OccurrenceDataProvider {
 				throw new ItemNotFoundException("Could not find bigram.");
 
 			return new CoOccurrenceData(
-					0, resultSet.getLong("count_web"),
-					0, 0);
+					0, 0,
+					0, resultSet.getLong("significance_web"));
 
 		} catch (SQLException e) {
 			//Could not retrieve bigram information
@@ -116,6 +117,7 @@ public class OccurrenceDataProviderSQL implements OccurrenceDataProvider {
 
 
 	@Override
+	/** {@inheritDoc} */
 	public CoOccurrenceData getTrigramData(CandidateData word1, CandidateData word2, CandidateData word3) throws ItemNotFoundException {
 		try {
 

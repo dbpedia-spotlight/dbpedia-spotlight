@@ -12,24 +12,36 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Builder for WEKA Instances. An InstanceBuilder builds a WEKA instance for unigrams and n-grams based
- * on a surface form occurrence.
+ * Builder for WEKA Instances. An InstanceBuilder builds a WEKA instance for unigrams and n-gram
+ * surface form occurrences.
  *
  * @author Joachim Daiber
  */
 public abstract class InstanceBuilder {
 
+	/**
+	 * WEKA class attribute.
+	 */
+	public static Attribute candidate_class = new Attribute("class", Arrays.asList("valid", "common"));
+
 	public static final String FUNCTION_WORD_PATTERN = "(at|,|\\.|dt|to|wp.|c.*)";
 
 	protected Log LOG = LogFactory.getLog(this.getClass());
-
 	protected OccurrenceDataProvider dataProvider;
+
+
 	protected boolean verboseMode = false;
 
+
+	/**
+	 * Create an instance builder with an instance of a {@link OccurrenceDataProvider}.
+	 * @param dataProvider provider for occurrence data.
+	 */
 	protected InstanceBuilder(OccurrenceDataProvider dataProvider) {
 		this.dataProvider = dataProvider;
 	}
 
+	
 	/**
 	 * Set verbose mode (extends Logging)
 	 * @param verboseMode true if logging should be extended
@@ -38,7 +50,6 @@ public abstract class InstanceBuilder {
 		this.verboseMode = verboseMode;
 	}
 
-	public static Attribute candidate_class = new Attribute("class", Arrays.asList("valid", "common"));
 
 	/**
 	 * Get the index of an attribute.
@@ -51,13 +62,15 @@ public abstract class InstanceBuilder {
 		return attributeList.indexOf(attribute);
 	}
 
+
 	/**
-	 * Build the
+	 * Build the List of Attributes
 	 *
-	 * @return
+	 * @return List of Attributes
 	 */
 	public abstract ArrayList<Attribute> buildAttributeList();
 
+	
 
 	/**
 	 * Build/fill a WEKA Instance for a surface form occurrence.

@@ -16,9 +16,11 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+
 /**
- * @author Joachim Daiber
+ * Abstract Builder for WEKA instances for n-grams.
  *
+ * @author Joachim Daiber
  */
 public abstract class InstanceBuilderNGram extends InstanceBuilder {
 
@@ -27,12 +29,12 @@ public abstract class InstanceBuilderNGram extends InstanceBuilder {
 	public static Attribute contains_verb = new Attribute("contains_verb", Arrays.asList("no", "vb", "vbd", "vbg", "vbn", "be", "multiple"));
 	public static Attribute term_case = new Attribute("case", Arrays.asList("all_lowercase", "mixed", "titlecase", "all_uppercase", "first_uppercase"));
 	public static Attribute quoted = new Attribute("quoted", Arrays.asList("yes"));
-	public static Attribute term_size = new Attribute("term_size");
-	public static Attribute pre_pos = new Attribute("pre_pos", Arrays.asList("to", "verb", "a"));
-	public static Attribute next_pos = new Attribute("next_pos", Arrays.asList("of", "to", "be", "verb"));
+	public static Attribute candidate_size = new Attribute("candidate_size");
+	public static Attribute pre_pos = new Attribute("token_left", Arrays.asList("to", "verb", "a"));
+	public static Attribute next_pos = new Attribute("token_right", Arrays.asList("of", "to", "be", "verb"));
 	public static Attribute ends_with = new Attribute("ends_with", Arrays.asList("prep"));
-	public static Attribute bigram_left = new Attribute("bigram_left"); //, AttributesUnigram.BIGRAM_COUNTS_WEB);
-	public static Attribute bigram_right = new Attribute("bigram_right"); //, AttributesUnigram.BIGRAM_COUNTS_WEB);
+	public static Attribute bigram_left_significance_web = new Attribute("bigram_left_signifance_web"); //, AttributesUnigram.BIGRAM_COUNTS_WEB);
+	public static Attribute bigram_right_significance_web = new Attribute("bigram_right_significance_web"); //, AttributesUnigram.BIGRAM_COUNTS_WEB);
 	public static Attribute trigram_left = new Attribute("trigram_left");
 	public static Attribute trigram_right = new Attribute("trigram_right");
 
@@ -47,36 +49,42 @@ public abstract class InstanceBuilderNGram extends InstanceBuilder {
 	protected long trigramRightWebMin = 0;
 
 
-
+	/**
+	 * Create an instance builder for n-grams.
+	 * 
+	 * @param dataProvider occurrence data provider
+	 */
 	protected InstanceBuilderNGram(OccurrenceDataProvider dataProvider) {
 		super(dataProvider);
 
 	}
 
+	@Override
+	/** {@inheritDoc} */
 	public ArrayList<Attribute> buildAttributeList() {
 
 		ArrayList<Attribute> attributeList = new ArrayList<Attribute>();
-
-		//attributeList.add(count_corpus);
-		//attributeList.add(count_web);
-		attributeList.add(contains_verb);
-		attributeList.add(term_case);
-		attributeList.add(term_size);
-		attributeList.add(pre_pos);
-		attributeList.add(next_pos);
-		attributeList.add(ends_with);
-		attributeList.add(quoted);
-		attributeList.add(bigram_left);
-		//attributeList.add(bigram_right);
-		attributeList.add(trigram_left);
-		attributeList.add(trigram_right);
-		attributeList.add(candidate_class);
-
+		attributeList.addAll(Arrays.asList(
+			contains_verb,
+			term_case,
+			candidate_size,
+			pre_pos,
+			next_pos,
+			ends_with,
+			quoted,
+			bigram_left_significance_web,
+			bigram_right_significance_web,
+			trigram_left,
+			trigram_right,
+			candidate_class
+		));
+		
 		return attributeList;
 	}
 
 
 	@Override
+	/** {@inheritDoc} */
 	public Instance buildInstance(SurfaceFormOccurrence surfaceFormOccurrence, Instance instance) {
 
 		TaggedText text = (TaggedText) surfaceFormOccurrence.context();
@@ -183,7 +191,7 @@ public abstract class InstanceBuilderNGram extends InstanceBuilder {
 				if(firstTaggedTokenData != null && secondTaggedTokenData != null) {
 					CoOccurrenceData bigramData = dataProvider.getBigramData(firstTaggedTokenData, secondTaggedTokenData);
 
-					if (bigramData.getUnitCountWeb() > bigramLeftWebMin)
+					//if (bigramData.getUnitCountWeb() > bigramLeftWebMin)
 						instance.setValue(i(count_web, buildAttributeList()), bigramData.getUnitCountWeb());
 				}
 			} catch (ItemNotFoundException ignored) {}
@@ -245,7 +253,7 @@ public abstract class InstanceBuilderNGram extends InstanceBuilder {
 
 
 		try{
-			instance.setValue(i(term_size, buildAttributeList()), termSize);
+			instance.setValue(i(candidate_size, buildAttributeList()), termSize);
 		} catch (ArrayIndexOutOfBoundsException ignored) {}
 
 		try {
@@ -330,11 +338,10 @@ public abstract class InstanceBuilderNGram extends InstanceBuilder {
 				bigramLeft = dataProvider.getBigramData(left1, firstTaggedTokenData);
 			} catch (ItemNotFoundException ignored) {}
 
-			if(bigramLeft != null && bigramLeft.getUnitCountWeb() > bigramLeftWebMin) {
+			if(bigramLeft != null && bigramLeft.getUnitSignificanceWeb() > bigramLeftWebMin) {
 
-				long count = bigramLeft.getUnitCountWeb();
 				try{
-					instance.setValue(i(bigram_left, buildAttributeList()), count);
+					instance.setValue(i(bigram_left_significance_web, buildAttributeList()), bigramLeft.getUnitSignificanceWeb());
 				} catch (ArrayIndexOutOfBoundsException ignored) {}
 
 			}
@@ -385,17 +392,15 @@ public abstract class InstanceBuilderNGram extends InstanceBuilder {
 		 */
 
 		if(lastTaggedTokenData != null && right1 != null && !rightContext.get(0).getPOSTag().matches(FUNCTION_WORD_PATTERN) && !rightContext.get(0).getPOSTag().equals("in")) {
-			CoOccurrenceData bigramRightData = null;
+			CoOccurrenceData bigramRight = null;
 			try {
-				bigramRightData = dataProvider.getBigramData(lastTaggedTokenData, right1);
+				bigramRight = dataProvider.getBigramData(lastTaggedTokenData, right1);
 			} catch (ItemNotFoundException ignored) {}
 
-			if(bigramRightData != null && bigramRightData.getUnitCountWeb() > bigramRightWebMin) {
-
-				long count = bigramRightData.getUnitCountWeb();
+			if(bigramRight != null && bigramRight.getUnitSignificanceWeb() > bigramRightWebMin) {
 
 				try {
-					instance.setValue(i(bigram_right, buildAttributeList()), count);
+					instance.setValue(i(bigram_right_significance_web, buildAttributeList()), bigramRight.getUnitSignificanceWeb());
 				} catch (ArrayIndexOutOfBoundsException ignored) {}
 
 			}

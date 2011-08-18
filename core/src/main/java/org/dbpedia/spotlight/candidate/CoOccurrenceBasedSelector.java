@@ -21,7 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Candidate selector based on co-occurrence data and two classifiers for unigram
+ * Candidate selector based on co-occurrence data using two classifiers for unigram
  * and ngram candidates.
  *
  * @author Joachim Daiber
@@ -36,7 +36,7 @@ public class CoOccurrenceBasedSelector implements TaggedSpotSelector {
 	 * passed as a parameter since the selector must use and initialize an occurrence
 	 * data provider and a factory for classifiers.
 	 *
-	 * @see OccurrenceDataProviderSQL
+	 * @see org.dbpedia.spotlight.candidate.cooccurrence.features.data.OccurrenceDataProvider
 	 * @see ClassifierFactory
 	 *
 	 * @param spotterConfiguration SpotterConfiguration object with classifier paths and JDBC
@@ -77,14 +77,15 @@ public class CoOccurrenceBasedSelector implements TaggedSpotSelector {
 		FilterTermsize unigramFilter = new FilterTermsize(FilterTermsize.Termsize.unigram);
 		FilterPattern filterPattern = new FilterPattern();
 
-		CandidateClassifier unigramClassifier = ClassifierFactory.getClassifierUnigram();
-		CandidateClassifier ngramClassifier = ClassifierFactory.getClassifierNGram();
+		CandidateClassifier unigramClassifier = ClassifierFactory.getClassifierInstanceUnigram();
+		CandidateClassifier ngramClassifier = ClassifierFactory.getClassifierInstanceNGram();
 
 		assert unigramClassifier != null;
 		assert ngramClassifier != null;
 
 		//ngramClassifier.setVerboseMode(true);
 		//unigramClassifier.setVerboseMode(true);
+		List<String> decisions = new LinkedList<String>();
 
 		for(SurfaceFormOccurrence surfaceFormOccurrence : surfaceFormOccurrences) {
 
@@ -94,6 +95,7 @@ public class CoOccurrenceBasedSelector implements TaggedSpotSelector {
                 selectedOccurrences.add(surfaceFormOccurrence);
                 continue;
             }
+
 
 			if(unigramFilter.applies(surfaceFormOccurrence)) {
 
@@ -108,8 +110,6 @@ public class CoOccurrenceBasedSelector implements TaggedSpotSelector {
 					 * verb, etc.
 					 */
 
-					//TODO: add if high TF-IDF/PMI or if uppercase Adj?
-
 
 					if(Character.isUpperCase(surfaceFormOccurrence.surfaceForm().name().charAt(0))){
 						TaggedToken taggedToken = ((TaggedText) surfaceFormOccurrence.context()).taggedTokenProvider().getTaggedTokens(surfaceFormOccurrence).get(0);
@@ -121,20 +121,19 @@ public class CoOccurrenceBasedSelector implements TaggedSpotSelector {
 							selectedOccurrences.add(surfaceFormOccurrence);
 
 					}else{
-
-						LOG.info("Dropped by POS filter: " + surfaceFormOccurrence);
+						decisions.add("Dropped by POS filter: " + surfaceFormOccurrence);
 
 					}
 
 				}else if(!filterPattern.applies(surfaceFormOccurrence)){
-					LOG.info("Dropped by Pattern filter: " + surfaceFormOccurrence);
+					decisions.add("Dropped by Pattern filter: " + surfaceFormOccurrence);
 				}else{
 
 					CandidateClassification candidateClassification = null;
 					try {
 						candidateClassification = unigramClassifier.classify(surfaceFormOccurrence);
 					} catch (Exception e) {
-						LOG.error("Exception when classyfing unigram candidate: " + e);
+						LOG.error("Exception when classifying unigram candidate: " + e);
 						continue;
 					}
 
@@ -142,7 +141,7 @@ public class CoOccurrenceBasedSelector implements TaggedSpotSelector {
 						selectedOccurrences.add(surfaceFormOccurrence);
 						//LOG.info(("Kept by UnigramClassifier (Confidence: " + candidateClassification.getConfidence() + "): " + surfaceFormOccurrence);
 					}else{
-						LOG.info("Dropped by UnigramClassifier (Confidence: " + candidateClassification.getConfidence() + "): " + surfaceFormOccurrence);
+						decisions.add("Dropped by UnigramClassifier (Confidence: " + candidateClassification.getConfidence() + "): " + surfaceFormOccurrence);
 					}
 
 				}
@@ -158,7 +157,7 @@ public class CoOccurrenceBasedSelector implements TaggedSpotSelector {
 				try{
 					candidateClassification = ngramClassifier.classify(surfaceFormOccurrence);
 				}catch (Exception e) {
-					LOG.error("Exception when classyfing ngram candidate: " + e);
+					LOG.error("Exception when classifying ngram candidate: " + e);
 					continue;
 				}
 
@@ -166,11 +165,15 @@ public class CoOccurrenceBasedSelector implements TaggedSpotSelector {
 					selectedOccurrences.add(surfaceFormOccurrence);
 					//LOG.info("Kept by nGramClassifier (Confidence: " + candidateClassification.getConfidence() + "): " + surfaceFormOccurrence);
 				}else{
-					LOG.info("Dropped by NGramClassifier: " + surfaceFormOccurrence);
+					decisions.add("Dropped by NGramClassifier: " + surfaceFormOccurrence);
 				}
 
 			}
 
+		}
+
+		for (String decision : decisions) {
+			LOG.info(decision);
 		}
 		
 		return selectedOccurrences;

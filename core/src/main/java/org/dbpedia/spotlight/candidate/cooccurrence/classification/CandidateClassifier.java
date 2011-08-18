@@ -14,7 +14,8 @@ import weka.core.SerializationHelper;
 
 
 /**
- * Base class for candidate classifiers.
+ * Classifier for surface form occurrences based on serialized
+ * WEKA classifiers.
  *
  * @author Joachim Daiber
  */
@@ -32,7 +33,16 @@ public class CandidateClassifier {
 
 	protected boolean verboseMode = false;
 
-
+	
+	/**
+	 * Create a new candidate classifier that was serialized in modelFile and that
+	 * uses the provided OccurrenceDataProvider and InstanceBuilder.
+	 *
+	 * @param modelFile serialized model file
+	 * @param dataProvider data provider for occurrence data
+	 * @param instanceBuilder builder for WEKA instances
+	 * @throws InitializationException when something goes wrong on initialization
+	 */
 	public CandidateClassifier(String modelFile, OccurrenceDataProvider dataProvider, InstanceBuilder instanceBuilder)
 			throws InitializationException {
 		
@@ -44,13 +54,13 @@ public class CandidateClassifier {
 
 	
 	/**
-	 * Load everything that is required to create the classifier.
+	 * Load the serialized classifier model and read the header for new instances from it.
 	 *
 	 * @throws InitializationException the classifier could not be initialized.
 	 */
 	protected void initialize() throws InitializationException {
 
-		Object o[] = new Object[0];
+		Object o[];
 		try {
 			o = SerializationHelper.readAll(modelFile);
 		} catch (Exception e) {
@@ -76,7 +86,6 @@ public class CandidateClassifier {
 		try {
 			double candidateClassification = classifier.classifyInstance(instance);
 
-
 			double[] distributionForInstance = classifier.distributionForInstance(instance);
 			double confidence = distributionForInstance[(int) candidateClassification];
 			CandidateClass candidateClass = candidateClassification == 0 && confidence > MIN_CONFIDENCE ? CandidateClass.valid : CandidateClass.common;
@@ -90,6 +99,13 @@ public class CandidateClassifier {
 	}
 
 	
+	/**
+	 * Builds a suitable WEKA Instance of the surface form occurrence for
+	 * the serialized classifier.
+	 *
+	 * @param surfaceFormOccurrence surface form occurrence
+	 * @return WEKA instance
+	 */
 	protected Instance buildInstance(SurfaceFormOccurrence surfaceFormOccurrence) {
 		Instance instance = new DenseInstance(header.numAttributes());
 		instance.setDataset(header);
@@ -98,7 +114,7 @@ public class CandidateClassifier {
 
 	
 	/**
-	 * In verbose mode, the classifier explains why and how it made its classification decision.
+	 * In verbose mode, the classifier logs why and how it made its classification decision.
 	 * 
 	 * @param verboseMode put classifier in verbose mode?
 	 */
