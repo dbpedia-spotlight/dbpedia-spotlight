@@ -43,8 +43,6 @@
     <modules>
         <module>core</module>
         <module>rest</module>
-        <module>demo</module>
-        <module>index</module>
     </modules>
 
     <build>
