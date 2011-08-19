@@ -1,0 +1,551 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Demo</title>
+
+<script src="jquery-1.6.1.min.js" type="text/javascript"></script>
+<script src="dbpedia-spotlight-0.2.js" type="text/javascript"></script>
+
+	<script src="ui/jquery.ui.core.js"></script>
+	<script src="ui/jquery.ui.widget.js"></script>
+	<script src="ui/jquery.ui.mouse.js"></script>
+                    
+	<script src="ui/jquery.ui.slider.js"></script>
+	<script src="ui/jquery.ui.dialog.js"></script>
+	<script src="ui/jquery.ui.tabs.js"></script>
+	<script src="ui/jquery.ui.position.js" type="text/javascript" charset="utf-8"></script>
+	<script src="ui/jquery.ui.draggable.js" type="text/javascript" charset="utf-8"></script>
+
+
+	<script src="jquery.uniform/jquery.uniform.min.js"></script>
+
+	<script src="jquery.json-2.2.js"></script>
+
+	<script src="jstree/jquery.jstree.js" type="text/javascript" charset="utf-8"></script>
+
+
+<link rel="stylesheet" href="themes/base/jquery.ui.all.css">
+<link rel="stylesheet" href="jquery.uniform/css/uniform.default.css" type="text/css" media="screen" charset="utf-8" />
+
+<style>
+
+#text {
+	border: 0;
+	width: 100%;
+	height: 100%;
+	padding: 0;
+	margin: 0;
+	font-family: inherit;
+	overflow: auto;
+}
+#text_container {
+	background: #fff no-repeat bottom right;
+}
+#text_container.annotated {
+	background: #fafafa none;
+	cursor:text;
+	overflow: visible;
+}
+#text_container div {
+	height: 100%;
+	padding-left: 1px;
+
+}
+#text_container div a {
+	color: #135e6c;
+}
+
+#text_container #text {
+	background: transparent;
+}
+#text_container.loading #text {
+	background: no-repeat 50% 50% url(data:image/gif;base64,R0lGODlhEAAQAPQAAP///9bW1vv7++vr6/n5+eHh4enp6dbW1uPj49vb2/Hx8fPz89nZ2e7u7tbW1t7e3ubm5gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAAEAAQAAAFdyAgAgIJIeWoAkRCCMdBkKtIHIngyMKsErPBYbADpkSCwhDmQCBethRB6Vj4kFCkQPG4IlWDgrNRIwnO4UKBXDufzQvDMaoSDBgFb886MiQadgNABAokfCwzBA8LCg0Egl8jAggGAA1kBIA1BAYzlyILczULC2UhACH5BAkKAAAALAAAAAAQABAAAAV2ICACAmlAZTmOREEIyUEQjLKKxPHADhEvqxlgcGgkGI1DYSVAIAWMx+lwSKkICJ0QsHi9RgKBwnVTiRQQgwF4I4UFDQQEwi6/3YSGWRRmjhEETAJfIgMFCnAKM0KDV4EEEAQLiF18TAYNXDaSe3x6mjidN1s3IQAh+QQJCgAAACwAAAAAEAAQAAAFeCAgAgLZDGU5jgRECEUiCI+yioSDwDJyLKsXoHFQxBSHAoAAFBhqtMJg8DgQBgfrEsJAEAg4YhZIEiwgKtHiMBgtpg3wbUZXGO7kOb1MUKRFMysCChAoggJCIg0GC2aNe4gqQldfL4l/Ag1AXySJgn5LcoE3QXI3IQAh+QQJCgAAACwAAAAAEAAQAAAFdiAgAgLZNGU5joQhCEjxIssqEo8bC9BRjy9Ag7GILQ4QEoE0gBAEBcOpcBA0DoxSK/e8LRIHn+i1cK0IyKdg0VAoljYIg+GgnRrwVS/8IAkICyosBIQpBAMoKy9dImxPhS+GKkFrkX+TigtLlIyKXUF+NjagNiEAIfkECQoAAAAsAAAAABAAEAAABWwgIAICaRhlOY4EIgjH8R7LKhKHGwsMvb4AAy3WODBIBBKCsYA9TjuhDNDKEVSERezQEL0WrhXucRUQGuik7bFlngzqVW9LMl9XWvLdjFaJtDFqZ1cEZUB0dUgvL3dgP4WJZn4jkomWNpSTIyEAIfkECQoAAAAsAAAAABAAEAAABX4gIAICuSxlOY6CIgiD8RrEKgqGOwxwUrMlAoSwIzAGpJpgoSDAGifDY5kopBYDlEpAQBwevxfBtRIUGi8xwWkDNBCIwmC9Vq0aiQQDQuK+VgQPDXV9hCJjBwcFYU5pLwwHXQcMKSmNLQcIAExlbH8JBwttaX0ABAcNbWVbKyEAIfkECQoAAAAsAAAAABAAEAAABXkgIAICSRBlOY7CIghN8zbEKsKoIjdFzZaEgUBHKChMJtRwcWpAWoWnifm6ESAMhO8lQK0EEAV3rFopIBCEcGwDKAqPh4HUrY4ICHH1dSoTFgcHUiZjBhAJB2AHDykpKAwHAwdzf19KkASIPl9cDgcnDkdtNwiMJCshACH5BAkKAAAALAAAAAAQABAAAAV3ICACAkkQZTmOAiosiyAoxCq+KPxCNVsSMRgBsiClWrLTSWFoIQZHl6pleBh6suxKMIhlvzbAwkBWfFWrBQTxNLq2RG2yhSUkDs2b63AYDAoJXAcFRwADeAkJDX0AQCsEfAQMDAIPBz0rCgcxky0JRWE1AmwpKyEAIfkECQoAAAAsAAAAABAAEAAABXkgIAICKZzkqJ4nQZxLqZKv4NqNLKK2/Q4Ek4lFXChsg5ypJjs1II3gEDUSRInEGYAw6B6zM4JhrDAtEosVkLUtHA7RHaHAGJQEjsODcEg0FBAFVgkQJQ1pAwcDDw8KcFtSInwJAowCCA6RIwqZAgkPNgVpWndjdyohACH5BAkKAAAALAAAAAAQABAAAAV5ICACAimc5KieLEuUKvm2xAKLqDCfC2GaO9eL0LABWTiBYmA06W6kHgvCqEJiAIJiu3gcvgUsscHUERm+kaCxyxa+zRPk0SgJEgfIvbAdIAQLCAYlCj4DBw0IBQsMCjIqBAcPAooCBg9pKgsJLwUFOhCZKyQDA3YqIQAh+QQJCgAAACwAAAAAEAAQAAAFdSAgAgIpnOSonmxbqiThCrJKEHFbo8JxDDOZYFFb+A41E4H4OhkOipXwBElYITDAckFEOBgMQ3arkMkUBdxIUGZpEb7kaQBRlASPg0FQQHAbEEMGDSVEAA1QBhAED1E0NgwFAooCDWljaQIQCE5qMHcNhCkjIQAh+QQJCgAAACwAAAAAEAAQAAAFeSAgAgIpnOSoLgxxvqgKLEcCC65KEAByKK8cSpA4DAiHQ/DkKhGKh4ZCtCyZGo6F6iYYPAqFgYy02xkSaLEMV34tELyRYNEsCQyHlvWkGCzsPgMCEAY7Cg04Uk48LAsDhRA8MVQPEF0GAgqYYwSRlycNcWskCkApIyEAOwAAAAAAAAAAAA==);	
+}
+.container {
+	margin: 0px 50px;
+	font-family: "Myriad Pro";
+	padding: 8px;
+	position: relative;
+	clear: both;
+	
+}
+#text {
+	background: transparent;
+}
+#text_container, #action_container {
+	width: 700px;
+	height: 170px;
+	border-radius: 5px;
+	border: 1px solid #ccc;
+	border-color: #ddd #eee #eee #ddd;
+	border-width: 1px 2px 2px 1px;
+}
+#action_container {
+	margin-top: 10px;
+	background: #fafafa;
+	height: auto;
+	clear: left;
+	float: left;
+	
+	position: relative;
+}
+#bookmarklet_container {
+	font-size: 80%;
+	color: #666;
+	text-align: justify;
+}
+
+
+#action_options {
+	float: left;
+}
+#action_buttons {
+	height: auto;
+	vertical-align: bottom;
+	line-height: 100%;
+ 	
+	position: absolute; 
+	bottom: 8px; 
+	right: 8px;
+}
+.highlight { background-color: red; }
+
+.main {
+	width: 800px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.option {
+	width: 300px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 10px;
+}
+
+
+
+#text_container .annotation {
+	padding-left: 0;
+	display: inline;
+}
+
+#content {
+  background-color: #ffa;
+  -webkit-border-radius: 8px;
+  -moz-border-radius: 8px;
+  border-radius: 8px;
+}
+
+.bookmarklet a {
+  font-weight: bold;
+  text-decoration: none;
+  color: #fff;
+
+    cursor:move;
+    background-color: #666699;
+    font-size: 14px;
+    font-family: Tahoma, Verdana, Arial;
+    text-align: center;
+
+    min-height: 30px;
+    display: table-cell;
+    vertical-align: middle;
+
+    width: 300px;
+    height: 50px;
+    padding: 5px;
+
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+  border-radius: 8px;
+}
+#logo {
+	margin: 0 auto 20px auto;
+	display: block
+}
+a.ui-slider-handle {
+	outline: none;
+}
+.ui-slider .ui-slider-handle {
+	width: 0.9em;
+	height: 0.9em;
+}
+.slider {
+	margin: 0 0.45em; 
+	width: 250px;
+	height: 8px;
+}
+
+#confidence, #support {
+	float: right;
+	width: 30px;
+	margin-top: 1em;
+	margin-left: 1em;
+}
+
+div.annotation:hover ul.candidates {
+	visibility: visible;
+
+}
+div.annotation {
+	position: relative;
+	overflow: visible;
+}
+
+ul.candidates {
+	font-size: 100%;
+	width: auto;
+	margin: 0;
+	padding: 0.2em 0 0 0;
+	left: 0;
+	top: 1.15em;
+	display: block;
+
+	position: absolute;
+	visibility: hidden;
+	z-index: 10;
+	border: 1px solid #e6e6e6;
+	border-right-width: 2px;
+	border-radius: 3px;
+	
+}
+ul.candidates li {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	border-width: 0 0 1px 0;
+	border-style: solid;
+	border-color: #e6e6e6;
+	background: white;
+	white-space: nowrap;
+	padding: 0.15em 0.2em;
+}
+#text_container ul.candidates li a {
+	display: inline-block;
+}
+
+ul.candidates li.candidate-0 {
+	padding: 0.15em 0.85em 0.15em 0.2em;
+	
+}
+#text_container {
+}
+#text_container div a.surfaceForm {
+	display: inline-block;
+	padding: 0 3px;
+	border-radius: 3px;
+	padding-right: 12px;
+	border: 1px solid #f0f0f0;
+	background: white 95% 50% no-repeat url(data:image/gif;base64,R0lGODlhBQADAIABAHulrf///yH5BAEAAAEALAAAAAAFAAMAAAIFhB0XC1sAOw==);
+    cursor:default;
+}
+#text_container div div.annotation:hover a.surfaceForm {
+	border-color: #c0c0c0;
+	background-image: url(data:image/gif;base64,R0lGODlhBQADAIABAEJ+if///yH5BAEAAAEALAAAAAAFAAMAAAIFhB0XC1sAOw==);
+}
+#tree_id a {background: transparent; border: none;}
+#types {
+	float: right;
+}
+body .jstree-default.jstree-focused {
+	background: transparent;
+}
+
+body .jstree li {
+	line-height: auto;
+	font-size: 12px;
+}
+#type_selector ul {
+	margin: 0;
+	padding: 0;
+}
+.tree {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+</style>
+
+<script>
+var annotated = false;
+var textInput = null;
+var server = 'http://spotlight.dbpedia.org/rest'
+
+function run(method) {
+	
+    var settings = {
+      'endpoint' : server,
+      'confidence' : $('#confidence').val(),
+      'support' : $('#support').val(),
+      'powered_by': 'no',
+      'showScores': 'yes',
+      'types' : getTypes()
+    }
+
+	//Write manual 
+	$('#text').text($('#text').val());
+	textInput = $('#text').clone();
+	
+    $('#text_container').runDBpediaSpotlight(settings);
+    $('#text_container').runDBpediaSpotlight(method);
+	$('#text_container').addClass("annotated loading");
+	
+	$(".action_button").attr("disabled", true);
+	$.uniform.update(".action_button");
+	annotated = true;
+	
+	$("#text_container").click(function(event) {
+		if( !$( event.target ).is( "a, select, option" ) ){
+			annotated = false;
+			$('#text_container').html(textInput);
+			$('#text_container').removeClass("annotated loading");
+			$("#text_container").unbind('click');
+			$(".action_button").attr("disabled", false);
+			$.uniform.update(".action_button");
+		}
+	});
+
+}
+
+function getTypes() { 
+	var checked_ids = []; 
+	$("#tree_dbpedia").jstree( "get_checked" ).each(function () { 
+		checked_ids.push(this.id); 
+	}); 
+	return checked_ids.join(",");
+}
+
+function runWithSettings() {
+	switch($("#method").val()){
+		case "first-best":
+			run('annotate');
+			break;
+		case "n-best":
+			run('candidates');
+			break;
+	}	
+}
+
+// Override the onload event
+$(document).ready(function() {
+
+	$('#annotate').click(function() { 
+		runWithSettings();
+	});
+  //$('#candidates').click(function() { run('candidates') } );
+
+  		$("#support-slider").slider({
+  			value:0,
+  			min: 0,
+			max: 1000,
+  			step: 10,
+  			slide: function( event, ui ) {
+  				$( "#support" ).val( ui.value );
+  			},
+	  		stop: function( event, ui ) {
+				if(annotated){
+					$('#text_container').html(textInput);
+					runWithSettings();
+				}
+  			}
+  		});
+
+		$("#confidence-slider").slider({
+  			value:0.0,
+  			min: 0,
+  			max: 1,
+  			step: 0.1,
+  			slide: function( event, ui ) {
+  				$( "#confidence" ).val( ui.value );
+  			},
+  			stop: function( event, ui ) {
+				if(annotated){
+					$('#text_container').html(textInput);
+					runWithSettings();
+				}
+  			}
+  		});
+
+		$("#method").change(
+			function() {
+				if(annotated){
+					$('#text_container').html(textInput);
+					runWithSettings();
+				}
+			}
+			);
+
+	    $('.candidates').uniform()
+		$("select, input").uniform();
+		$(".action_button").attr("disabled", false);
+		$("#tree_dbpedia").jstree({
+					"plugins" : [ "themes", "xml_data", "checkbox" ],
+					"themes" : {
+						"icons" : false,
+		        	},
+					"xml_data" : {
+						"ajax" : {
+							"url" : "DBpediaTypes.xml"
+						},
+						"xsl" : "nest"
+					}
+			
+			    });
+			
+		$("#tree_dbpedia").jstree("set_theme","default");
+		
+		$("#type_selector").dialog({ 
+			width: 600,
+			height: 450,
+			autoOpen: false, 
+			position: ['center', 50],
+			title : "Select types…",
+			modal: true,
+			buttons: {
+				"Ok": function() {
+					$( this ).dialog( "close" );
+				},
+				Cancel: function() {
+					$( this ).dialog( "close" );
+				}
+			}
+		});
+		$(".ui-dialog-buttonset button").uniform();
+		
+		$("#types").click(function(event){
+			$("#type_selector").dialog("open");
+			$(".tabs").tabs();
+			
+		});
+		
+		$("#server").change(function(event){
+			switch($("#server").val()){
+				case "no":
+					server = 'http://spotlight.dbpedia.org/rest';
+					if(annotated){
+						$('#text_container').html(textInput);
+						runWithSettings();
+					}
+					break;
+				case "coocc":
+					server = 'http://localhost:2222/rest';
+					if(annotated){
+						$('#text_container').html(textInput);
+						runWithSettings();
+					}
+					break;
+				case "no_dev":
+					server = 'http://spotlight.dbpedia.org/dev/rest';
+					if(annotated){
+						$('#text_container').html(textInput);
+						runWithSettings();
+					}
+					break;	
+					
+			}
+		});
+		
+});
+
+
+</script>
+
+</head>
+
+<body>
+<div class="main" style="margin-top: 5em;">
+	<img id="logo" src="dbpedia_spotlight_logo.jpg" />
+	
+<div id="text_container" class="container"><textarea id="text">A day after American and European forces began a broad campaign of strikes against the government of Col. Muammar el-Qaddafi , the Libyan leader delivered a fresh and defiant tirade on Sunday , pledging retaliation and saying his forces would fight a long war to victory.</textarea></div>
+<div id="action_container" class="container">
+
+<div id="action_options">
+	
+	<div class="option">
+		<label for="confidence">Confidence:</label><input type="text" id="confidence" name="confidence" value="0.0"/>
+	  <div id="confidence-slider" class="slider"></div>
+
+	</div>
+	<div class="option">
+	<label for="support">Support:</label><input type="text" id="support" name="support" value="0"/>
+	  <div id="support-slider" class="slider"></div>
+	</div>
+</div>
+
+<div id="action_buttons">
+
+	<select id="server">
+		<option value="no">Selector: None</option>
+		<option value="coocc">Co-occurrence based selection</option>
+		<option value="no_dev">Selector: None (Development)</option>
+	</select>
+
+	<input class="action_button" id="types" type="button" enabled value="Select types…"/>
+
+	<br />
+
+<select id="method">
+	<option value="first-best">first-best</option>
+	<option value="n-best">n-best</option>
+</select>
+
+<input class="action_button" id="annotate" type="button" enabled value="Annotate"/>
+</div>
+</div>
+
+<div id="bookmarklet_container" class="container" style="display: none;">
+
+<h2>Bookmarklet</h2>
+<div>
+Tired of copying and pasting text here?
+Drag the box "Annotate with DBpedia Spotlight" below to your bookmarks bar.
+After doing that, simply select text in any page and click on the bookmark you've just saved to your bookmarks bar.
+That will send the text you've selected to DBpedia Spotlight and take you to the annotated text in a blink!
+<div class="bookmarklet">
+<p>
+<a href="javascript:function se(d) {return d.selection ? d.selection.createRange().text : d.getSelection()} s = se(document); for (i=0; i<frames.length && !s; i++) s = se(frames[i].document); if (!s || s=='') s = prompt('Enter%20text%20to%20annotate%20with%20DBpedia%20Spotlight',''); open('http://spotlight.dbpedia.org/rest' + (s ? '/annotate?client=bookmarklet&text=' + encodeURIComponent(s) : '')).focus();">
+Annotate with DBpedia Spotlight
+</a></p>
+</div>
+
+
+</div>
+</div>
+
+<div id="type_selector">
+	<div class="tabs">
+		<ul>
+			<li><a href="#tabs-1">DBpedia</a></li>
+			<li><a href="#tabs-2">Freebase</a></li>
+			<li><a href="#tabs-3">Custom (SPARQL)</a></li>
+		</ul>
+		
+		<div id="tabs-1">
+			<ul>
+				<li id="tree_dbpedia" class="tree" />
+			</ul>
+		</div>
+
+		<div id="tabs-2">
+		<ul>
+			<li id="tree_freebase" class="tree" />
+		</ul>
+		</div>
+	
+		<div id="tabs-3">
+			<textarea>
+				Example
+			</textarea>
+		</div>
+	</div>
+</div>
+
+</div>
+
+</body>
+</html>
+
