@@ -20,6 +20,10 @@ package org.dbpedia.spotlight.web.rest.output;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 
+/**
+ * Generates XML and JSON
+ * @author maxjakob
+ */
 public class OutputSerializer {
 
     XStream xmlStreamer;

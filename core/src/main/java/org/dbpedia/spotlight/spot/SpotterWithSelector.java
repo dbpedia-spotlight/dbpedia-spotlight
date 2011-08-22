@@ -52,6 +52,7 @@ public abstract class SpotterWithSelector implements Spotter {
 	protected abstract Text buildText(Text text);
 
 	public List<SurfaceFormOccurrence> extract(Text text) {
+        LOG.debug(String.format("Spotting with spotter %s and selector %s.",spotter.name(),spotSelector));
 
 		Text textObject = buildText(text);
 

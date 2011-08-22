@@ -17,6 +17,7 @@
 package org.dbpedia.spotlight.web.rest.resources;
 
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
+import org.dbpedia.spotlight.model.SpotterConfiguration;
 import org.dbpedia.spotlight.web.rest.Server;
 import org.dbpedia.spotlight.web.rest.SpotlightInterface;
 
@@ -39,7 +40,7 @@ public class Disambiguate {
     private UriInfo context;
 
     // Disambiguation interface
-    private static SpotlightInterface disambigInterface = SpotlightInterface.getInstance(Server.getDisambiguator(), Server.getConfiguration());
+    private static SpotlightInterface disambigInterface = SpotlightInterface.getInstance(Server.getDisambiguator());
 
     // Sets the necessary headers in order to enable CORS
     private Response ok(String response) {
@@ -58,7 +59,7 @@ public class Disambiguate {
                           @Context HttpServletRequest request
     ) throws Exception {
         String clientIp = request.getRemoteAddr();
-        return ok(disambigInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp));
+        return ok(disambigInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterConfiguration.SpotterPolicy.UserProvidedSpots));
     }
 
     @GET
@@ -73,7 +74,7 @@ public class Disambiguate {
                           @Context HttpServletRequest request
     ) throws Exception {
         String clientIp = request.getRemoteAddr();
-        return ok(disambigInterface.getRDFa(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp));
+        return ok(disambigInterface.getRDFa(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterConfiguration.SpotterPolicy.UserProvidedSpots));
     }
 
     @GET
@@ -89,7 +90,7 @@ public class Disambiguate {
     ) throws Exception {
         String clientIp = request.getRemoteAddr();
 
-        return ok(disambigInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp));
+        return ok(disambigInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterConfiguration.SpotterPolicy.UserProvidedSpots));
     }
 
     @GET
@@ -105,7 +106,7 @@ public class Disambiguate {
     ) throws Exception {
         String clientIp = request.getRemoteAddr();
 
-        return ok(disambigInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp));
+        return ok(disambigInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterConfiguration.SpotterPolicy.UserProvidedSpots));
     }
 
 }

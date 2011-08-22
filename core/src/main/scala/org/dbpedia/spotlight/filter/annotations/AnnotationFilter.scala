@@ -21,8 +21,7 @@ import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
 
 /**
  * Filter result annotations based on scores, types, SPARQL queries etc.
- * These filters ought to be applied after the annotation or disambiguation process to increase precision.
+ * These filters are applied after the annotation or disambiguation process in order to match user policies.
  * @author maxjakob
  */
-
 trait AnnotationFilter extends Filter

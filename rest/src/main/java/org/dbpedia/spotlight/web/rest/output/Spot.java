@@ -70,4 +70,5 @@ public class Spot {
         spot.setResource(Resource.getInstance(occ));
         return spot;
     }
+
 }

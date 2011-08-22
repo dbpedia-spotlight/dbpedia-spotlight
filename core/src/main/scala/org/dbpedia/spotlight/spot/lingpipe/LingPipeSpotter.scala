@@ -67,6 +67,7 @@ class LingPipeSpotter(val dictionary : Dictionary[String], val overlap : Boolean
      * Extracts a set of surface form occurrences from text.
      */
     def extract(text : Text) : java.util.List[SurfaceFormOccurrence] = {
+        LOG.debug("Spotting with dictionary: %s.".format(fileName))
         val chunkSet = dictionaryChunker.chunk(text.text).chunkSet
         chunkSet.toList.map{ chunk =>
             val textOffsetStart = chunk.start

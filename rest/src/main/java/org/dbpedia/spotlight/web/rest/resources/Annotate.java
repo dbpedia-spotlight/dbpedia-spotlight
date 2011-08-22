@@ -17,11 +17,10 @@
 package org.dbpedia.spotlight.web.rest.resources;
 
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
+import org.dbpedia.spotlight.model.SpotterConfiguration;
 import org.dbpedia.spotlight.web.rest.Server;
 import org.dbpedia.spotlight.web.rest.SpotlightInterface;
-import sun.util.LocaleServiceProviderPool;
 
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -46,7 +45,7 @@ public class Annotate {
     private UriInfo context;
 
     // Annotation interface
-    private static SpotlightInterface annotationInterface = SpotlightInterface.getInstance(Server.getAnnotator(), Server.getConfiguration());
+    private static SpotlightInterface annotationInterface = SpotlightInterface.getInstance(Server.getSpotters(), Server.getDisambiguator());
 
     // Sets the necessary headers in order to enable CORS
     private Response ok(String response) {
@@ -62,11 +61,13 @@ public class Annotate {
                             @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
                             @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
                             @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution,
+                            @DefaultValue(SpotlightConfiguration.DEFAULT_SPOTTER) @QueryParam("spotter") String spotter,
                             @Context HttpServletRequest request) {
+
         String clientIp = request.getRemoteAddr();
 
         try {
-            String response = annotationInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp);
+            String response = annotationInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterConfiguration.SpotterPolicy.valueOf(spotter));
             return ok(response);
         } catch (Exception e) {
             e.printStackTrace();
@@ -84,18 +85,19 @@ public class Annotate {
                           @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
                           @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
                           @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution,
+                          @DefaultValue(SpotlightConfiguration.DEFAULT_SPOTTER) @QueryParam("spotter") String spotter,
                           @Context HttpServletRequest request) {
         String clientIp = request.getRemoteAddr();
 
         try {
-            return ok(annotationInterface.getRDFa(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp));
+            return ok(annotationInterface.getRDFa(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterConfiguration.SpotterPolicy.valueOf(spotter)));
         } catch (Exception e) {
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(e.getMessage()).type(MediaType.APPLICATION_XHTML_XML).build());
         }
     }
 
     @GET
-    @Produces(MediaType.TEXT_XML)
+    @Produces({MediaType.TEXT_XML,MediaType.APPLICATION_XML})
     public Response getXML(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
                          @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
                          @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
@@ -103,11 +105,12 @@ public class Annotate {
                          @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
                          @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
                          @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution,
+                         @DefaultValue(SpotlightConfiguration.DEFAULT_SPOTTER) @QueryParam("spotter") String spotter,
                           @Context HttpServletRequest request) {
         String clientIp = request.getRemoteAddr();
 
         try {
-            return ok(annotationInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp));
+            return ok(annotationInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterConfiguration.SpotterPolicy.valueOf(spotter)));
        } catch (Exception e) {
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(e.getMessage()).type(MediaType.TEXT_XML).build());
         }
@@ -122,11 +125,12 @@ public class Annotate {
                           @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
                           @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
                           @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution,
+                          @DefaultValue(SpotlightConfiguration.DEFAULT_SPOTTER) @QueryParam("spotter") String spotter,
                           @Context HttpServletRequest request) {
         String clientIp = request.getRemoteAddr();
 
         try {
-            return ok(annotationInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp));
+            return ok(annotationInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterConfiguration.SpotterPolicy.valueOf(spotter)));
        } catch (Exception e) {
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(e.getMessage()).type(MediaType.APPLICATION_JSON).build());
         }
@@ -145,9 +149,10 @@ public class Annotate {
       @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
       @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @FormParam("policy") String policy,
       @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @FormParam("coreferenceResolution") boolean coreferenceResolution,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_SPOTTER) @QueryParam("spotter") String spotter,
       @Context HttpServletRequest request              
       ) {
-        return getHTML(text,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,request);
+        return getHTML(text,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,spotter,request);
     }
     
     @POST
@@ -161,9 +166,10 @@ public class Annotate {
       @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
       @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @FormParam("policy") String policy,
       @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @FormParam("coreferenceResolution") boolean coreferenceResolution,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_SPOTTER) @QueryParam("spotter") String spotter,
       @Context HttpServletRequest request              
       ) {
-        return getRDFa(text,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,request);
+        return getRDFa(text,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,spotter,request);
     }
     
     @POST
@@ -177,9 +183,10 @@ public class Annotate {
       @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
       @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @FormParam("policy") String policy,
       @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @FormParam("coreferenceResolution") boolean coreferenceResolution,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_SPOTTER) @QueryParam("spotter") String spotter,
       @Context HttpServletRequest request              
       ) {
-        return getXML(text,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,request);
+        return getXML(text,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,spotter,request);
     }
       
     @POST
@@ -193,9 +200,10 @@ public class Annotate {
       @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
       @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @FormParam("policy") String policy,
       @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @FormParam("coreferenceResolution") boolean coreferenceResolution,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_SPOTTER) @QueryParam("spotter") String spotter,
       @Context HttpServletRequest request              
       ) {
-        return getJSON(text,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,request);
+        return getJSON(text,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,spotter,request);
       }
 
 }

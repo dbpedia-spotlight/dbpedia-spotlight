@@ -19,9 +19,10 @@ package org.dbpedia.spotlight.filter
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
 
 /**
- * Base interface for annoation and occurrence filters.
+ * Base interface for annotation and occurrence filters.
+ * OccurrenceFilters are applied during indexing and AnnotationFilters are applied after disambiguation.
+ * @author maxjakob
  */
-
 trait Filter {
 
     def filterOccs(occs : Traversable[DBpediaResourceOccurrence]) : Traversable[DBpediaResourceOccurrence] = {

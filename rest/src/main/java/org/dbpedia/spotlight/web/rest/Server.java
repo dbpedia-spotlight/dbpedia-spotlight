@@ -23,6 +23,8 @@ import org.dbpedia.spotlight.disambiguate.Disambiguator;
 import org.dbpedia.spotlight.exceptions.InitializationException;
 import org.dbpedia.spotlight.model.SpotlightFactory;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
+import org.dbpedia.spotlight.model.SpotterConfiguration;
+import org.dbpedia.spotlight.spot.Spotter;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,7 +36,8 @@ import java.util.Map;
 /**
  * Instantiates Web Service that will execute annotation and disambiguation tasks.
  *
- * @author maxjakob, pablomendes
+ * @author maxjakob
+ * @author pablomendes - added WADL generator config, changed to Grizzly
  */
 
 public class Server {
@@ -44,6 +47,9 @@ public class Server {
 
     // Server will hold a singleton annotator that will be used by all Annotate and Disambiguate objects
     protected static Annotator annotator;
+
+    // Server will hold a few spotters that can be chosen from URL parameters
+    protected static Map<SpotterConfiguration.SpotterPolicy,Spotter> spotters = new HashMap<SpotterConfiguration.SpotterPolicy,Spotter>();
 
     private static volatile Boolean running = true;
 
@@ -69,6 +75,7 @@ public class Server {
         // Set static annotator that will be used by Annotate and Disambiguate
         final SpotlightFactory factory = new SpotlightFactory(configuration);
         setAnnotator(factory.annotator());
+        setSpotters(factory.spotters());
         //setAnnotator(new DefaultAnnotator(spotterFile,//commonWordsFile,indexDir));
 
         final Map<String, String> initParams = new HashMap<String, String>();
@@ -119,12 +126,23 @@ public class Server {
             throw new InitializationException("Trying to overwrite singleton Server.annotator. Something fishy happened!");
     }
 
+    private static void setSpotters(Map<SpotterConfiguration.SpotterPolicy,Spotter> s) throws InitializationException {
+        if (spotters.size() == 0)
+            spotters = s;
+        else
+            throw new InitializationException("Trying to overwrite singleton Server.spotters. Something fishy happened!");
+    }
+
     public static Annotator getAnnotator() {
         return annotator;
     }
 
     public static Disambiguator getDisambiguator() {
         return annotator.disambiguator();
+    }
+
+    public static Map<SpotterConfiguration.SpotterPolicy,Spotter> getSpotters() {
+        return spotters;
     }
 
     public static SpotlightConfiguration getConfiguration() {

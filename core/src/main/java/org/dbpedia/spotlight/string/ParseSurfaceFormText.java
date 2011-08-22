@@ -24,11 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by IntelliJ IDEA.
- * User: Max
- * Date: 20.09.2010
- * Time: 15:52:05
- * To change this template use File | Settings | File Templates.
+ * Functions to deal with wiki markup.
+ * @author maxjakob
  */
 public class ParseSurfaceFormText {
 
