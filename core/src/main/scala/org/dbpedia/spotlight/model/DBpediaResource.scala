@@ -25,7 +25,7 @@ import java.io.Serializable
 class DBpediaResource(var uri : String,
                       var support : Int = 0,
                       var prior : Double = 0.0,
-                      var types : List[DBpediaType] = List[DBpediaType]())
+                      var types : List[OntologyType] = List[OntologyType]())
 {
     require(uri != null)
 
@@ -70,14 +70,14 @@ class DBpediaResource(var uri : String,
         prior = s
     }
 
-    def setTypes(typesList : java.util.List[DBpediaType]) {
+    def setTypes(typesList : java.util.List[OntologyType]) {
         types = typesList.toList
     }
 
-    def getTypes : java.util.List[DBpediaType] = types
+    def getTypes : java.util.List[OntologyType] = types
 
     override def toString = {
-        val typesString = if (types.nonEmpty) types.map(_.name).mkString("(", ",", ")") else ""
+        val typesString = if (types.nonEmpty) types.map(_.typeID).mkString("(", ",", ")") else ""
 
         if (isCommonWord) {
             "WiktionaryResource["+uri+typesString+"]"

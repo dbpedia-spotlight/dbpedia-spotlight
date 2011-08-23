@@ -16,13 +16,11 @@ import collection.JavaConversions._
 import org.dbpedia.spotlight.lucene.search.{BaseSearcher, MergedOccurrencesContextSearcher}
 import org.dbpedia.spotlight.candidate.{CoOccurrenceBasedSelector}
 import com.aliasi.sentences.IndoEuropeanSentenceModel
+import org.dbpedia.spotlight.spot.{AtLeastOneNounSelector, SpotterWithSelector}
 import org.dbpedia.spotlight.tagging.lingpipe.{LingPipeTextUtil, LingPipeTaggedTokenProvider, LingPipeFactory}
 import org.dbpedia.spotlight.disambiguate.{ DefaultDisambiguator}
 import org.apache.lucene.search.{ScoreDoc, Similarity}
 import org.dbpedia.spotlight.exceptions.{ItemNotFoundException, ConfigurationException}
-import java.util.HashMap
-import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy
-import org.dbpedia.spotlight.spot.{WikiMarkupSpotter, Spotter, AtLeastOneNounSelector, SpotterWithSelector}
 
 /**
  * Class containing methods to create model objects in many different ways
@@ -71,6 +69,37 @@ object Factory {
             new DBpediaResourceOccurrence("", resource, sfOcc.surfaceForm, sfOcc.context, sfOcc.textOffset, Provenance.Annotation, hit.score, percentageOfSecond, hit.score)
         }
     }
+  
+    object DBpediaResource {
+    val dbpediaResourceFactory : DBpediaResourceFactory = new DBpediaResourceFactorySQL(
+      "org.hsqldb.jdbcDriver",
+      "jdbc:hsqldb:file:/Users/jodaiber/Desktop/spotlight-db",
+      "sa",
+      "")
+
+    def from(dbpediaID : String) : DBpediaResource = dbpediaResourceFactory.from(dbpediaID)
+    def from(dbpediaResource : DBpediaResource) = dbpediaResourceFactory.from(dbpediaResource.uri)
+  }
+
+  object OntologyType {
+
+    def from(ontologyType : String) : OntologyType = {
+
+      val r = """^([A-Za-z]):(.*)""".r
+
+      try {
+        val r(prefix,suffix) = ontologyType
+
+        prefix match {
+          case "D" | "DBpedia" => new DBpediaType(suffix)
+          case "F" | "Freebase" => new FreebaseType(suffix)
+        }
+      }catch{
+        //The default type for non-prefixed type strings:
+        case e: scala.MatchError => new DBpediaType(ontologyType)
+      }
+    }
+  }
 
     object Paragraph {
         def from(a: AnnotatedParagraph) = {
@@ -154,8 +183,6 @@ class SpotlightFactory(val configuration: SpotlightConfiguration,
 
     val searcher = new MergedOccurrencesContextSearcher(luceneManager);
 
-    val spotters = new HashMap[SpotterConfiguration.SpotterPolicy,Spotter]()
-
     def disambiguator() = {
         //val mixture = new LinearRegressionMixture
         //new MixedWeightsDisambiguator(searcher,mixture);
@@ -163,23 +190,15 @@ class SpotlightFactory(val configuration: SpotlightConfiguration,
         //new GraphCentralityDisambiguator(configuration)
     }
 
-    def spotter(policy: SpotterConfiguration.SpotterPolicy) : Spotter = {
-        if (policy == SpotterConfiguration.SpotterPolicy.LingPipeSpotter)
-            spotters.getOrElse(policy, new LingPipeSpotter(new File(configuration.getSpotterConfiguration.getSpotterFile)))
-        else if (policy == SpotterConfiguration.SpotterPolicy.AtLeastOneNounSelector) {
-            spotters.getOrElse(policy, SpotterWithSelector.getInstance(spotter(SpotterConfiguration.SpotterPolicy.LingPipeSpotter),new AtLeastOneNounSelector(),taggedTokenProvider()))
-        } else if (policy == SpotterConfiguration.SpotterPolicy.CoOccurrenceBasedSelector) {
-            spotters.getOrElse(policy, SpotterWithSelector.getInstance(spotter(SpotterConfiguration.SpotterPolicy.LingPipeSpotter),new CoOccurrenceBasedSelector(configuration.getSpotterConfiguration),taggedTokenProvider()))
-        } else {
-            new WikiMarkupSpotter
-        }
-    }
+    def spotter() ={
+        //For the simple spotter (no spot selection)
+        //new LingPipeSpotter(new File(configuration.getSpotterConfiguration.getSpotterFile));
 
-    def spotter() : Spotter = {
-        configuration.getSpotterConfiguration.getSpotterPolicies().foreach( policy => {
-            spotters.put(policy, spotter(policy))
-        })
-        spotters.head._2
+        SpotterWithSelector.getInstance(
+          new LingPipeSpotter(new File(configuration.getSpotterConfiguration.getSpotterFile)),
+          new AtLeastOneNounSelector(),
+          taggedTokenProvider()
+        );
     }
 
     def annotator() ={
