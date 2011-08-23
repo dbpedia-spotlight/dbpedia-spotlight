@@ -18,10 +18,13 @@ package org.dbpedia.spotlight.lucene.index
 
 import org.dbpedia.spotlight.lucene.LuceneManager
 import org.apache.lucene.store.FSDirectory
-import java.io.File
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.model.SurfaceForm
-import org.dbpedia.spotlight.util.{IndexingConfiguration, SurrogatesUtil}
+import org.dbpedia.spotlight.util.{IndexingConfiguration, ExtractCandidateMap}
+import java.util.Scanner
+import java.io.{FileInputStream, File}
+import org.apache.commons.logging.{LogFactory, Log}
+import javax.xml.crypto.dsig.Transform
 
 /**
  * In our first implementation we used to index all anchor text found in Wikipedia as surface forms to a target URI.
@@ -34,15 +37,57 @@ import org.dbpedia.spotlight.util.{IndexingConfiguration, SurrogatesUtil}
 
 object AddSurfaceFormsToIndex
 {
+    val LOG: Log = LogFactory.getLog(this.getClass)
+
+    def toLowercase(sf: String, lowerCased: Boolean) = {
+        if (lowerCased) sf.toLowerCase else sf
+    }
+
+    def fromTitlesToAlternatives(sf: String) = {
+        var modified = sf.toLowerCase
+        if (sf.startsWith("the "))
+            modified = sf.replace("the ","")
+        if (sf.startsWith("a "))
+            modified = sf.replace("a ","")
+        if (sf.startsWith("an "))
+            modified = sf.replace("an ","")
+        sf.replaceAll("[^A-Za-z0-9 ]", "")
+    }
+
+    // map from URI to list of surface forms
+    // used by IndexEnricher
+    // uri -> list(sf1, sf2)
+    def loadSurfaceForms(surfaceFormsFileName: String, transform : String => String) = {
+
+        LOG.info("Getting surface form map...")
+        val reverseMap : java.util.Map[String, java.util.LinkedHashSet[SurfaceForm]] = new java.util.HashMap[String, java.util.LinkedHashSet[SurfaceForm]]()
+        val separator = "\t"
+        val tsvScanner = new Scanner(new FileInputStream(surfaceFormsFileName), "UTF-8")
+        while (tsvScanner.hasNextLine) {
+            val line = tsvScanner.nextLine.split(separator)
+            val sf = transform(line(0))
+            val uri = line(1)
+            var sfList = reverseMap.get(uri)
+            if (sfList == null) {
+                sfList = new java.util.LinkedHashSet[SurfaceForm]()
+            }
+            sfList.add(new SurfaceForm(sf))
+            reverseMap.put(uri, sfList)
+        }
+        LOG.info("Done.")
+        reverseMap
+
+    }
 
     def main(args : Array[String]) {
         val indexingConfigFileName = args(0)
+        var lowerCased = if (args.size>1) args(1).toLowerCase().contains("lowercase") else false
 
         val config = new IndexingConfiguration(indexingConfigFileName)
         val indexFileName = config.get("org.dbpedia.spotlight.index.dir")
         val surfaceFormsFileName = config.get("org.dbpedia.spotlight.data.surfaceForms")
 
-        val lowerCased = true
+
 
         val indexFile = new File(indexFileName)
         if (!indexFile.exists)
@@ -50,7 +95,7 @@ object AddSurfaceFormsToIndex
         val luceneManager = new LuceneManager.BufferedMerging(FSDirectory.open(indexFile))
 
         val sfIndexer = new IndexEnricher(luceneManager)
-        val sfMap = SurrogatesUtil.getSurfaceFormsMap_java(new File(surfaceFormsFileName), lowerCased)
+        val sfMap = loadSurfaceForms(surfaceFormsFileName, toLowercase(_,lowerCased))
         sfIndexer.enrichWithSurfaceForms(sfMap)
         sfIndexer.close
     }

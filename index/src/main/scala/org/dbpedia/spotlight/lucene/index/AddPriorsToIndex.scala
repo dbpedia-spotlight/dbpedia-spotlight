@@ -20,7 +20,7 @@ package org.dbpedia.spotlight.lucene.index
 
 import scalaj.collection.Imports._
 import org.dbpedia.spotlight.lucene.LuceneManager
-import org.dbpedia.spotlight.util.{SurrogatesUtil, IndexingConfiguration}
+import org.dbpedia.spotlight.util.{ExtractCandidateMap, IndexingConfiguration}
 import java.io.File
 import io.Source
 import org.dbpedia.spotlight.model.DBpediaResource
@@ -56,7 +56,7 @@ object AddPriorsToIndex {
         if (!indexFile.exists)
             throw new ConfigurationException("index dir "+indexFile+" does not exist; can't add priors")
         if (!new File(priorsFileName).exists)
-            throw new ConfigurationException("priors file "+indexFile+" does not exist; can't add priors")
+            throw new ConfigurationException("priors file "+priorsFileName+" does not exist; can't add priors")
 
         val luceneManager = new LuceneManager.BufferedMerging(FSDirectory.open(indexFile))
 

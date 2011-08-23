@@ -16,18 +16,31 @@
 
 package org.dbpedia.spotlight.filter.occurrences
 
-import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
+import org.dbpedia.spotlight.model.{DBpediaResource, DBpediaResourceOccurrence}
 
+/**
+ *
+ * TODO i18n can transform this class into a BlacklistedPatternsFilter and read patterns from file.
+ */
+class ListPagesFilter extends OccurrenceFilter {
 
-class ConceptUriFilter(val conceptUris : Set[String]) extends OccurrenceFilter {
+    val listPrefix = "List_of_"
 
     def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
-        if(conceptUris contains occ.resource.uri) {
+        if(!isListResource(occ.resource) && !isListSource(occ)) {
             Some(occ)
         }
         else {
             None
         }
+    }
+
+    def isListResource(resource : DBpediaResource) : Boolean = {
+        resource.uri startsWith listPrefix
+    }
+
+    def isListSource(occ : DBpediaResourceOccurrence) : Boolean = {
+        occ.id startsWith listPrefix
     }
 
 }

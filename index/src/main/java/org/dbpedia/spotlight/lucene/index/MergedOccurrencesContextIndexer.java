@@ -33,8 +33,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The intention of this class is to use an in-memory map to mergeDoc1IntoDoc2 occurrences
- * and only mergeDoc1IntoDoc2 them with the disk every once in a while.
+ * The intention of this class is to use an in-memory map to merge a lot of occurrences in memory
+ * and only merge them with the disk every once in a while.
+ * That is because lucene only offers updates through a delete+rewrite.
+ * Therefore we have to read the entire doc into memory, merge with the occurrences we've found
+ * and then write it back to disk.
  * 
  * @author pablomendes
  */
@@ -49,6 +52,7 @@ public class MergedOccurrencesContextIndexer extends OccurrenceContextIndexer {
     int minNumDocsBeforeFlush;
     int maxMergesBeforeOptimize;
     boolean lastOptimize;
+    int numberOfSegmentsForOptimize = 4;
 
     private int numMerges = 0;
 
@@ -131,6 +135,11 @@ public class MergedOccurrencesContextIndexer extends OccurrenceContextIndexer {
 
             // Clear the buffer, unless the disk operation above failed
             uriToDocumentMap = new HashMap<String,Document>();
+            try {
+                Runtime.getRuntime().gc();
+            } catch (Exception e) {
+                LOG.error("Error forcing garbage collection.");
+            }
             
             try {
                 LOG.info("Now committing...");
@@ -215,9 +224,14 @@ public class MergedOccurrencesContextIndexer extends OccurrenceContextIndexer {
             merge();
             if (lastOptimize) {
                 LOG.info("Last optimization of index before closing...");
-                mWriter.optimize();
+                mWriter.optimize(numberOfSegmentsForOptimize);
                 LOG.info("Done.");
             }
+
+            LOG.info("Expunging deletes from index before closing...");
+            mWriter.expungeDeletes();
+            LOG.info("Done.");
+            mWriter.commit();
             mWriter.close();
             LOG.info("Index closed.");
         } catch (IndexException e) {

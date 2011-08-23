@@ -1,12 +1,18 @@
-# You are expected to run this script from inside the bin directory in your DBpedia Spotlight installation
-# Adjust the paths here if you don't.
+# You are expected to run the commands in this script from inside the bin directory in your DBpedia Spotlight installation
+# Adjust the paths here if you don't. This script is meant more as a step-by-step guidance than a real automated run-all.
+# If this is your first time running the script, we advise you to copy/paste commands from here, closely watching the messages
+# and the final output.
+#
 # @author maxjakob, pablomendes
 
 here = `pwd`
 
 INDEX_CONFIG_FILE=../conf/indexing.properties
 
-JAVA_OPTS=-Xmx5g
+# the indexing process merges occurrences in memory to speed up the process. the more memory the better
+export JAVA_OPTS="-Xmx14G"
+export MAVEN_OPTS="-Xmx14G"
+export SCALA_OPTS="-Xmx14G"
 
 # you have to run maven2 from the module that contains the indexing classes
 cd ../index
@@ -14,12 +20,12 @@ cd ../index
 mkdir output
 
 # first step is to extract valid URIs, synonyms and surface forms from DBpedia
-mvn scala:run -DmainClass=org.dbpedia.spotlight.util.SurrogatesUtil "-DaddArgs=$INDEX_CONFIG_FILE"
+mvn scala:run -DmainClass=org.dbpedia.spotlight.util.ExtractCandidateMap "-DaddArgs=$INDEX_CONFIG_FILE"
 
 # now we collect parts of Wikipedia dump where DBpedia resources occur and output those occurrences as Tab-Separated-Values
 mvn scala:run -DmainClass=org.dbpedia.spotlight.lucene.index.ExtractOccsFromWikipedia "-DaddArgs=$INDEX_CONFIG_FILE|output/occs.tsv"
 
-# sorting the occurrences by URI will speed up context merging during indexing
+# (recommended) sorting the occurrences by URI will speed up context merging during indexing
 sort -t'   ' -k2 output/occs.tsv >output/occs.uriSorted.tsv
 
 # create a lucene index out of the occurrences

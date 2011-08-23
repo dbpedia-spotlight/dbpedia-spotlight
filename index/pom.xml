@@ -18,6 +18,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -29,6 +30,33 @@
     <artifactId>index</artifactId>
     <packaging>jar</packaging>
     <name>DBpedia Spotlight Indexing</name>
+
+    <properties>
+        <heapspace.Xmx.indexer>-Xmx14g</heapspace.Xmx.indexer>
+    </properties>
+
+    <build>
+        <plugins>
+
+            <plugin>
+                <groupId>org.scala-tools</groupId>
+                <artifactId>maven-scala-plugin</artifactId>
+
+                <configuration>
+                    <launchers>
+                        <launcher>
+                            <id>indexer</id>
+                            <mainClass>org.dbpedia.spotlight.lucene.index.IndexMergedOccurrences</mainClass>
+                            <jvmArgs>
+                                <jvmArg>-Xmx14G</jvmArg>
+                            </jvmArgs>
+                        </launcher>
+                    </launchers>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
 
 
     <dependencies>

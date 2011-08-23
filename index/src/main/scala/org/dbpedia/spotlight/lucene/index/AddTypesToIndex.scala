@@ -24,15 +24,16 @@ import java.io.{FileInputStream, File}
 import org.dbpedia.spotlight.util.{IndexingConfiguration, TypesLoader}
 
 /**
- * Created by IntelliJ IDEA.
- * User: Max
- * Date: 30.08.2010
- * Time: 11:13:10
- * To change this template use File | Settings | File Templates.
+ * Reads file instance_types_en.nt from DBpedia in order to add DBpedia Resource Types to the index.
+ *
+ * @author maxjakob
  */
+object AddTypesToIndex {
 
-object AddTypesToIndex
-{
+    def loadTypes(instanceTypesFileName: String) = {
+        TypesLoader.getTypesMap_java(new FileInputStream(instanceTypesFileName));
+    }
+
     def main(args : Array[String]) {
         val indexingConfigFileName = args(0)
 
@@ -42,13 +43,13 @@ object AddTypesToIndex
 
         val indexFile = new File(indexFileName)
         if (!indexFile.exists) {
-            throw new IllegalArgumentException("index dir "+indexFile+" does not exists; can't add types")
+            throw new IllegalArgumentException("index dir "+indexFile+" does not exist; can't add types")
         }
         val luceneManager = new LuceneManager.BufferedMerging(FSDirectory.open(indexFile))
 
         val typesIndexer = new IndexEnricher(luceneManager)
 
-        val typesMap = TypesLoader.getTypesMap_java(new FileInputStream(instanceTypesFileName));
+        val typesMap = loadTypes(instanceTypesFileName)
         typesIndexer.enrichWithTypes(typesMap)
         typesIndexer.close
     }

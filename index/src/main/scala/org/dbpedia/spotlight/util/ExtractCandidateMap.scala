@@ -41,11 +41,11 @@ import java.net.URI
  * @author maxjakob
  * @author pablomendes (created blacklisted URI patterns for language-specific stuff (e.g. List_of, etc.)
  */
-object SurrogatesUtil
+object ExtractCandidateMap
 {
     private val LOG = LogFactory.getLog(this.getClass)
 
-    var maximumSurfaceFormLength = 100
+    var maximumSurfaceFormLength = 50
 
     // DBpedia input
     var titlesFileName          = ""
@@ -308,29 +308,6 @@ object SurrogatesUtil
         else {
             None
         }
-    }
-
-    // map from URI to list of surface forms
-    // used by IndexEnricher
-    // uri -> list(sf1, sf2)
-    def getSurfaceFormsMap_java(surrogatesFile : File, lowerCased : Boolean=false) : java.util.Map[String, java.util.LinkedHashSet[SurfaceForm]] = {
-        LOG.info("Getting surface form map...")
-        val reverseMap : java.util.Map[String, java.util.LinkedHashSet[SurfaceForm]] = new java.util.HashMap[String, java.util.LinkedHashSet[SurfaceForm]]()
-        val separator = "\t"
-        val tsvScanner = new Scanner(new FileInputStream(surrogatesFile), "UTF-8")
-        while (tsvScanner.hasNextLine) {
-            val line = tsvScanner.nextLine.split(separator)
-            val sf = if (lowerCased) line(0).toLowerCase else line(0)
-            val uri = line(1)
-            var sfList = reverseMap.get(uri)
-            if (sfList == null) {
-                sfList = new java.util.LinkedHashSet[SurfaceForm]()
-            }
-            sfList.add(new SurfaceForm(sf))
-            reverseMap.put(uri, sfList)
-        }
-        LOG.info("Done.")
-        reverseMap
     }
 
     // map from URI to list of surface forms

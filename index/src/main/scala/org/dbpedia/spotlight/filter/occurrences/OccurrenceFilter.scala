@@ -20,7 +20,8 @@ import org.dbpedia.spotlight.filter.Filter
 
 /**
  * Filter occurrences based on the properties of the data, for example the to resolve redirect URIs, to filter out very long surface forms, etc.
- * These filters ought to be applied before indexing.
+ * These filters were made to be applied before/during indexing.
+ *
+ * @author maxjakob
  */
-
 trait OccurrenceFilter extends Filter

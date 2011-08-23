@@ -192,26 +192,15 @@ public class LuceneManager {
     }
 
     /**
-     * Updates the URI_COUNT count of doc2 with the URI_COUNT of doc1.
-     * @param doc1
-     * @param doc2
-     * @return doc2 with updated URI_COUNT field
-     */
-    private Document updateUriCount(Document doc1, Document doc2) {
-        Field f = getUriCountField(0);
-        f.setValue(Integer.toString(getUriCount(doc1)+getUriCount(doc2)));
-        doc2.removeField(DBpediaResourceField.URI_COUNT.toString());
-        doc2.add(f);
-        return doc2;
-    }
-
-    /**
      * Index URIs only once. Aggregate URI_COUNT. Merge rest.
      */
     public Document merge(Document doc1, Document doc2) {
         for (DBpediaResourceField fieldName: DBpediaResourceField.values()) {
-            if(fieldName == DBpediaResourceField.URI_COUNT) {
-                doc2 = updateUriCount(doc1, doc2);
+            if(fieldName.equals(DBpediaResourceField.URI_COUNT)) { // Updates the URI_COUNT count of doc2 with the URI_COUNT of doc1.
+                Field f = getUriCountField(0);
+                f.setValue(Integer.toString(getUriCount(doc1)+getUriCount(doc2)));
+                doc2.removeField(DBpediaResourceField.URI_COUNT.toString());
+                doc2.add(f);
                 continue;
             }
             Field[] fields = doc1.getFields(fieldName.toString());
@@ -253,6 +242,20 @@ public class LuceneManager {
             doc.removeFields(LuceneManager.DBpediaResourceField.URI_PRIOR.toString());
         }
         doc.add(priorField);
+
+        return doc;
+    }
+
+    public Document add(Document doc, Integer count) {
+
+        Field countField = doc.getField(LuceneManager.DBpediaResourceField.URI_COUNT.toString());
+        if (countField==null) {
+            countField = getUriCountField(count);
+        } else {
+            countField.setValue(count.toString());
+            doc.removeFields(LuceneManager.DBpediaResourceField.URI_COUNT.toString());
+        }
+        doc.add(countField);
 
         return doc;
     }
@@ -556,7 +559,7 @@ public class LuceneManager {
     public Document createDocument(DBpediaResourceOccurrence resourceOccurrence) {
         Document doc = new Document();
         doc.add(getField(resourceOccurrence.resource()));
-        doc.add(getField(resourceOccurrence.surfaceForm()));  //uncomment this if you want anchor texts as surface forms; otherwise index surface forms in a second run together with types
+        //doc.add(getField(resourceOccurrence.surfaceForm()));  //uncomment this if you want anchor texts as surface forms; otherwise index surface forms in a second run together with types
         doc.add(getField(resourceOccurrence.context()));
         doc.add(getUriCountField(resourceOccurrence.resource().support()));
         doc.add(getUriPriorField(resourceOccurrence.resource().prior()));

@@ -46,16 +46,11 @@ class IndexingConfiguration(val configFile: File) {
         this(new File(fileName))
     }
 
-    var language = "English";
-    var analyzer : Analyzer = new StandardAnalyzer(Version.LUCENE_29)
-
     private val properties : Properties = new Properties()
 
     LOG.info("Loading configuration file "+configFile)
     properties.load(new FileInputStream(configFile))
     validate
-
-
 
     def save(configFile : File) {
         properties.store(new FileOutputStream(configFile), "")
@@ -128,11 +123,11 @@ class IndexingConfiguration(val configFile: File) {
     }
 
     def getLanguage() = {
-        language
+        get("org.dbpedia.spotlight.language")
     }
 
-    def getAnalyzer = {
-        analyzer
+    def getAnalyzer : Analyzer = {
+        getAnalyzer(get("org.dbpedia.spotlight.lucene.analyzer"),get("org.dbpedia.spotlight.language"))
     }
 
     private def validate { //TODO move validation to finer grained factory classes that have specific purposes (e.g. candidate mapping, lucene indexing, etc.)
@@ -162,7 +157,7 @@ class IndexingConfiguration(val configFile: File) {
             throw new ConfigurationException("specified instance types dataset not found: "+instFile)
         }
 
-        language = get("org.dbpedia.spotlight.language")
+        val language = get("org.dbpedia.spotlight.language")
         if(language==null || language.size==0) {
             throw new ConfigurationException("Parameter org.dbpedia.spotlight.language not specified in config")
         }
@@ -173,11 +168,7 @@ class IndexingConfiguration(val configFile: File) {
         }
 
         val analyzerName = get("org.dbpedia.spotlight.lucene.analyzer")
-        if(analyzerName==null) {
-            throw new ConfigurationException("Analyzer not specified")
-        } else {
-            analyzer = getAnalyzer(analyzerName, language)
-        }
+        if(analyzerName==null) throw new ConfigurationException("Analyzer not specified")
 
     }
 

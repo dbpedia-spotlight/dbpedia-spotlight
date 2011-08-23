@@ -21,7 +21,7 @@ import java.io.File
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.string.ContextExtractor
 import org.dbpedia.spotlight.util.{IndexingConfiguration, OccurrenceFilter}
-import org.dbpedia.spotlight.filter.occurrences.{RedirectResolveFilter, ConceptUriFilter, ContextNarrowFilter}
+import org.dbpedia.spotlight.filter.occurrences.{RedirectResolveFilter, UriWhitelistFilter, ContextNarrowFilter}
 import org.dbpedia.spotlight.io._
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
 
@@ -54,7 +54,7 @@ object ExtractOccsFromWikipedia {
 
         LOG.info("Loading concept URIs from "+conceptURIsFileName+"...")
         val conceptUrisSet = Source.fromFile(conceptURIsFileName, "UTF-8").getLines.toSet
-        val conceptUriFilter = new ConceptUriFilter(conceptUrisSet)
+        val conceptUriFilter = new UriWhitelistFilter(conceptUrisSet)
 
         LOG.info("Loading redirects transitive closure from "+redirectTCFileName+"...")
         val redirectsTCMap = Source.fromFile(redirectTCFileName, "UTF-8").getLines.map{ line =>

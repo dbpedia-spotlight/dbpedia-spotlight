@@ -16,27 +16,23 @@
 
 package org.dbpedia.spotlight.filter.occurrences
 
-import org.dbpedia.spotlight.model.{DBpediaResource, DBpediaResourceOccurrence}
+import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
 
-class ListFilter extends OccurrenceFilter {
-
-    val listPrefix = "List_of_"
+/**
+ * Class that takes a whitelist of URIs to allow for indexing.
+ * Used during indexing to eliminate redirects and disambiguations, keeping only URIs that denote entities/concepts.
+ *
+ * @author maxjakob
+ */
+class UriWhitelistFilter(val whitelistedUris : Set[String]) extends OccurrenceFilter {
 
     def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
-        if(!isListResource(occ.resource) && !isListSource(occ)) {
+        if(whitelistedUris contains occ.resource.uri) {
             Some(occ)
         }
         else {
             None
         }
-    }
-
-    def isListResource(resource : DBpediaResource) : Boolean = {
-        resource.uri startsWith listPrefix
-    }
-
-    def isListSource(occ : DBpediaResourceOccurrence) : Boolean = {
-        occ.id startsWith listPrefix
     }
 
 }

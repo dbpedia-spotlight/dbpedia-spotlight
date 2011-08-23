@@ -37,7 +37,7 @@ import java.util.*;
  * Class adding surface forms and DBpedia types to an existing index that contains URIs and context (both "stored").
  *
  * @author maxjakob
- * @author pablomendes (priorEnricher) TODO consider splitting each of the enrichWith... methods into a subclass of IndexEnricher
+ * @author pablomendes (prior and count enrichers) TODO consider splitting each of the enrichWith... methods into a subclass of IndexEnricher
  */
 public class IndexEnricher extends BaseIndexer<Object> {
 
@@ -58,6 +58,11 @@ public class IndexEnricher extends BaseIndexer<Object> {
         searcher = new MergedOccurrencesContextSearcher(this.mLucene);
     }
 
+    public void expunge() throws IOException {
+        mWriter.expungeDeletes();
+        mWriter.commit();
+    }
+
     private long getIndexSize() {
         long indexSize = searcher.getNumberOfEntries();
         if (indexSize == 0) {
@@ -71,6 +76,9 @@ public class IndexEnricher extends BaseIndexer<Object> {
             LOG.info("  processed "+i+" documents. committing...");
             mWriter.commit();
             LOG.info("  done.");
+        }
+        if (i%1000==0) {
+            LOG.info(String.format("  processed %d documents. ",i));
         }
     }
 
@@ -180,6 +188,33 @@ public class IndexEnricher extends BaseIndexer<Object> {
         done(indexSize);
     }
 
+    public void enrichWithCounts(Map<String,Integer> uriCountMap) throws SearchException, IOException, IndexException {
+        long indexSize = searcher.getNumberOfEntries();
+        if (indexSize == 0) {
+            throw new IllegalArgumentException("index in "+mLucene.directory()+" contains no entries; this method can only add URI counts to an existing index");
+        }
+        LOG.info("Adding URI counts to index "+mLucene.directory()+"...");
+
+        if (uriCountMap == null) {
+            uriCountMap = new HashMap<String,Integer>();
+        }
+
+        for (int i=0; i<indexSize; i++) {
+            Document doc = searcher.getFullDocument(i);
+            String uri = doc.getField(LuceneManager.DBpediaResourceField.URI.toString()).stringValue();
+
+            int count = uriCountMap.get(uri);
+            doc = mLucene.add(doc, count);
+
+            Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
+            mWriter.updateDocument(uriTerm, doc);  //deletes everything with this uri and writes a new doc
+
+            commit(i);
+        }
+
+        done(indexSize);
+    }
+
     public void enrichWithTypes(Map<String,LinkedHashSet<DBpediaType>> typesMap) throws SearchException, IOException, IndexException {
         long indexSize = searcher.getNumberOfEntries();
         if (indexSize == 0) {
@@ -214,6 +249,49 @@ public class IndexEnricher extends BaseIndexer<Object> {
         done(indexSize);
     }
 
+
+    public void patchAll(Map<String,LinkedHashSet<DBpediaType>> typesMap, Map<String,Integer> uriCountMap, Map<String,LinkedHashSet<SurfaceForm>> sfMap) throws SearchException, IOException, IndexException {
+        long indexSize = searcher.getNumberOfEntries();
+        if (indexSize == 0) {
+            throw new IllegalArgumentException("index in "+mLucene.directory()+" contains no entries; this method can only patch an existing index");
+        }
+        LOG.info("Patching index "+mLucene.directory()+"...");
+
+        if (typesMap == null) {
+            typesMap = new HashMap<String,LinkedHashSet<DBpediaType>>();
+        }
+
+        if (uriCountMap == null) {
+            uriCountMap = new HashMap<String,Integer>();
+        }
+
+        if (sfMap == null) {
+            sfMap = new HashMap<String,LinkedHashSet<SurfaceForm>>();
+        }
+
+        for(int i=0; i<indexSize; i++) {
+            Document doc = searcher.getFullDocument(i);
+            String uri = doc.getField(LuceneManager.DBpediaResourceField.URI.toString()).stringValue();
+
+            // add types
+            LinkedHashSet<DBpediaType> types = typesMap.get(uri);
+            if (types != null) for (DBpediaType t : types) doc = mLucene.add(doc, t);
+            // add counts
+            doc = mLucene.add(doc, uriCountMap.get(uri));
+            // add surface forms
+            LinkedHashSet<SurfaceForm> extraSfs = sfMap.remove(uri);
+            if (extraSfs != null) for (SurfaceForm sf : extraSfs) doc = mLucene.add(doc, sf);
+
+            // update document in index
+            Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
+            mWriter.updateDocument(uriTerm, doc);  //deletes everything with this uri and writes a new doc
+
+            // write to disk for every 10000 or so entries
+            commit(i);
+        }
+
+        done(indexSize);
+    }
     /**
      * Goes through the index and unstores surface forms and context.
      *

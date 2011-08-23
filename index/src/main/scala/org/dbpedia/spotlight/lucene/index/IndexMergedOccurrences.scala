@@ -17,23 +17,45 @@
 package org.dbpedia.spotlight.lucene.index
 
 import java.io.File
-import org.dbpedia.spotlight.io.{FileOccurrenceSource, LuceneIndexWriter}
+import org.dbpedia.spotlight.io.{FileOccurrenceSource}
 import org.apache.commons.logging.LogFactory
 import org.apache.lucene.store.FSDirectory
 import org.dbpedia.spotlight.lucene.LuceneManager
 import org.dbpedia.spotlight.util.IndexingConfiguration
 
 /**
- * Indexes all Occurrences in Wikipedia separately in a Lucene index.
+ * Indexes all occurrences of a DBpedia Resource in Wikipedia as a Lucene index where each document represents one resource.
+ *
+ * @author maxjakob
  */
-
 object IndexMergedOccurrences
 {
     private val LOG = LogFactory.getLog(this.getClass)
 
-    def index(trainingInputFile : String, vectorBuilder: OccurrenceContextIndexer ) {
+    def index(trainingInputFile : String, indexer: OccurrenceContextIndexer ) {
         val wpOccurrences = FileOccurrenceSource.fromFile(new File(trainingInputFile))
-        LuceneIndexWriter.writeLuceneIndex(vectorBuilder, wpOccurrences)
+        var indexDisplay = 0
+        LOG.info("Indexing with " + indexer.getClass + " in Lucene ...")
+
+        wpOccurrences.foreach( occurrence => {
+            try {
+
+            indexer.add(occurrence)
+
+            indexDisplay += 1
+            if (indexDisplay % 10000 == 0) {
+                LOG.debug("  indexed " + indexDisplay + " occurrences")
+            }
+            } catch {
+                case e: Exception => {
+                    LOG.error("Error parsing %s. ".format(indexDisplay))
+                    e.printStackTrace()
+                }
+            }
+        })
+        indexer.close  // important
+
+        LOG.info("Finished: indexed " + indexDisplay + " occurrences")
     }
 
     def getBaseDir(baseDirName : String) : String = {
@@ -44,6 +66,10 @@ object IndexMergedOccurrences
         baseDirName
     }
 
+    /**
+     *
+     * Usage: mvn scala:run -DmainClass=org.dbpedia.spotlight.lucene.index.IndexMergedOccurrences "-DaddArgs=$INDEX_CONFIG_FILE|output/occs.uriSorted.tsv|overwrite"
+     */
     def main(args : Array[String])
     {
         val indexingConfigFileName = args(0)
@@ -90,12 +116,12 @@ object IndexMergedOccurrences
 
         val vectorBuilder = new MergedOccurrencesContextIndexer(lucene)
 
-        val freeMemGB : Double = Runtime.getRuntime.freeMemory / 1073741824
+        val freeMemGB : Double = Runtime.getRuntime.freeMemory / 1073741824.0
         if (Runtime.getRuntime.freeMemory < minNumDocsBeforeFlush) LOG.error("Your available memory "+freeMemGB+"GB is less than minNumDocsBeforeFlush. This setting is known to give OutOfMemoryError.");
         LOG.info("Available memory: "+freeMemGB+"GB")
         LOG.info("Max memory: "+Runtime.getRuntime.maxMemory / 1073741824.0 +"GB")
         /* Total memory currently in use by the JVM */
-        LOG.info("Total memory (bytes): " + Runtime.getRuntime.totalMemory / 1073741824 + "GB")
+        LOG.info("Total memory (bytes): " + Runtime.getRuntime.totalMemory / 1073741824.0 + "GB")
         //LOG.info("MinNumDocsBeforeFlush: "+minNumDocsBeforeFlush)
         
         index(trainingInputFileName, vectorBuilder);
