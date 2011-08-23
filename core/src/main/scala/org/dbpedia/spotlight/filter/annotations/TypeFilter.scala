@@ -17,31 +17,30 @@
 package org.dbpedia.spotlight.filter.annotations
 
 import org.apache.commons.logging.LogFactory
-import org.dbpedia.spotlight.model.{DBpediaResource, DBpediaType, DBpediaResourceOccurrence}
+import org.dbpedia.spotlight.model.{OntologyType, DBpediaResource, DBpediaType, DBpediaResourceOccurrence}
 
-
-class TypeFilter(var dbpediaTypes : List[DBpediaType], val blacklistOrWhitelist : FilterPolicy.ListColor) extends AnnotationFilter  {
+class TypeFilter(var ontologyTypes : List[OntologyType], val blacklistOrWhitelist : FilterPolicy.ListColor) extends AnnotationFilter  {
 
     private val LOG = LogFactory.getLog(this.getClass)
 
-    dbpediaTypes = dbpediaTypes.filter(_.name.trim.nonEmpty)
-    if(dbpediaTypes.isEmpty) LOG.info("types are empty: showing all types")  // see comment below
+    ontologyTypes = ontologyTypes.filter(_.typeID.trim.nonEmpty)
+    if(ontologyTypes.isEmpty) LOG.info("types are empty: showing all types")  // see comment below
 
     private val acceptable = blacklistOrWhitelist match {
         case FilterPolicy.Whitelist => (resource : DBpediaResource) =>
             resource.types.filter(given => {
-            dbpediaTypes.find(listed => given equals listed) != None }
+            ontologyTypes.find(listed => given equals listed) != None }
         ).nonEmpty
         case FilterPolicy.Blacklist => (resource : DBpediaResource) =>
             resource.types.filter(given => {
-            dbpediaTypes.find(listed => given equals listed) != None }
+            ontologyTypes.find(listed => given equals listed) != None }
         ).isEmpty
     }
 
-    private val showUntyped = dbpediaTypes.find(t => DBpediaType.UNKNOWN equals t) != None
+    private val showUntyped = ontologyTypes.find(t => DBpediaType.UNKNOWN equals t) != None
 
     override def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
-        if(dbpediaTypes.isEmpty) {   // hack, because web demo does not guarantee to check all types when loading!
+        if(ontologyTypes.isEmpty) {   // hack, because web demo does not guarantee to check all types when loading!
             Some(occ)
         }
         else if(showUntyped && occ.resource.types.isEmpty) {
@@ -51,7 +50,7 @@ class TypeFilter(var dbpediaTypes : List[DBpediaType], val blacklistOrWhitelist 
             Some(occ)
         }
         else {
-            LOG.info("filtered out by type "+blacklistOrWhitelist+": "+occ.resource+" list="+dbpediaTypes.map(_.name).mkString("List(", ",", ")"))
+            LOG.info("filtered out by type "+blacklistOrWhitelist+": "+occ.resource+" list="+ontologyTypes.map(_.typeID).mkString("List(", ",", ")"))
             None
         }
     }
