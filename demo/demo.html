@@ -98,7 +98,6 @@
 	text-align: justify;
 }
 
-
 #action_options {
 	float: left;
 }
@@ -382,6 +381,7 @@ $(document).ready(function() {
 	    $('.candidates').uniform()
 		$("select, input").uniform();
 		$(".action_button").attr("disabled", false);
+
 		$("#tree_dbpedia").jstree({
 					"plugins" : [ "themes", "xml_data", "checkbox" ],
 					"themes" : {
@@ -389,14 +389,31 @@ $(document).ready(function() {
 		        	},
 					"xml_data" : {
 						"ajax" : {
-							"url" : "DBpediaTypes.xml"
+							"url" : "tree.dbpedia.xml"
 						},
 						"xsl" : "nest"
 					}
 			
 			    });
+	
+		$("#tree_freebase").jstree({
+					"plugins" : [ "themes", "json_data", "checkbox" ],
+					"themes" : {
+						"icons" : false,
+		        	},
+					"json_data" : {
+						"ajax" : {
+							"url" : "tree.freebase.json",
+							"data" : function (n) {
+								return { id : n.attr ? n.attr("id") : 0 };
+							}
+						}
+					}
+
+			    });
+	
 			
-		$("#tree_dbpedia").jstree("set_theme","default");
+		$(".tree").jstree("set_theme","default");
 		
 		$("#type_selector").dialog({ 
 			width: 600,
@@ -406,7 +423,7 @@ $(document).ready(function() {
 			title : "Select types…",
 			modal: true,
 			buttons: {
-				"Ok": function() {
+				Ok: function() {
 					$( this ).dialog( "close" );
 				},
 				Cancel: function() {
@@ -531,9 +548,9 @@ Annotate with DBpedia Spotlight
 		</div>
 
 		<div id="tabs-2">
-		<ul>
-			<li id="tree_freebase" class="tree" />
-		</ul>
+			<ul>
+				<li id="tree_freebase" class="tree" />
+			</ul>
 		</div>
 	
 		<div id="tabs-3">
