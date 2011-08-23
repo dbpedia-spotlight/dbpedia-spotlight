@@ -24,13 +24,15 @@ import org.dbpedia.spotlight.util.IndexingConfiguration
 
 
 /**
- * Created by IntelliJ IDEA.
- * User: Max
- * Date: 30.08.2010
- * Time: 11:13:10
- * To change this template use File | Settings | File Templates.
+ * This utility removes some fields, and optimizes the index to a few segments in order to increase space efficiency.
+ * The only fields we need to read from the search classes are URI and URI_COUNT. The rest does not need to be retrievable, only searchable.
+ * Keeping multiple segments in the index may allow better multithreading, so do not optimize to just one.
+ * You can also specify a minimum URI count. Every document with less than the specified count will be removed.
+ *
+ * Usage:
+ *    mvn scala:run CompressIndex [indexing config file] [mininum URI count]
+ * @author maxjakob
  */
-
 object CompressIndex
 {
     val unstoreFields = List( LuceneManager.DBpediaResourceField.CONTEXT, LuceneManager.DBpediaResourceField.SURFACE_FORM )

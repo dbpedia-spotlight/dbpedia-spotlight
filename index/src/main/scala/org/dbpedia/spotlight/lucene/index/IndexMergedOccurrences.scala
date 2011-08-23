@@ -94,7 +94,7 @@ object IndexMergedOccurrences
 
         LOG.warn("WARNING: this process will run a lot faster if the occurrences are sorted by URI!");
 
-        val minNumDocsBeforeFlush : Int = 200000 //IndexConfiguration.properties.getProperty("minNumDocsBeforeFlush").toDouble
+        val minNumDocsBeforeFlush : Int = config.get("org.dbpedia.spotlight.index.minDocsBeforeFlush", "200000").toInt
         val lastOptimize = false;
 
         //val indexOutputDir = baseDir+"2.9.3/Index.wikipediaTraining.Merged."+analyzer.getClass.getSimpleName+"."+similarity.getClass.getSimpleName;

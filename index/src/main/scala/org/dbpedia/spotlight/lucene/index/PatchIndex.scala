@@ -29,7 +29,7 @@ import java.io.{FileInputStream, File}
 import org.dbpedia.spotlight.util.{ExtractCandidateMap, TypesLoader, IndexingConfiguration}
 
 /**
- * This script goes over the index and rewrites surface forms, counts and DBpedia Types as provided in input files.
+ * This script goes over the index and adds surface forms, counts and DBpedia Types as provided in input files.
  *
  * @author pablomendes
  */

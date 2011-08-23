@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2011 Pablo Mendes, Max Jakob
+  ~
+  ~  Licensed under the Apache License, Version 2.0 (the "License");
+  ~  you may not use this file except in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~  http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  See the License for the specific language governing permissions and
+  ~  limitations under the License.
+  ~
+  ~  Check our project website for information on how to acknowledge the authors and how to contribute to the project: http://spotlight.dbpedia.org
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <parent>
+        <artifactId>spotlight</artifactId>
+        <groupId>org.dbpedia.spotlight</groupId>
+        <version>${dbpedia.spotlight.version}</version>
+    </parent>
+
+    <properties>
+        <project.deploy.dir>/var/www/spotlight</project.deploy.dir>
+    </properties>
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>demo</artifactId>
+    <packaging>pom</packaging>
+    <name>DBpedia Spotlight - Demo Web App</name>
+
+    <build>
+
+        <plugins>
+
+            <plugin>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <executions>
+                      <execution>
+                        <phase>deploy</phase>
+                        <configuration>
+                          <tasks>
+                            <!--
+                              Place any Ant task here. You can add anything
+                              you can add between <target> and </target> in a
+                              build.xml.
+                            -->
+                              <copy todir="${project.deploy.dir}">
+                                  <fileset dir="."/>
+                              </copy>
+                          </tasks>
+                        </configuration>
+                        <goals>
+                          <goal>run</goal>
+                        </goals>
+                      </execution>
+                    </executions>
+                  </plugin>
+
+        </plugins>
+
+    </build>
+
+</project>

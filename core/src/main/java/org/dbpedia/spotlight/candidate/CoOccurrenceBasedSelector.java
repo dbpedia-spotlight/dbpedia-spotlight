@@ -129,20 +129,21 @@ public class CoOccurrenceBasedSelector implements TaggedSpotSelector {
 					decisions.add("Dropped by Pattern filter: " + surfaceFormOccurrence);
 				}else{
 
-					CandidateClassification candidateClassification = null;
-					try {
-						candidateClassification = unigramClassifier.classify(surfaceFormOccurrence);
-					} catch (Exception e) {
-						LOG.error("Exception when classifying unigram candidate: " + e);
-						continue;
-					}
+                    CandidateClassification candidateClassification = null;
+                    try {
+                        candidateClassification = unigramClassifier.classify(surfaceFormOccurrence);
 
-					if(candidateClassification.getCandidateClass() == CandidateClass.valid) {
-						selectedOccurrences.add(surfaceFormOccurrence);
-						//LOG.info(("Kept by UnigramClassifier (Confidence: " + candidateClassification.getConfidence() + "): " + surfaceFormOccurrence);
-					}else{
-						decisions.add("Dropped by UnigramClassifier (Confidence: " + candidateClassification.getConfidence() + "): " + surfaceFormOccurrence);
-					}
+                        if(candidateClassification.getCandidateClass() == CandidateClass.valid) {
+                            selectedOccurrences.add(surfaceFormOccurrence);
+                            //LOG.info(("Kept by UnigramClassifier (Confidence: " + candidateClassification.getConfidence() + "): " + surfaceFormOccurrence);
+                        }else{
+                            decisions.add("Dropped by UnigramClassifier (Confidence: " + candidateClassification.getConfidence() + "): " + surfaceFormOccurrence);
+                        }
+
+                    } catch (Exception e) {
+                        LOG.error("Exception when classifying unigram candidate: " + e);
+                        continue;
+                    }
 
 				}
 

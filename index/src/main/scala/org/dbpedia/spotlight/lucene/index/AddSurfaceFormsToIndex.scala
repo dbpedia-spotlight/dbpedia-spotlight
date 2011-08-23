@@ -40,7 +40,7 @@ object AddSurfaceFormsToIndex
     val LOG: Log = LogFactory.getLog(this.getClass)
 
     def toLowercase(sf: String, lowerCased: Boolean) = {
-        if (lowerCased) sf.toLowerCase else sf
+        if (lowerCased) (sf.toLowerCase :: List(sf)) else List(sf)
     }
 
     def fromTitlesToAlternatives(sf: String) = {
@@ -51,13 +51,14 @@ object AddSurfaceFormsToIndex
             modified = sf.replace("a ","")
         if (sf.startsWith("an "))
             modified = sf.replace("an ","")
-        sf.replaceAll("[^A-Za-z0-9 ]", "")
+        modified = sf.replaceAll("[^A-Za-z0-9 ]", "")
+        (sf :: List(modified))
     }
 
     // map from URI to list of surface forms
     // used by IndexEnricher
     // uri -> list(sf1, sf2)
-    def loadSurfaceForms(surfaceFormsFileName: String, transform : String => String) = {
+    def loadSurfaceForms(surfaceFormsFileName: String, transform : String => List[String]) = {
 
         LOG.info("Getting surface form map...")
         val reverseMap : java.util.Map[String, java.util.LinkedHashSet[SurfaceForm]] = new java.util.HashMap[String, java.util.LinkedHashSet[SurfaceForm]]()
@@ -65,14 +66,14 @@ object AddSurfaceFormsToIndex
         val tsvScanner = new Scanner(new FileInputStream(surfaceFormsFileName), "UTF-8")
         while (tsvScanner.hasNextLine) {
             val line = tsvScanner.nextLine.split(separator)
-            val sf = transform(line(0))
+            val sfAlternatives = transform(line(0)).map(sf => new SurfaceForm(sf))
             val uri = line(1)
-            var sfList = reverseMap.get(uri)
-            if (sfList == null) {
-                sfList = new java.util.LinkedHashSet[SurfaceForm]()
+            var sfSet = reverseMap.get(uri)
+            if (sfSet == null) {
+                sfSet = new java.util.LinkedHashSet[SurfaceForm]()
             }
-            sfList.add(new SurfaceForm(sf))
-            reverseMap.put(uri, sfList)
+            sfSet.addAll(sfAlternatives)
+            reverseMap.put(uri, sfSet)
         }
         LOG.info("Done.")
         reverseMap

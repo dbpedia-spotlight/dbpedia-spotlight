@@ -23,6 +23,7 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.document.MapFieldSelector;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermDocs;
 import org.dbpedia.spotlight.exceptions.IndexException;
 
 import org.dbpedia.spotlight.exceptions.SearchException;

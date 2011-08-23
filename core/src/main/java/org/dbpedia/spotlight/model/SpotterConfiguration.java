@@ -15,6 +15,7 @@ import java.util.Properties;
  * Configuration for Spotter and Spot Selection.
  *
  * @author Joachim Daiber
+ * @author pablomendes - added spotter policies
  */
 public class SpotterConfiguration {
 
@@ -71,7 +72,7 @@ public class SpotterConfiguration {
         if (spotterNames.size()==0) throw new ConfigurationException("Could not find 'org.dbpedia.spotlight.spot.spotters'. Please specify a comma-separated list of spotters to be loaded.");
         for (String s: spotterNames) {
             try {
-                policies.add(SpotterPolicy.valueOf(s));
+                policies.add(SpotterPolicy.valueOf(s.trim()));
             } catch (java.lang.IllegalArgumentException e) {
                 throw new ConfigurationException(String.format("Unknown spotter '%s' specified in 'org.dbpedia.spotlight.spot.spotters'.",s));
             }

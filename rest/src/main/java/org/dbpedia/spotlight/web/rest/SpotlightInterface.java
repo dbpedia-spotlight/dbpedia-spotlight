@@ -136,10 +136,10 @@ public class SpotlightInterface  {
         }
 
         List<DBpediaType> dbpediaTypes = new ArrayList<DBpediaType>();
-        String types[] = dbpediaTypesString.split(",");
+        String types[] = dbpediaTypesString.trim().split(",");
         for (String t : types){
-            dbpediaTypes.add(new DBpediaType(t.trim()));
-            //LOG.info("type:"+targetType.trim());
+            if (!t.trim().equals("")) dbpediaTypes.add(new DBpediaType(t.trim()));
+            //LOG.info("type:"+t.trim());
         }
 
         // Call annotation or disambiguation
