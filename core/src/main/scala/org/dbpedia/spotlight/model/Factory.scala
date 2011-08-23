@@ -16,11 +16,12 @@ import collection.JavaConversions._
 import org.dbpedia.spotlight.lucene.search.{BaseSearcher, MergedOccurrencesContextSearcher}
 import org.dbpedia.spotlight.candidate.{CoOccurrenceBasedSelector}
 import com.aliasi.sentences.IndoEuropeanSentenceModel
-import org.dbpedia.spotlight.spot.{AtLeastOneNounSelector, SpotterWithSelector}
 import org.dbpedia.spotlight.tagging.lingpipe.{LingPipeTextUtil, LingPipeTaggedTokenProvider, LingPipeFactory}
 import org.dbpedia.spotlight.disambiguate.{ DefaultDisambiguator}
 import org.apache.lucene.search.{ScoreDoc, Similarity}
 import org.dbpedia.spotlight.exceptions.{ItemNotFoundException, ConfigurationException}
+import org.dbpedia.spotlight.spot.{WikiMarkupSpotter, Spotter, AtLeastOneNounSelector, SpotterWithSelector}
+import java.util.HashMap
 
 /**
  * Class containing methods to create model objects in many different ways
@@ -90,9 +91,9 @@ object Factory {
       try {
         val r(prefix,suffix) = ontologyType
 
-        prefix match {
-          case "D" | "DBpedia" => new DBpediaType(suffix)
-          case "F" | "Freebase" => new FreebaseType(suffix)
+        prefix.toLowerCase match {
+          case "d" | "dbpedia" => new DBpediaType(suffix)
+          case "f" | "freebase" => new FreebaseType(suffix)
         }
       }catch{
         //The default type for non-prefixed type strings:
@@ -157,9 +158,6 @@ object Factory {
     }
 
 
-  
-
-
 }
 
 
@@ -183,6 +181,8 @@ class SpotlightFactory(val configuration: SpotlightConfiguration,
 
     val searcher = new MergedOccurrencesContextSearcher(luceneManager);
 
+    val spotters = new HashMap[SpotterConfiguration.SpotterPolicy,Spotter]()
+
     def disambiguator() = {
         //val mixture = new LinearRegressionMixture
         //new MixedWeightsDisambiguator(searcher,mixture);
@@ -190,15 +190,23 @@ class SpotlightFactory(val configuration: SpotlightConfiguration,
         //new GraphCentralityDisambiguator(configuration)
     }
 
-    def spotter() ={
-        //For the simple spotter (no spot selection)
-        //new LingPipeSpotter(new File(configuration.getSpotterConfiguration.getSpotterFile));
+    def spotter(policy: SpotterConfiguration.SpotterPolicy) : Spotter = {
+        if (policy == SpotterConfiguration.SpotterPolicy.LingPipeSpotter)
+            spotters.getOrElse(policy, new LingPipeSpotter(new File(configuration.getSpotterConfiguration.getSpotterFile)))
+        else if (policy == SpotterConfiguration.SpotterPolicy.AtLeastOneNounSelector) {
+            spotters.getOrElse(policy, SpotterWithSelector.getInstance(spotter(SpotterConfiguration.SpotterPolicy.LingPipeSpotter),new AtLeastOneNounSelector(),taggedTokenProvider()))
+        } else if (policy == SpotterConfiguration.SpotterPolicy.CoOccurrenceBasedSelector) {
+            spotters.getOrElse(policy, SpotterWithSelector.getInstance(spotter(SpotterConfiguration.SpotterPolicy.LingPipeSpotter),new CoOccurrenceBasedSelector(configuration.getSpotterConfiguration),taggedTokenProvider()))
+        } else {
+            new WikiMarkupSpotter
+        }
+    }
 
-        SpotterWithSelector.getInstance(
-          new LingPipeSpotter(new File(configuration.getSpotterConfiguration.getSpotterFile)),
-          new AtLeastOneNounSelector(),
-          taggedTokenProvider()
-        );
+    def spotter() : Spotter = {
+        configuration.getSpotterConfiguration.getSpotterPolicies.foreach( policy => {
+            spotters.put(policy, spotter(policy))
+        })
+        spotters.head._2
     }
 
     def annotator() ={
