@@ -21,26 +21,28 @@
 
 package org.dbpedia.spotlight.web.rest;
 
-import java.io.*;
-// SAX classes.
+import net.sf.json.xml.XMLSerializer;
+import org.dbpedia.spotlight.exceptions.OutputException;
+import org.dbpedia.spotlight.model.DBpediaResourceOccurrence;
+import org.dbpedia.spotlight.model.OntologyType;
+import org.dbpedia.spotlight.model.SurfaceForm;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
+
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamResult;
+import java.io.ByteArrayOutputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.SerializationException;
-import org.dbpedia.spotlight.exceptions.OutputException;
-import org.dbpedia.spotlight.model.DBpediaType;
-import org.dbpedia.spotlight.model.SurfaceForm;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.*;
+// SAX classes.
 //JAXP 1.1
-import javax.xml.transform.*;
-import javax.xml.transform.stream.*;
-import javax.xml.transform.sax.*;
-
 //JSON classes
-import net.sf.json.xml.XMLSerializer;
-import org.dbpedia.spotlight.model.DBpediaResourceOccurrence;
 
 
 /**
@@ -117,7 +119,7 @@ public class OutputManager {
 
             atts.addAttribute("","","URI","CDATA",dbpediaPrefix+occ.resource().uri());
             atts.addAttribute("","","support","CDATA",String.valueOf(occ.resource().support()));
-            atts.addAttribute("","","types","CDATA",occ.resource().types().mkString(","));
+            atts.addAttribute("", "", "types", "CDATA", ((scala.collection.immutable.List) occ.resource().types()).mkString(","));
             // support and types should go to resource
 
             atts.addAttribute("", "", "surfaceForm", "CDATA", occ.surfaceForm().name());
@@ -267,14 +269,14 @@ public class OutputManager {
         public String getMain(String content);
 
         // produces an HTML link, potentially with semantic markup
-        public String getLink(String uri, String surfaceForm, List<DBpediaType> types);
+        public String getLink(String uri, String surfaceForm, List<OntologyType> types);
     }
 
     private class HTMLFormatter implements WebCodeFormatter {
         private final static String main = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n<html>\n<head>\n<title>DBpedia Spotlight annotation</title>\n<meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\">\n</head>\n<body>\n<div>\n%s\n</div>\n</body>\n</html>";
         private final static String link = "<a href=\"%s\" title=\"%s\" target=\"_blank\">%s</a>";
 
-        public String getLink(String uri, String surfaceForm, List<DBpediaType> types) {
+        public String getLink(String uri, String surfaceForm, List<OntologyType> types) {
             return String.format(link, uri, uri, surfaceForm);
         }
 
@@ -306,7 +308,7 @@ public class OutputManager {
         private final static String link = "<a about=\"%s\" href=\"%s\" title=\"%s\" target=\"_blank\" >%s</a>";
         private final static String typeLink= "<a about=\"%s\" typeof=\"%s\" href=\"%s\" title=\"%s\">%s</a>";
 
-        public String getLink(String uri, String surfaceForm, List<DBpediaType> types) {
+        public String getLink(String uri, String surfaceForm, List<OntologyType> types) {
             if(types == null || types.isEmpty()) {
                 return String.format(link, uri, uri, uri, surfaceForm);
             }
