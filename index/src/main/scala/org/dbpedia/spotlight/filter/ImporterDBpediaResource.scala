@@ -8,8 +8,10 @@ import java.sql.{PreparedStatement, Statement, DriverManager}
 /**
  * @author Joachim Daiber
  *
- *
- *
+ * Importer for information used in DBpediaResource:
+ * - count
+ * - DBpedia type
+ * - Freebase types
  */
 
 object ImporterDBpediaResource {
@@ -25,7 +27,7 @@ object ImporterDBpediaResource {
 
     //Create Table
     statement.execute("set scriptformat BINARY;"+
-      "create cached table DBpediaResource ( " +
+      "create table DBpediaResource ( " +
       "\"URI\" Varchar(50) primary key, " +
       "\"COUNT\" Int," +
       "\"TYPE_DBP\" Varchar(1)," +
@@ -33,7 +35,7 @@ object ImporterDBpediaResource {
       "UNIQUE (URI) );\n"
     )
 
-    statement.execute("create memory table OntologyType ( " +
+    statement.execute("create table OntologyType ( " +
       "\"TYPE_ID\" Varchar(1) primary key, " +
       "\"TYPE\" Varchar(50)," +
       "UNIQUE (TYPE_ID) );\n"
