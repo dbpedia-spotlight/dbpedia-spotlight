@@ -25,6 +25,7 @@
 	<script src="jquery.json-2.2.js"></script>
 
 	<script src="jstree/jquery.jstree.js" type="text/javascript" charset="utf-8"></script>
+	<script src="autoresize.jquery.min.js" type="text/javascript" charset="utf-8"></script>
 
 
 <link rel="stylesheet" href="themes/base/jquery.ui.all.css">
@@ -77,13 +78,14 @@
 }
 #text_container, #action_container {
 	width: 700px;
-	height: 170px;
 	border-radius: 5px;
 	border: 1px solid #ccc;
 	border-color: #ddd #eee #eee #ddd;
 	border-width: 1px 2px 2px 1px;
 }
 #action_container {
+	height: 170px;
+	
 	margin-top: 10px;
 	background: #fafafa;
 	height: auto;
@@ -313,8 +315,11 @@ function run(method) {
 function getTypes() { 
 	var checked_ids = []; 
 	$("#tree_dbpedia").jstree( "get_checked" ).each(function () { 
-		checked_ids.push(this.id); 
-	}); 
+		checked_ids.push("D:" + this.id); 
+	});
+	$("#tree_freebase").jstree( "get_checked" ).each(function () { 
+		checked_ids.push("F:" + this.id); 
+	});
 	return checked_ids.join(",");
 }
 
@@ -331,6 +336,26 @@ function runWithSettings() {
 
 // Override the onload event
 $(document).ready(function() {
+
+	$('textarea#text').autoResize({
+	
+	    // On resize:
+	    onResize : function() {
+	        $(this).css({opacity:0.8});
+	    },
+	
+	    // After resize:
+	    animateCallback : function() {
+	        $(this).css({opacity:1});
+	    },
+	
+	    // Quite slow animation:
+	    animateDuration : 150,
+	
+	    // More extra space:
+	    extraSpace : 15
+	});
+
 
 	$('#annotate').click(function() { 
 		runWithSettings();
@@ -476,12 +501,15 @@ $(document).ready(function() {
 <body>
 <div class="main" style="margin-top: 5em;">
 	<img id="logo" src="dbpedia_spotlight_logo.jpg" />
+
+
 	
 <div id="text_container" class="container"><textarea id="text">A day after American and European forces began a broad campaign of strikes against the government of Col. Muammar el-Qaddafi , the Libyan leader delivered a fresh and defiant tirade on Sunday , pledging retaliation and saying his forces would fight a long war to victory.</textarea></div>
+
 <div id="action_container" class="container">
 
 <div id="action_options">
-	
+
 	<div class="option">
 		<label for="confidence">Confidence:</label><input type="text" id="confidence" name="confidence" value="0.0"/>
 	  <div id="confidence-slider" class="slider"></div>
@@ -513,6 +541,8 @@ $(document).ready(function() {
 <input class="action_button" id="annotate" type="button" enabled value="Annotate"/>
 </div>
 </div>
+
+
 
 <div id="bookmarklet_container" class="container" style="display: none;">
 
