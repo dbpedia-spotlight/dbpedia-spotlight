@@ -1,5 +1,5 @@
 <root>
-    <item id="thing">
+    <item id="thing" state="open">
         <content><name><![CDATA[owl#Thing]]></name></content>
         <item id="Colour">
             <content><name><![CDATA[Colour]]></name></content>

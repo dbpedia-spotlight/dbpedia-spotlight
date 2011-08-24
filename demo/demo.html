@@ -32,7 +32,9 @@
 <link rel="stylesheet" href="jquery.uniform/css/uniform.default.css" type="text/css" media="screen" charset="utf-8" />
 
 <style>
-
+body {
+	font-size: small;
+}
 #text {
 	border: 0;
 	width: 100%;
@@ -80,7 +82,7 @@
 }
 .container {
 	margin: 0px 50px;
-	font-family: "Myriad Pro";
+	font-family: "Myriad Pro", Verdana, Arial, sans-serif;
 	padding: 8px;
 	position: relative;
 	clear: both;
@@ -274,6 +276,10 @@ body .jstree li {
 	padding: 0;
 	margin: 0;
 }
+#sparql_type {
+	width: 100%;
+	height: 150px;
+}
 </style>
 
 <script>
@@ -448,8 +454,8 @@ $(document).ready(function() {
 		$(".tree").jstree("set_theme","default");
 		
 		$("#type_selector").dialog({ 
-			width: 600,
-			height: 450,
+			width: 750,
+			height: 520,
 			autoOpen: false, 
 			position: ['center', 50],
 			title : "Select types…",
@@ -571,9 +577,15 @@ Annotate with DBpedia Spotlight
 		</div>
 	
 		<div id="tabs-3">
-			<textarea>
-				Example
-			</textarea>
+
+<textarea id="sparql_type">
+SELECT DISTINCT ?politician 
+WHERE { 
+    ?politician a <http://dbpedia.org/ontology/OfficeHolder> .
+    ?politician ?related <http://dbpedia.org/resource/Chicago>
+}
+</textarea>
+
 		</div>
 	</div>
 </div>
