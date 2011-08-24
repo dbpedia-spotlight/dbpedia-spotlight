@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 
 <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>DBpedia Spotlight Demo</title>
+<title>DBpedia Spotlight</title>
 
 <script src="jquery-1.6.1.min.js" type="text/javascript"></script>
 <script src="dbpedia-spotlight-0.3.js" type="text/javascript"></script>
@@ -43,13 +43,15 @@ body {
 	margin: 0;
 	font-family: inherit;
 	overflow: auto;
+	font-size: 14px;
 }
 #text_container {
-	overflow: auto;
+	font-size: 14px;
 	background: #fff no-repeat bottom right;
+
 }
 #text_container.annotated {
-	background: #fafafa none;
+	background: #f0f0f0 none;
 	cursor:text;
 	overflow: auto;
 }
@@ -74,7 +76,6 @@ body {
 }
 #text_container, #action_container {
 	width: 700px;
-	height: 170px;
 	border-radius: 5px;
 	border: 1px solid #ccc;
 	border-color: #ddd #eee #eee #ddd;
@@ -91,17 +92,12 @@ body {
 #text {
 	background: transparent;
 }
-#text_container, #action_container {
-	width: 700px;
-	border-radius: 5px;
-	border: 1px solid #ccc;
-	border-color: #ddd #eee #eee #ddd;
-	border-width: 1px 2px 2px 1px;
-}
+
 #action_container {
 	height: 170px;
 	
-	margin-top: 10px;
+	margin-bottom: 10px;
+
 	background: #fafafa;
 	height: auto;
 	clear: left;
@@ -132,15 +128,16 @@ body {
 
 .main {
 	width: 800px;
+	margin-top: 2em;
 	margin-left: auto;
 	margin-right: auto;
 }
 
 .option {
-	width: 300px;
+	width: 308px;
 	margin-left: auto;
 	margin-right: auto;
-	margin-bottom: 10px;
+	margin-bottom: 12px;
 }
 
 #content {
@@ -179,13 +176,14 @@ body {
 }
 a.ui-slider-handle {
 	outline: none;
+	margin-top: 0.1em;
 }
 .ui-slider .ui-slider-handle {
 	width: 0.9em;
 	height: 0.9em;
 }
 .slider {
-	margin: 0 0.45em; 
+	margin: 0.2em 0.45em 0 0.45em; 
 	width: 250px;
 	height: 8px;
 }
@@ -194,7 +192,7 @@ a.ui-slider-handle {
 	float: right;
 	width: 30px;
 	margin-top: 1em;
-	margin-left: 1em;
+	margin-left: 1.5em;
 }
 
 div.annotation:hover ul.candidates {
@@ -492,14 +490,11 @@ $(document).ready(function() {
 </head>
 
 <body>
-<div class="main" style="margin-top: 5em;">
+<div class="main">
 	<img id="logo" src="dbpedia_spotlight_logo.jpg" />
 
 
-	
-<div id="text_container" class="container"><textarea id="text">A day after American and European forces began a broad campaign of strikes against the government of Col. Muammar el-Qaddafi , the Libyan leader delivered a fresh and defiant tirade on Sunday , pledging retaliation and saying his forces would fight a long war to victory.</textarea></div>
-
-<div id="action_container" class="container">
+	<div id="action_container" class="container">
 
 <div id="action_options">
 
@@ -535,11 +530,15 @@ $(document).ready(function() {
 </div>
 </div>
 
+<div id="text_container" class="container"><textarea rows="4" id="text">A day after American and European forces began a broad campaign of strikes against the government of Col. Muammar el-Qaddafi , the Libyan leader delivered a fresh and defiant tirade on Sunday, pledging retaliation and saying his forces would fight a long war to victory.</textarea></div>
+
+
+
 
 
 <div id="bookmarklet_container" class="container" style="display: none;">
 
-<h2>Bookmarklet</h2>
+<h2>Bookmarklet</h2>/spotlight/trunk/demo/dbpedia_spotlight_logo.jpg
 <div>
 Tired of copying and pasting text here?
 Drag the box "Annotate with DBpedia Spotlight" below to your bookmarks bar.
