@@ -4,10 +4,10 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 
 <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Demo</title>
+<title>DBpedia Spotlight Demo</title>
 
 <script src="jquery-1.6.1.min.js" type="text/javascript"></script>
-<script src="dbpedia-spotlight-0.2.js" type="text/javascript"></script>
+<script src="dbpedia-spotlight-0.3.js" type="text/javascript"></script>
 
 	<script src="ui/jquery.ui.core.js"></script>
 	<script src="ui/jquery.ui.widget.js"></script>
@@ -43,12 +43,13 @@
 	overflow: auto;
 }
 #text_container {
+	overflow: auto;
 	background: #fff no-repeat bottom right;
 }
 #text_container.annotated {
 	background: #fafafa none;
 	cursor:text;
-	overflow: visible;
+	overflow: auto;
 }
 #text_container div {
 	height: 100%;
@@ -64,6 +65,18 @@
 }
 #text_container.loading #text {
 	background: no-repeat 50% 50% url(data:image/gif;base64,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);	
+}
+#text_container .annotation {
+	padding-left: 0;
+	display: inline;
+}
+#text_container, #action_container {
+	width: 700px;
+	height: 170px;
+	border-radius: 5px;
+	border: 1px solid #ccc;
+	border-color: #ddd #eee #eee #ddd;
+	border-width: 1px 2px 2px 1px;
 }
 .container {
 	margin: 0px 50px;
@@ -100,6 +113,7 @@
 	text-align: justify;
 }
 
+
 #action_options {
 	float: left;
 }
@@ -125,13 +139,6 @@
 	margin-left: auto;
 	margin-right: auto;
 	margin-bottom: 10px;
-}
-
-
-
-#text_container .annotation {
-	padding-left: 0;
-	display: inline;
 }
 
 #content {
@@ -226,14 +233,7 @@ ul.candidates li {
 	padding: 0.15em 0.2em;
 }
 #text_container ul.candidates li a {
-	display: inline-block;
-}
-
-ul.candidates li.candidate-0 {
-	padding: 0.15em 0.85em 0.15em 0.2em;
-	
-}
-#text_container {
+	display: inline-block;	
 }
 #text_container div a.surfaceForm {
 	display: inline-block;
@@ -247,6 +247,11 @@ ul.candidates li.candidate-0 {
 #text_container div div.annotation:hover a.surfaceForm {
 	border-color: #c0c0c0;
 	background-image: url(data:image/gif;base64,R0lGODlhBQADAIABAEJ+if///yH5BAEAAAEALAAAAAAFAAMAAAIFhB0XC1sAOw==);
+}
+
+ul.candidates li.candidate-0 {
+	padding: 0.15em 0.85em 0.15em 0.2em;
+	
 }
 #tree_id a {background: transparent; border: none;}
 #types {
@@ -274,29 +279,31 @@ body .jstree li {
 <script>
 var annotated = false;
 var textInput = null;
-var server = 'http://spotlight.dbpedia.org/rest'
+var server = 'http://spotlight.dbpedia.org/dev/rest'
 
 function run(method) {
-	
+    
     var settings = {
       'endpoint' : server,
       'confidence' : $('#confidence').val(),
       'support' : $('#support').val(),
       'powered_by': 'no',
       'showScores': 'yes',
-      'types' : getTypes()
+      'spotter' : $('#spotter').val(),
+      'types' : getTypes(),
     }
 
 	//Write manual 
 	$('#text').text($('#text').val());
 	textInput = $('#text').clone();
 	
-    $('#text_container').runDBpediaSpotlight(settings);
-    $('#text_container').runDBpediaSpotlight(method);
+    $('#text_container').annotate(settings);
+    $('#text_container').annotate(method);
 	$('#text_container').addClass("annotated loading");
 	
 	$(".action_button").attr("disabled", true);
 	$.uniform.update(".action_button");
+
 	annotated = true;
 	
 	$("#text_container").click(function(event) {
@@ -326,7 +333,7 @@ function getTypes() {
 function runWithSettings() {
 	switch($("#method").val()){
 		case "first-best":
-			run('annotate');
+			run('best');
 			break;
 		case "n-best":
 			run('candidates');
@@ -464,31 +471,11 @@ $(document).ready(function() {
 			
 		});
 		
-		$("#server").change(function(event){
-			switch($("#server").val()){
-				case "no":
-					server = 'http://spotlight.dbpedia.org/rest';
+		$("#spotter").change(function(event){
 					if(annotated){
 						$('#text_container').html(textInput);
 						runWithSettings();
-					}
-					break;
-				case "coocc":
-					server = 'http://localhost:2222/rest';
-					if(annotated){
-						$('#text_container').html(textInput);
-						runWithSettings();
-					}
-					break;
-				case "no_dev":
-					server = 'http://spotlight.dbpedia.org/dev/rest';
-					if(annotated){
-						$('#text_container').html(textInput);
-						runWithSettings();
-					}
-					break;	
-					
-			}
+					} 
 		});
 		
 });
@@ -523,10 +510,10 @@ $(document).ready(function() {
 
 <div id="action_buttons">
 
-	<select id="server">
-		<option value="no">Selector: None</option>
-		<option value="coocc">Co-occurrence based selection</option>
-		<option value="no_dev">Selector: None (Development)</option>
+	<select id="spotter">
+		<option value="LingPipeSpotter">Annotate all</option>
+		<option value="AtLeastOneNounSelector">No verbs and adjs.</option>
+		<option value="CoOccurrenceBasedSelector">No 'common words'</option>
 	</select>
 
 	<input class="action_button" id="types" type="button" enabled value="Select types…"/>
