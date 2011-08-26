@@ -6,6 +6,7 @@
 <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>DBpedia Spotlight</title>
 
+<script src="selector.js" type="text/javascript"></script>
 <script src="jquery-1.6.1.min.js" type="text/javascript"></script>
 <script src="dbpedia-spotlight-0.3.js" type="text/javascript"></script>
 
@@ -278,11 +279,14 @@ body .jstree li {
 	width: 100%;
 	height: 150px;
 }
+
+#edit_text {
+	align:center;
+}
 </style>
 
 <script>
 var annotated = false;
-var textInput = null;
 var server = 'http://spotlight.dbpedia.org/dev/rest'
 
 function run(method) {
@@ -297,29 +301,32 @@ function run(method) {
       'types' : getTypes(),
     }
 
-	//Write manual 
-	$('#text').text($('#text').val());
-	textInput = $('#text').clone();
-	
-    $('#text_container').annotate(settings);
-    $('#text_container').annotate(method);
+	// will hide text object and show annotated text
+	$('#text').hide();
+        $('#text_container').append('<div id=text_annotated>'+$('#text').val()+'</div>');
+        $('#text_annotated').annotate(settings);//TODO enable annotate(method, settings)
+        $('#text_annotated').annotate(method);
 	$('#text_container').addClass("annotated loading");
 	
 	$(".action_button").attr("disabled", true);
 	$.uniform.update(".action_button");
 
-	annotated = true;
-	
-	$("#text_container").click(function(event) {
-		if( !$( event.target ).is( "a, select, option" ) ){
-			annotated = false;
-			$('#text_container').html(textInput);
-			$('#text_container').removeClass("annotated loading");
-			$("#text_container").unbind('click');
-			$(".action_button").attr("disabled", false);
-			$.uniform.update(".action_button");
-		}
+	//button to get the editable text box back for the user to modify as needed
+	$('#edit_text').show();
+	$('#edit_text').click(function() { 
+		annotated = false;
+		$('#text').show(); 
+		$('#text_annotated').remove();
+		$('#text_container').removeClass("annotated loading");
+		$(".action_button").attr("disabled", false);
+		$('#edit_text').hide();
+		$.uniform.update(".action_button");
 	});
+
+	annotated = true;
+
+	//get candidates for the surface form selected
+	$("#text_annotated").bind("mouseup", getSuggestions);
 
 }
 
@@ -333,6 +340,27 @@ function getTypes() {
 	});
 	return checked_ids.join(",");
 }
+
+function getSuggestions(eventObject){
+				var st = ''+Kolich.Selector.getSelected();
+				//console.log(st);
+				if(st!=''){
+					console.log("You selected:\n"+st);
+					$("#suggestdialog").hide().text($('#text').val());
+					$('#suggestdialog').annotate("suggest");
+					$('#suggestdialog').show(); //TODO instead of a div on the bottom, make it a popup
+					/*$('<div></div>').dialog({ 
+						width: 100,
+						height: 200,
+						autoOpen: true,
+						position: [eventObject.pageX, eventObject.pageY],
+						title : "Candidates..."
+					});*/
+				} else {
+					$("#suggestdialog").hide();
+				}
+
+			}
 
 function runWithSettings() {
 	switch($("#method").val()){
@@ -371,7 +399,6 @@ $(document).ready(function() {
 	$('#annotate').click(function() { 
 		runWithSettings();
 	});
-  //$('#candidates').click(function() { run('candidates') } );
 
   		$("#support-slider").slider({
   			value:0,
@@ -383,7 +410,6 @@ $(document).ready(function() {
   			},
 	  		stop: function( event, ui ) {
 				if(annotated){
-					$('#text_container').html(textInput);
 					runWithSettings();
 				}
   			}
@@ -399,7 +425,6 @@ $(document).ready(function() {
   			},
   			stop: function( event, ui ) {
 				if(annotated){
-					$('#text_container').html(textInput);
 					runWithSettings();
 				}
   			}
@@ -408,14 +433,13 @@ $(document).ready(function() {
 		$("#method").change(
 			function() {
 				if(annotated){
-					$('#text_container').html(textInput);
 					runWithSettings();
 				}
 			}
 			);
 
-	    $('.candidates').uniform()
-		$("select, input").uniform();
+//	    	$('.candidates').uniform()
+		$(".action_button").uniform();
 		$(".action_button").attr("disabled", false);
 
 		$("#tree_dbpedia").jstree({
@@ -477,11 +501,12 @@ $(document).ready(function() {
 		
 		$("#spotter").change(function(event){
 					if(annotated){
-						$('#text_container').html(textInput);
 						runWithSettings();
 					} 
 		});
 		
+        $('#edit_text').hide();
+
 });
 
 
@@ -511,7 +536,7 @@ $(document).ready(function() {
 
 <div id="action_buttons">
 
-	<select id="spotter">
+	<select id="spotter" class="action_button">
 		<option value="LingPipeSpotter">Annotate all</option>
 		<option value="AtLeastOneNounSelector">No verbs and adjs.</option>
 		<option value="CoOccurrenceBasedSelector">No 'common words'</option>
@@ -521,7 +546,7 @@ $(document).ready(function() {
 
 	<br />
 
-<select id="method">
+<select id="method" class="action_button">
 	<option value="first-best">first-best</option>
 	<option value="n-best">n-best</option>
 </select>
@@ -530,15 +555,18 @@ $(document).ready(function() {
 </div>
 </div>
 
-<div id="text_container" class="container"><textarea rows="4" id="text">A day after American and European forces began a broad campaign of strikes against the government of Col. Muammar el-Qaddafi , the Libyan leader delivered a fresh and defiant tirade on Sunday, pledging retaliation and saying his forces would fight a long war to victory.</textarea></div>
+<div id="text_container" class="container"><textarea rows="4" id="text">Cook's profile has grown as he has made more public appearances on Apple's behalf. This winter, he represented Apple as Verizon announced the iPhone. He has been making more appearances during Apple product events, including Apple's Mac event last October. And he has long led the company's earnings calls.
 
+Cook is well compensated for his work. Unlike Steve Jobs' symbolic $1 salary, Tim Cook got $59 million in total compensation last year. (Apple pays out equity every other year, so that's why it was especially high.)
 
-
+Cook is a HUGE Auburn football fan. We got a chance to talk to him last Tuesday at the Verizon event, after Auburn won the national championship the night before. He sounded like it had been one of the best moments of his life. (Now we see, perhaps, why he had to watch it in a New York hotel room and not at the game itself.)</textarea></div>
+<center><input id="edit_text" type="button" value="Back to Text"/></center>
+<div id=suggestdialog></div>
 
 
 <div id="bookmarklet_container" class="container" style="display: none;">
 
-<h2>Bookmarklet</h2>/spotlight/trunk/demo/dbpedia_spotlight_logo.jpg
+<h2>Bookmarklet</h2>
 <div>
 Tired of copying and pasting text here?
 Drag the box "Annotate with DBpedia Spotlight" below to your bookmarks bar.
