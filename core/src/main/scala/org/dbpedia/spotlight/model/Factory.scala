@@ -108,7 +108,7 @@ object Factory {
             prefix.toLowerCase match {
                 case "d" | "dbpedia" => new DBpediaType(suffix)
                 case "f" | "freebase" => new FreebaseType(suffix)
-                //case _ => new DBpediaType(ontologyType)
+                case _ => new DBpediaType(ontologyType)
             }
         }catch{
             //The default type for non-prefixed type strings:
