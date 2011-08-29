@@ -75,7 +75,7 @@ class DBpediaResourceFactorySQL(sqlDriver : String, sqlConnector : String, usern
   val typeIDMap = new HashMap[Int, OntologyType]()
   var query: ResultSet = sqlConnection.createStatement().executeQuery("select * from OntologyType;")
   while(query.next()) {
-    typeIDMap.put(query.getString("TYPE_ID").toList(0).toInt, Factory.OntologyType.from(query.getString("TYPE")))
+    typeIDMap.put(query.getString("TYPE_ID").toList(0).toInt, Factory.OntologyType.fromQName(query.getString("TYPE")))
   }
 
   //Get the type corresponding to the typeID:
