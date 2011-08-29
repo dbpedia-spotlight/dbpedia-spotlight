@@ -14,7 +14,7 @@ class FactoryTests {
 
   @Test
   def idStringToDBpediaResource() {
-    val examples = List("Germany", "Apple");
+    val examples = List("Germany", "Apple", "Train");
 
      examples.foreach( dbpediaID => {
       val dBpediaResource: DBpediaResource = Factory.DBpediaResource.from(dbpediaID)

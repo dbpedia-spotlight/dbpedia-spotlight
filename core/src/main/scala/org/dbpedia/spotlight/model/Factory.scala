@@ -93,8 +93,6 @@ object Factory {
               new DBpediaType(uri)
           } else if (uri.startsWith(FreebaseType.FREEBASE_RDF_PREFIX)) {
               new FreebaseType(uri)
-          } else if (uri.startsWith(SchemaOrgType.SCHEMAORG_PREFIX)) {
-              new SchemaOrgType(uri)
           } else {
               new DBpediaType(uri)
           }
@@ -105,13 +103,12 @@ object Factory {
       val r = """^([A-Za-z]):(.*)""".r
 
         try {
-            val r(prefix,suffix) = ontologyType
+            val r(prefix, suffix) = ontologyType
 
             prefix.toLowerCase match {
-                case "d" | "dbpedia" | "DBpedia" => new DBpediaType(suffix)
-                case "f" | "freebase" | "Freebase" => new FreebaseType(suffix)
-                case "s" | "schema" | "Schema" => new SchemaOrgType(suffix)
-                case _ => new DBpediaType(ontologyType)
+                case "d" | "dbpedia" => new DBpediaType(suffix)
+                case "f" | "freebase" => new FreebaseType(suffix)
+                //case _ => new DBpediaType(ontologyType)
             }
         }catch{
             //The default type for non-prefixed type strings:
