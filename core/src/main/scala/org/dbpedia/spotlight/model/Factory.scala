@@ -70,37 +70,40 @@ object Factory {
             new DBpediaResourceOccurrence("", resource, sfOcc.surfaceForm, sfOcc.context, sfOcc.textOffset, Provenance.Annotation, hit.score, percentageOfSecond, hit.score)
         }
     }
-  
+
     object DBpediaResource {
-    val dbpediaResourceFactory : DBpediaResourceFactory = new DBpediaResourceFactorySQL(
-      "org.hsqldb.jdbcDriver",
-      "jdbc:hsqldb:file:/Users/jodaiber/Desktop/spotlight-db",
-      "sa",
-      "")
+        val dbpediaResourceFactory : DBpediaResourceFactory = new DBpediaResourceFactorySQL(
+            "org.hsqldb.jdbcDriver",
+            "jdbc:hsqldb:file:/Users/jodaiber/Desktop/spotlight-db",
+            "sa",
+            "")
 
-    def from(dbpediaID : String) : DBpediaResource = dbpediaResourceFactory.from(dbpediaID)
-    def from(dbpediaResource : DBpediaResource) = dbpediaResourceFactory.from(dbpediaResource.uri)
-  }
-
-  object OntologyType {
-
-    def from(ontologyType : String) : OntologyType = {
-
-      val r = """^([A-Za-z]):(.*)""".r
-
-      try {
-        val r(prefix,suffix) = ontologyType
-
-        prefix.toLowerCase match {
-          case "d" | "dbpedia" => new DBpediaType(suffix)
-          case "f" | "freebase" => new FreebaseType(suffix)
-        }
-      }catch{
-        //The default type for non-prefixed type strings:
-        case e: scala.MatchError => new DBpediaType(ontologyType)
-      }
+        def from(dbpediaID : String) : DBpediaResource = dbpediaResourceFactory.from(dbpediaID)
+        def from(dbpediaResource : DBpediaResource) = dbpediaResourceFactory.from(dbpediaResource.uri)
     }
-  }
+
+    //Workaround for Java:
+    def ontologyType() = this.OntologyType
+    object OntologyType {
+
+
+        def from(ontologyType : String) : OntologyType = {
+
+            val r = """^([A-Za-z]):(.*)""".r
+
+            try {
+                val r(prefix,suffix) = ontologyType
+
+                prefix.toLowerCase match {
+                    case "d" | "dbpedia" => new DBpediaType(suffix)
+                    case "f" | "freebase" => new FreebaseType(suffix)
+                }
+            }catch{
+                //The default type for non-prefixed type strings:
+                case e: scala.MatchError => new DBpediaType(ontologyType)
+            }
+        }
+    }
 
     object Paragraph {
         def from(a: AnnotatedParagraph) = {
@@ -126,7 +129,7 @@ object Factory {
             context,
             -1,
             Provenance.Wikipedia // Ideally grab this from index, if we have sources other than Wikipedia
-            ))
+        ))
     }
 
     def createDBpediaResourceOccurrencesFromDocument(doc : Document, id: Int, searcher: BaseSearcher) = {
@@ -162,8 +165,8 @@ object Factory {
 
 
 class SpotlightFactory(val configuration: SpotlightConfiguration,
-                    val analyzer: Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET)
-                    ) {
+                       val analyzer: Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET)
+                          ) {
 
     def this(configuration: SpotlightConfiguration) {
         this(configuration, new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", configuration.getStopWords))
@@ -218,11 +221,11 @@ class SpotlightFactory(val configuration: SpotlightConfiguration,
     }
 
     def taggedTokenProvider() = {
-       new LingPipeTaggedTokenProvider(lingPipeFactory);
+        new LingPipeTaggedTokenProvider(lingPipeFactory);
     }
 
     def textUtil() = {
-       new LingPipeTextUtil(lingPipeFactory);
+        new LingPipeTextUtil(lingPipeFactory);
     }
-  
+
 }

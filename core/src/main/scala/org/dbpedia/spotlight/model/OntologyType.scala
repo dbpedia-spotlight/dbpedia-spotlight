@@ -72,7 +72,7 @@ object DBpediaType {
 
 
 /**
- * Types from freebase: non-hierarchical, grouped into domains.
+ * Types from Freebase: non-hierarchical, grouped into domains.
  */
 
 class FreebaseType(var domain : String, var typeName : String) extends OntologyType {
