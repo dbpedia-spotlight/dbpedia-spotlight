@@ -19,9 +19,8 @@ package org.dbpedia.spotlight.annotate
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.spot.Spotter
-import org.dbpedia.spotlight.disambiguate.{Disambiguator, DefaultDisambiguator}
+import org.dbpedia.spotlight.disambiguate.Disambiguator
 import org.dbpedia.spotlight.exceptions.InputException
-import org.dbpedia.spotlight.spot.lingpipe.{IndexLingPipeSpotter, LingPipeSpotter}
 
 /**
  * Annotates a text with DBpedia Resources

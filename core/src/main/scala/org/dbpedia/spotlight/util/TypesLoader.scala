@@ -19,10 +19,10 @@ package org.dbpedia.spotlight.util
 import io.Source
 import scala.collection.JavaConversions._
 import org.apache.commons.logging.LogFactory
-import org.dbpedia.spotlight.model.{DBpediaResource, DBpediaType}
 import java.util.{LinkedHashSet, LinkedList}
 import java.io.{InputStream, File}
 import org.semanticweb.yars.nx.parser.NxParser
+import org.dbpedia.spotlight.model.{OntologyType, Factory, DBpediaResource, DBpediaType}
 
 /**
  * Created by IntelliJ IDEA.
@@ -44,7 +44,7 @@ object TypesLoader
         var typesMap = Map[String,List[DBpediaType]]()
         for (line <- Source.fromFile(typeDictFile, "UTF-8").getLines) {
             val elements = line.split("\t")
-            val uri = elements(0)
+            val uri = new DBpediaResource(elements(0)).uri
             val t = new DBpediaType(elements(1))
             val typesList : List[DBpediaType] = typesMap.get(uri).getOrElse(List[DBpediaType]()) ::: List(t)
             typesMap = typesMap.updated(uri, typesList)
@@ -53,23 +53,24 @@ object TypesLoader
         typesMap
     }
 
-    def getTypesMap_java(instanceTypesStream : InputStream) : java.util.Map[String,java.util.LinkedHashSet[DBpediaType]] = {
+    def getTypesMap_java(instanceTypesStream : InputStream) : java.util.Map[String,java.util.LinkedHashSet[OntologyType]] = {
         LOG.info("Loading types map...")
-        var typesMap = Map[String,java.util.LinkedHashSet[DBpediaType]]()
-
+        var typesMap = Map[String,java.util.LinkedHashSet[OntologyType]]()
+        var i = 0;
         // CAUTION: this assumes that the most specific type is listed last
         val parser = new NxParser(instanceTypesStream)
         while (parser.hasNext) {
             val triple = parser.next
             if(!triple(2).toString.endsWith("owl#Thing")) {
+                i = i + 1;
                 val resource = new DBpediaResource(triple(0).toString)
-                val t = new DBpediaType(triple(2).toString)
-                val typesList : java.util.LinkedHashSet[DBpediaType] = typesMap.get(resource.uri).getOrElse(new LinkedHashSet[DBpediaType]())
+                val t = Factory.OntologyType.fromURI(triple(2).toString)
+                val typesList : java.util.LinkedHashSet[OntologyType] = typesMap.get(resource.uri).getOrElse(new LinkedHashSet[OntologyType]())
                 typesList.add(t)
                 typesMap = typesMap.updated(resource.uri, typesList)
             }
         }
-        LOG.info("Done.")
+        LOG.info("Done. Loaded %d types.".format(i))
         typesMap
     }
     

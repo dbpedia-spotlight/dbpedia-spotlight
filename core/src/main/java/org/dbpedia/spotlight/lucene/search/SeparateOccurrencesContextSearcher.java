@@ -107,7 +107,7 @@ public class SeparateOccurrencesContextSearcher extends BaseSearcher implements 
         List<Document> results = new ArrayList<Document>();
         try {
             for (ScoreDoc hit: getHits(mLucene.getQuery(resource))) {
-                results.add(getFullDocument(hit.doc));
+                if (!isDeleted(hit.doc)) results.add(getFullDocument(hit.doc));
             }
         } catch (Exception e) {
             throw new SearchException("Error searching for resource "+resource, e);

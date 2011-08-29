@@ -52,21 +52,21 @@ object IndexedOccurrencesSource {
 
             val range = 0 until indexSize
             for(i <- range) {
+                if (! searcher.isDeleted(i)) {
+                    // create occurrence
+                    val doc: Document = searcher.getFullDocument(i)
 
-                // create occurrence
-                val doc: Document = searcher.getFullDocument(i)
+                    val occurrences = create(doc, i, searcher);
 
-                val occurrences = create(doc, i, searcher);
+                    // apply closure on the occurrences
+                    occurrences.foreach(o => f(o));
 
-                // apply closure on the occurrences
-                occurrences.foreach(o => f(o));
-
-                // report
-                //if (i % fivePercentOfIndex == 0) {
+                    // report
+                    //if (i % fivePercentOfIndex == 0) {
                     //LOG.trace("  processed " + i + " URIs.")
-                //}
+                    //}
+                }
             }
-
         }
 
     }

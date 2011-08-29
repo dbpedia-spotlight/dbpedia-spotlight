@@ -19,11 +19,10 @@
 package org.dbpedia.spotlight.model
 
 /**
- * @author maxjakob
- * @author Joachim Daiber
- *
  * Representation of types (DBpedia, Freebase, Schema.org, etc.)
  *
+ * @author maxjakob
+ * @author Joachim Daiber
  */
 
 trait OntologyType {
@@ -49,6 +48,8 @@ trait OntologyType {
 class DBpediaType(var name : String) extends OntologyType {
 
     name = name.replace(DBpediaType.DBPEDIA_ONTOLOGY_PREFIX, "")
+
+    name = name.replace("DBpedia:","")
 
     name = name.capitalize
 
@@ -77,7 +78,7 @@ object DBpediaType {
 
 class FreebaseType(var domain : String, var typeName : String) extends OntologyType {
 
-  def this(typeString : String) {
+  def this(typeString : String) { //TODO how to instantiate a FreebaseType from a full URI? http://rdf.freebase.com/ns/common/topic
     this(typeString.split("/")(1), typeString.split("/")(2))
   }
   
@@ -89,4 +90,24 @@ class FreebaseType(var domain : String, var typeName : String) extends OntologyT
 object FreebaseType {
     val FREEBASE_RDF_PREFIX = "http://rdf.freebase.com/ns/"
     val UNKNOWN = new FreebaseType("common", "topic")
+}
+
+object SchemaOrgType {
+    val SCHEMAORG_PREFIX = "http://schema.org/"
+    val UNKNOWN = new SchemaOrgType("Thing")
+}
+
+class SchemaOrgType(var name : String) extends OntologyType {
+
+    name = name.replace(SchemaOrgType.SCHEMAORG_PREFIX, "")
+
+    def equals(that : SchemaOrgType) : Boolean = {
+        name.equalsIgnoreCase(that.name)
+    }
+
+    override def getFullUri = SchemaOrgType.SCHEMAORG_PREFIX + name
+    override def typeID = "Schema:" + name
+
+    override def toString = "%s/%s".format(SchemaOrgType.SCHEMAORG_PREFIX,name)
+
 }

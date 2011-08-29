@@ -21,6 +21,7 @@ import com.sun.jersey.api.container.grizzly.GrizzlyWebContainerFactory;
 import org.dbpedia.spotlight.annotate.Annotator;
 import org.dbpedia.spotlight.disambiguate.Disambiguator;
 import org.dbpedia.spotlight.exceptions.InitializationException;
+import org.dbpedia.spotlight.model.DBpediaResourceFactorySQL;
 import org.dbpedia.spotlight.model.SpotlightFactory;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SpotterConfiguration;

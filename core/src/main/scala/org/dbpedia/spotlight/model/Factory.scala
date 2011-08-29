@@ -22,6 +22,8 @@ import org.apache.lucene.search.{ScoreDoc, Similarity}
 import org.dbpedia.spotlight.exceptions.{ItemNotFoundException, ConfigurationException}
 import org.dbpedia.spotlight.spot.{WikiMarkupSpotter, Spotter, AtLeastOneNounSelector, SpotterWithSelector}
 import java.util.HashMap
+import org.dbpedia.spotlight.disambiguate.{Disambiguator, DefaultDisambiguator}
+import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
 
 /**
  * Class containing methods to create model objects in many different ways
@@ -74,7 +76,7 @@ object Factory {
     object DBpediaResource {
         val dbpediaResourceFactory : DBpediaResourceFactory = new DBpediaResourceFactorySQL(
             "org.hsqldb.jdbcDriver",
-            "jdbc:hsqldb:file:/Users/jodaiber/Desktop/spotlight-db",
+            "jdbc:hsqldb:file:/data/spotlight/spotlight-db",
             "sa",
             "")
 
@@ -86,24 +88,38 @@ object Factory {
     def ontologyType() = this.OntologyType
     object OntologyType {
 
+      def fromURI(uri: String) : OntologyType = {
+          if (uri.startsWith(DBpediaType.DBPEDIA_ONTOLOGY_PREFIX)) {
+              new DBpediaType(uri)
+          } else if (uri.startsWith(FreebaseType.FREEBASE_RDF_PREFIX)) {
+              new FreebaseType(uri)
+          } else if (uri.startsWith(SchemaOrgType.SCHEMAORG_PREFIX)) {
+              new SchemaOrgType(uri)
+          } else {
+              new DBpediaType(uri)
+          }
+      }
 
-        def from(ontologyType : String) : OntologyType = {
+    def fromQName(ontologyType : String) : OntologyType = {
 
-            val r = """^([A-Za-z]):(.*)""".r
+      val r = """^([A-Za-z]):(.*)""".r
 
-            try {
-                val r(prefix,suffix) = ontologyType
+        try {
+            val r(prefix,suffix) = ontologyType
 
-                prefix.toLowerCase match {
-                    case "d" | "dbpedia" => new DBpediaType(suffix)
-                    case "f" | "freebase" => new FreebaseType(suffix)
-                }
-            }catch{
-                //The default type for non-prefixed type strings:
-                case e: scala.MatchError => new DBpediaType(ontologyType)
+            prefix.toLowerCase match {
+                case "d" | "dbpedia" | "DBpedia" => new DBpediaType(suffix)
+                case "f" | "freebase" | "Freebase" => new FreebaseType(suffix)
+                case "s" | "schema" | "Schema" => new SchemaOrgType(suffix)
+                case _ => new DBpediaType(ontologyType)
             }
+        }catch{
+            //The default type for non-prefixed type strings:
+            case e: scala.MatchError => new DBpediaType(ontologyType)
         }
     }
+
+  }
 
     object Paragraph {
         def from(a: AnnotatedParagraph) = {
@@ -129,7 +145,7 @@ object Factory {
             context,
             -1,
             Provenance.Wikipedia // Ideally grab this from index, if we have sources other than Wikipedia
-        ))
+            ))
     }
 
     def createDBpediaResourceOccurrencesFromDocument(doc : Document, id: Int, searcher: BaseSearcher) = {
@@ -152,8 +168,8 @@ object Factory {
         field match {
             case DBpediaResourceField.URI_COUNT =>
                 resource.setSupport(document.getField(field.name).stringValue.toInt)
-            case DBpediaResourceField.URI_PRIOR =>
-                resource.setPrior(document.getField(field.name).stringValue.toDouble)
+//            case DBpediaResourceField.URI_PRIOR =>
+//                resource.setPrior(document.getField(field.name).stringValue.toDouble)
             case DBpediaResourceField.TYPE =>
                 resource.setTypes(document.getValues(field.name).map( t => new DBpediaType(t) ).toList)
             case _ =>
@@ -163,10 +179,14 @@ object Factory {
 
 }
 
-
+/**
+ * This class contains many of the "defaults" for DBpedia Spotlight. Maybe consider renaming to DefaultFactory.
+ *
+ *
+ */
 class SpotlightFactory(val configuration: SpotlightConfiguration,
-                       val analyzer: Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET)
-                          ) {
+                    val analyzer: Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET)
+                    ) {
 
     def this(configuration: SpotlightConfiguration) {
         this(configuration, new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", configuration.getStopWords))
@@ -182,6 +202,14 @@ class SpotlightFactory(val configuration: SpotlightConfiguration,
     luceneManager.setDefaultAnalyzer(analyzer);
     luceneManager.setContextSimilarity(similarity);
 
+    //TODO grab from configuration
+    val f = new DBpediaResourceFactorySQL("org.hsqldb.jdbcDriver",
+                                                "jdbc:hsqldb:file:/data/spotlight/3.7/database/spotlight-db",
+                                                "sa",
+                                                "")
+    //TODO JO factory will be set here
+    //luceneManager.setDBpediaResourceFactory(f)
+
     val searcher = new MergedOccurrencesContextSearcher(luceneManager);
 
     val spotters = new HashMap[SpotterConfiguration.SpotterPolicy,Spotter]()
@@ -189,7 +217,7 @@ class SpotlightFactory(val configuration: SpotlightConfiguration,
     def disambiguator() = {
         //val mixture = new LinearRegressionMixture
         //new MixedWeightsDisambiguator(searcher,mixture);
-        new DefaultDisambiguator(configuration)
+        new MergedOccurrencesDisambiguator(searcher)
         //new GraphCentralityDisambiguator(configuration)
     }
 
@@ -221,11 +249,11 @@ class SpotlightFactory(val configuration: SpotlightConfiguration,
     }
 
     def taggedTokenProvider() = {
-        new LingPipeTaggedTokenProvider(lingPipeFactory);
+       new LingPipeTaggedTokenProvider(lingPipeFactory);
     }
 
     def textUtil() = {
-        new LingPipeTextUtil(lingPipeFactory);
+       new LingPipeTextUtil(lingPipeFactory);
     }
-
+  
 }

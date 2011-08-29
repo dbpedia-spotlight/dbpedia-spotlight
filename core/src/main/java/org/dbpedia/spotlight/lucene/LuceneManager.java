@@ -92,12 +92,18 @@ public class LuceneManager {
     // this value specifies how many top results Lucene should return
     public int topResultsLimit = 100;
 
+    protected DBpediaResourceFactory resourceFactory = null;
 
     public LuceneManager(Directory directory) throws IOException {
         this.mContextIndexDir = directory;
         this.mPerFieldAnalyzers.put(DBpediaResourceField.SURFACE_FORM.toString(), new StopAnalyzer(Version.LUCENE_29));
         this.mPerFieldAnalyzers.put(DBpediaResourceField.CONTEXT.toString(), new StandardAnalyzer(Version.LUCENE_29));
         this.mDefaultAnalyzer = new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_29), mPerFieldAnalyzers);
+    }
+
+    public LuceneManager(Directory directory, DBpediaResourceFactory factory) throws IOException {
+        this(directory);
+        resourceFactory = factory;
     }
 
     // this file contains a bunch of useful config info for searching indexes
@@ -113,7 +119,7 @@ public class LuceneManager {
 //    }
 
     //---- GETTERS ---- They don't follow Java's naming convention - getDirectory() -, but rather Scala's style - mContextIndexDir()
-    
+
     public Directory directory() {
         return mContextIndexDir;
     }
@@ -162,9 +168,17 @@ public class LuceneManager {
         return topResultsLimit;
     }
 
+    public DBpediaResourceFactory getDBpediaResourceFactory() {
+        return resourceFactory;
+    }
+
+    public void setDBpediaResourceFactory(DBpediaResourceFactory resourceFactory) {
+        this.resourceFactory = resourceFactory;
+    }
+
 
     public enum DBpediaResourceField {
-        URI("URI"), URI_COUNT("URI_COUNT"), URI_PRIOR("URI_PRIOR"), SURFACE_FORM("SURFACE_FORM"), CONTEXT("CONTEXT"), TYPE("TYPE");
+        URI("URI"), URI_COUNT("URI_COUNT"), SURFACE_FORM("SURFACE_FORM"), CONTEXT("CONTEXT"), TYPE("TYPE");
         private String name;
         DBpediaResourceField(String name) {
             this.name = name;
@@ -232,20 +246,6 @@ public class LuceneManager {
         return doc;
     }
 
-    public Document add(Document doc, Double prior) {
-
-        Field priorField = doc.getField(LuceneManager.DBpediaResourceField.URI_PRIOR.toString());
-        if (priorField==null) {
-            priorField = getUriPriorField(prior);
-        } else {
-            priorField.setValue(prior.toString());
-            doc.removeFields(LuceneManager.DBpediaResourceField.URI_PRIOR.toString());
-        }
-        doc.add(priorField);
-
-        return doc;
-    }
-
     public Document add(Document doc, Integer count) {
 
         Field countField = doc.getField(LuceneManager.DBpediaResourceField.URI_COUNT.toString());
@@ -260,7 +260,7 @@ public class LuceneManager {
         return doc;
     }
 
-    public Document add(Document doc, DBpediaType t) {
+    public Document add(Document doc, OntologyType t) {
         Field typeField = getField(t);
         doc.add(typeField);
         return doc;
@@ -291,7 +291,6 @@ public class LuceneManager {
             String fieldString = enumField.toString();
             for (Field luceneField : doc.getFields(fieldString)) {
                 String value = luceneField.stringValue();
-                //if (luceneField.name().equals(DBpediaResourceField.SURFACE_FORM.toString())) value = luceneField.stringValue().toLowerCase(); //HACK temp. remove now.
                 Field newField = new Field(fieldString,
                                            value,
                                            store,
@@ -440,9 +439,9 @@ public class LuceneManager {
                         Field.Index.NOT_ANALYZED);//03/Dec Added Norms for using normalized TF as prior (conditional). Was: Field.Index.NOT_ANALYZED_NO_NORMS); 
     }
 
-    public Field getField(DBpediaType t) {
+    public Field getField(OntologyType t) {
         return new Field(DBpediaResourceField.TYPE.toString(),
-                                    t.name(),
+                                    t.typeID(),
                                     Field.Store.YES,
                                     Field.Index.NOT_ANALYZED_NO_NORMS);
     }
@@ -454,12 +453,14 @@ public class LuceneManager {
                                     Field.Index.NOT_ANALYZED_NO_NORMS);
     }
 
+    /*
     public Field getUriPriorField(double prior) {
         return new Field(DBpediaResourceField.URI_PRIOR.toString(),
                                     Double.toString(prior),
                                     Field.Store.YES,
                                     Field.Index.NOT_ANALYZED_NO_NORMS);
     }
+    */
 
     /*---------- Composed methods for querying the index correctly (they use the basic methods) ----------*/ //TODO Move to LuceneQueryFactory
 
@@ -559,10 +560,9 @@ public class LuceneManager {
     public Document createDocument(DBpediaResourceOccurrence resourceOccurrence) {
         Document doc = new Document();
         doc.add(getField(resourceOccurrence.resource()));
-        //doc.add(getField(resourceOccurrence.surfaceForm()));  //uncomment this if you want anchor texts as surface forms; otherwise index surface forms in a second run together with types
+        doc.add(getField(resourceOccurrence.surfaceForm()));  //uncomment this if you want anchor texts as surface forms; otherwise index surface forms in a second run together with types
         doc.add(getField(resourceOccurrence.context()));
         doc.add(getUriCountField(resourceOccurrence.resource().support()));
-        //doc.add(getUriPriorField(resourceOccurrence.resource().prior()));
         return doc;
     }
 
@@ -602,7 +602,6 @@ public class LuceneManager {
         doc.add(getField(surfaceForm));
         doc.add(getField(resource));
         doc.add(getUriCountField(resource.support()));
-        doc.add(getUriPriorField(resource.prior()));
         return doc;
     }
     public Document createDocument(SurfaceForm surfaceForm, DBpediaResource resource, int nTimes) {
@@ -610,7 +609,6 @@ public class LuceneManager {
         for (int i=0; i<nTimes; i++) doc.add(getField(surfaceForm));
         doc.add(getField(resource));
         doc.add(getUriCountField(nTimes));
-        doc.add(getUriPriorField(resource.prior()));
         return doc;
     }
 

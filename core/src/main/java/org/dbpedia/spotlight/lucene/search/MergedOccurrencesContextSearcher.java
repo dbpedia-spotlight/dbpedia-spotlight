@@ -194,7 +194,7 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
 
     //TODO make this configurable!
     int minContextWords = 0;
-    int maxContextWords = 300;
+    int maxContextWords = 500;
     ContextExtractor contextExtractor = new ContextExtractor(minContextWords, maxContextWords);
 
     public ScoreDoc[] getHits(SurfaceFormOccurrence sfOcc) throws SearchException, InputException {
@@ -212,8 +212,25 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
         return getHits(mLucene.getQuery(resource), 2); // only needs one, but get two just to check if index is corrupted
     }
 
-    public int getAmbiguity(SurfaceForm sf) throws SearchException {
+    public int getAmbiguity(SurfaceForm sf) throws SearchException { //HACK surface form (to be solved with analyzers in getQuery(SurfaceForm)
         ScoreDoc[] hits = getHits(mLucene.getQuery(sf));
+        String sfName = sf.name().trim();
+        if (hits.length == 0) { //HACK surface form (to be solved with analyzers in getQuery(SurfaceForm)
+            if (sfName.toLowerCase().startsWith("the ")) {
+                String newName = sfName.substring(3).trim();
+                hits = getHits(mLucene.getQuery(new SurfaceForm(newName)));
+                LOG.debug("New sfName="+newName+" hits="+hits.length);
+            } else if (sfName.toLowerCase().startsWith("a ")) {
+                String newName = sfName.substring(1).trim();
+                hits = getHits(mLucene.getQuery(new SurfaceForm(newName)));
+                LOG.debug("New sfName="+newName+" hits="+hits.length);
+            }
+        }
+        if (hits.length == 0 && sfName.toLowerCase().endsWith("s")) {
+            String newName = sfName.substring(0,sfName.length()-1).trim();
+            hits = getHits(mLucene.getQuery(new SurfaceForm(newName)));
+            LOG.debug("New sfName="+newName+" hits="+hits.length);
+        }
         LOG.trace("Ambiguity for "+sf+"="+hits.length);
         return hits.length;
     }
@@ -243,6 +260,8 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
         FieldSelector fieldSelector = new MapFieldSelector(uriAndCount);
         int support = 0;
 
+        //if (res.support()>0) return res.support(); //TODO what happens if value is already set?
+
         List<Document> uris = getDocuments(res, fieldSelector);
         if (uris.size()>1)
             LOG.error("Found the same URI twice in the index: "+res);
@@ -257,17 +276,7 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
         }
         return support;
     }
-    //ATTENTION depends on how to store URI counts
-    //@Deprecated
-//    public int getSupport(DBpediaResource res) throws SearchException {
-//        FieldSelector fieldSelector = new MapFieldSelector(onlyUri);
-//        int numUris = 0;
-//        for (Document doc: getDocuments(res, fieldSelector)) {
-//            String[] fields = doc.getValues(LuceneManager.DBpediaResourceField.URI.toString());
-//            numUris += fields.length;
-//        }
-//        return numUris;
-//    }
+
 
     /**
      * Returns the number of URIs in document number docNo:
@@ -289,13 +298,8 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
 
         return support;
     }
-    //ATTENTION depends on how to store URI counts
-    //@Deprecated
-//    public int getSupport(Document document) throws SearchException {
-//        //TODO can this be optimized for time performance by adding a support field?
-//        return document.getFields(LuceneManager.DBpediaResourceField.URI.toString()).length;  // number of URI fields in this document;
-//    }
-        // Returns a list of DBpediaTypes that are registered in the index in document number docNo.
+
+    // Returns a list of DBpediaTypes that are registered in the index in document number docNo.
     // Duplicates are not removed.
     // CAUTION: sorting is not guaranteed! (but should be fine (Max thinks) if an order was given when indexing (typically from least to most specific)
     public List<DBpediaType> getDBpediaTypes(Document document) throws SearchException {

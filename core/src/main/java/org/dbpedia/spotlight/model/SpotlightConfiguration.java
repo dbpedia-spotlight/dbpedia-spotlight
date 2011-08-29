@@ -47,6 +47,8 @@ public class SpotlightConfiguration {
 
     public final static String DEFAULT_SPOTTER = "LingPipeSpotter";
 
+    public String language;
+
 	protected String contextIndexDirectory = "";
     protected String candidateMapDirectory = "";
 
@@ -157,9 +159,11 @@ public class SpotlightConfiguration {
             throw new ConfigurationException("Cannot find POS tagger model file "+taggerFile);
         }
 
-        stopWordsFile = config.getProperty("org.dbpedia.spotlight.data.stopWords");
+        language = config.getProperty("org.dbpedia.spotlight.data.stopWords", "English");
+
+        stopWordsFile = config.getProperty("org.dbpedia.spotlight.data.stopWords."+language.toLowerCase());
         if( (stopWordsFile==null) || !new File(stopWordsFile.trim()).isFile()) {
-            LOG.warn("Cannot find stopwords file "+taggerFile+". Using default Lucene English StopWords.");
+            LOG.warn("Cannot find stopwords file '"+stopWordsFile+"'. Using default Lucene English StopWords.");
             stopWords = StopAnalyzer.ENGLISH_STOP_WORDS_SET;
         } else {
             try {

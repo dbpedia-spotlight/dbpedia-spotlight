@@ -124,7 +124,7 @@ object FileOccurrenceSource
 
                 if (elements.length == 5) {
                     val id = elements(0)
-                    val res = new DBpediaResource(elements(1))
+                    val res = new DBpediaResource(elements(1), 1) // support is at least one if this resource has been seen once here
                     val sf = new SurfaceForm(elements(2))
                     val t = new Text(elements(3))
                     val offset = elements(4).toInt
@@ -154,7 +154,7 @@ object FileOccurrenceSource
                     val elements = line.trim.split("\t")
                     if (elements.length == 2)
                     {
-                        val res = new DBpediaResource(elements(0))
+                        val res = new DBpediaResource(elements(0), 1)
                         val definitionText = new Text(elements(1))
 
                         val pageContext = new WikiPageContext(res, definitionText)

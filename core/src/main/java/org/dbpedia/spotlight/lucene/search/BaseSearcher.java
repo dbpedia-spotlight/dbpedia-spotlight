@@ -34,10 +34,7 @@ import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.exceptions.TimeoutException;
 import org.dbpedia.spotlight.lucene.LuceneFeatureVector;
 import org.dbpedia.spotlight.lucene.LuceneManager;
-import org.dbpedia.spotlight.model.DBpediaResource;
-import org.dbpedia.spotlight.model.Factory;
-import org.dbpedia.spotlight.model.SurfaceForm;
-import org.dbpedia.spotlight.model.Text;
+import org.dbpedia.spotlight.model.*;
 import org.dbpedia.spotlight.model.vsm.FeatureVector;
 
 import java.io.Closeable;
@@ -63,6 +60,8 @@ public class BaseSearcher implements Closeable {
     private double mNumberOfOccurrences = 69772256;
 
     protected BaseSearcher() {}  // allow subclasses to rewrite the super below
+
+    public long objectCreationTime = 0;
 
     public BaseSearcher(LuceneManager lucene) throws IOException {
         this.mLucene = lucene;
@@ -103,15 +102,17 @@ public class BaseSearcher implements Closeable {
         return surrogates;
     }
 
+    public boolean isDeleted(int docNo) {
+        return mReader.isDeleted(docNo);
+    }
+
     public Document getFullDocument(int docNo) throws SearchException {
         Document document;
         try {
             document = mReader.document(docNo);
-            //document = mReader.document(docNo, fieldSelector);
         } catch (IOException e) {
             throw new SearchException("Error reading document "+docNo,e);
         }
-        //LOG.debug("docNo:"+docNo);
         return document;
     }
 
@@ -234,13 +235,30 @@ public class BaseSearcher implements Closeable {
      * @param docNo
      * @return
      */
-    @Deprecated
     public DBpediaResource getDBpediaResource(int docNo) throws SearchException {
-        String[] fields = {LuceneManager.DBpediaResourceField.TYPE.toString(),
-                LuceneManager.DBpediaResourceField.URI.toString(),
-                LuceneManager.DBpediaResourceField.URI_COUNT.toString(),
-                LuceneManager.DBpediaResourceField.URI_PRIOR.toString()};
-        return getDBpediaResource(docNo,fields);
+        DBpediaResource r = null;
+
+        long start = System.nanoTime();
+        DBpediaResourceFactory f = mLucene.getDBpediaResourceFactory();
+        if (f==null) {
+            LOG.info("Using only lucene to create DBpediaResource objects.");
+            LOG.info("");
+            String[] fields = {LuceneManager.DBpediaResourceField.TYPE.toString(),
+                    LuceneManager.DBpediaResourceField.URI.toString(),
+                    LuceneManager.DBpediaResourceField.URI_COUNT.toString()
+            };
+            r = getDBpediaResource(docNo,fields); // load all available info from Lucene
+        } else {
+           LOG.info("Using DBpediaResourceFactory to create objects.");
+           String[] fields = {LuceneManager.DBpediaResourceField.URI.toString()};
+           r = getDBpediaResource(docNo,fields);   // load only URI from Lucene
+           r = mLucene.getDBpediaResourceFactory().from(r.uri()); // load the rest of the info from DB
+        }
+        long end = System.nanoTime();
+        //LOG.info(String.format("DBpediaResource creation took %d ns.",end-start));
+        objectCreationTime += (end-start);
+
+        return r;
     }
 
     /**

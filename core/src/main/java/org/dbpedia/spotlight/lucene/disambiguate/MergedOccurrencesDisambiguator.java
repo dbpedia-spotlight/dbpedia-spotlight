@@ -92,36 +92,7 @@ public class MergedOccurrencesDisambiguator implements Disambiguator {
 
 
     public DBpediaResourceOccurrence disambiguate(SurfaceFormOccurrence sfOcc) throws SearchException, ItemNotFoundException, InputException  {
-        // search index for surface form
-        LOG.info("Disambiguating "+sfOcc.surfaceForm()+" ...");
-        ScoreDoc[] hits = mMergedSearcher.getHits(sfOcc);
- 
-        if (hits.length == 0)
-            throw new ItemNotFoundException("Not found in index: "+sfOcc);
-
-        DBpediaResource resource = mMergedSearcher.getDBpediaResource(hits[0].doc);
-
-        if (resource==null)
-            throw new ItemNotFoundException("Could not choose a URI for "+sfOcc.surfaceForm());
-
-        //LOG.info("  found "+hits.length+" surrogates for "+sfOcc.surfaceForm());
-
-        Double score = new Double(hits[0].score);
-        Double percentageOfSecond = new Double(-1);
-        if (hits.length > 1) {
-            percentageOfSecond = hits[1].score / score;
-        }
-
-        return new DBpediaResourceOccurrence(
-                "",                          // ID
-                resource,                    // DBpedia resource
-                sfOcc.surfaceForm(),         // surface form
-                sfOcc.context(),             // context in which entity occurs
-                sfOcc.textOffset(),          // position in the context where surface form occurs
-                Provenance.Annotation(),     // value to signal that this occurrence was created by the disambiguation method
-                score,                       // similarity score of the highest ranked
-                percentageOfSecond,          // percentage of the second ranked entity in relation to the first ranked entity
-                score);           // TODO abusing spotProb here. we need to revise all scores
+        return bestK(sfOcc,1).get(0);
     }
 
     public List<DBpediaResourceOccurrence> bestK(SurfaceFormOccurrence sfOccurrence, int k) throws SearchException, ItemNotFoundException, InputException {
@@ -178,6 +149,9 @@ public class MergedOccurrencesDisambiguator implements Disambiguator {
                                                                                 score); //TODO abusing what was spotProb here. now we have contextual score. need better way to do this
             rankedOccs.add(resultOcc);
         }
+
+        LOG.info(String.format("Object creation time took %f ms.",mMergedSearcher.objectCreationTime/1000000.0));
+
 
         return rankedOccs;
     }

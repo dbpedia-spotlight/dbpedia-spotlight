@@ -32,7 +32,7 @@ public class CoOccurrenceBasedSelector implements TaggedSpotSelector {
 
 
 	/**
-	 * Creates a co-occurrence based selector. A SpotterConfiguration object must be
+	 * Creates a spot selector based on n-gram co-occurrence. A SpotterConfiguration object must be
 	 * passed as a parameter since the selector must use and initialize an occurrence
 	 * data provider and a factory for classifiers.
 	 *
@@ -46,11 +46,11 @@ public class CoOccurrenceBasedSelector implements TaggedSpotSelector {
 	 */
 	public CoOccurrenceBasedSelector(SpotterConfiguration spotterConfiguration) throws InitializationException {
 		
-		LOG.info("Initializing occurrence data provider.");
+		LOG.info("Initializing spot occurrence data provider.");
 		OccurrenceDataProviderSQL.initialize(spotterConfiguration);
 		LOG.info("Done.");
 
-		LOG.info("Initializing candidate classifiers.");
+		LOG.info("Initializing spot candidate classifiers.");
 		new ClassifierFactory(spotterConfiguration.getCandidateClassifierUnigram(),
 				spotterConfiguration.getCandidateClassifierNGram(),
 				spotterConfiguration.getCandidateOccurrenceDataSource(),
