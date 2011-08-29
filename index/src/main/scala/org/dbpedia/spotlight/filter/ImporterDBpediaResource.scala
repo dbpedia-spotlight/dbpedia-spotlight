@@ -31,7 +31,7 @@ object ImporterDBpediaResource {
             "\"URI\" Varchar(50) primary key, " +
             "\"COUNT\" Int," +
             "\"TYPE_DBP\" Varchar(1)," +
-            "\"TYPES_FB\" Varchar(10), " +
+            "\"TYPES_FB\" Varchar(20), " +
             "UNIQUE (URI) );\n"
         )
 
@@ -42,7 +42,7 @@ object ImporterDBpediaResource {
         )
 
 
-
+        System.err.println("Reading concepts...")
         var preparedStatement: PreparedStatement = sqlConnection.prepareStatement("insert into DBpediaResource (URI) VALUES (?);")
         for (line <- Source.fromFile("/Users/jodaiber/Desktop/conceptURIs.list", "UTF-8").getLines()) {
             try {
@@ -52,7 +52,7 @@ object ImporterDBpediaResource {
             } catch{
 
                 case e: Exception => {
-                    println("Not unique: "+ line)
+                    System.err.println("Not unique: "+ line)
                 }
             }
 
@@ -64,6 +64,7 @@ object ImporterDBpediaResource {
         var currentType : String = ""
         var currentURI : String = ""
 
+        System.err.println("Reading DBpedia types...")
         preparedStatement = sqlConnection.prepareStatement("update DBpediaResource set \"TYPE_DBP\" = ? where URI = ?;")
         for (line <- Source.fromFile("/Users/jodaiber/Desktop/types.dbpedia.tsv", "UTF-8").getLines()) {
 
@@ -80,7 +81,7 @@ object ImporterDBpediaResource {
         preparedStatement.executeBatch()
 
 
-        //Update counts:
+        System.err.println("Reading counts...")
         preparedStatement = sqlConnection.prepareStatement("update DBpediaResource set \"COUNT\" = ? where URI = ?;")
         for (line <- Source.fromFile("/Users/jodaiber/Desktop/uri.count.tsv", "UTF-8").getLines()) {
             val Array(uri, count) = line.split("\t")
@@ -91,13 +92,13 @@ object ImporterDBpediaResource {
         preparedStatement.executeBatch()
 
 
-        //Update freebase types:
+        System.err.println("Reading Freebase types...")
         preparedStatement = sqlConnection.prepareStatement("update DBpediaResource set \"TYPES_FB\" = ? where URI = ?;")
         for (line <- Source.fromFile("/Users/jodaiber/Desktop/types.freebase.tsv", "UTF-8").getLines()) {
             val Array(uri, fbtypes) = line.split("\t")
-            val fbtypeIDs = fbtypes.split(",").map(x => new FreebaseType(x)).map(typeID).mkString(0.toChar.toString)
+            val fbtypeIDs : Array[Char] = fbtypes.split(",").map(x => new FreebaseType(x)).map(typeID)
 
-            preparedStatement.setString(1, fbtypeIDs)
+            preparedStatement.setString(1, new String(fbtypeIDs))
             preparedStatement.setString(2, uri)
             preparedStatement.addBatch()
         }

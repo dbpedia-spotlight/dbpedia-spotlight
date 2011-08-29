@@ -76,7 +76,7 @@ object Factory {
     object DBpediaResource {
         val dbpediaResourceFactory : DBpediaResourceFactory = new DBpediaResourceFactorySQL(
             "org.hsqldb.jdbcDriver",
-            "jdbc:hsqldb:file:/data/spotlight/spotlight-db",
+            "jdbc:hsqldb:file:/data/spotlight/spotlight-db;shutdown=true&readonly=true",
             "sa",
             "")
 

@@ -3,13 +3,6 @@ package org.dbpedia.spotlight.model
 
 import org.junit.Test
 
-/**
- * Created by IntelliJ IDEA.
- * User: pablo
- * Date: 4/13/11
- * Time: 1:42 PM
- * To change this template use File | Settings | File Templates.
- */
 class FactoryTests {
 
   @Test

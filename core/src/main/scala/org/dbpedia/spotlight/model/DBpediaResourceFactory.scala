@@ -38,53 +38,55 @@ import org.apache.commons.logging.LogFactory
  */
 
 trait DBpediaResourceFactory {
-  def from(dbpediaID : String): DBpediaResource
+    def from(dbpediaID : String): DBpediaResource
 }
 
 class DBpediaResourceFactorySQL(sqlDriver : String, sqlConnector : String, username : String, password : String) extends DBpediaResourceFactory {
 
-  //Initialize SQL connection:
-  Class.forName(sqlDriver).newInstance()
-  val sqlConnection = DriverManager.getConnection(
-    sqlConnector,
-    username,
-    password)
+    //Initialize SQL connection:
+    Class.forName(sqlDriver).newInstance()
+    val sqlConnection = DriverManager.getConnection(
+        sqlConnector,
+        username,
+        password)
 
-  override def from(dbpediaID : String) : DBpediaResource = {
-    val dbpediaResource = new DBpediaResource(dbpediaID)
+    override def from(dbpediaID : String) : DBpediaResource = {
+        val dbpediaResource = new DBpediaResource(dbpediaID)
 
-    val statement: PreparedStatement = sqlConnection.prepareStatement("select * from DBpediaResource WHERE URI=? limit 1;")
-    statement.setString(1, dbpediaID)
-    val result: ResultSet = statement.executeQuery()
-    result.next()
+        val statement: PreparedStatement = sqlConnection.prepareStatement("select * from DBpediaResource WHERE URI=? limit 1;")
+        statement.setString(1, dbpediaID)
+        val result: ResultSet = statement.executeQuery()
+        result.next()
 
-    dbpediaResource.setSupport(result.getInt("COUNT"))
-    val dbpType : OntologyType = typeFromID(result.getString("TYPE_DBP").charAt(0))
+        dbpediaResource.setSupport(result.getInt("COUNT"))
+        val dbpediaTypeString = result.getString("TYPE_DBP")
+        var allTypes : List[OntologyType] = result.getString("TYPES_FB").toCharArray.toList
+            .map(b => typeFromID(b)).filter(t => t != null)
 
-    var allTypes : List[OntologyType] = result.getString("TYPES_FB").split(0.toChar).toList
-      .map(b => typeFromID(b.charAt(0)))
+        if(dbpediaTypeString != null) {
+            val dbpType : OntologyType = typeFromID(dbpediaTypeString.charAt(0))
+            allTypes = allTypes ::: List[OntologyType](dbpType)
+        }
 
-    allTypes = allTypes ::: List[OntologyType](dbpType)
+        dbpediaResource.setTypes(allTypes)
 
-    dbpediaResource.setTypes(allTypes)
-
-    dbpediaResource
-  }
-
-  //Create OntologyTypes from the types stored in the database:
-  val typeIDMap = new HashMap[Int, OntologyType]()
-  var query: ResultSet = sqlConnection.createStatement().executeQuery("select * from OntologyType;")
-  while(query.next()) {
-    typeIDMap.put(query.getString("TYPE_ID").toList(0).toInt, Factory.OntologyType.fromQName(query.getString("TYPE")))
-  }
-
-  //Get the type corresponding to the typeID:
-  def typeFromID(typeID : Int) : OntologyType = {
-    typeIDMap.get(typeID) match {
-      case None => null
-      case Some(x) => x
+        dbpediaResource
     }
-  }
+
+    //Create OntologyTypes from the types stored in the database:
+    val typeIDMap = new HashMap[Int, OntologyType]()
+    var query: ResultSet = sqlConnection.createStatement().executeQuery("select * from OntologyType;")
+    while(query.next()) {
+        typeIDMap.put(query.getString("TYPE_ID").toList(0).toInt, Factory.OntologyType.fromQName(query.getString("TYPE")))
+    }
+
+    //Get the type corresponding to the typeID:
+    def typeFromID(typeID : Int) : OntologyType = {
+        typeIDMap.get(typeID) match {
+            case None => null
+            case Some(x) => x
+        }
+    }
 
 
 }
