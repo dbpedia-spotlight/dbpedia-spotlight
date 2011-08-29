@@ -125,7 +125,7 @@ public class MergedOccurrencesContextIndexer extends OccurrenceContextIndexer {
 
 
         if ( (uriToDocumentMap.size() >= minNumDocsBeforeFlush) ||
-             ((freeMemory < 1*gb) && (uriToDocumentMap.size() >= minNumDocsBeforeFlush*0.1))
+             ((freeMemory < 1*gb) && (uriToDocumentMap.size() >= minNumDocsBeforeFlush*0.2))
             ) {
             
             LOG.info("Processed "+ numEntriesProcessed +" occurrences. Allocated mem can hold an est. max of "+maxDocsBeforeError+" entries.");

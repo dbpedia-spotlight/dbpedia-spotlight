@@ -45,7 +45,6 @@ public class IndexEnricher extends BaseIndexer<Object> {
     Log LOG = LogFactory.getLog(this.getClass());
 
     int DOCS_BEFORE_FLUSH = 10000;  // for priored surface forms (failed with 20,000 before (without PRIOR_DEVIDER))
-    int PRIOR_DEVIDER = 10;         // for priored surface forms, add SF only  number of times URI is indexed / PRIOR_DEVIDER 
 
     MergedOccurrencesContextSearcher searcher;
 
@@ -73,7 +72,7 @@ public class IndexEnricher extends BaseIndexer<Object> {
     }
 
     private void commit(int i) throws IOException {
-        if (i%DOCS_BEFORE_FLUSH==0) {
+        if (i>0 && i%DOCS_BEFORE_FLUSH==0) {
             LOG.info("  processed "+i+" documents. committing...");
             mWriter.commit();
             LOG.info("  done.");
@@ -87,72 +86,14 @@ public class IndexEnricher extends BaseIndexer<Object> {
         LOG.info("Processed " + indexSize + " documents. Final commit...");
         try {
             mWriter.commit();
+            LOG.info("Expunge deletes...");
+            mWriter.expungeDeletes();
         } catch (IOException e) {
             throw new IndexException("Error while performing final commit for index enrichment.", e);
         }
         //LOG.info("Optimizing...");
         //mWriter.optimize();
         LOG.info("Done.");
-    }
-
-    /**
-     * Gets custom prior probabilities from a map and adds them to the index.
-     * If resource in the map is not in the index, it creates a new entry
-     * (can be used to cope with sparsity in Wikipedia)
-     * //TODO could instead of going over the input priors, go over the index and divide support by total.
-     * @param uriPriorMap
-     * @throws SearchException
-     * @throws IOException
-     * @author pablomendes
-     */                           //TODO List<DBpediaResource> and .setPrior(Double)
-    public void enrichWithPriors(Map<DBpediaResource,Double> uriPriorMap) throws IndexException {
-
-        boolean lowercased = true;
-
-        long indexSize = getIndexSize();
-        LOG.info("Adding URI priors to index "+mLucene.directory()+"...");
-
-        if (uriPriorMap == null || uriPriorMap.size() == 0 ) {
-            LOG.info("No URI priors provided to enrichWithPriors. Cowardly refusing to invent them.");
-            return;
-        }
-
-        FieldSelector fields = new MapFieldSelector(LuceneManager.DBpediaResourceField.stringValues());
-        int i = 0;
-        for (Map.Entry<DBpediaResource,Double> uriPrior: uriPriorMap.entrySet()) {
-            String uri = uriPrior.getKey().uri();
-            Double prior = uriPrior.getValue();
-
-            try {
-
-                List<Document> docs = searcher.getDocuments(uriPrior.getKey(), fields);
-                if (docs.size()==0) {
-                    DBpediaResource resource = new DBpediaResource(uri, 0, prior); // support is zero because we didn't see it in Wikipedia
-                    SurfaceForm surfaceForm = Factory.createSurfaceFormFromDBpediaResourceURI(resource, lowercased);
-                    Text context = new Text(surfaceForm.name());
-                    DBpediaResourceOccurrence occ = new DBpediaResourceOccurrence(
-                            resource,
-                            surfaceForm,
-                            context,
-                            0,
-                            Provenance.Web());
-
-                    mWriter.addDocument(mLucene.createDocument(occ)); // add new doc
-
-                } else for (Document doc: docs) { // SHOULD BE JUST ONE!
-                    doc = mLucene.add(doc, prior);
-                    Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
-                    mWriter.updateDocument(uriTerm, doc);  //deletes everything with this uri and writes a new doc
-                }
-                commit(i++);
-            } catch (SearchException e) {
-                LOG.error("Error while adding priors to index for doc "+i+". Skipping.", e);
-            } catch (IOException e) {
-                throw new IndexException("Error while adding priors to index.", e);
-            }
-        }
-
-        done(i);
     }
 
     public void enrichWithSurfaceForms(Map<String,LinkedHashSet<SurfaceForm>> sfMap) throws SearchException, IOException, IndexException {
@@ -167,23 +108,25 @@ public class IndexEnricher extends BaseIndexer<Object> {
         }
 
         for (int i=0; i<indexSize; i++) {
-            Document doc = searcher.getFullDocument(i);
-            String uri = doc.getField(LuceneManager.DBpediaResourceField.URI.toString()).stringValue();
+            if (!searcher.isDeleted(i)) {
+                Document doc = searcher.getFullDocument(i);
+                String uri = doc.getField(LuceneManager.DBpediaResourceField.URI.toString()).stringValue();
 
-            LinkedHashSet<SurfaceForm> extraSfs = sfMap.remove(uri);
-            if (extraSfs != null) {
-                for (SurfaceForm sf : extraSfs) {
-                    int numberOfAdds = 1;
-                    for (int j=0; j<numberOfAdds; j++) {
-                        doc = mLucene.add(doc, sf);
+                LinkedHashSet<SurfaceForm> extraSfs = sfMap.remove(uri);
+                if (extraSfs != null) {
+                    for (SurfaceForm sf : extraSfs) {
+                        int numberOfAdds = 1;
+                        for (int j=0; j<numberOfAdds; j++) {
+                            doc = mLucene.add(doc, sf);
+                        }
                     }
                 }
+
+                Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
+                mWriter.updateDocument(uriTerm, doc);  //deletes everything with this uri and writes a new doc
+
+                commit(i);
             }
-
-            Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
-            mWriter.updateDocument(uriTerm, doc);  //deletes everything with this uri and writes a new doc
-
-            commit(i);
         }
 
         done(indexSize);
@@ -201,22 +144,24 @@ public class IndexEnricher extends BaseIndexer<Object> {
         }
 
         for (int i=0; i<indexSize; i++) {
-            Document doc = searcher.getFullDocument(i);
-            String uri = doc.getField(LuceneManager.DBpediaResourceField.URI.toString()).stringValue();
+            if (!searcher.isDeleted(i)) {
+                Document doc = searcher.getFullDocument(i);
+                String uri = doc.getField(LuceneManager.DBpediaResourceField.URI.toString()).stringValue();
 
-            int count = uriCountMap.get(uri);
-            doc = mLucene.add(doc, count);
+                int count = uriCountMap.get(uri);
+                doc = mLucene.add(doc, count);
 
-            Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
-            mWriter.updateDocument(uriTerm, doc);  //deletes everything with this uri and writes a new doc
+                Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
+                mWriter.updateDocument(uriTerm, doc);  //deletes everything with this uri and writes a new doc
 
-            commit(i);
+                commit(i);
+            }
         }
 
         done(indexSize);
     }
 
-    public void enrichWithTypes(Map<String,LinkedHashSet<DBpediaType>> typesMap) throws SearchException, IOException, IndexException {
+    public void enrichWithTypes(Map<String,LinkedHashSet<OntologyType>> typesMap) throws SearchException, IOException, IndexException {
         long indexSize = searcher.getNumberOfEntries();
         if (indexSize == 0) {
             throw new IllegalArgumentException("index in "+mLucene.directory()+" contains no entries; this method can only add types to an existing index");
@@ -224,71 +169,65 @@ public class IndexEnricher extends BaseIndexer<Object> {
         LOG.info("Adding types to  index "+mLucene.directory()+"...");
 
         if (typesMap == null) {
-            typesMap = new HashMap<String,LinkedHashSet<DBpediaType>>();
+            LOG.error("Types map was empty. Done.");
+            return;
         }
 
         for (int i=0; i<indexSize; i++) {
-            Document doc = searcher.getFullDocument(i);
-            String uri = doc.getField(LuceneManager.DBpediaResourceField.URI.toString()).stringValue();
+                Document doc = searcher.getFullDocument(i);
+                String uri = doc.getField(LuceneManager.DBpediaResourceField.URI.toString()).stringValue();
 
-            LinkedHashSet<DBpediaType> types = typesMap.get(uri);
-            if (types != null) {
-                for (DBpediaType t : types) {
-                    int numberOfAdds = 1;
-                    for (int j=0; j<numberOfAdds; j++) {
-                        doc = mLucene.add(doc, t);
+                LinkedHashSet<OntologyType> types = typesMap.get(uri);
+                if (types != null) {
+                    for (OntologyType t : types) {
+                        int numberOfAdds = 1;
+                        for (int j=0; j<numberOfAdds; j++) {
+                            doc = mLucene.add(doc, t);
+                        }
                     }
                 }
-            }
+                Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
+                mWriter.updateDocument(uriTerm, doc);  //deletes everything with this uri and writes a new doc
 
-            Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
-            mWriter.updateDocument(uriTerm, doc);  //deletes everything with this uri and writes a new doc
-
-            commit(i);
+                commit(i);
         }
 
         done(indexSize);
     }
 
 
-    public void patchAll(Map<String,LinkedHashSet<DBpediaType>> typesMap, Map<String,Integer> uriCountMap, Map<String,LinkedHashSet<SurfaceForm>> sfMap) throws SearchException, IOException, IndexException {
+    public void patchAll(Map<String,LinkedHashSet<OntologyType>> typesMap, Map<String,Integer> uriCountMap, Map<String,LinkedHashSet<SurfaceForm>> sfMap) throws SearchException, IOException, IndexException {
         long indexSize = searcher.getNumberOfEntries();
         if (indexSize == 0) {
             throw new IllegalArgumentException("index in "+mLucene.directory()+" contains no entries; this method can only patch an existing index");
         }
         LOG.info("Patching index "+mLucene.directory()+"...");
 
-        if (typesMap == null) {
-            typesMap = new HashMap<String,LinkedHashSet<DBpediaType>>();
-        }
-
-        if (uriCountMap == null) {
-            uriCountMap = new HashMap<String,Integer>();
-        }
-
-        if (sfMap == null) {
-            sfMap = new HashMap<String,LinkedHashSet<SurfaceForm>>();
+        if (typesMap == null || uriCountMap == null || sfMap == null) {
+            throw new IllegalArgumentException("types, uri counts and surface forms should be populated.");
         }
 
         for(int i=0; i<indexSize; i++) {
-            Document doc = searcher.getFullDocument(i);
-            String uri = doc.getField(LuceneManager.DBpediaResourceField.URI.toString()).stringValue();
+            if (!searcher.isDeleted(i)) {
+                Document doc = searcher.getFullDocument(i);
+                String uri = doc.getField(LuceneManager.DBpediaResourceField.URI.toString()).stringValue();
 
-            // add types
-            LinkedHashSet<DBpediaType> types = typesMap.get(uri);
-            if (types != null) for (DBpediaType t : types) doc = mLucene.add(doc, t);
-            // add counts
-            doc = mLucene.add(doc, uriCountMap.get(uri));
-            // add surface forms
-            LinkedHashSet<SurfaceForm> extraSfs = sfMap.remove(uri);
-            if (extraSfs != null) for (SurfaceForm sf : extraSfs) doc = mLucene.add(doc, sf);
+                // add types
+                LinkedHashSet<OntologyType> types = typesMap.get(uri);
+                if (types != null) for (OntologyType t : types) doc = mLucene.add(doc, t);
+                // add counts
+                doc = mLucene.add(doc, uriCountMap.get(uri));
+                // add surface forms
+                LinkedHashSet<SurfaceForm> extraSfs = sfMap.remove(uri);
+                if (extraSfs != null) for (SurfaceForm sf : extraSfs) doc = mLucene.add(doc, sf);
 
-            // update document in index
-            Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
-            mWriter.updateDocument(uriTerm, doc);  //deletes everything with this uri and writes a new doc
+                // update document in index
+                Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
+                mWriter.updateDocument(uriTerm, doc);  //deletes everything with this uri and writes a new doc
 
-            // write to disk for every 10000 or so entries
-            commit(i);
+                // write to disk for every 10000 or so entries
+                commit(i);
+            }
         }
 
         done(indexSize);
@@ -311,44 +250,48 @@ public class IndexEnricher extends BaseIndexer<Object> {
         }
         LOG.info("Unstoring "+unstoreFields+" in index "+mLucene.directory()+"...");
         for (int i=0; i<indexSize; i++) {
-            Document doc = searcher.getFullDocument(i);
-            String uri = doc.getField(LuceneManager.DBpediaResourceField.URI.toString()).stringValue();
+            if (!searcher.isDeleted(i)) {
+                LOG.trace("URI_COUNT did not exist. Creating from multiple URI fields.");
+                Document doc = searcher.getFullDocument(i);
+                String uri = doc.getField(LuceneManager.DBpediaResourceField.URI.toString()).stringValue();
 
-            int support = 0;
-            Field uriCount = doc.getField(LuceneManager.DBpediaResourceField.URI_COUNT.toString());
-            if (uriCount==null) {
-                Field[] uriFields = doc.getFields(LuceneManager.DBpediaResourceField.URI.toString());
-                support = uriFields.length;
-                uriCount = this.mLucene.getUriCountField(support);
-                doc.add(uriCount); // add count
-                doc.removeFields(LuceneManager.DBpediaResourceField.URI.toString()); // remove repeated fields
-                doc.add(uriFields[0]); // add only once
-            }
-            else support = new Integer(uriCount.stringValue());
+                int support = 0;
+                Field uriCount = doc.getField(LuceneManager.DBpediaResourceField.URI_COUNT.toString());
+                if (uriCount==null) {
+                    Field[] uriFields = doc.getFields(LuceneManager.DBpediaResourceField.URI.toString());
+                    support = uriFields.length;
+                    uriCount = this.mLucene.getUriCountField(support);
+                    doc.add(uriCount); // add count
+                    doc.removeFields(LuceneManager.DBpediaResourceField.URI.toString()); // remove repeated fields
+                    doc.add(uriFields[0]); // add only once
+                }
+                else support = new Integer(uriCount.stringValue());
+                LOG.info(String.format("URI count for %s = %d",uri,support));
 
-            Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
-            if (support<minCount) {
-                mWriter.deleteDocuments(uriTerm);
-            } else {
-                doc = mLucene.unstore(doc, unstoreFields);
-                mWriter.updateDocument(uriTerm, doc); //deletes everything with this uri and writes a new doc
+                Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
+                if (support<minCount) {
+                    mWriter.deleteDocuments(uriTerm);
+                } else {
+                    doc = mLucene.unstore(doc, unstoreFields);
+                    mWriter.updateDocument(uriTerm, doc); //deletes everything with this uri and writes a new doc
+                }
+                commit(i);
             }
-            commit(i);
         }
 
         LOG.info("Processed "+indexSize+" documents. Final commit...");
         mWriter.commit();
+
         if(optimizeSegments > 0) {
             LOG.info("Optimizing...");
             mWriter.optimize(optimizeSegments);
             mWriter.commit();
+        } else {
+            LOG.info("Expunge deletes...");
+            mWriter.expungeDeletes();
         }
-        mWriter.expungeDeletes();
-        LOG.info("Done.");
-    }
 
-    public void unstore(List<LuceneManager.DBpediaResourceField> unstoreFields) throws SearchException, IOException {
-        unstore(unstoreFields, 0);
+        LOG.info("Done.");
     }
 
     public void add(Object o) {

@@ -35,7 +35,9 @@ import org.dbpedia.spotlight.util.IndexingConfiguration
  */
 object CompressIndex
 {
-    val unstoreFields = List( LuceneManager.DBpediaResourceField.CONTEXT, LuceneManager.DBpediaResourceField.SURFACE_FORM )
+    val unstoreFields = List( LuceneManager.DBpediaResourceField.CONTEXT,
+                              LuceneManager.DBpediaResourceField.SURFACE_FORM
+    )
 
     val optimizeSegments = 4
 
@@ -50,7 +52,8 @@ object CompressIndex
         if (!indexFile.exists) {
             throw new IllegalArgumentException("index dir "+indexFile+" does not exist; can't compress")
         }
-        val luceneManager = new LuceneManager.BufferedMerging(FSDirectory.open(indexFile))
+        val dir = LuceneManager.pickDirectory(indexFile)
+        val luceneManager = new LuceneManager.BufferedMerging(dir)
 
         val compressor = new IndexEnricher(luceneManager)
         compressor.unstore(unstoreFields, optimizeSegments, minCount)

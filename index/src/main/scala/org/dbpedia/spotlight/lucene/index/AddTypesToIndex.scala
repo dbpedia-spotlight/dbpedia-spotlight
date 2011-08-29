@@ -45,7 +45,7 @@ object AddTypesToIndex {
         if (!indexFile.exists) {
             throw new IllegalArgumentException("index dir "+indexFile+" does not exist; can't add types")
         }
-        val luceneManager = new LuceneManager.BufferedMerging(FSDirectory.open(indexFile))
+        val luceneManager = new LuceneManager.BufferedMerging(LuceneManager.pickDirectory(indexFile))
 
         val typesIndexer = new IndexEnricher(luceneManager)
 

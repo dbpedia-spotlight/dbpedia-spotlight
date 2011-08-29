@@ -33,26 +33,38 @@ import javax.xml.crypto.dsig.Transform
  * TODO think of some stemming to provide more alternative matches for a sf (e.g. http://www.mpi-inf.mpg.de/yago-naga/javatools/doc/javatools/parsers/PlingStemmer.html)
  *
  * @author maxjakob
+ * @author pablomendes (alternative surface forms)
  */
 
 object AddSurfaceFormsToIndex
 {
     val LOG: Log = LogFactory.getLog(this.getClass)
 
-    def toLowercase(sf: String, lowerCased: Boolean) = {
+    def toLowercase(sf: String, lowerCased: Boolean) : List[String] = {
         if (lowerCased) (sf.toLowerCase :: List(sf)) else List(sf)
     }
 
-    def fromTitlesToAlternatives(sf: String) = {
-        var modified = sf.toLowerCase
-        if (sf.startsWith("the "))
-            modified = sf.replace("the ","")
-        if (sf.startsWith("a "))
-            modified = sf.replace("a ","")
-        if (sf.startsWith("an "))
-            modified = sf.replace("an ","")
-        modified = sf.replaceAll("[^A-Za-z0-9 ]", "")
-        (sf :: List(modified))
+    def fromTitlesToAlternatives(sf: String) : List[String] = { //TODO move to an analyzer
+        val alternatives = new java.util.HashSet[String]()
+        alternatives.add(sf)
+        alternatives.add(sf.toLowerCase)
+        if (sf.toLowerCase.startsWith("the ")) {
+            alternatives.add(sf.substring(3).trim())
+            alternatives.add(sf.toLowerCase.replace("the ",""))
+        }
+        if (sf.toLowerCase.startsWith("a ")) {
+            alternatives.add(sf.substring(1).trim())
+            alternatives.add(sf.toLowerCase.replace("a ",""))
+        }
+        if (sf.toLowerCase.startsWith("an ")) {
+            alternatives.add(sf.substring(2).trim())
+            alternatives.add(sf.toLowerCase.replace("an ",""))
+        }
+        if (sf.toLowerCase.endsWith("s")) {
+            alternatives.add(sf.substring(0,sf.length()-1).trim())
+        }
+        alternatives.add(sf.replaceAll("[^A-Za-z0-9 ]", " ").trim())
+        alternatives.toList
     }
 
     // map from URI to list of surface forms
@@ -82,7 +94,10 @@ object AddSurfaceFormsToIndex
 
     def main(args : Array[String]) {
         val indexingConfigFileName = args(0)
-        var lowerCased = if (args.size>1) args(1).toLowerCase().contains("lowercase") else false
+        val lowerCased : Boolean = if (args.size>1) args(1).toLowerCase().contains("lowercase") else false
+        val alternatives = if (args.size>1) args(1).toLowerCase().contains("alternative") else false
+
+        println("alternatives is %s".format(alternatives.toString))
 
         val config = new IndexingConfiguration(indexingConfigFileName)
         val indexFileName = config.get("org.dbpedia.spotlight.index.dir")
@@ -96,7 +111,9 @@ object AddSurfaceFormsToIndex
         val luceneManager = new LuceneManager.BufferedMerging(FSDirectory.open(indexFile))
 
         val sfIndexer = new IndexEnricher(luceneManager)
-        val sfMap = loadSurfaceForms(surfaceFormsFileName, toLowercase(_,lowerCased))
+
+        //val sfMap = loadSurfaceForms(surfaceFormsFileName, if (alternatives) fromTitlesToAlternatives(_) else toLowercase(_,lowerCased))
+        val sfMap = loadSurfaceForms(surfaceFormsFileName, fromTitlesToAlternatives)
         sfIndexer.enrichWithSurfaceForms(sfMap)
         sfIndexer.close
     }

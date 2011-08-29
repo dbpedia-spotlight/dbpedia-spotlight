@@ -1,3 +1,5 @@
+package org.dbpedia.spotlight.spot.lingpipe
+
 /**
  * Copyright 2011 Pablo Mendes, Max Jakob
  *
@@ -14,8 +16,6 @@
  * limitations under the License.
  */
 
-package org.dbpedia.spotlight.spot.lingpipe
-
 import org.apache.commons.logging.LogFactory
 import com.aliasi.util.AbstractExternalizable
 import io.Source
@@ -25,28 +25,30 @@ import com.aliasi.dict.{DictionaryEntry, MapDictionary}
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
 import org.dbpedia.spotlight.io.IndexedOccurrencesSource
 import java.util.ArrayList
+import org.dbpedia.spotlight.util.IndexingConfiguration
 
 /**
- * Created by IntelliJ IDEA.
- * User: Max
- * Date: 24.08.2010
- * Time: 15:28:51
  * Index surface forms to a spotter dictionary.
  * - from TSV: surface forms must be in the first column.
  * - from NT: surface forms must be literals of URIs.
  * - from list
+ *
+ * Command line usage:
+ *
+ *   mvn scala:run org.dbpedia.spotlight.spot.lingpipe.IndexLingPipeSpotter
+ * @author maxjakob
  */
-
 object IndexLingPipeSpotter
 {
     private val LOG = LogFactory.getLog(this.getClass)
 
 
-    def getDictionary(occs : List[DBpediaResourceOccurrence]) : MapDictionary[String] = {
-        LOG.warn("Lowercasing all surface forms in this dictionary!")
+    def getDictionary(occs : List[DBpediaResourceOccurrence], lowerCased: Boolean) : MapDictionary[String] = {
+        if (lowerCased) LOG.warn("Lowercasing all surface forms in this dictionary!")
         val dictionary = new MapDictionary[String]()
         for (occ <- occs) {
-            dictionary.addEntry(new DictionaryEntry[String](occ.surfaceForm.name.toLowerCase, ""))  // chunk type undefined
+            val sf = if (lowerCased) occ.surfaceForm.name.toLowerCase else occ.surfaceForm.name
+            dictionary.addEntry(new DictionaryEntry[String](sf, ""))  // chunk type undefined
         }
         dictionary
     }
@@ -93,13 +95,17 @@ object IndexLingPipeSpotter
         dictionary
     }
 
-
     def main(args : Array[String]) {
-        val surrogatesFile = new File(args(0))
-        val dictFile = if (args.length > 1) new File(args(1)) else new File(surrogatesFile.getAbsolutePath+".spotterDictionary")
+        val indexingConfigFileName = args(0)
+        var lowerCased = if (args.size>1) args(1).toLowerCase().contains("lowercase") else false
+
+        val config = new IndexingConfiguration(indexingConfigFileName)
+        val candidateMapFile = new File(config.get("org.dbpedia.spotlight.data.surfaceForms"))
+
+        val dictFile = if (args.length > 1) new File(args(1)) else new File(candidateMapFile.getAbsolutePath+".spotterDictionary")
 
         //val dictionary = getDictionary(surrogatesFile)
-        val dictionary = getDictionary(IndexedOccurrencesSource.fromFile(surrogatesFile).foldLeft(List[DBpediaResourceOccurrence]())( (a,b) => b :: a ) );
+        val dictionary = getDictionary(IndexedOccurrencesSource.fromFile(candidateMapFile).foldLeft(List[DBpediaResourceOccurrence]())( (a,b) => b :: a ), lowerCased );
         writeDictionaryFile(dictionary, dictFile)
     }
 }

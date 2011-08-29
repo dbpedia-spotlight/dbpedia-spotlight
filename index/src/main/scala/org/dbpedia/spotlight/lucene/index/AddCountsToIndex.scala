@@ -78,7 +78,9 @@ object AddCountsToIndex {
         });
         LOG.info("Total count of %d loaded.".format(total))
         LOG.info("Reformatting...")
-        uriCountMap.map( e => new DBpediaResource(e._1).uri -> e._2 ).asJava
+        val counts = uriCountMap.map( e => new DBpediaResource(e._1).uri -> e._2 ).asJava
+        LOG.info("Done.")
+        counts
     }
 
     def main(args : Array[String]) {
