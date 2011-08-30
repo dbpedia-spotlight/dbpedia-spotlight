@@ -60,8 +60,14 @@ class DBpediaResourceFactorySQL(sqlDriver : String, sqlConnector : String, usern
 
         dbpediaResource.setSupport(result.getInt("COUNT"))
         val dbpediaTypeString = result.getString("TYPE_DBP")
-        var allTypes : List[OntologyType] = result.getString("TYPES_FB").toCharArray.toList
-            .map(b => typeFromID(b)).filter(t => t != null)
+        val fbTypes = result.getString("TYPES_FB")
+
+        var allTypes : List[OntologyType] = if(fbTypes == null) {
+            List[OntologyType]()
+        }else{
+            fbTypes.toCharArray.toList
+                .map(b => typeFromID(b)).filter(t => t != null)
+        }
 
         if(dbpediaTypeString != null) {
             val dbpType : OntologyType = typeFromID(dbpediaTypeString.charAt(0))
