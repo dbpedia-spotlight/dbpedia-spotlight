@@ -387,7 +387,7 @@ function runWithSettings() {
 // Override the onload event
 $(document).ready(function() {
 	//accept parameter from URL
-	var t = $(document).getUrlParam('text');
+	var t = decodeURIComponent($(document).getUrlParam('text'));
 	if ($.trim(t)!='') { $('#text').val(t); }
 
 	$('textarea#text').autoResize({

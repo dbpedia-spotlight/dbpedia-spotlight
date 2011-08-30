@@ -72,6 +72,7 @@
         },
 	getSuggestions: function(response, targetSurfaceForm) {
              var json = $.parseJSON(response);
+	     if (json==null) json = response; // when it comes already parsed
              var suggestions = "";
 	     if (json.annotation['surfaceForm']!=undefined) {                  
                   var annotations = new Array().concat(json.annotation.surfaceForm) // deals with the case of only one surfaceFrom returned (ends up not being an array)
