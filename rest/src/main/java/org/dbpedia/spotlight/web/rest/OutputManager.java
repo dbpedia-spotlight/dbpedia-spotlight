@@ -119,7 +119,7 @@ public class OutputManager {
 
             atts.addAttribute("","","URI","CDATA",dbpediaPrefix+occ.resource().uri());
             atts.addAttribute("","","support","CDATA",String.valueOf(occ.resource().support()));
-            atts.addAttribute("", "", "types", "CDATA", ((scala.collection.immutable.List) occ.resource().types()).mkString(","));
+            atts.addAttribute("","","types","CDATA",(occ.resource().types()).mkString(","));
             // support and types should go to resource
 
             atts.addAttribute("", "", "surfaceForm", "CDATA", occ.surfaceForm().name());

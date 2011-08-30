@@ -102,7 +102,7 @@ public class SpotlightInterface  {
     public List<DBpediaResourceOccurrence> getOccurrences(String text,
                                                           double confidence,
                                                           int support,
-                                                          String dbpediaTypesString,
+                                                          String ontologyTypesString,
                                                           String sparqlQuery,
                                                           String policy,
                                                           boolean coreferenceResolution,
@@ -125,7 +125,7 @@ public class SpotlightInterface  {
         LOG.info("text length in chars: "+text.length());
         LOG.info("confidence: "+String.valueOf(confidence));
         LOG.info("support: "+String.valueOf(support));
-        LOG.info("types: "+dbpediaTypesString);
+        LOG.info("types: "+ontologyTypesString);
         LOG.info("sparqlQuery: "+ sparqlQuery);
         LOG.info("policy: "+policy);
         LOG.info("coreferenceResolution: "+String.valueOf(coreferenceResolution));
@@ -135,10 +135,10 @@ public class SpotlightInterface  {
             throw new InputException("No text was specified in the &text parameter.");
         }
 
-        List<DBpediaType> dbpediaTypes = new ArrayList<DBpediaType>();
-        String types[] = dbpediaTypesString.trim().split(",");
+        List<OntologyType> ontologyTypes = new ArrayList<OntologyType>();
+        String types[] = ontologyTypesString.trim().split(",");
         for (String t : types){
-            if (!t.trim().equals("")) dbpediaTypes.add(new DBpediaType(t.trim()));
+            if (!t.trim().equals("")) ontologyTypes.add(Factory.ontologyType().fromQName(t.trim()));
             //LOG.info("type:"+t.trim());
         }
 
@@ -147,7 +147,7 @@ public class SpotlightInterface  {
 
         // Filter: Old monolithic way
         CombineAllAnnotationFilters annotationFilter = new CombineAllAnnotationFilters(Server.getConfiguration());
-        occList = annotationFilter.filter(occList, confidence, support, dbpediaTypes, sparqlQuery, blacklist, coreferenceResolution);
+        occList = annotationFilter.filter(occList, confidence, support, ontologyTypes, sparqlQuery, blacklist, coreferenceResolution);
 
         // Filter: TODO run occurrences through a list of annotation filters (which can be passed by parameter)
         // Map<String,AnnotationFilter> annotationFilters = buildFilters(occList, confidence, support, dbpediaTypes, sparqlQuery, blacklist, coreferenceResolution);
