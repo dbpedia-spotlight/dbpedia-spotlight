@@ -23,12 +23,12 @@ import collection.mutable.HashMap
 
 import org.dbpedia.spotlight.lucene.search.BaseSearcher
 import org.dbpedia.spotlight.lucene.LuceneManager
-import org.dbpedia.spotlight.exceptions.SearchException
-
 import java.sql.{SQLException, ResultSet, PreparedStatement, DriverManager}
 
 import java.util.logging.Logger
 import org.apache.commons.logging.LogFactory
+import java.lang.String
+import org.dbpedia.spotlight.exceptions.{ItemNotFoundException, SearchException}
 
 /**
  * @author Joachim Daiber
@@ -58,7 +58,10 @@ class DBpediaResourceFactorySQL(sqlDriver : String, sqlConnector : String, usern
         val statement: PreparedStatement = sqlConnection.prepareStatement("select * from DBpediaResource WHERE URI=? limit 1;")
         statement.setString(1, dbpediaID)
         val result: ResultSet = statement.executeQuery()
-        result.next()
+
+        result.next() match {
+            case false => throw new ItemNotFoundException()
+        }
 
         dbpediaResource.setSupport(result.getInt("COUNT"))
         val dbpediaTypeString = result.getString("TYPE_DBP")
@@ -85,7 +88,8 @@ class DBpediaResourceFactorySQL(sqlDriver : String, sqlConnector : String, usern
     val typeIDMap = new HashMap[Int, OntologyType]()
     var query: ResultSet = sqlConnection.createStatement().executeQuery("select * from OntologyType;")
     while(query.next()) {
-        typeIDMap.put(query.getString("TYPE_ID").toList(0).toInt, Factory.OntologyType.fromQName(query.getString("TYPE")))
+        var string: String = query.getString("TYPE")
+        typeIDMap.put(query.getString("TYPE_ID").toList(0).toInt, Factory.OntologyType.fromQName(string))
     }
 
     //Get the type corresponding to the typeID:
