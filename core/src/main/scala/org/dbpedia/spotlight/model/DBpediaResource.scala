@@ -40,15 +40,15 @@ class DBpediaResource(var uri : String,
 
 
     def this(uri : String) = {
-        this(uri, 0, 0.0, List[DBpediaType]())
+        this(uri, 0, 0.0, List[OntologyType]())
     }
 
     def this(uri : String, support : Int) = {
-        this(uri, support, 0.0, List[DBpediaType]())
+        this(uri, support, 0.0, List[OntologyType]())
     }
 
     def this(uri : String, support : Int, prior : Double) = {
-        this(uri, support, prior, List[DBpediaType]())
+        this(uri, support, prior, List[OntologyType]())
     }
 
     override def equals(obj : Any) : Boolean = {

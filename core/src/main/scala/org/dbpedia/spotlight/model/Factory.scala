@@ -113,7 +113,7 @@ object Factory {
             prefix.toLowerCase match {
                 case "d" | "dbpedia" => new DBpediaType(suffix)
                 case "f" | "freebase" => new FreebaseType(suffix)
-                case "s" | "schema" => new SchemaOrgType(suffix)
+                case "s" | "schema" => new SchemaOrgType(suffix)                    
                 case _ => new DBpediaType(ontologyType)
             }
         }catch{
@@ -212,7 +212,7 @@ class SpotlightFactory(val configuration: SpotlightConfiguration,
             "")
     println("DBpediaResource database read from "+path);
     //TODO JO factory will be set here
-    luceneManager.setDBpediaResourceFactory(dbpediaResourceFactory)
+    //luceneManager.setDBpediaResourceFactory(f)
 
     val searcher = new MergedOccurrencesContextSearcher(luceneManager);
 
