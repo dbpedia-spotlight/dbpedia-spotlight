@@ -23,6 +23,9 @@ class TypeFilter(var ontologyTypes : List[OntologyType], val blacklistOrWhitelis
 
     private val LOG = LogFactory.getLog(this.getClass)
 
+    if (ontologyTypes==null)
+        ontologyTypes = List[OntologyType]()
+
     ontologyTypes = ontologyTypes.filter(_.typeID.trim.nonEmpty)
     if(ontologyTypes.isEmpty) LOG.info("types are empty: showing all types")  // see comment below
 

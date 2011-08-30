@@ -52,6 +52,8 @@ class DBpediaResourceFactorySQL(sqlDriver : String, sqlConnector : String, usern
         username,
         password)
 
+    val totalNumberOfOccs =  69772256; //TODO get this from database. a global table can store TOTAL_OCCURRENCES, or a sum can be obtained at startup
+
     override def from(dbpediaID : String) : DBpediaResource = {
         val dbpediaResource = new DBpediaResource(dbpediaID)
 
@@ -80,6 +82,8 @@ class DBpediaResourceFactorySQL(sqlDriver : String, sqlConnector : String, usern
         }
 
         dbpediaResource.setTypes(allTypes)
+
+        dbpediaResource.setPrior(dbpediaResource.support+1 / totalNumberOfOccs.toDouble)
 
         dbpediaResource
     }

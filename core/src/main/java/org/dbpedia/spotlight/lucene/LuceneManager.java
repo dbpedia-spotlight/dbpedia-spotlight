@@ -453,25 +453,8 @@ public class LuceneManager {
                                     Field.Index.NOT_ANALYZED_NO_NORMS);
     }
 
-    /*
-    public Field getUriPriorField(double prior) {
-        return new Field(DBpediaResourceField.URI_PRIOR.toString(),
-                                    Double.toString(prior),
-                                    Field.Store.YES,
-                                    Field.Index.NOT_ANALYZED_NO_NORMS);
-    }
-    */
 
     /*---------- Composed methods for querying the index correctly (they use the basic methods) ----------*/ //TODO Move to LuceneQueryFactory
-
-//    public Query getQuery(SurfaceForm sf, Text context) throws SearchException {  //PABLO add specific query for sf+context case
-//        BooleanQuery query = new BooleanQuery(); //TODO look closer at the behavior of BooleanQuery
-//        BooleanClause sfClause = new BooleanClause(getQuery(sf), BooleanClause.Occur.MUST);
-//        BooleanClause ctxClause = new BooleanClause(getQuery(context), BooleanClause.Occur.SHOULD);
-//        query.add(sfClause);
-//        query.add(ctxClause);
-//        return query;
-//    }
 
     public Set<Term> getTerms(SurfaceForm sf) {
         Set<Term> sfTerms = new HashSet<Term>();
@@ -482,6 +465,7 @@ public class LuceneManager {
     /**
      * This query is for merged indexes that contain both the surface form and the context.
      * Builds a Lucene Query object (CandidateResourceQuery) that uses the SurfaceForm to compute ICF for context terms
+     * The usage of a surface form boolean clause uses tf*idf as a sort of conditional prior p(sf|uri)
      * @param sf
      * @param context
      * @return
