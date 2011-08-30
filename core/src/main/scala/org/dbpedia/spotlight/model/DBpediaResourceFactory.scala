@@ -60,7 +60,7 @@ class DBpediaResourceFactorySQL(sqlDriver : String, sqlConnector : String, usern
         val result: ResultSet = statement.executeQuery()
 
         result.next() match {
-            case false => throw new ItemNotFoundException()
+            case false => throw new ItemNotFoundException("Did not find DBpediaResource in database.")
         }
 
         dbpediaResource.setSupport(result.getInt("COUNT"))
