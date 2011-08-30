@@ -40,6 +40,7 @@
         },
 	getAnnotatedText: function(response) {
              var json = $.parseJSON(response);
+	     if (json==null) json = response; // when it comes already parsed
     
              var text = json["annotation"]["@text"];
 
