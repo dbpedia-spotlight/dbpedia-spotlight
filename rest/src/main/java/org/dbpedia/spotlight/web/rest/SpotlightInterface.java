@@ -20,12 +20,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.disambiguate.Disambiguator;
 import org.dbpedia.spotlight.exceptions.InputException;
+import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
 import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters;
 import org.dbpedia.spotlight.model.*;
 import org.dbpedia.spotlight.spot.Spotter;
 import org.dbpedia.spotlight.spot.WikiMarkupSpotter;
+import org.dbpedia.spotlight.web.rest.output.Resource;
 
+import javax.annotation.Resources;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -63,13 +66,21 @@ public class SpotlightInterface  {
      * @throws InputException
      */
     public List<DBpediaResourceOccurrence> process(String text) throws SearchException, InputException {
-        List<SurfaceFormOccurrence> spots = this.spotters.values().iterator().next().extract(new Text(text));
-        return disambiguator.disambiguate(spots);
+        return process(text, this.spotters.keySet().iterator().next());
     }
 
     public List<DBpediaResourceOccurrence> process(String text, SpotterConfiguration.SpotterPolicy spotter) throws SearchException, InputException {
+        List<DBpediaResourceOccurrence> resources = new ArrayList<DBpediaResourceOccurrence>();
         List<SurfaceFormOccurrence> spots = this.spotters.get(spotter).extract(new Text(text));
-        return disambiguator.disambiguate(spots);
+
+        for(SurfaceFormOccurrence sfOcc: spots) {
+            try {
+                resources.add(disambiguator.disambiguate(sfOcc));
+            } catch (ItemNotFoundException e) {
+                LOG.error("SurfaceForm not found. Using incompatible spotter.dict and index?",e);
+            }
+        }
+        return resources;
     }
 
     /**

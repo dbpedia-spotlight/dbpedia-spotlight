@@ -105,13 +105,13 @@ object Factory {
 
     def fromQName(ontologyType : String) : OntologyType = {
 
-      val r = """^([A-Za-z]):(.*)""".r
+      val r = """^([A-Za-z]*):(.*)""".r
 
         try {
             val r(prefix, suffix) = ontologyType
 
             prefix.toLowerCase match {
-                case "d" | "dbpedia" => new DBpediaType(suffix)
+                case "d" | "dbpedia"  => new DBpediaType(suffix)
                 case "f" | "freebase" => new FreebaseType(suffix)
                 case "s" | "schema" => new SchemaOrgType(suffix)                    
                 case _ => new DBpediaType(ontologyType)
@@ -189,6 +189,8 @@ class SpotlightFactory(val configuration: SpotlightConfiguration,
                     val analyzer: Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET)
                     ) {
 
+    private val LOG = LogFactory.getLog(this.getClass)
+
     def this(configuration: SpotlightConfiguration) {
         this(configuration, new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", configuration.getStopWords))
         if (!new File(configuration.getTaggerFile).exists()) throw new ConfigurationException("POS tagger file does not exist! "+configuration.getTaggerFile);
@@ -212,7 +214,8 @@ class SpotlightFactory(val configuration: SpotlightConfiguration,
             "")
     println("DBpediaResource database read from "+path);
     //TODO JO factory will be set here
-    //luceneManager.setDBpediaResourceFactory(f)
+    luceneManager.setDBpediaResourceFactory(dbpediaResourceFactory)
+    LOG.debug("DBpediaResource database read from "+path);
 
     val searcher = new MergedOccurrencesContextSearcher(luceneManager);
 
