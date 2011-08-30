@@ -25,18 +25,27 @@ class TypeFilter(var ontologyTypes : List[OntologyType], val blacklistOrWhitelis
 
     if (ontologyTypes==null)
         ontologyTypes = List[OntologyType]()
+    else
+        ontologyTypes = ontologyTypes.filter(_.typeID.trim.nonEmpty)
 
-    ontologyTypes = ontologyTypes.filter(_.typeID.trim.nonEmpty)
     if(ontologyTypes.isEmpty) LOG.info("types are empty: showing all types")  // see comment below
+
 
     private val acceptable = blacklistOrWhitelist match {
         case FilterPolicy.Whitelist => (resource : DBpediaResource) =>
             resource.types.filter(given => {
-            ontologyTypes.find(listed => given equals listed) != None }
+                ontologyTypes.find(listed => {
+                    LOG.debug("ONTOLOGY TYPESSSSSSSSSSSSSSSS \n %s \n %s".format(resource.types,ontologyTypes))
+                    given equals listed
+                }) != None
+            }
         ).nonEmpty
         case FilterPolicy.Blacklist => (resource : DBpediaResource) =>
             resource.types.filter(given => {
-            ontologyTypes.find(listed => given equals listed) != None }
+                ontologyTypes.find(listed => {
+                    LOG.debug("ONTOLOGY TYPESSSSSSSSSSSSSSSS \n %s \n %s".format(resource.types,ontologyTypes))
+                    given equals listed
+                }) != None }
         ).isEmpty
     }
 

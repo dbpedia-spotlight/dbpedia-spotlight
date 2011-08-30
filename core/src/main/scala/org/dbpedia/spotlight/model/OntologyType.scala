@@ -27,17 +27,23 @@ package org.dbpedia.spotlight.model
 
 trait OntologyType  {
   def getFullUri : String
-  def typeID : String
+  def typeID : String = "OntologyTypeUnknown"
 
   override def hashCode() : Int = {
     typeID.hashCode()
   }
 
   override def equals(other : Any) : Boolean = {
-    other.isInstanceOf[OntologyType] &&
-    other.asInstanceOf[OntologyType].typeID.equals(typeID)
+      if (other==null)
+           false
+      else
+        other match {
+            case o: OntologyType => o.typeID != null && o.equals(typeID)
+            case _ => false;
+        }
   }
-  
+
+  override def toString = typeID
 }
 
 
@@ -62,7 +68,7 @@ class DBpediaType(var name : String) extends OntologyType {
     override def getFullUri = DBpediaType.DBPEDIA_ONTOLOGY_PREFIX + name
     override def typeID = "DBpedia:" + name
 
-    override def toString = name
+    //override def toString = name
 
 }
 
@@ -84,7 +90,7 @@ class FreebaseType(var domain : String, var typeName : String) extends OntologyT
   
   override def getFullUri = "http://rdf.freebase.com/ns/" + domain + "." + typeName
   override def typeID = "Freebase:/" + domain + "/" + typeName
-  override def toString = FreebaseType.FREEBASE_RDF_PREFIX + domain + "/" + typeName
+  //override def toString = FreebaseType.FREEBASE_RDF_PREFIX + domain + "/" + typeName
 }
 
 object FreebaseType {
@@ -108,6 +114,6 @@ class SchemaOrgType(var name : String) extends OntologyType {
     override def getFullUri = SchemaOrgType.SCHEMAORG_PREFIX + name
     override def typeID = "Schema:" + name
 
-    override def toString = "%s/%s".format(SchemaOrgType.SCHEMAORG_PREFIX,name)
+   // override def toString = "%s/%s".format(SchemaOrgType.SCHEMAORG_PREFIX,name)
 
 }

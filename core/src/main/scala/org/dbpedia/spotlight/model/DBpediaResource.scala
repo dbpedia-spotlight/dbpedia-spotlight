@@ -77,7 +77,7 @@ class DBpediaResource(var uri : String,
     def getTypes : java.util.List[OntologyType] = types
 
     override def toString = {
-        val typesString = if (types!=null && types.nonEmpty) types.map(_.typeID).mkString("(", ",", ")") else ""
+        val typesString = if (types!=null && types.nonEmpty) types.filter(_!=null).filter(_.typeID!=null).map(_.typeID).mkString("(", ",", ")") else ""
 
         if (isCommonWord) {
             "WiktionaryResource["+uri+typesString+"]"

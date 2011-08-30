@@ -29,6 +29,7 @@ import java.util.logging.Logger
 import org.apache.commons.logging.LogFactory
 import java.lang.String
 import org.dbpedia.spotlight.exceptions.{ItemNotFoundException, SearchException}
+import collection.immutable.List._
 
 /**
  * @author Joachim Daiber
@@ -69,24 +70,17 @@ class DBpediaResourceFactorySQL(sqlDriver : String, sqlConnector : String, usern
         val count = if(dbCount == null) { 0 } else { dbCount }
 
         dbpediaResource.setSupport(count)
-        val dbpediaTypeString = result.getString("TYPE_DBP")
-        val fbTypes = result.getString("TYPES_FB")
+        val dbpediaTypeString = Option(result.getString("TYPE_DBP"))
+        val freebaseTypeString = Option(result.getString("TYPES_FB"))
 
-        var allTypes : List[OntologyType] = if(fbTypes == null) {
-            List[OntologyType]()
-        }else{
-            fbTypes.toCharArray.toList
-                .map(b => typeFromID(b)).filter(t => t != null)
-        }
+        var allTypes : List[OntologyType] = (typesFromID(freebaseTypeString) :::
+                                             typesFromID(dbpediaTypeString) :::
+                                             Nil)
 
-        if(dbpediaTypeString != null) {
-            val dbpType : OntologyType = typeFromID(dbpediaTypeString.charAt(0))
-            allTypes = allTypes ::: List[OntologyType](dbpType)
-        }
+        dbpediaResource.setTypes(allTypes.filter(t => t != null))
 
-        dbpediaResource.setTypes(allTypes)
-
-        dbpediaResource.setPrior(dbpediaResource.support+1 / totalNumberOfOccs.toDouble)
+        //TODO smoothing
+        dbpediaResource.setPrior( (dbpediaResource.support.toDouble+1) / totalNumberOfOccs.toDouble)
 
         dbpediaResource
     }
@@ -99,14 +93,12 @@ class DBpediaResourceFactorySQL(sqlDriver : String, sqlConnector : String, usern
         typeIDMap.put(query.getString("TYPE_ID").toList(0).toInt, Factory.OntologyType.fromQName(string))
     }
 
-    //Get the type corresponding to the typeID:
-    def typeFromID(typeID : Int) : OntologyType = {
-        typeIDMap.get(typeID) match {
-            case None => null
-            case Some(x) => x
+    def typesFromID(types: Option[String]) : List[OntologyType] = {
+        types match {
+            case Some(t) => t.toCharArray.toList.flatMap( id => typeIDMap.get(id) )
+            case None => List[OntologyType]()
         }
     }
-
 
 }
 
