@@ -61,11 +61,14 @@ class DBpediaResourceFactorySQL(sqlDriver : String, sqlConnector : String, usern
         statement.setString(1, dbpediaID)
         val result: ResultSet = statement.executeQuery()
 
-        result.next() match {
-            case false => throw new ItemNotFoundException("Did not find DBpediaResource in database.")
+        if (result.next() == false) {
+            throw new ItemNotFoundException("Did not find DBpediaResource in database.")
         }
 
-        dbpediaResource.setSupport(result.getInt("COUNT"))
+        val dbCount = result.getInt("COUNT")
+        val count = if(dbCount == null) { 0 } else { dbCount }
+
+        dbpediaResource.setSupport(count)
         val dbpediaTypeString = result.getString("TYPE_DBP")
         val fbTypes = result.getString("TYPES_FB")
 
