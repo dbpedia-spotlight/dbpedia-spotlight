@@ -48,7 +48,7 @@ class AnnotationFilter(val config: SpotlightConfiguration)
     def filter(occs : java.util.List[DBpediaResourceOccurrence],
                confidence : Double,
                targetSupport : Int,
-               dbpediaTypes : java.util.List[DBpediaType],
+               dbpediaTypes : java.util.List[OntologyType],
                sparqlQuery : String,
                blacklist : Boolean,
                coreferenceResolution : Boolean) : java.util.List[DBpediaResourceOccurrence] = {
@@ -60,7 +60,7 @@ class AnnotationFilter(val config: SpotlightConfiguration)
     def filter(occs : List[DBpediaResourceOccurrence],
                confidence : Double,
                targetSupport : Int,
-               dbpediaTypes : java.util.List[DBpediaType],
+               dbpediaTypes : java.util.List[OntologyType],
                sparqlQuery : String,
                blacklist : Boolean,
                coreferenceResolution : Boolean): List[DBpediaResourceOccurrence] = {
@@ -180,8 +180,8 @@ class AnnotationFilter(val config: SpotlightConfiguration)
 
 
     // filter by type
-    private def filterByType(occs : List[DBpediaResourceOccurrence], dbpediaTypes : List[DBpediaType], blacklistOrWhitelist : ListColor) : List[DBpediaResourceOccurrence] = {
-        if (dbpediaTypes.filter(_.name.trim.nonEmpty).isEmpty) {
+    private def filterByType(occs : List[DBpediaResourceOccurrence], dbpediaTypes : List[OntologyType], blacklistOrWhitelist : ListColor) : List[DBpediaResourceOccurrence] = {
+        if (dbpediaTypes.filter(_.typeID.trim.nonEmpty).isEmpty) {
             LOG.info("types are empty: showing all types")
             return occs
         }
@@ -210,7 +210,7 @@ class AnnotationFilter(val config: SpotlightConfiguration)
                     true
                 }
                 else {
-                    LOG.info("filtered out by "+blacklistOrWhitelist+": "+occ.resource+"; list="+dbpediaTypes.map(_.name).mkString("List(", ",", ")"))
+                    LOG.info("filtered out by "+blacklistOrWhitelist+": "+occ.resource+"; list="+dbpediaTypes.map(_.typeID).mkString("List(", ",", ")"))
                     false
                 }
             }

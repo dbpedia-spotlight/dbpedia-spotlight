@@ -36,7 +36,7 @@ class CombineAllAnnotationFilters(val config: SpotlightConfiguration) {
     def filter(occs : Traversable[DBpediaResourceOccurrence],
                confidence : Double,
                targetSupport : Int,
-               dbpediaTypes : java.util.List[DBpediaType],
+               dbpediaTypes : java.util.List[OntologyType],
                sparqlQuery : String,
                listColor : FilterPolicy.ListColor,
                coreferenceResolution : Boolean) : List[DBpediaResourceOccurrence] = {
@@ -56,7 +56,7 @@ class CombineAllAnnotationFilters(val config: SpotlightConfiguration) {
     def filter(occs : java.util.List[DBpediaResourceOccurrence],
                confidence : Double,
                targetSupport : Int,
-               dbpediaTypes : java.util.List[DBpediaType],
+               dbpediaTypes : java.util.List[OntologyType],
                sparqlQuery : String,
                listColor : FilterPolicy.ListColor,
                coreferenceResolution : Boolean) : java.util.List[DBpediaResourceOccurrence] = {
@@ -67,7 +67,7 @@ class CombineAllAnnotationFilters(val config: SpotlightConfiguration) {
     def filter(occs : Traversable[DBpediaResourceOccurrence],
                confidence : Double,
                targetSupport : Int,
-               dbpediaTypes : java.util.List[DBpediaType],
+               dbpediaTypes : java.util.List[OntologyType],
                sparqlQuery : String,
                blacklist : Boolean,
                coreferenceResolution : Boolean): List[DBpediaResourceOccurrence] = {
@@ -79,7 +79,7 @@ class CombineAllAnnotationFilters(val config: SpotlightConfiguration) {
     def filter(occs : java.util.List[DBpediaResourceOccurrence],
                confidence : Double,
                targetSupport : Int,
-               dbpediaTypes : java.util.List[DBpediaType],
+               dbpediaTypes : java.util.List[OntologyType],
                sparqlQuery : String,
                blacklist : Boolean,
                coreferenceResolution : Boolean) : java.util.List[DBpediaResourceOccurrence] = {

@@ -44,7 +44,7 @@ public abstract class SpotlightInterfaceNEW {
     Log LOG = LogFactory.getLog(this.getClass());
 
     public abstract void announceAPI();
-    public abstract Annotation process(String text, double confidence, int support, List<DBpediaType> dbpediaTypes,
+    public abstract Annotation process(String text, double confidence, int support, List<OntologyType> dbpediaTypes,
                                        String sparqlQuery, boolean blacklist, boolean coreferenceResolution)
             throws SearchException, InputException, ItemNotFoundException;
 
@@ -84,7 +84,7 @@ public abstract class SpotlightInterfaceNEW {
         /**
          * Does not do any filtering at the moment!!!
          */
-        public Annotation process(String text, double confidence, int support, List<DBpediaType> dbpediaTypes,
+        public Annotation process(String text, double confidence, int support, List<OntologyType> dbpediaTypes,
                                   String sparqlQuery, boolean blacklist, boolean coreferenceResolution)
                 throws SearchException, ItemNotFoundException, InputException {
             Annotation annotation = new Annotation(text);
@@ -109,7 +109,7 @@ public abstract class SpotlightInterfaceNEW {
     public Annotation getAnnotation(String text,
                                     double confidence,
                                     int support,
-                                    String dbpediaTypesString,
+                                    String ontologyTypesString,
                                     String sparqlQuery,
                                     String policy,
                                     boolean coreferenceResolution,
@@ -130,7 +130,7 @@ public abstract class SpotlightInterfaceNEW {
         LOG.info("text length in chars: "+text.length());
         LOG.info("confidence: "+String.valueOf(confidence));
         LOG.info("support: "+String.valueOf(support));
-        LOG.info("types: "+dbpediaTypesString);
+        LOG.info("types: "+ontologyTypesString);
         LOG.info("sparqlQuery: "+ sparqlQuery);
         LOG.info("policy: "+policy);
         LOG.info("coreferenceResolution: "+String.valueOf(coreferenceResolution));
@@ -139,13 +139,14 @@ public abstract class SpotlightInterfaceNEW {
             throw new InputException("No text was specified in the &text parameter.");
         }
 
-        List<DBpediaType> dbpediaTypes = new ArrayList<DBpediaType>();
-        String types[] = dbpediaTypesString.split(",");
+        List<OntologyType> ontologyTypes = new ArrayList<OntologyType>();
+        String types[] = ontologyTypesString.trim().split(",");
         for (String t : types){
-            dbpediaTypes.add(new DBpediaType(t.trim()));
+            if (!t.trim().equals("")) ontologyTypes.add(Factory.ontologyType().fromQName(t.trim()));
+            //LOG.info("type:"+t.trim());
         }
 
-        Annotation annotation = process(text, confidence, support, dbpediaTypes, sparqlQuery, blacklist, coreferenceResolution);
+        Annotation annotation = process(text, confidence, support, ontologyTypes, sparqlQuery, blacklist, coreferenceResolution);
 
         LOG.info("Shown: "+annotation.toXML());
 
