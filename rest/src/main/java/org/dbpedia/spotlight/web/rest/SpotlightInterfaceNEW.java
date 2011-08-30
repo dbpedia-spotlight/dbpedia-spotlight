@@ -90,18 +90,18 @@ public abstract class SpotlightInterfaceNEW {
             Annotation annotation = new Annotation(text);
             List<Spot> spots = new LinkedList<Spot>();
             for(SurfaceFormOccurrence sfOcc : annotator.spotter().extract(new Text(text))) {
-                Spot spot = Spot.getInstance(sfOcc);
-                List<Resource> resources = new LinkedList<Resource>();
-                try {
+                try { // will not show spot if there are no candidates for it. can happen if spotter dict does not come from index
+                    Spot spot = Spot.getInstance(sfOcc);
+                    List<Resource> resources = new LinkedList<Resource>();
                     for(DBpediaResourceOccurrence occ : annotator.disambiguator().bestK(sfOcc, k)) {
                         Resource resource = Resource.getInstance(occ);
                         resources.add(resource);
                     }
+                    spot.setResources(resources);
+                    spots.add(spot);
                 } catch (ItemNotFoundException e) {
                     LOG.error("SurfaceForm not found. Using incompatible spotter.dict and index?",e);
                 }
-                spot.setResources(resources);
-                spots.add(spot);
             }
             annotation.setSpots(spots);
             return annotation;

@@ -77,7 +77,7 @@ public class SpotlightInterface  {
             try {
                 resources.add(disambiguator.disambiguate(sfOcc));
             } catch (ItemNotFoundException e) {
-                LOG.error("SurfaceForm not found. Using incompatible spotter.dict and index?",e);
+                LOG.error("SurfaceForm not found. Using incompatible spotter.dict and index?");
             }
         }
         return resources;

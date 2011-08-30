@@ -115,7 +115,7 @@ public class MergedOccurrencesDisambiguator implements Disambiguator {
                 LOG.debug("New sfName="+newName+" hits="+hits.length);
             }
             if (hits.length == 0 && sfName.toLowerCase().endsWith("'s")) {
-                LOG.debug("Trying to HACK(') -> not found in index: "+sfOccurrence);
+                LOG.debug("Trying to HACK('s) -> not found in index: "+sfOccurrence);
                 String newName = sfName.substring(0,sfName.length()-2).trim();
                 hits = mMergedSearcher.getHitsSurfaceFormHack(sfOccurrence, new SurfaceForm(newName));
                 LOG.debug("New sfName="+newName+" hits="+hits.length);

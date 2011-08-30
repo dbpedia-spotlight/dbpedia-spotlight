@@ -18,7 +18,6 @@ package org.dbpedia.spotlight.spot.lingpipe
 
 import org.apache.commons.logging.LogFactory
 import com.aliasi.util.AbstractExternalizable
-import io.Source
 import java.io.{FileInputStream, File}
 import org.semanticweb.yars.nx.parser.NxParser
 import com.aliasi.dict.{DictionaryEntry, MapDictionary}
@@ -26,6 +25,7 @@ import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
 import org.dbpedia.spotlight.io.IndexedOccurrencesSource
 import java.util.ArrayList
 import org.dbpedia.spotlight.util.IndexingConfiguration
+import io.Source
 
 /**
  * Index surface forms to a spotter dictionary.
@@ -98,14 +98,18 @@ object IndexLingPipeSpotter
     def main(args : Array[String]) {
         val indexingConfigFileName = args(0)
         var lowerCased = if (args.size>1) args(1).toLowerCase().contains("lowercase") else false
+        val source = if (args.size>2) args(2).toLowerCase() else "tsv" // index or tsv
 
         val config = new IndexingConfiguration(indexingConfigFileName)
         val candidateMapFile = new File(config.get("org.dbpedia.spotlight.data.surfaceForms"))
+        val indexDir = new File(config.get("org.dbpedia.spotlight.index.dir"))
 
-        val dictFile = if (args.length > 1) new File(args(1)) else new File(candidateMapFile.getAbsolutePath+".spotterDictionary")
+        val dictFile = new File(candidateMapFile.getAbsoluteFile+".spotterDictionary")
 
-        //val dictionary = getDictionary(surrogatesFile)
-        val dictionary = getDictionary(IndexedOccurrencesSource.fromFile(candidateMapFile).foldLeft(List[DBpediaResourceOccurrence]())( (a,b) => b :: a ), lowerCased );
+        val dictionary = if (source=="index")
+                                getDictionary(IndexedOccurrencesSource.fromFile(indexDir).foldLeft(List[DBpediaResourceOccurrence]())( (a,b) => b :: a ), lowerCased );
+                            else
+                                getDictionary(candidateMapFile)
         writeDictionaryFile(dictionary, dictFile)
     }
 }
