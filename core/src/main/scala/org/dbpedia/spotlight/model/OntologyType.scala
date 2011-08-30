@@ -25,7 +25,7 @@ package org.dbpedia.spotlight.model
  * @author Joachim Daiber
  */
 
-trait OntologyType {
+trait OntologyType  {
   def getFullUri : String
   def typeID : String
 

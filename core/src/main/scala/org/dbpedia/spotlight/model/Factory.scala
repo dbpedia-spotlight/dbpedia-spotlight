@@ -24,6 +24,7 @@ import org.dbpedia.spotlight.spot.{WikiMarkupSpotter, Spotter, AtLeastOneNounSel
 import java.util.HashMap
 import org.dbpedia.spotlight.disambiguate.{Disambiguator, DefaultDisambiguator}
 import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
+import org.apache.commons.logging.LogFactory
 
 /**
  * Class containing methods to create model objects in many different ways
@@ -32,7 +33,7 @@ import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
  * @author Joachim Daiber (Tagger and Spotter methods)
  */
 object Factory {
-
+    private val LOG = LogFactory.getLog(this.getClass)
     /*
     * I like this style for the factory. group by return type and offer many .from* methods
     */
@@ -74,11 +75,13 @@ object Factory {
     }
 
     object DBpediaResource {
+        val path = "/data/spotlight/3.7/database/spotlight-db"
         val dbpediaResourceFactory : DBpediaResourceFactory = new DBpediaResourceFactorySQL(
             "org.hsqldb.jdbcDriver",
-            "jdbc:hsqldb:file:/data/spotlight/spotlight-db;shutdown=true&readonly=true",
+            "jdbc:hsqldb:file:"+path+";shutdown=true&readonly=true",
             "sa",
             "")
+        LOG.debug("DBpediaResource database read from "+path);
 
         def from(dbpediaID : String) : DBpediaResource = dbpediaResourceFactory.from(dbpediaID)
         def from(dbpediaResource : DBpediaResource) = dbpediaResourceFactory.from(dbpediaResource.uri)
@@ -93,6 +96,8 @@ object Factory {
               new DBpediaType(uri)
           } else if (uri.startsWith(FreebaseType.FREEBASE_RDF_PREFIX)) {
               new FreebaseType(uri)
+          } else if (uri.startsWith(SchemaOrgType.SCHEMAORG_PREFIX)) {
+              new SchemaOrgType(uri)
           } else {
               new DBpediaType(uri)
           }
@@ -108,6 +113,7 @@ object Factory {
             prefix.toLowerCase match {
                 case "d" | "dbpedia" => new DBpediaType(suffix)
                 case "f" | "freebase" => new FreebaseType(suffix)
+                case "s" | "schema" => new SchemaOrgType(suffix)
                 case _ => new DBpediaType(ontologyType)
             }
         }catch{
@@ -165,8 +171,6 @@ object Factory {
         field match {
             case DBpediaResourceField.URI_COUNT =>
                 resource.setSupport(document.getField(field.name).stringValue.toInt)
-//            case DBpediaResourceField.URI_PRIOR =>
-//                resource.setPrior(document.getField(field.name).stringValue.toDouble)
             case DBpediaResourceField.TYPE =>
                 resource.setTypes(document.getValues(field.name).map( t => new DBpediaType(t) ).toList)
             case _ =>
@@ -200,12 +204,15 @@ class SpotlightFactory(val configuration: SpotlightConfiguration,
     luceneManager.setContextSimilarity(similarity);
 
     //TODO grab from configuration
-    val f = new DBpediaResourceFactorySQL("org.hsqldb.jdbcDriver",
-                                                "jdbc:hsqldb:file:/data/spotlight/3.7/database/spotlight-db",
-                                                "sa",
-                                                "")
+    val path = "/data/spotlight/3.7/database/spotlight-db"
+    val dbpediaResourceFactory : DBpediaResourceFactory = new DBpediaResourceFactorySQL(
+            "org.hsqldb.jdbcDriver",
+            "jdbc:hsqldb:file:"+path+";shutdown=true&readonly=true",
+            "sa",
+            "")
+    println("DBpediaResource database read from "+path);
     //TODO JO factory will be set here
-    //luceneManager.setDBpediaResourceFactory(f)
+    luceneManager.setDBpediaResourceFactory(dbpediaResourceFactory)
 
     val searcher = new MergedOccurrencesContextSearcher(luceneManager);
 

@@ -43,6 +43,8 @@ trait DBpediaResourceFactory {
 
 class DBpediaResourceFactorySQL(sqlDriver : String, sqlConnector : String, username : String, password : String) extends DBpediaResourceFactory {
 
+    private val LOG = LogFactory.getLog(this.getClass)
+
     //Initialize SQL connection:
     Class.forName(sqlDriver).newInstance()
     val sqlConnection = DriverManager.getConnection(
