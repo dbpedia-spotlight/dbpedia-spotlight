@@ -295,7 +295,6 @@ body .jstree li {
 
 <script>
 var annotated = false;
-var textInput = null;
 var server = 'http://spotlight.dbpedia.org/dev/rest'
 
 function run(method) {
@@ -387,8 +386,8 @@ function runWithSettings() {
 // Override the onload event
 $(document).ready(function() {
 	//accept parameter from URL
-	var t = decodeURIComponent($(document).getUrlParam('text'));
-	if ($.trim(t)!='') { $('#text').val(t); }
+	var t = $(document).getUrlParam('text');
+	if (t!=null && $.trim(t)!='') { $('#text').val(decodeURIComponent(t)); }
 
 	$('textarea#text').autoResize({
 	
@@ -424,7 +423,6 @@ $(document).ready(function() {
   			},
 	  		stop: function( event, ui ) {
 				if(annotated){
-					//$('#text_container').html(textInput);
 					runWithSettings(); //TODO only hide spans with lower scores, do not query server again
 				}
   			}
@@ -440,7 +438,6 @@ $(document).ready(function() {
   			},
   			stop: function( event, ui ) {
 				if(annotated){
-					//$('#text_container').html(textInput);
 					runWithSettings(); //TODO only hide spans with lower scores, do not query server again
 				}
   			}
@@ -449,7 +446,6 @@ $(document).ready(function() {
 		$("#method").change(
 			function() {
 				if(annotated){
-					$('#text_container').html(textInput);
 					runWithSettings();
 				}
 			}
@@ -521,7 +517,6 @@ $(document).ready(function() {
 		
 		$("#spotter").change(function(event){
 					if(annotated){
-						$('#text_container').html(textInput);
 						runWithSettings();
 					} 
 		});
