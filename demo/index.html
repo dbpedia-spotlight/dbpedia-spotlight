@@ -36,6 +36,8 @@
 <style>
 body {
 	font-size: small;
+    font-family: "Myriad Pro", Verdana, Arial, sans-serif;
+
 }
 #text {
 	border: 0;
@@ -46,6 +48,7 @@ body {
 	font-family: inherit;
 	overflow: auto;
 	font-size: 14px;
+    outline: none;
 }
 #text_container {
 	font-size: 14px;
@@ -62,7 +65,7 @@ body {
 	padding-left: 1px;
 
 }
-#text_container div a {
+#text_container div a, a, a:visited {
 	color: #135e6c;
 }
 
@@ -85,7 +88,6 @@ body {
 }
 .container {
 	margin: 0px 50px;
-	font-family: "Myriad Pro", Verdana, Arial, sans-serif;
 	padding: 8px;
 	position: relative;
 	clear: both;
@@ -281,8 +283,15 @@ body .jstree li {
 	height: 150px;
 }
 
+#edit_text_wrapper {
+    text-align: right;
+    width: 100%;
+    clear: both;
+    padding-top: 2em;
+}
+
 #edit_text {
-	align:center;
+    display: none;
 }
 
 #copyright {
@@ -291,14 +300,27 @@ body .jstree li {
 	font-size: 80%;
 	text-align: center;
 }
+#filterPolicy {
+    text-align: center;
+    padding: 0.5em 0;
+}
+
+#text_annotated {
+    
+    whitespace: pre-line;
+}
+
 </style>
 
 <script>
 var annotated = false;
+var textInput = null;
 var server = 'http://spotlight.dbpedia.org/dev/rest'
 
 function run(method) {
-    
+
+    $('#edit_text_wrapper').show();
+
     var settings = {
       'endpoint' : server,
       'confidence' : $('#confidence').val(),
@@ -312,16 +334,17 @@ function run(method) {
 	// will hide text object and show annotated text
 	$('#text').hide();
 	$('#text_annotated').remove();
-        $('#text_container').append('<div id=text_annotated>'+$('#text').val()+'</div>');
+        $('#text_container').prepend('<div id=text_annotated>'+$('#text').val().replace("\n", "<br />")+'</div>');
         $('#text_annotated').annotate(settings);//TODO enable annotate(method, settings)
         $('#text_annotated').annotate(method);
+
 	$('#text_container').addClass("annotated loading");
 	
 	$(".action_button").attr("disabled", true);
 	$.uniform.update(".action_button");
 
 	//button to get the editable text box back for the user to modify as needed
-	$('#edit_text').show();
+	
 	$('#edit_text').click(function() {
 		annotated = false;
 		$('#text').show();
@@ -329,7 +352,7 @@ function run(method) {
 		$('#text_container').removeClass("annotated loading");
 			$("#text_container").unbind('click');
 		$(".action_button").attr("disabled", false);
-		$('#edit_text').hide();
+		$('#edit_text_wrapper').hide();
 		$.uniform.update(".action_button");
 		});
 
@@ -385,9 +408,13 @@ function runWithSettings() {
 
 // Override the onload event
 $(document).ready(function() {
+
+    $('#edit_text_wrapper').hide();
+
 	//accept parameter from URL
-	var t = $(document).getUrlParam('text');
-	if (t!=null && $.trim(t)!='') { $('#text').val(decodeURIComponent(t)); }
+	var t = decodeURIComponent($(document).getUrlParam('text'));
+
+	if ($.trim(t)!='' && t != "null") { $('#text').val(t); }
 
 	$('textarea#text').autoResize({
 	
@@ -521,10 +548,27 @@ $(document).ready(function() {
 					} 
 		});
 		
-        $('#edit_text').hide();
 
 });
 
+function sparqlExample(i) {
+
+    switch(i) {
+        case 1:
+            s = "SELECT DISTINCT ?politician\nWHERE {\n    ?politician a <http://dbpedia.org/ontology/OfficeHolder> .\n    ?politician ?related <http://dbpedia.org/resource/Chicago>\n}";
+            break;
+        case 2:
+            s = "PREFIX dbo: <http://dbpedia.org/ontology/>\n\nSELECT ?name ?birth ?death ?person WHERE {\n	?person dbo:birthPlace :Berlin .\n	?person dbo:birthDate ?birth .\n	?person foaf:name ?name .\n	?person dbo:deathDate ?death .\n	FILTER (?birth < \"1900-01-01\"^^xsd:date) .\n}\nORDER BY ?name";
+            break;
+        case 3:
+            s = "SELECT ?film\nWHERE { ?film <http://purl.org/dc/terms/subject> <http://dbpedia.org/resource/Category:French_films> }";
+            break;
+        default:
+            s = "";
+    }
+    $('#sparql_type').val(s);
+
+}
 
 </script>
 
@@ -571,15 +615,19 @@ $(document).ready(function() {
 </div>
 </div>
 
-<div id="text_container" class="container"><textarea rows="4" id="text">Cook's profile has grown as he has made more public appearances on Apple's behalf. This winter, he represented Apple as Verizon announced the iPhone. He has been making more appearances during Apple product events, including Apple's Mac event last October. And he has long led the company's earnings calls.
+<div id="text_container" class="container"><textarea rows="10" id="text">Cook's profile has grown as he has made more public appearances on Apple's behalf. This winter, he represented Apple as Verizon announced the iPhone. He has been making more appearances during Apple product events, including Apple's Mac event last October. And he has long led the company's earnings calls.
 
 Cook is well compensated for his work. Unlike Steve Jobs' symbolic $1 salary, Tim Cook got $59 million in total compensation last year. (Apple pays out equity every other year, so that's why it was especially high.)
 
-Cook is a HUGE Auburn football fan. We got a chance to talk to him last Tuesday at the Verizon event, after Auburn won the national championship the night before. He sounded like it had been one of the best moments of his life. (Now we see, perhaps, why he had to watch it in a New York hotel room and not at the game itself.)</textarea></div>
-<center>
-	<input id="edit_text" type="button" value="Back to Text"/>
+Cook is a HUGE Auburn football fan. We got a chance to talk to him last Tuesday at the Verizon event, after Auburn won the national championship the night before. He sounded like it had been one of the best moments of his life. (Now we see, perhaps, why he had to watch it in a New York hotel room and not at the game itself.)</textarea>
+
+   <div id="edit_text_wrapper">
+        <input id="edit_text" type="button" value="Back to Text"/>
+    </div>
+</div>
+
+
 	<!--TODO input id="view_source" type="button" value="View Source (RDFa annotations)"/-->
-</center>
 <div id=suggestdialog></div>
 
 
@@ -604,13 +652,18 @@ Annotate with DBpedia Spotlight
 </div>
 
 <div id="type_selector">
+    <div id="filterPolicy">
+        <input type="radio" name="filterPolicy" value="whitelist" checked>Only these types</input>
+        <input type="radio" name="filterPolicy" value="blacklist">None of these types</input>
+    </div>
+
 	<div class="tabs">
 		<ul>
 			<li><a href="#tabs-1">DBpedia</a></li>
 			<li><a href="#tabs-2">Freebase</a></li>
 			<li><a href="#tabs-3">Custom (SPARQL)</a></li>
 		</ul>
-		
+
 		<div id="tabs-1">
 			<ul>
 				<li id="tree_dbpedia" class="tree" />
@@ -622,17 +675,18 @@ Annotate with DBpedia Spotlight
 				<li id="tree_freebase" class="tree" />
 			</ul>
 		</div>
-	
+
 		<div id="tabs-3">
 
-<textarea id="sparql_type">
-SELECT DISTINCT ?politician 
-WHERE { 
-    ?politician a <http://dbpedia.org/ontology/OfficeHolder> .
-    ?politician ?related <http://dbpedia.org/resource/Chicago>
-}
-</textarea>
+<textarea id="sparql_type" rows="8">
 
+</textarea>
+<div id="sparqlExamples">
+    <strong>Example queries:</strong>
+    <a href="#" onclick="javascript: sparqlExample(1);">Politicians from Chicago</a>,
+    <a href="#" onclick="javascript: sparqlExample(2);">People born in Berlin before 1900</a>,
+    <a href="#" onclick="javascript: sparqlExample(3);">French films</a>.
+</div>
 
 		</div>
 
@@ -643,7 +697,6 @@ WHERE {
 
 <div id=copyright>This demonstration uses the <a href=http://plugins.jquery.com/project/dbpedia-spotlight>DBpedia Spotlight jQuery Plugin v0.3</a> and the Web Service for <a href=http://dbp-spotlight.svn.sourceforge.net/viewvc/dbp-spotlight/tags/release-0.5/>DBpedia Spotlight v0.5</a>. <br/> For the latest versions, please visit: <a href=http://spotlight.dbpedia.org>http://spotlight.dbpedia.org</a></div>
 
-</div>
 
 </body>
 </html>
