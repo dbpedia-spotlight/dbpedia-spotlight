@@ -241,15 +241,14 @@ public class BaseSearcher implements Closeable {
         long start = System.nanoTime();
         DBpediaResourceFactory f = mLucene.getDBpediaResourceFactory();
         if (f==null) {
-            LOG.info("Using only lucene to create DBpediaResource objects.");
-            LOG.info("");
+            LOG.debug("Using only lucene to create DBpediaResource objects.");
             String[] fields = {LuceneManager.DBpediaResourceField.TYPE.toString(),
                     LuceneManager.DBpediaResourceField.URI.toString(),
                     LuceneManager.DBpediaResourceField.URI_COUNT.toString()
             };
             r = getDBpediaResource(docNo,fields); // load all available info from Lucene
         } else {
-           LOG.info("Using DBpediaResourceFactory to create objects.");
+           LOG.debug("Using DBpediaResourceFactory to create objects.");
            String[] fields = {LuceneManager.DBpediaResourceField.URI.toString()};
            r = getDBpediaResource(docNo,fields);   // load only URI from Lucene
            r = mLucene.getDBpediaResourceFactory().from(r.uri()); // load the rest of the info from DB

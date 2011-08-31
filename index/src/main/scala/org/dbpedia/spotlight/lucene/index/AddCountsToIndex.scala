@@ -88,17 +88,13 @@ object AddCountsToIndex {
         val countsFileName = args(1)
 
         val config = new IndexingConfiguration(indexingConfigFileName)
-        val indexFileName = config.get("org.dbpedia.spotlight.index.dir")
+        val sourceIndexFileName = config.get("org.dbpedia.spotlight.index.dir")
+        val targetIndexFileName = sourceIndexFileName+"-withCounts"
 
-        val indexFile = new File(indexFileName)
-        if (!indexFile.exists)
-            throw new ConfigurationException("index dir "+indexFile+" does not exist; can't add counts")
         if (!new File(countsFileName).exists)
             throw new ConfigurationException("counts file "+countsFileName+" does not exist; can't add counts")
 
-        val luceneManager = new LuceneManager.BufferedMerging(FSDirectory.open(indexFile))
-
-        val sfIndexer = new IndexEnricher(luceneManager)
+        val sfIndexer = new IndexEnricher(sourceIndexFileName,targetIndexFileName)
 
         val counts = loadCounts(countsFileName)
         LOG.info("Adding to index.")

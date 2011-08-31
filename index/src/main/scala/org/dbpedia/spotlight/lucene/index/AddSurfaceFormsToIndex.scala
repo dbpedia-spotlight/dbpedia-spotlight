@@ -63,7 +63,8 @@ object AddSurfaceFormsToIndex
         if (sf.toLowerCase.endsWith("s")) {
             alternatives.add(sf.substring(0,sf.length()-1).trim())
         }
-        alternatives.add(sf.replaceAll("[^A-Za-z0-9 ]", " ").trim())
+        //alternatives.add(sf.replaceAll("[^A-Za-z0-9 ]", " ").trim()) // may be problematic with accents
+        alternatives.add(sf.replaceAll("[\\^`~!@\\#$%*()_+-={}\\[\\]\\|/\\\\,\\.<>\\?/'\":;]", " ").trim()) //TODO TEST
         alternatives.toList
     }
 
@@ -100,17 +101,11 @@ object AddSurfaceFormsToIndex
         println("alternatives is %s".format(alternatives.toString))
 
         val config = new IndexingConfiguration(indexingConfigFileName)
-        val indexFileName = config.get("org.dbpedia.spotlight.index.dir")
+        val sourceIndexFileName = config.get("org.dbpedia.spotlight.index.dir")
+        val targetIndexFileName = sourceIndexFileName+"-withSF"
         val surfaceFormsFileName = config.get("org.dbpedia.spotlight.data.surfaceForms")
 
-
-
-        val indexFile = new File(indexFileName)
-        if (!indexFile.exists)
-            throw new IllegalArgumentException("index dir "+indexFile+" does not exist; can't add surface forms")
-        val luceneManager = new LuceneManager.BufferedMerging(FSDirectory.open(indexFile))
-
-        val sfIndexer = new IndexEnricher(luceneManager)
+        val sfIndexer = new IndexEnricher(sourceIndexFileName,targetIndexFileName)
 
         //val sfMap = loadSurfaceForms(surfaceFormsFileName, if (alternatives) fromTitlesToAlternatives(_) else toLowercase(_,lowerCased))
         val sfMap = loadSurfaceForms(surfaceFormsFileName, fromTitlesToAlternatives)

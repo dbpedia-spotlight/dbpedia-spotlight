@@ -32,6 +32,7 @@ import org.dbpedia.spotlight.util.IndexingConfiguration
  * Usage:
  *    mvn scala:run CompressIndex [indexing config file] [mininum URI count]
  * @author maxjakob
+ * @author pablomendes (separated source and target dirs)
  */
 object CompressIndex
 {
@@ -46,16 +47,10 @@ object CompressIndex
         val minCount = if (args.length>1) args(1).toInt else 0;
 
         val config = new IndexingConfiguration(indexingConfigFileName)
-        val indexFileName = config.get("org.dbpedia.spotlight.index.dir")
+        val sourceIndexFileName = config.get("org.dbpedia.spotlight.index.dir")
+        val targetIndexFileName = sourceIndexFileName+"-compressed"
         
-        val indexFile = new File(indexFileName)
-        if (!indexFile.exists) {
-            throw new IllegalArgumentException("index dir "+indexFile+" does not exist; can't compress")
-        }
-        val dir = LuceneManager.pickDirectory(indexFile)
-        val luceneManager = new LuceneManager.BufferedMerging(dir)
-
-        val compressor = new IndexEnricher(luceneManager)
+        val compressor = new IndexEnricher(sourceIndexFileName, targetIndexFileName)
         compressor.unstore(unstoreFields, optimizeSegments, minCount)
         compressor.close
     }

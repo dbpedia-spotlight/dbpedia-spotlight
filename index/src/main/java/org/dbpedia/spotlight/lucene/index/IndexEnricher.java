@@ -31,6 +31,7 @@ import org.dbpedia.spotlight.lucene.LuceneManager;
 import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher;
 import org.dbpedia.spotlight.model.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -50,13 +51,31 @@ public class IndexEnricher extends BaseIndexer<Object> {
 
     /**
      * See {@link BaseIndexer}
-     * @param lucene
+     * @param sourceIndexManager
      * @throws java.io.IOException
      */
-    public IndexEnricher(LuceneManager lucene) throws IOException {
-        super(lucene, false); //ATTENTION: if this is set to true, it will override the existing index!
-        searcher = new MergedOccurrencesContextSearcher(this.mLucene);
+    private IndexEnricher(LuceneManager sourceIndexManager, LuceneManager targetIndexManager) throws IOException {
+        super(targetIndexManager, true); //ATTENTION: if this is set to true, it will override the existing index!
+        searcher = new MergedOccurrencesContextSearcher(sourceIndexManager);
     }
+
+    public IndexEnricher(String sourceIndexFileName, String targetIndexFileName) throws IOException{
+        this(getSourceManager(sourceIndexFileName), getTargetManager(targetIndexFileName));
+    }
+
+    public static LuceneManager getSourceManager(String fileName) throws IOException {
+        File indexFile = new File(fileName);
+        if (!indexFile.exists())
+            throw new IOException("source index dir "+indexFile+" does not exist; ");
+        return new LuceneManager.BufferedMerging(LuceneManager.pickDirectory(indexFile));
+    }
+    public static LuceneManager getTargetManager(String fileName) throws IOException {
+        File indexFile = new File(fileName);
+        if (indexFile.exists())
+            throw new IOException("target index dir "+indexFile+" exists; I am afraid of overwriting. ");
+        return new LuceneManager.BufferedMerging(LuceneManager.pickDirectory(indexFile));
+    }
+
 
     public void expunge() throws IOException {
         mWriter.expungeDeletes();
@@ -266,10 +285,11 @@ public class IndexEnricher extends BaseIndexer<Object> {
                     doc.add(uriFields[0]); // add only once
                 }
                 else support = new Integer(uriCount.stringValue());
-                LOG.info(String.format("URI count for %s = %d",uri,support));
+                LOG.trace(String.format("URI count for %s = %d",uri,support));
 
                 Term uriTerm = new Term(LuceneManager.DBpediaResourceField.URI.toString(), uri);
                 if (support<minCount) {
+                    LOG.debug(String.format("Dropping %s; count = %d",uri,support));
                     mWriter.deleteDocuments(uriTerm);
                 } else {
                     doc = mLucene.unstore(doc, unstoreFields);

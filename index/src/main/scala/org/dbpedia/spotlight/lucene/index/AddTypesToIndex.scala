@@ -38,16 +38,11 @@ object AddTypesToIndex {
         val indexingConfigFileName = args(0)
 
         val config = new IndexingConfiguration(indexingConfigFileName)
-        val indexFileName = config.get("org.dbpedia.spotlight.index.dir")
+        val sourceIndexFileName = config.get("org.dbpedia.spotlight.index.dir")
+        val targetIndexFileName = sourceIndexFileName+"-withTypes"
         val instanceTypesFileName = config.get("org.dbpedia.spotlight.data.instanceTypes")
 
-        val indexFile = new File(indexFileName)
-        if (!indexFile.exists) {
-            throw new IllegalArgumentException("index dir "+indexFile+" does not exist; can't add types")
-        }
-        val luceneManager = new LuceneManager.BufferedMerging(LuceneManager.pickDirectory(indexFile))
-
-        val typesIndexer = new IndexEnricher(luceneManager)
+        val typesIndexer = new IndexEnricher(sourceIndexFileName,targetIndexFileName)
 
         val typesMap = loadTypes(instanceTypesFileName)
         typesIndexer.enrichWithTypes(typesMap)

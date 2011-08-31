@@ -52,13 +52,11 @@ object PatchIndex {
         val countsFileName = args(1)
 
         val config = new IndexingConfiguration(indexingConfigFileName)
-        val indexFileName = config.get("org.dbpedia.spotlight.index.dir")
+        val sourceIndexFileName = config.get("org.dbpedia.spotlight.index.dir")
+        val targetIndexFileName = sourceIndexFileName+"-withAllPatched"
         val instanceTypesFileName = config.get("org.dbpedia.spotlight.data.instanceTypes")
         val surfaceFormsFileName = config.get("org.dbpedia.spotlight.data.surfaceForms")
 
-        val indexFile = new File(indexFileName)
-        if (!indexFile.exists)
-            throw new ConfigurationException("index dir "+indexFile+" does not exist")
         if (!new File(countsFileName).exists)
             throw new ConfigurationException("counts file "+countsFileName+" does not exist")
         if (!new File(instanceTypesFileName).exists)
@@ -66,14 +64,12 @@ object PatchIndex {
         if (!new File(surfaceFormsFileName).exists)
             throw new ConfigurationException("surface forms file "+surfaceFormsFileName+" does not exist")
 
-        val luceneManager = new LuceneManager.BufferedMerging(FSDirectory.open(indexFile))
-
+        val sfIndexer = new IndexEnricher(sourceIndexFileName,targetIndexFileName)
 
         val typesMap = AddTypesToIndex.loadTypes(instanceTypesFileName);
         val countsMap = AddCountsToIndex.loadCounts(countsFileName)
         val sfMap = AddSurfaceFormsToIndex.loadSurfaceForms(surfaceFormsFileName, AddSurfaceFormsToIndex.fromTitlesToAlternatives)
 
-        val sfIndexer = new IndexEnricher(luceneManager)
         LOG.info("Expunge deletes.")
         sfIndexer.expunge();
         LOG.info("Done.")
