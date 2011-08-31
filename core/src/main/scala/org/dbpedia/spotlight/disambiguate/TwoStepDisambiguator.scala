@@ -69,6 +69,7 @@ class TwoStepDisambiguator(val configuration: SpotlightConfiguration) extends Pa
     }
 
     //WARNING: this is repetition of BaseSearcher.getHits
+    //TODO move to subclass of BaseSearcher
     def query(text: Text, allowedUris: Array[DBpediaResource]) = {
         //val filter = new FieldCacheTermsFilter(DBpediaResourceField.CONTEXT.toString,allowedUris)
         val filter = new org.apache.lucene.search.TermsFilter()
