@@ -12,7 +12,7 @@ import rdflib
 csv.field_size_limit(1000000000)
 
 IGNORED_PREFIXES = ["/base/", "/user/", "/m/", "/common/topic", "/freebase",
-                    "/influence", "/dataworld", "/common", "/type"]
+                    "/influence", "/dataworld", "/common", "/type", "/atom"]
 
 def filterTypes(freebase_type):
     for prefix in IGNORED_PREFIXES:
@@ -111,7 +111,7 @@ def main():
         ofunc=lambda x: str(x).replace("http://en.wikipedia.org/wiki/", ""))
 
     print >>sys.stderr, "Reading Wikipedia page to DBpedia mapping..."
-    pageToDBpedia = ntfile.load(wiki_links, {}, "http://xmlns.com/foaf/0.1/primaryTopic", safe=False,
+    pageToDBpedia = addToDictionary(wiki_links, {}, "http://xmlns.com/foaf/0.1/primaryTopic", safe=False,
         sfunc=lambda x: str(x).replace("http://en.wikipedia.org/wiki/", ""),
         ofunc=lambda x: str(x).replace("http://dbpedia.org/resource/", ""))
 
