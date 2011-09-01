@@ -29,7 +29,7 @@
              var snippet =  "<ul class='"+className+"s'>";
              //console.log(resources);
              var options = ""; $.each(resources, function(i, r) { 
-                 options += "<li class='"+className+"-" + i + "'><a href='" + r["@uri"] + "' about='" + r["@uri"] + "'>" + r["@label"] + "</a>";
+                 options += "<li class='"+className+"-" + i + "'><a href='http://dbpedia.org/resource/" + r["@uri"] + "' about='" + r["@uri"] + "'>" + r["@label"] + "</a>";
                  //TODO settings.showScores = ["finalScore"] foreach showscores, add k=v
                  if (settings.showScores == 'yes') options += " <span>(" + parseFloat(r["@finalScore"]).toPrecision(3) +")</span>";
                  options += "</li>"; 

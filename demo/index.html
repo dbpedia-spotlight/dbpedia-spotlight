@@ -350,7 +350,7 @@ function run(method) {
 		$('#text').show();
 		$('#text_annotated').remove();
 		$('#text_container').removeClass("annotated loading");
-			$("#text_container").unbind('click');
+		//$("#text_container").unbind('click');
 		$(".action_button").attr("disabled", false);
 		$('#edit_text_wrapper').hide();
 		$.uniform.update(".action_button");
@@ -411,10 +411,12 @@ $(document).ready(function() {
 
     $('#edit_text_wrapper').hide();
 
-	//accept parameter from URL
-	var t = decodeURIComponent($(document).getUrlParam('text'));
+	//accept parameters from URL
+	var t = $(document).getUrlParam('text');
+	var execute = ($(document).getUrlParam('execute') == "yes");
+        console.log("Execute:"+execute);
 
-	if ($.trim(t)!='' && t != "null") { $('#text').val(t); }
+	if ($.trim(t)!='' && t != "null") { $('#text').val(decodeURIComponent(t)); }
 
 	$('textarea#text').autoResize({
 	
@@ -548,7 +550,7 @@ $(document).ready(function() {
 					} 
 		});
 		
-
+		if (execute==true) runWithSettings;
 });
 
 function sparqlExample(i) {
@@ -599,7 +601,7 @@ function sparqlExample(i) {
 	<select id="spotter" class="action_button">
 		<option value="LingPipeSpotter">Annotate all</option>
 		<option value="AtLeastOneNounSelector">No verbs and adjs.</option>
-		<option value="CoOccurrenceBasedSelector">No 'common words'</option>
+		<option value="CoOccurrenceBasedSelector" selected>No 'common words'</option>
 	</select>
 
 	<input class="action_button" id="types" type="button" enabled value="Select types…"/>
@@ -615,12 +617,8 @@ function sparqlExample(i) {
 </div>
 </div>
 
-<div id="text_container" class="container"><textarea rows="10" id="text">Cook's profile has grown as he has made more public appearances on Apple's behalf. This winter, he represented Apple as Verizon announced the iPhone. He has been making more appearances during Apple product events, including Apple's Mac event last October. And he has long led the company's earnings calls.
-
-Cook is well compensated for his work. Unlike Steve Jobs' symbolic $1 salary, Tim Cook got $59 million in total compensation last year. (Apple pays out equity every other year, so that's why it was especially high.)
-
-Cook is a HUGE Auburn football fan. We got a chance to talk to him last Tuesday at the Verizon event, after Auburn won the national championship the night before. He sounded like it had been one of the best moments of his life. (Now we see, perhaps, why he had to watch it in a New York hotel room and not at the game itself.)</textarea>
-
+<div id="text_container" class="container"><textarea rows="10" id="text">
+A tropical cyclone is a storm system characterized by a large low-pressure center and numerous thunderstorms that produce strong winds and heavy rain. Tropical cyclones strengthen when water evaporated from the ocean is released as the saturated air rises, resulting in condensation of water vapor contained in the moist air. They are fueled by a different heat mechanism than other cyclonic windstorms such as nor'easters, European windstorms, and polar lows. The characteristic that separates tropical cyclones from other cyclonic systems is that any height in the atmosphere, the center of a tropical cyclone will be warmer than its surrounds; a phenomenon called "warm core" storm systems. The term "tropical" refers to both the geographic origin of these systems, which form almost exclusively in tropical regions of the globe, and their formation in maritime tropical air masses.
    <div id="edit_text_wrapper">
         <input id="edit_text" type="button" value="Back to Text"/>
     </div>
@@ -632,7 +630,7 @@ Cook is a HUGE Auburn football fan. We got a chance to talk to him last Tuesday 
 
 
 
-<div id="bookmarklet_container" class="container" style="display: none;">
+<div id="bookmarklet_container" class="container">
 
 <h2>Bookmarklet</h2>
 <div>
@@ -642,7 +640,7 @@ After doing that, simply select text in any page and click on the bookmark you'v
 That will send the text you've selected to DBpedia Spotlight and take you to the annotated text in a blink!
 <div class="bookmarklet">
 <p>
-<a href="javascript:function se(d) {return d.selection ? d.selection.createRange().text : d.getSelection()} s = se(document); for (i=0; i<frames.length && !s; i++) s = se(frames[i].document); if (!s || s=='') s = prompt('Enter%20text%20to%20annotate%20with%20DBpedia%20Spotlight',''); open('http://spotlight.dbpedia.org/demo/index.html' + (s ? '?client=bookmarklet&text=' + encodeURIComponent(s) : '')).focus();">
+<a href="javascript:function se(d) {return d.selection ? d.selection.createRange().text : d.getSelection()} s = se(document); for (i=0; i<frames.length && !s; i++) s = se(frames[i].document); if (!s || s=='') s = prompt('Enter%20text%20to%20annotate%20with%20DBpedia%20Spotlight',''); open('http://spotlight.dbpedia.org/dev/demo/index.html' + (s ? '?execute=yes&client=bookmarklet&text=' + encodeURIComponent(s) : '')).focus();">
 Annotate with DBpedia Spotlight
 </a></p>
 </div>
