@@ -45,7 +45,7 @@ public abstract class SpotlightInterfaceNEW {
 
     public abstract void announceAPI();
     public abstract Annotation process(String text, double confidence, int support, List<OntologyType> dbpediaTypes,
-                                       String sparqlQuery, boolean blacklist, boolean coreferenceResolution)
+                                       String sparqlQuery, boolean blacklist, boolean coreferenceResolution, SpotterConfiguration.SpotterPolicy spotter)
             throws SearchException, InputException, ItemNotFoundException;
 
     private SpotlightConfiguration config;
@@ -85,11 +85,12 @@ public abstract class SpotlightInterfaceNEW {
          * Does not do any filtering at the moment!!!
          */
         public Annotation process(String text, double confidence, int support, List<OntologyType> dbpediaTypes,
-                                  String sparqlQuery, boolean blacklist, boolean coreferenceResolution)
+                                  String sparqlQuery, boolean blacklist, boolean coreferenceResolution, SpotterConfiguration.SpotterPolicy spotter)
                 throws SearchException, ItemNotFoundException, InputException {
             Annotation annotation = new Annotation(text);
             List<Spot> spots = new LinkedList<Spot>();
-            for(SurfaceFormOccurrence sfOcc : annotator.spotter().extract(new Text(text))) {
+            for(SurfaceFormOccurrence sfOcc : Server.getSpotters().get(spotter).extract(new Text(text))) {
+
                 try { // will not show spot if there are no candidates for it. can happen if spotter dict does not come from index
                     Spot spot = Spot.getInstance(sfOcc);
                     List<Resource> resources = new LinkedList<Resource>();
@@ -100,7 +101,7 @@ public abstract class SpotlightInterfaceNEW {
                     spot.setResources(resources);
                     spots.add(spot);
                 } catch (ItemNotFoundException e) {
-                    LOG.error("SurfaceForm not found. Using incompatible spotter.dict and index?",e);
+                    LOG.error("SurfaceForm not found. Using incompatible spotter.dict and index?");
                 }
             }
             annotation.setSpots(spots);
@@ -117,6 +118,7 @@ public abstract class SpotlightInterfaceNEW {
                                     String sparqlQuery,
                                     String policy,
                                     boolean coreferenceResolution,
+                                    SpotterConfiguration.SpotterPolicy spotter,
                                     String clientIp) throws SearchException, InputException, ItemNotFoundException {
 
         LOG.info("******************************** Parameters ********************************");
@@ -138,6 +140,7 @@ public abstract class SpotlightInterfaceNEW {
         LOG.info("sparqlQuery: "+ sparqlQuery);
         LOG.info("policy: "+policy);
         LOG.info("coreferenceResolution: "+String.valueOf(coreferenceResolution));
+        LOG.info("spotter: "+String.valueOf(spotter));
 
         if (text.trim().equals("")) {
             throw new InputException("No text was specified in the &text parameter.");
@@ -150,7 +153,7 @@ public abstract class SpotlightInterfaceNEW {
             //LOG.info("type:"+t.trim());
         }
 
-        Annotation annotation = process(text, confidence, support, ontologyTypes, sparqlQuery, blacklist, coreferenceResolution);
+        Annotation annotation = process(text, confidence, support, ontologyTypes, sparqlQuery, blacklist, coreferenceResolution, spotter);
 
         LOG.info("Shown: "+annotation.toXML());
 
@@ -164,8 +167,9 @@ public abstract class SpotlightInterfaceNEW {
                          String spqarlQuery,
                          String policy,
                          boolean coreferenceResolution,
+                         SpotterConfiguration.SpotterPolicy spotter,
                          String clientIp) throws Exception {
-        Annotation a = getAnnotation(text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution, clientIp);
+        Annotation a = getAnnotation(text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution, spotter, clientIp);
         LOG.info("XML format");
         return output.toXML(a);
     }
@@ -177,8 +181,9 @@ public abstract class SpotlightInterfaceNEW {
                           String spqarlQuery,
                           String policy,
                           boolean coreferenceResolution,
+                          SpotterConfiguration.SpotterPolicy spotter,
                           String clientIp) throws Exception {
-        Annotation a = getAnnotation(text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution, clientIp);
+        Annotation a = getAnnotation(text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution, spotter, clientIp);
         LOG.info("JSON format");
         return output.toJSON(a);
     }

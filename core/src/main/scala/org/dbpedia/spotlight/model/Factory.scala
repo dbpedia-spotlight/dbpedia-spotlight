@@ -74,19 +74,6 @@ object Factory {
         }
     }
 
-    object DBpediaResource {
-        val path = "/data/spotlight/3.7/database/spotlight-db"
-        val dbpediaResourceFactory : DBpediaResourceFactory = new DBpediaResourceFactorySQL(
-            "org.hsqldb.jdbcDriver",
-            "jdbc:hsqldb:file:"+path+";shutdown=true&readonly=true",
-            "sa",
-            "")
-        LOG.debug("DBpediaResource database read from "+path);
-
-        def from(dbpediaID : String) : DBpediaResource = dbpediaResourceFactory.from(dbpediaID)
-        def from(dbpediaResource : DBpediaResource) = dbpediaResourceFactory.from(dbpediaResource.uri)
-    }
-
     //Workaround for Java:
     def ontologyType() = this.OntologyType
     object OntologyType {
@@ -209,7 +196,7 @@ class SpotlightFactory(val configuration: SpotlightConfiguration,
     val path = "/data/spotlight/3.7/database/spotlight-db"
     val dbpediaResourceFactory : DBpediaResourceFactory = new DBpediaResourceFactorySQL(
             "org.hsqldb.jdbcDriver",
-            "jdbc:hsqldb:"+path+";shutdown=true&readonly=true",
+            "jdbc:hsqldb:mem:"+path+";shutdown=true&readonly=true",
             "sa",
             "")
     println("DBpediaResource database read from "+path);
@@ -261,6 +248,11 @@ class SpotlightFactory(val configuration: SpotlightConfiguration,
 
     def textUtil() = {
        new LingPipeTextUtil(lingPipeFactory);
+    }
+
+    object DBpediaResource {
+        def from(dbpediaID : String) : DBpediaResource = dbpediaResourceFactory.from(dbpediaID)
+        def from(dbpediaResource : DBpediaResource) = dbpediaResourceFactory.from(dbpediaResource.uri)
     }
   
 }

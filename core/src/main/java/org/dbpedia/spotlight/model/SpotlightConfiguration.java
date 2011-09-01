@@ -45,7 +45,7 @@ public class SpotlightConfiguration {
 	public final static String DEFAULT_POLICY = "whitelist";
 	public final static String DEFAULT_COREFERENCE_RESOLUTION = "true";
 
-    public final static String DEFAULT_SPOTTER = "LingPipeSpotter";
+    public final static String DEFAULT_SPOTTER = "CoOccurrenceBasedSelector";
 
     public String language;
 

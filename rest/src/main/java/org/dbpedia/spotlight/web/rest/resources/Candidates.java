@@ -19,6 +19,7 @@
 package org.dbpedia.spotlight.web.rest.resources;
 
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
+import org.dbpedia.spotlight.model.SpotterConfiguration;
 import org.dbpedia.spotlight.web.rest.Server;
 import org.dbpedia.spotlight.web.rest.SpotlightInterface;
 import org.dbpedia.spotlight.web.rest.SpotlightInterfaceNEW;
@@ -103,11 +104,12 @@ public class Candidates {
                            @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
                            @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
                            @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution,
+                           @DefaultValue(SpotlightConfiguration.DEFAULT_SPOTTER) @QueryParam("spotter") String spotter,
                            @Context HttpServletRequest request) {
         String clientIp = request.getRemoteAddr();
 
         try {
-            return ok(candidatesInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp));
+            return ok(candidatesInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, SpotterConfiguration.SpotterPolicy.valueOf(spotter), clientIp));
         } catch (Exception e) {
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(e.getMessage()).type(MediaType.TEXT_XML).build());
         }
@@ -122,11 +124,12 @@ public class Candidates {
                             @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
                             @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
                             @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution,
+                            @DefaultValue(SpotlightConfiguration.DEFAULT_SPOTTER) @QueryParam("spotter") String spotter,
                             @Context HttpServletRequest request) {
         String clientIp = request.getRemoteAddr();
 
         try {
-            return ok(candidatesInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp));
+            return ok(candidatesInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, SpotterConfiguration.SpotterPolicy.valueOf(spotter), clientIp));
         } catch (Exception e) {
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(e.getMessage()).type(MediaType.APPLICATION_JSON).build());
         }
@@ -177,9 +180,10 @@ public class Candidates {
             @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
             @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @FormParam("policy") String policy,
             @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @FormParam("coreferenceResolution") boolean coreferenceResolution,
+            @DefaultValue(SpotlightConfiguration.DEFAULT_SPOTTER) @QueryParam("spotter") String spotter,
             @Context HttpServletRequest request
     ) {
-        return getXML(text,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,request);
+        return getXML(text,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,spotter,request);
     }
 
     @POST
@@ -193,9 +197,10 @@ public class Candidates {
             @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
             @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @FormParam("policy") String policy,
             @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @FormParam("coreferenceResolution") boolean coreferenceResolution,
+            @DefaultValue(SpotlightConfiguration.DEFAULT_SPOTTER) @QueryParam("spotter") String spotter,
             @Context HttpServletRequest request
     ) {
-        return getJSON(text,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,request);
+        return getJSON(text,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,spotter,request);
     }
 
 }

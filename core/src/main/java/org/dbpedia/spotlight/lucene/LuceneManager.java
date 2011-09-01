@@ -471,7 +471,7 @@ public class LuceneManager {
      * @return
      * @throws SearchException
      */
-    public BooleanQuery getQuery(SurfaceForm sf, Text context) throws SearchException, UnsupportedOperationException {
+    public Query getQuery(SurfaceForm sf, Text context) throws SearchException, UnsupportedOperationException {
         // First get all terms in the context
         Set<Term> ctxTerms = new HashSet<Term>();
         Query contextQuery = getQuery(context);
