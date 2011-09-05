@@ -544,7 +544,7 @@ public class LuceneManager {
     public Document createDocument(DBpediaResourceOccurrence resourceOccurrence) {
         Document doc = new Document();
         doc.add(getField(resourceOccurrence.resource()));
-        doc.add(getField(resourceOccurrence.surfaceForm()));  //uncomment this if you want anchor texts as surface forms; otherwise index surface forms in a second run together with types
+        //doc.add(getField(resourceOccurrence.surfaceForm()));  //uncomment this if you want anchor texts as surface forms; otherwise index surface forms in a second run together with types
         doc.add(getField(resourceOccurrence.context()));
         doc.add(getUriCountField(resourceOccurrence.resource().support()));
         return doc;

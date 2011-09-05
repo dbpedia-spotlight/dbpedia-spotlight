@@ -196,7 +196,7 @@ class SpotlightFactory(val configuration: SpotlightConfiguration,
     val path = "/data/spotlight/3.7/database/spotlight-db"
     val dbpediaResourceFactory : DBpediaResourceFactory = new DBpediaResourceFactorySQL(
             "org.hsqldb.jdbcDriver",
-            "jdbc:hsqldb:mem:"+path+";shutdown=true&readonly=true",
+            "jdbc:hsqldb:"+path+";shutdown=true&readonly=true",
             "sa",
             "")
     println("DBpediaResource database read from "+path);

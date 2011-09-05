@@ -163,7 +163,7 @@ public class MergedOccurrencesDisambiguator implements Disambiguator {
         }
 
         LOG.info(String.format("Object creation time took %f ms.",mMergedSearcher.objectCreationTime/1000000.0));
-
+        mMergedSearcher.objectCreationTime = 0;
 
         return rankedOccs;
     }
