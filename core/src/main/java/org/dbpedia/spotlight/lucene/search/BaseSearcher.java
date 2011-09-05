@@ -254,7 +254,7 @@ public class BaseSearcher implements Closeable {
            r = mLucene.getDBpediaResourceFactory().from(r.uri()); // load the rest of the info from DB
         }
         long end = System.nanoTime();
-        LOG.info(String.format("DBpediaResource creation took %d ms.", (end-start) / 1000000.0) );
+        LOG.info(String.format("DBpediaResource creation took %f ms.", (end-start) / 1000000.0) );
         objectCreationTime += (end-start);
 
         return r;

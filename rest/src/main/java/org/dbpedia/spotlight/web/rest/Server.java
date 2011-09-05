@@ -103,7 +103,7 @@ public class Server {
 
         Thread warmUp = new Thread() {
             public void run() {
-                factory.searcher().warmUp((int) (configuration.getMaxCacheSize() * 0.7));
+                //factory.searcher().warmUp((int) (configuration.getMaxCacheSize() * 0.7));
             }
         };
         warmUp.start();
