@@ -103,6 +103,10 @@
                };
                //var entities = $(content).find("a/[about]");
                $(this).html(content);
+
+               if(settings.callback != undefined) {
+                   settings.callback();
+               }
           }    
        
                return this.each(function() {            
@@ -123,7 +127,7 @@
        candidates: function( options ) {
 		//init(options);
                function update(response) { 
-                   var content = "<div style='overflow: auto'>" + Parser.getAnnotatedText(response) + "</div>";
+                   var content = "<div>" + Parser.getAnnotatedText(response) + "</div>";
                    if (settings.powered_by == 'yes') { 
                        $(content).append($(powered_by)); 
                    };                        
@@ -177,7 +181,7 @@
 
   }; 
   
-  $.fn.annotate = function(method) {    
+  $.fn.annotate = function(method) {
 	console.log('method:',method);
       // Method calling logic
       if ( methods[method] ) {	
