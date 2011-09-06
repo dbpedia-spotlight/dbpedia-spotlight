@@ -114,7 +114,7 @@ body {
 #bookmarklet_container {
     font-size: 80%;
     color: #666;
-    text-align: justify;
+    text-align: left;
 }
 
 
@@ -152,29 +152,31 @@ body {
     -moz-border-radius: 8px;
     border-radius: 8px;
 }
-
+.bookmarklet p {
+    text-align: center;
+}
 .bookmarklet a {
+    display: inline;
     font-weight: bold;
     text-decoration: none;
-    color: #fff;
+    color: #333;
 
     cursor:move;
-    background-color: #666699;
-    font-size: 14px;
-    font-family: Tahoma, Verdana, Arial;
-    text-align: center;
+    background: #fff url(bookmark.png) 2px 3px no-repeat;
+    border: 1px solid #bbb;
+    font-size: 12px;
 
-    min-height: 30px;
-    display: table-cell;
+    text-align: left;
+
+    min-height: 12px;
     vertical-align: middle;
 
-    width: 300px;
-    height: 50px;
-    padding: 5px;
+    height: 14px;
+    padding: 6px 6px 3px 20px;
 
-    -webkit-border-radius: 8px;
-    -moz-border-radius: 8px;
-    border-radius: 8px;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
 }
 #logo {
     margin: 0 auto 20px auto;
