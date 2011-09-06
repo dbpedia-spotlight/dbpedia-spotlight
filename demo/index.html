@@ -35,281 +35,281 @@
 
 <style>
 body {
-font-size: small;
-font-family: "Myriad Pro", Verdana, Arial, sans-serif;
+    font-size: small;
+    font-family: "Myriad Pro", Verdana, Arial, sans-serif;
 
 }
 #text {
-border: 0;
-width: 100%;
-height: 100%;
-padding: 0;
-margin: 0;
-font-family: inherit;
-overflow: auto;
-font-size: 14px;
-outline: none;
+    border: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    font-family: inherit;
+    overflow: auto;
+    font-size: 14px;
+    outline: none;
 }
 #text_container {
-font-size: 14px;
-background: #fff no-repeat bottom right;
+    font-size: 14px;
+    background: #fff no-repeat bottom right;
 
 }
 #text_container.annotated {
-background: #f0f0f0 none;
-cursor:text;
-overflow: visible;
+    background: #f0f0f0 none;
+    cursor:text;
+    overflow: visible;
 }
 #text_container div {
-height: 100%;
-padding-left: 1px;
+    height: 100%;
+    padding-left: 1px;
 
 }
 #text_container div a, a, a:visited {
-color: #135e6c;
+    color: #135e6c;
 }
 
 #text_container {
-background: transparent;
+    background: transparent;
 }
 #text_container.loading {
-background-image: url(data:image/gif;base64,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);
-background-position: 1% 97%;
-background-repeat: no-repeat;
+    background-image: url(data:image/gif;base64,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);
+    background-position: 1% 97%;
+    background-repeat: no-repeat;
 }
 #text_container .annotation {
-padding-left: 0;
-display: inline;
+    padding-left: 0;
+    display: inline;
 }
 #text_container, #action_container {
-width: 700px;
-border-radius: 5px;
-border: 1px solid #ccc;
-border-color: #ddd #eee #eee #ddd;
-border-width: 1px 2px 2px 1px;
+    width: 700px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    border-color: #ddd #eee #eee #ddd;
+    border-width: 1px 2px 2px 1px;
 }
 .container {
-margin: 0px 50px;
-padding: 8px;
-position: relative;
-clear: both;
+    margin: 0px 50px;
+    padding: 8px;
+    position: relative;
+    clear: both;
 
 }
 #text {
-background: transparent;
+    background: transparent;
 }
 
 #action_container {
-height: 170px;
+    height: 170px;
 
-margin-bottom: 10px;
+    margin-bottom: 10px;
 
-background: #fafafa;
-height: auto;
-clear: left;
-float: left;
+    background: #fafafa;
+    height: auto;
+    clear: left;
+    float: left;
 
-position: relative;
+    position: relative;
 }
 #bookmarklet_container {
-font-size: 80%;
-color: #666;
-text-align: justify;
+    font-size: 80%;
+    color: #666;
+    text-align: justify;
 }
 
 
 #action_options {
-float: left;
+    float: left;
 }
 #action_buttons {
-height: auto;
-vertical-align: bottom;
-line-height: 100%;
+    height: auto;
+    vertical-align: bottom;
+    line-height: 100%;
 
-position: absolute;
-bottom: 8px;
-right: 8px;
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
 }
 .highlight { background-color: red; }
 
 .main {
-width: 800px;
-margin-top: 2em;
-margin-left: auto;
-margin-right: auto;
+    width: 800px;
+    margin-top: 2em;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .option {
-width: 308px;
-margin-left: auto;
-margin-right: auto;
-margin-bottom: 12px;
+    width: 308px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 12px;
 }
 
 #content {
-background-color: #ffa;
--webkit-border-radius: 8px;
--moz-border-radius: 8px;
-border-radius: 8px;
+    background-color: #ffa;
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    border-radius: 8px;
 }
 
 .bookmarklet a {
-font-weight: bold;
-text-decoration: none;
-color: #fff;
+    font-weight: bold;
+    text-decoration: none;
+    color: #fff;
 
-cursor:move;
-background-color: #666699;
-font-size: 14px;
-font-family: Tahoma, Verdana, Arial;
-text-align: center;
+    cursor:move;
+    background-color: #666699;
+    font-size: 14px;
+    font-family: Tahoma, Verdana, Arial;
+    text-align: center;
 
-min-height: 30px;
-display: table-cell;
-vertical-align: middle;
+    min-height: 30px;
+    display: table-cell;
+    vertical-align: middle;
 
-width: 300px;
-height: 50px;
-padding: 5px;
+    width: 300px;
+    height: 50px;
+    padding: 5px;
 
--webkit-border-radius: 8px;
--moz-border-radius: 8px;
-border-radius: 8px;
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    border-radius: 8px;
 }
 #logo {
-margin: 0 auto 20px auto;
-display: block
+    margin: 0 auto 20px auto;
+    display: block
 }
 a.ui-slider-handle {
-outline: none;
-margin-top: 0.1em;
+    outline: none;
+    margin-top: 0.1em;
 }
 .ui-slider .ui-slider-handle {
-width: 0.9em;
-height: 0.9em;
+    width: 0.9em;
+    height: 0.9em;
 }
 .slider {
-margin: 0.2em 0.45em 0 0.45em;
-width: 250px;
-height: 8px;
+    margin: 0.2em 0.45em 0 0.45em;
+    width: 250px;
+    height: 8px;
 }
 
 #confidence, #support {
-float: right;
-width: 30px;
-margin-top: 1em;
-margin-left: 1.5em;
+    float: right;
+    width: 30px;
+    margin-top: 1em;
+    margin-left: 1.5em;
 }
 
 div.annotation:hover ul.candidates {
-visibility: visible;
+    visibility: visible;
 
 }
 div.annotation {
-position: relative;
-overflow: visible;
+    position: relative;
+    overflow: visible;
 }
 
 ul.candidates {
-font-size: 100%;
-width: auto;
-margin: 0;
-padding: 0.2em 0 0 0;
-left: 0;
-top: 1.15em;
-display: block;
+    font-size: 100%;
+    width: auto;
+    margin: 0;
+    padding: 0.2em 0 0 0;
+    left: 0;
+    top: 1.15em;
+    display: block;
 
-position: absolute;
-visibility: hidden;
-z-index: 10;
-border: 1px solid #e6e6e6;
-border-right-width: 2px;
-border-radius: 3px;
+    position: absolute;
+    visibility: hidden;
+    z-index: 10;
+    border: 1px solid #e6e6e6;
+    border-right-width: 2px;
+    border-radius: 3px;
 
 }
 ul.candidates li {
-list-style: none;
-margin: 0;
-padding: 0;
-border-width: 0 0 1px 0;
-border-style: solid;
-border-color: #e6e6e6;
-background: white;
-white-space: nowrap;
-padding: 0.15em 0.2em;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-width: 0 0 1px 0;
+    border-style: solid;
+    border-color: #e6e6e6;
+    background: white;
+    white-space: nowrap;
+    padding: 0.15em 0.2em;
 }
 #text_container ul.candidates li a {
-display: inline-block;
+    display: inline-block;
 }
 #text_container div a.surfaceForm {
-display: inline-block;
-padding: 0 3px;
-border-radius: 3px;
-padding-right: 12px;
-border: 1px solid #f0f0f0;
-background: white 95% 50% no-repeat url(data:image/gif;base64,R0lGODlhBQADAIABAHulrf///yH5BAEAAAEALAAAAAAFAAMAAAIFhB0XC1sAOw==);
-cursor:default;
+    display: inline-block;
+    padding: 0 3px;
+    border-radius: 3px;
+    padding-right: 12px;
+    border: 1px solid #f0f0f0;
+    background: white 95% 50% no-repeat url(data:image/gif;base64,R0lGODlhBQADAIABAHulrf///yH5BAEAAAEALAAAAAAFAAMAAAIFhB0XC1sAOw==);
+    cursor:default;
 }
 #text_container div div.annotation:hover a.surfaceForm {
-border-color: #c0c0c0;
-background-image: url(data:image/gif;base64,R0lGODlhBQADAIABAEJ+if///yH5BAEAAAEALAAAAAAFAAMAAAIFhB0XC1sAOw==);
+    border-color: #c0c0c0;
+    background-image: url(data:image/gif;base64,R0lGODlhBQADAIABAEJ+if///yH5BAEAAAEALAAAAAAFAAMAAAIFhB0XC1sAOw==);
 }
 
 ul.candidates li.candidate-0 {
-padding: 0.15em 0.85em 0.15em 0.2em;
+    padding: 0.15em 0.85em 0.15em 0.2em;
 
 }
 #tree_id a {background: transparent; border: none;}
 #types {
-float: right;
+    float: right;
 }
 body .jstree-default.jstree-focused {
-background: transparent;
+    background: transparent;
 }
 
 body .jstree li {
-line-height: auto;
-font-size: 12px;
+    line-height: auto;
+    font-size: 12px;
 }
 #type_selector ul {
-margin: 0;
-padding: 0;
+    margin: 0;
+    padding: 0;
 }
 .tree {
-list-style: none;
-padding: 0;
-margin: 0;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 #sparql_type {
-width: 100%;
-height: 150px;
+    width: 100%;
+    height: 150px;
 }
 
 #edit_text_wrapper {
-text-align: right;
-width: 100%;
-clear: both;
-padding-top: 2em;
+    text-align: right;
+    width: 100%;
+    clear: both;
+    padding-top: 2em;
 }
 
 #edit_text {
-display: none;
+    display: none;
 }
 
 #copyright {
-color: #666;
-margin-top: 30px;
-font-size: 80%;
-text-align: center;
+    color: #666;
+    margin-top: 30px;
+    font-size: 80%;
+    text-align: center;
 }
 #filterPolicy {
-text-align: center;
-padding: 0.5em 0;
+    text-align: center;
+    padding: 0.5em 0;
 }
 
 #text_annotated {
 
-whitespace: pre-line;
+    whitespace: pre-line;
 }
 
 </style>
@@ -321,258 +321,258 @@ var server = 'http://spotlight.dbpedia.org/dev/rest'
 
 function run(method) {
 
-$('#edit_text_wrapper').show();
+    $('#edit_text_wrapper').show();
 
-var settings = {
-'endpoint' : server,
-'confidence' : $('#confidence').val(),
-'support' : $('#support').val(),
-'powered_by': 'no',
-'showScores': 'yes',
-'spotter' : $('#spotter').val(),
-'types' : getTypes(),
-'callback' : function callback() {$('#text_container').removeClass("loading");}
-}
+    var settings = {
+        'endpoint' : server,
+        'confidence' : $('#confidence').val(),
+        'support' : $('#support').val(),
+        'powered_by': 'no',
+        'showScores': 'yes',
+        'spotter' : $('#spotter').val(),
+        'types' : getTypes(),
+        'callback' : function callback() {$('#text_container').removeClass("loading");}
+    }
 
 // will hide text object and show annotated text
-$('#text').hide();
-$('#text_annotated').remove();
-$('#text_container').prepend('<div id=text_annotated>'+$('#text').val().replace("\n", "<br />")+'</div>');
-$('#text_annotated').annotate(settings);//TODO enable annotate(method, settings)
-$('#text_annotated').annotate(method);
+    $('#text').hide();
+    $('#text_annotated').remove();
+    $('#text_container').prepend('<div id=text_annotated>'+$('#text').val().replace("\n", "<br />")+'</div>');
+    $('#text_annotated').annotate(settings);//TODO enable annotate(method, settings)
+    $('#text_annotated').annotate(method);
 
-$('#text_container').addClass("annotated loading");
+    $('#text_container').addClass("annotated loading");
 
-$(".action_button").attr("disabled", true);
-$.uniform.update(".action_button");
+    $(".action_button").attr("disabled", true);
+    $.uniform.update(".action_button");
 
 //button to get the editable text box back for the user to modify as needed
 
-$('#edit_text').click(function() {
-annotated = false;
-$('#text').show();
-$('#text_annotated').remove();
-$('#text_container').removeClass("annotated loading");
+    $('#edit_text').click(function() {
+        annotated = false;
+        $('#text').show();
+        $('#text_annotated').remove();
+        $('#text_container').removeClass("annotated loading");
 
 //$("#text_container").unbind('click');
-$(".action_button").attr("disabled", false);
-$('#edit_text_wrapper').hide();
-$.uniform.update(".action_button");
-});
+        $(".action_button").attr("disabled", false);
+        $('#edit_text_wrapper').hide();
+        $.uniform.update(".action_button");
+    });
 
-annotated = true;
+    annotated = true;
 
 //get candidates for the surface form selected
-$("#text_annotated").bind("mouseup", getSuggestions);
+    $("#text_annotated").bind("mouseup", getSuggestions);
 
 }
 
 function getTypes() {
-var checked_ids = [];
-$("#tree_dbpedia").jstree( "get_checked" ).each(function () {
-checked_ids.push("D:" + this.id);
-});
-$("#tree_freebase").jstree( "get_checked" ).each(function () {
-checked_ids.push("F:" + this.id);
-});
-return checked_ids.join(",");
+    var checked_ids = [];
+    $("#tree_dbpedia").jstree( "get_checked" ).each(function () {
+        checked_ids.push("D:" + this.id);
+    });
+    $("#tree_freebase").jstree( "get_checked" ).each(function () {
+        checked_ids.push("F:" + this.id);
+    });
+    return checked_ids.join(",");
 }
 
 function getSuggestions(eventObject){
-var st = ''+Kolich.Selector.getSelected();
+    var st = ''+Kolich.Selector.getSelected();
 //console.log(st);
-if(st!=''){
-console.log("You selected:\n"+st);
-$("#suggestdialog").hide().text($('#text').val());
-$('#suggestdialog').annotate("suggest");
-$('#suggestdialog').show(); //TODO instead of a div on the bottom, make it a popup
-/*$('<div></div>').dialog({
-width: 100,
-height: 200,
-autoOpen: true,
-position: [eventObject.pageX, eventObject.pageY],
-title : "Candidates..."
-});*/
-} else {
-$("#suggestdialog").hide();
-}
+    if(st!=''){
+        console.log("You selected:\n"+st);
+        $("#suggestdialog").hide().text($('#text').val());
+        $('#suggestdialog').annotate("suggest");
+        $('#suggestdialog').show(); //TODO instead of a div on the bottom, make it a popup
+        /*$('<div></div>').dialog({
+         width: 100,
+         height: 200,
+         autoOpen: true,
+         position: [eventObject.pageX, eventObject.pageY],
+         title : "Candidates..."
+         });*/
+    } else {
+        $("#suggestdialog").hide();
+    }
 
 }
 
 function runWithSettings() {
-switch($("#method").val()){
-case "first-best":
-run('best');
-break;
-case "n-best":
-run('candidates');
-break;
-}
+    switch($("#method").val()){
+        case "first-best":
+            run('best');
+            break;
+        case "n-best":
+            run('candidates');
+            break;
+    }
 }
 
 // Override the onload event
 $(document).ready(function() {
 
-$('#edit_text_wrapper').hide();
+    $('#edit_text_wrapper').hide();
 
 //accept parameters from URL
-var t = $(document).getUrlParam('text');
-var execute = ($(document).getUrlParam('execute') == "yes");
-console.log("Execute:"+execute);
+    var t = $(document).getUrlParam('text');
+    var execute = ($(document).getUrlParam('execute') == "yes");
+    console.log("Execute:"+execute);
 
-if ($.trim(t)!='' && t != "null") { $('#text').val(decodeURIComponent(t)); }
+    if ($.trim(t)!='' && t != "null") { $('#text').val(decodeURIComponent(t)); }
 
-$('textarea#text').autoResize({
+    $('textarea#text').autoResize({
 
 // On resize:
-onResize : function() {
-$(this).css({opacity:0.8});
-},
+        onResize : function() {
+            $(this).css({opacity:0.8});
+        },
 
 // After resize:
-animateCallback : function() {
-$(this).css({opacity:1});
-},
+        animateCallback : function() {
+            $(this).css({opacity:1});
+        },
 
 // Quite slow animation:
-animateDuration : 150,
+        animateDuration : 150,
 
 // More extra space:
-extraSpace : 15
-});
+        extraSpace : 15
+    });
 
 
-$('#annotate').click(function() {
-runWithSettings();
-});
+    $('#annotate').click(function() {
+        runWithSettings();
+    });
 
-$("#support-slider").slider({
-value:0,
-min: 0,
-max: 1000,
-step: 10,
-slide: function( event, ui ) {
-$( "#support" ).val( ui.value );
-},
-stop: function( event, ui ) {
-if(annotated){
-runWithSettings(); //TODO only hide spans with lower scores, do not query server again
-}
-}
-});
+    $("#support-slider").slider({
+        value:0,
+        min: 0,
+        max: 1000,
+        step: 10,
+        slide: function( event, ui ) {
+            $( "#support" ).val( ui.value );
+        },
+        stop: function( event, ui ) {
+            if(annotated){
+                runWithSettings(); //TODO only hide spans with lower scores, do not query server again
+            }
+        }
+    });
 
-$("#confidence-slider").slider({
-value:0.0,
-min: 0,
-max: 1,
-step: 0.1,
-slide: function( event, ui ) {
-$( "#confidence" ).val( ui.value );
-},
-stop: function( event, ui ) {
-if(annotated){
-runWithSettings(); //TODO only hide spans with lower scores, do not query server again
-}
-}
-});
+    $("#confidence-slider").slider({
+        value:0.0,
+        min: 0,
+        max: 1,
+        step: 0.1,
+        slide: function( event, ui ) {
+            $( "#confidence" ).val( ui.value );
+        },
+        stop: function( event, ui ) {
+            if(annotated){
+                runWithSettings(); //TODO only hide spans with lower scores, do not query server again
+            }
+        }
+    });
 
-$("#method").change(
-function() {
-if(annotated){
-runWithSettings();
-}
-}
-);
+    $("#method").change(
+            function() {
+                if(annotated){
+                    runWithSettings();
+                }
+            }
+    );
 
-$('.candidates').uniform()
-$("select, input").uniform();
-$(".action_button").attr("disabled", false);
+    $('.candidates').uniform()
+    $("select, input").uniform();
+    $(".action_button").attr("disabled", false);
 
-$("#tree_dbpedia").jstree({
-"plugins" : [ "themes", "json_data", "checkbox" ],
-"themes" : {
-"icons" : false,
-},
-"json_data" : {
-"ajax" : {
-"url" : "tree.dbpedia.json",
-"data" : function (n) {
-return { id : n.attr ? n.attr("id") : 0 };
-}
-}
-}
-});
+    $("#tree_dbpedia").jstree({
+        "plugins" : [ "themes", "json_data", "checkbox" ],
+        "themes" : {
+            "icons" : false,
+        },
+        "json_data" : {
+            "ajax" : {
+                "url" : "tree.dbpedia.json",
+                "data" : function (n) {
+                    return { id : n.attr ? n.attr("id") : 0 };
+                }
+            }
+        }
+    });
 
-$("#tree_freebase").jstree({
-"plugins" : [ "themes", "json_data", "checkbox" ],
-"themes" : {
-"icons" : false,
-},
-"json_data" : {
-"ajax" : {
-"url" : "tree.freebase.json",
-"data" : function (n) {
-return { id : n.attr ? n.attr("id") : 0 };
-}
-}
-}
+    $("#tree_freebase").jstree({
+        "plugins" : [ "themes", "json_data", "checkbox" ],
+        "themes" : {
+            "icons" : false,
+        },
+        "json_data" : {
+            "ajax" : {
+                "url" : "tree.freebase.json",
+                "data" : function (n) {
+                    return { id : n.attr ? n.attr("id") : 0 };
+                }
+            }
+        }
 
-});
+    });
 
 
-$(".tree").jstree("set_theme","default");
+    $(".tree").jstree("set_theme","default");
 
-$("#type_selector").dialog({
-width: 750,
-height: 520,
-autoOpen: false,
-position: ['center', 50],
-title : "Select types…",
-modal: true,
-buttons: {
-Ok: function() {
-$( this ).dialog( "close" );
-},
-Cancel: function() {
-$( this ).dialog( "close" );
-$("#tree_dbpedia").uncheck_all();
-$("#tree_freebase").uncheck_all();
-}
-}
-});
-$(".ui-dialog-buttonset button").uniform();
+    $("#type_selector").dialog({
+        width: 750,
+        height: 520,
+        autoOpen: false,
+        position: ['center', 50],
+        title : "Select types…",
+        modal: true,
+        buttons: {
+            Ok: function() {
+                $( this ).dialog( "close" );
+            },
+            Cancel: function() {
+                $( this ).dialog( "close" );
+                $("#tree_dbpedia").uncheck_all();
+                $("#tree_freebase").uncheck_all();
+            }
+        }
+    });
+    $(".ui-dialog-buttonset button").uniform();
 
-$("#types").click(function(event){
-$("#type_selector").dialog("open");
-$(".tabs").tabs();
+    $("#types").click(function(event){
+        $("#type_selector").dialog("open");
+        $(".tabs").tabs();
 
-});
+    });
 
-$("#spotter").change(function(event){
-if(annotated){
-runWithSettings();
-}
-});
+    $("#spotter").change(function(event){
+        if(annotated){
+            runWithSettings();
+        }
+    });
 
-if (execute==true) runWithSettings;
+    if (execute==true) runWithSettings;
 });
 
 function sparqlExample(i) {
 
-switch(i) {
-case 1:
-s = "SELECT DISTINCT ?politician\nWHERE {\n    ?politician a <http://dbpedia.org/ontology/OfficeHolder> .\n    ?politician ?related <http://dbpedia.org/resource/Chicago>\n}";
-break;
-case 2:
-s = "PREFIX dbo: <http://dbpedia.org/ontology/>\n\nSELECT ?name ?birth ?death ?person WHERE {\n	?person dbo:birthPlace :Berlin .\n	?person dbo:birthDate ?birth .\n	?person foaf:name ?name .\n	?person dbo:deathDate ?death .\n	FILTER (?birth < \"1900-01-01\"^^xsd:date) .\n}\nORDER BY ?name";
-break;
-case 3:
-s = "SELECT ?film\nWHERE { ?film <http://purl.org/dc/terms/subject> <http://dbpedia.org/resource/Category:French_films> }";
-break;
-default:
-s = "";
-}
-$('#sparql_type').val(s);
+    switch(i) {
+        case 1:
+            s = "SELECT DISTINCT ?politician\nWHERE {\n    ?politician a <http://dbpedia.org/ontology/OfficeHolder> .\n    ?politician ?related <http://dbpedia.org/resource/Chicago>\n}";
+            break;
+        case 2:
+            s = "PREFIX dbo: <http://dbpedia.org/ontology/>\n\nSELECT ?name ?birth ?death ?person WHERE {\n	?person dbo:birthPlace :Berlin .\n	?person dbo:birthDate ?birth .\n	?person foaf:name ?name .\n	?person dbo:deathDate ?death .\n	FILTER (?birth < \"1900-01-01\"^^xsd:date) .\n}\nORDER BY ?name";
+            break;
+        case 3:
+            s = "SELECT ?film\nWHERE { ?film <http://purl.org/dc/terms/subject> <http://dbpedia.org/resource/Category:French_films> }";
+            break;
+        default:
+            s = "";
+    }
+    $('#sparql_type').val(s);
 
 }
 
