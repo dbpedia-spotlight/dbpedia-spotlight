@@ -33,20 +33,9 @@ class TypeFilter(var ontologyTypes : List[OntologyType], val blacklistOrWhitelis
 
     private val acceptable = blacklistOrWhitelist match {
         case FilterPolicy.Whitelist => (resource : DBpediaResource) =>
-            resource.types.filter(given => {
-                ontologyTypes.find(listed => {
-                    LOG.debug("ONTOLOGY TYPESSSSSSSSSSSSSSSS \n %s \n %s".format(resource.types,ontologyTypes))
-                    given equals listed
-                }) != None
-            }
-        ).nonEmpty
+            resource.types.filter(given => ontologyTypes.find(listed => given equals listed) != None).nonEmpty
         case FilterPolicy.Blacklist => (resource : DBpediaResource) =>
-            resource.types.filter(given => {
-                ontologyTypes.find(listed => {
-                    LOG.debug("ONTOLOGY TYPESSSSSSSSSSSSSSSS \n %s \n %s".format(resource.types,ontologyTypes))
-                    given equals listed
-                }) != None }
-        ).isEmpty
+            resource.types.filter(given => ontologyTypes.find(listed => given equals listed) != None).isEmpty
     }
 
     private val showUntyped = ontologyTypes.find(t => DBpediaType.UNKNOWN equals t) != None
@@ -59,6 +48,7 @@ class TypeFilter(var ontologyTypes : List[OntologyType], val blacklistOrWhitelis
             Some(occ)
         }
         else if(acceptable(occ.resource)) {
+            LOG.debug("Acceptable! "+occ.resource)
             Some(occ)
         }
         else {

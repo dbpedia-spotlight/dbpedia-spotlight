@@ -1,3 +1,21 @@
+/*
+ * Copyright 2011 Pablo Mendes, Max Jakob
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  Check our project website for information on how to acknowledge the authors and how to contribute to the project: http://spotlight.dbpedia.org
+ */
+
 /**
  * If you use this script, please give credit to DBpedia Spotlight by: 
  * - adding "powered by DBpedia Spotlight" somewhere in the page. 
@@ -15,7 +33,7 @@
    var powered_by = "<div style='font-size: 9px; float: right'><a href='http://spotlight.dbpedia.org'>Powered by DBpedia Spotlight</a></div>";
 
    var settings = {      
-      'endpoint' : 'http://spotlight.dbpedia.org/dev/rest',
+      'endpoint' : 'http://localhost:2223/rest',
       'confidence' : 0.4,          //
       'support' : 20,
       'powered_by': 'yes',         // yes or no
@@ -26,17 +44,22 @@
 
    var Parser = {
 	getSelectBox: function(resources, className) {
-             var snippet =  "<ul class='"+className+"s'>";
-             //console.log(resources);
-             var options = ""; $.each(resources, function(i, r) { 
-                 options += "<li class='"+className+"-" + i + "'><a href='http://dbpedia.org/resource/" + r["@uri"] + "' about='" + r["@uri"] + "'>" + r["@label"] + "</a>";
+             var ul =  $("<ul class='"+className+"s'></ul>");
+             $.each(resources, function(i, r) {
+                 var li = "<li class='"+className+" "+className+"-" + i + "'><a href='http://dbpedia.org/resource/" + r["@uri"] + "' about='" + r["@uri"] + "'>" + r["@label"] + "</a>";
                  //TODO settings.showScores = ["finalScore"] foreach showscores, add k=v
-                 if (settings.showScores == 'yes') options += " <span>(" + parseFloat(r["@finalScore"]).toPrecision(3) +")</span>";
-                 options += "</li>"; 
+                 if (settings.showScores == 'yes') li += " (<span class='finalScore'>" + parseFloat(r["@finalScore"]).toPrecision(3) +"</span>)";
+                 li += "<span class='hidden contextualScore'>"+parseFloat(r["@contextualScore"])+"</span>";
+                 li += "<span class='hidden percentageOfSecondRank'>"+parseFloat(r["@percentageOfSecondRank"])+"</span>";
+                 li += "<span class='hidden support'>"+parseFloat(r["@support"])+"</span>";
+                 li += "<span class='hidden priorScore'>"+parseFloat(r["@priorScore"])+"</span>";
+                 li += "</li>";
+                 var opt = $(li);
+                 $.data(opt,"testProp","testValue");
+                 //console.log($.data(opt,"testProp"));
+                 $(ul).append(opt);
              });
-             snippet += options;
-             snippet += "</ul>"
-             return snippet;
+             return ul;
         },
 	getAnnotatedText: function(response) {
              var json = $.parseJSON(response);
@@ -61,8 +84,11 @@
                   start = offset+sfLength;
                   snippet += "<div id='"+(sfName+offset)+"' class='annotation'><a class='surfaceForm'>" + sfName + "</a>";
                   //TODO instead of showing directly the select box, it would be cuter to just show a span, and onClick on that span, build the select box.
-                  snippet += Parser.getSelectBox($(e.resource),'candidate');
+                  var ul = Parser.getSelectBox($(e.resource),'candidate');
+                  //ul.children().each(function() { console.log($.data($(this),"testProp")); });
+                  snippet += "<ul class='candidates'>"+ul.html()+"</ul>"; //FIXME this wrapper is a repeat from getSelectBox
                   snippet += "</div>";
+
                   return snippet;
 			    }).join("");
              //snippet after last surface form
@@ -182,7 +208,9 @@
   }; 
   
   $.fn.annotate = function(method) {
-	console.log('method:',method);
+
+	//console.log('method:',method);
+
       // Method calling logic
       if ( methods[method] ) {	
         return methods[ method ].apply( this, Array.prototype.slice.call( arguments, 1 ));

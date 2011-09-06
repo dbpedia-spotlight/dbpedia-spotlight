@@ -327,7 +327,7 @@ body .jstree li {
 <script>
 var annotated = false;
 var textInput = null;
-var server = 'http://spotlight.dbpedia.org/dev/rest'
+var server = 'http://localhost:2223/rest'
 
 function run(method) {
 
@@ -428,8 +428,8 @@ $(document).ready(function() {
 
 //accept parameters from URL
     var t = $(document).getUrlParam('text');
-    var execute = ($(document).getUrlParam('execute') == "yes");
-    console.log("Execute:"+execute);
+    var doExecute = ($(document).getUrlParam('execute') == "yes");
+    console.log("Execute:"+doExecute);
 
     if ($.trim(t)!='' && t != "null") { $('#text').val(decodeURIComponent(t)); }
 
@@ -457,6 +457,23 @@ $(document).ready(function() {
         runWithSettings();
     });
 
+    function filter(occ, minConfidence, minSupport) {
+        var simThresholds = [0, 0.1155594, 0.1413648, 0.1555880, 0.1666082, 0.1769609, 0.1866261, 0.1957517,
+                             0.20482580,0.2138903,0.2237287,0.2335491,0.2442384,0.2560859,0.2693643,0.2848305,
+                             0.3033198,0.3288046,0.36692468,0.449684,0.5];
+        var simThreshold = simThresholds[Math.max(Math.round((simThresholds.length-1)*minConfidence), 0)]
+        var squaredConfidence = minConfidence*minConfidence
+
+        console.log( "support: " + occ.support + " < " + minSupport +
+                     " || finalScore: "+ occ.finalScore + " < " + simThreshold +
+                     " || percentageOfSecondRank: " + occ.percentageOfSecondRank + "<" + (1-squaredConfidence));
+
+        return ( (occ.support < minSupport) ||
+                 (occ.finalScore < simThreshold) ||
+                 (occ.percentageOfSecondRank > (1-squaredConfidence)) );
+    }
+
+
     $("#support-slider").slider({
         value:0,
         min: 0,
@@ -466,8 +483,21 @@ $(document).ready(function() {
             $( "#support" ).val( ui.value );
         },
         stop: function( event, ui ) {
+            var minSupport = parseInt($( "#support" ).val());
+            var minConfidence = parseFloat($( "#confidence" ).val());
             if(annotated){
-                runWithSettings(); //TODO only hide spans with lower scores, do not query server again
+                $(".candidate").each(function() {
+                    var occ = { 'support': parseInt($(this).children(".support").text()),
+                                'finalScore': parseFloat($(this).children(".finalScore").text()),
+                                'contextualScore': parseFloat($(this).children(".contextualScore").text()),
+                                'percentageOfSecondRank': parseFloat($(this).children(".percentageOfSecondRank").text()) }
+                    $( "#confidence" ).val()
+                    if (filter(occ, minConfidence, minSupport)) {
+                        $(this).hide();
+                    } else {
+                        $(this).show();
+                    }
+                });
             }
         }
     });
@@ -481,8 +511,20 @@ $(document).ready(function() {
             $( "#confidence" ).val( ui.value );
         },
         stop: function( event, ui ) {
+            var minSupport = parseInt($( "#support" ).val());
+            var minConfidence = parseFloat($( "#confidence" ).val());
             if(annotated){
-                runWithSettings(); //TODO only hide spans with lower scores, do not query server again
+                $(".candidate").each(function() {
+                    var occ = { 'support': parseInt($(this).children(".support").text()),
+                                'finalScore': parseFloat($(this).children(".finalScore").text()),
+                                'contextualScore': parseFloat($(this).children(".contextualScore").text()),
+                                'percentageOfSecondRank': parseFloat($(this).children(".percentageOfSecondRank").text()) };
+                    if (filter(occ, minConfidence, minSupport)) {
+                        $(this).hide();
+                    } else {
+                        $(this).show();
+                    }
+                });
             }
         }
     });
@@ -565,7 +607,7 @@ $(document).ready(function() {
         }
     });
 
-    if (execute==true) runWithSettings;
+    if (doExecute==true) runWithSettings;
 });
 
 function sparqlExample(i) {

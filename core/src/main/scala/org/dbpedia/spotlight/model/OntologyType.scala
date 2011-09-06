@@ -23,6 +23,7 @@ package org.dbpedia.spotlight.model
  *
  * @author maxjakob
  * @author Joachim Daiber
+ * @author pablomendes (introduced and fixed bug for OntologyType.equals :)
  */
 
 trait OntologyType  {
@@ -38,7 +39,7 @@ trait OntologyType  {
            false
       else
         other match {
-            case o: OntologyType => o.typeID != null && o.equals(typeID)
+            case o: OntologyType => o.typeID != null && o.typeID.equals(typeID)
             case _ => false;
         }
   }
