@@ -322,12 +322,15 @@ body .jstree li {
     background-position: 50% 50%;
     background-repeat: no-repeat;
 }
+.hidden {
+    display: none;
+}
 </style>
 
 <script>
 var annotated = false;
 var textInput = null;
-var server = 'http://localhost:2223/rest'
+var server = 'http://spotlight.dbpedia.org/dev/rest'
 
 function run(method) {
 
