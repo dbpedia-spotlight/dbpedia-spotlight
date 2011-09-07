@@ -77,7 +77,7 @@ body {
     padding-left: 0;
     display: inline;
 }
-#text_container, #action_container {
+#text_container, #action_container, #filter_infobox {
     width: 700px;
     border-radius: 5px;
     border: 1px solid #ccc;
@@ -91,6 +91,12 @@ body {
     clear: both;
 
 }
+#filter_infobox {
+    background: #fafafa;
+    text-align: center;
+    margin-top: 10px;
+}
+
 #text {
     background: transparent;
 }
@@ -207,6 +213,26 @@ div.annotation {
     position: relative;
     overflow: visible;
 }
+#text_container .annotation {
+    color: #135E6C;
+}
+#text_container .filtered {
+    color: #666;
+    text-decoration: none;
+}
+#text_container a.filtered:hover {
+    text-decoration: underline;
+}
+#text_container div.filtered {
+    color: #666;
+    background: transparent;
+    text-decoration: none;
+}
+#text_container div.filtered a.surfaceForm {
+    color: #666;
+    background-color: #F2F2F2;
+    text-decoration: none;
+}
 
 ul.candidates {
     font-size: 100%;
@@ -296,7 +322,6 @@ body .jstree li {
 
 #copyright {
     color: #666;
-    margin-top: 30px;
     font-size: 80%;
     text-align: center;
 }
@@ -322,9 +347,6 @@ body .jstree li {
     background-position: 50% 50%;
     background-repeat: no-repeat;
 }
-.hidden {
-    display: none;
-}
 </style>
 
 <script>
@@ -343,14 +365,18 @@ function run(method) {
         'powered_by': 'no',
         'showScores': 'yes',
         'spotter' : $('#spotter').val(),
-        'types' : getTypes(),
+        'policy' : getFilterPolicy(),
         'callback' : function callback() {$('#status_indicator').removeClass("loading");}
     }
+    if(getSPARQLQuery() != "")
+        settings.sparql = getSPARQLQuery();
+    else if(getTypes() != "")
+        settings.types = getTypes();
 
 // will hide text object and show annotated text
     $('#text').hide();
     $('#text_annotated').remove();
-    $('#text_container').prepend('<div id=text_annotated>'+$('#text').val().replace("\n", "<br />")+'</div>');
+    $('#text_container').prepend('<div id=text_annotated>'+$('#text').val().replace(/\n/g, "<br />\n")+'</div>');
     $('#text_annotated').annotate(settings);//TODO enable annotate(method, settings)
     $('#text_annotated').annotate(method);
 
@@ -364,11 +390,15 @@ function run(method) {
 
     $('#edit_text').click(function() {
         annotated = false;
+
+        $('#text_annotated').cancelAnnotation();
+
         $('#text').show();
         $('#text_annotated').remove();
         $('#text_container').removeClass("annotated loading");
+        $('#status_indicator').removeClass("loading");
 
-//$("#text_container").unbind('click');
+        //$("#text_container").unbind('click');
         $(".action_button").attr("disabled", false);
         $('#edit_text_wrapper').hide();
         $.uniform.update(".action_button");
@@ -384,13 +414,27 @@ function run(method) {
 function getTypes() {
     var checked_ids = [];
     $("#tree_dbpedia").jstree( "get_checked" ).each(function () {
-        checked_ids.push("D:" + this.id);
+        checked_ids.push("DBpedia:" + this.id);
     });
     $("#tree_freebase").jstree( "get_checked" ).each(function () {
-        checked_ids.push("F:" + this.id);
+        checked_ids.push("Freebase:" + this.id);
     });
     return checked_ids.join(",");
 }
+
+
+function getSPARQLQuery() {
+    return $('#sparql_type').val();
+}
+
+function getFilterPolicy() {
+    if($('input[name=filterPolicy]:checked').val() == "blacklist")
+        return "blacklist";
+    else
+        return "whitelist";
+}
+
+
 
 function getSuggestions(eventObject){
     var st = ''+Kolich.Selector.getSelected();
@@ -431,8 +475,8 @@ $(document).ready(function() {
 
 //accept parameters from URL
     var t = $(document).getUrlParam('text');
-    var doExecute = ($(document).getUrlParam('execute') == "yes");
-    console.log("Execute:"+doExecute);
+    var execute = ($(document).getUrlParam('execute') == "yes");
+    console.log("Execute:"+execute);
 
     if ($.trim(t)!='' && t != "null") { $('#text').val(decodeURIComponent(t)); }
 
@@ -460,77 +504,75 @@ $(document).ready(function() {
         runWithSettings();
     });
 
-    function filter(occ, minConfidence, minSupport) {
-        var simThresholds = [0, 0.1155594, 0.1413648, 0.1555880, 0.1666082, 0.1769609, 0.1866261, 0.1957517,
-                             0.20482580,0.2138903,0.2237287,0.2335491,0.2442384,0.2560859,0.2693643,0.2848305,
-                             0.3033198,0.3288046,0.36692468,0.449684,0.5];
-        var simThreshold = simThresholds[Math.max(Math.round((simThresholds.length-1)*minConfidence), 0)]
-        var squaredConfidence = minConfidence*minConfidence
-
-        console.log( "support: " + occ.support + " < " + minSupport +
-                     " || finalScore: "+ occ.finalScore + " < " + simThreshold +
-                     " || percentageOfSecondRank: " + occ.percentageOfSecondRank + "<" + (1-squaredConfidence));
-
-        return ( (occ.support < minSupport) ||
-                 (occ.finalScore < simThreshold) ||
-                 (occ.percentageOfSecondRank > (1-squaredConfidence)) );
-    }
-
-
     $("#support-slider").slider({
         value:0,
         min: 0,
         max: 1000,
         step: 10,
-        slide: function( event, ui ) {
+        change: function( event, ui ) {
             $( "#support" ).val( ui.value );
-        },
-        stop: function( event, ui ) {
-            var minSupport = parseInt($( "#support" ).val());
-            var minConfidence = parseFloat($( "#confidence" ).val());
-            if(annotated){
-                $(".candidate").each(function() {
-                    var occ = { 'support': parseInt($(this).children(".support").text()),
-                                'finalScore': parseFloat($(this).children(".finalScore").text()),
-                                'contextualScore': parseFloat($(this).children(".contextualScore").text()),
-                                'percentageOfSecondRank': parseFloat($(this).children(".percentageOfSecondRank").text()) }
-                    $( "#confidence" ).val()
-                    if (filter(occ, minConfidence, minSupport)) {
-                        $(this).hide();
-                    } else {
-                        $(this).show();
-                    }
-                });
-            }
+            if(annotated)
+                filterAnnotations();
         }
     });
+    $( "#support" ).change(
+        function() {
+            $("#support-slider").slider("value", $( "#support" ).val());
+        }
+    );
+
 
     $("#confidence-slider").slider({
         value:0.0,
         min: 0,
         max: 1,
         step: 0.1,
-        slide: function( event, ui ) {
+        change: function( event, ui ) {
             $( "#confidence" ).val( ui.value );
-        },
-        stop: function( event, ui ) {
-            var minSupport = parseInt($( "#support" ).val());
-            var minConfidence = parseFloat($( "#confidence" ).val());
-            if(annotated){
-                $(".candidate").each(function() {
-                    var occ = { 'support': parseInt($(this).children(".support").text()),
-                                'finalScore': parseFloat($(this).children(".finalScore").text()),
-                                'contextualScore': parseFloat($(this).children(".contextualScore").text()),
-                                'percentageOfSecondRank': parseFloat($(this).children(".percentageOfSecondRank").text()) };
-                    if (filter(occ, minConfidence, minSupport)) {
-                        $(this).hide();
-                    } else {
-                        $(this).show();
-                    }
-                });
-            }
+            if(annotated)
+                filterAnnotations();
         }
     });
+    $( "#confidence" ).change(
+        function() {
+            $("#confidence-slider").slider("value", $( "#confidence" ).val());
+        }
+    );
+
+
+    function filterAnnotations() {
+        var treshSupport = parseInt($( "#support" ).val());
+        var treshConfidence = parseFloat($( "#confidence" ).val());
+
+        $(".annotation").each(function(){
+            var keep = true;
+            var classes = $(this).attr("class").split(" ");
+
+            for(i in classes) {
+                if(classes[i].indexOf("support_") != -1) {
+                  var support = parseInt(classes[i].replace("support_", ""));
+                  if(support < treshSupport) {
+                    keep = false;
+                    break;
+                  }
+                }else if(classes[i].indexOf("confidence_") != -1) {
+                  var confidence = parseFloat(classes[i].replace("confidence_", ""));
+                  if(confidence < treshConfidence) {
+                    keep = false;
+                    break;
+                  }
+                }
+
+
+            }
+            if(keep) {
+                $(this).removeClass("filtered")
+            }else{
+                $(this).addClass("filtered")
+            }
+        })
+    }
+
 
     $("#method").change(
             function() {
@@ -588,6 +630,22 @@ $(document).ready(function() {
         buttons: {
             Ok: function() {
                 $( this ).dialog( "close" );
+
+                var filteredBy;
+
+                if(getSPARQLQuery() != "") {
+                    filteredBy = "<strong>Filtered by SPARQL query</strong>";
+                }else if(getTypes() != "") {
+                    filteredBy = "<strong>Filtered by types:</strong> " + getTypes().replace(/,/g, ", ");
+                }
+
+                if(filteredBy)
+                    filteredBy += " (" + getFilterPolicy() + ").";
+
+                if(filteredBy)
+                    $("#filter_infobox").show().html(filteredBy);
+                else
+                    $("#filter_infobox").hide();
             },
             Cancel: function() {
                 $( this ).dialog( "close" );
@@ -610,7 +668,7 @@ $(document).ready(function() {
         }
     });
 
-    if (doExecute==true) runWithSettings;
+    if (execute==true) runWithSettings;
 });
 
 function sparqlExample(i) {
@@ -684,7 +742,9 @@ function sparqlExample(i) {
             <input id="edit_text" type="button" value="Back to Text"/>
         </div>
     </div>
-
+    <div id="filter_infobox" class="container" style="display: none;">
+        
+    </div>
 
     <!--TODO input id="view_source" type="button" value="View Source (RDFa annotations)"/-->
     <div id=suggestdialog></div>
@@ -712,8 +772,8 @@ function sparqlExample(i) {
 
     <div id="type_selector">
         <div id="filterPolicy">
-            <input type="radio" name="filterPolicy" value="whitelist" checked>Only these types</input>
-            <input type="radio" name="filterPolicy" value="blacklist">None of these types</input>
+            <input id="filterPolicyWL" type="radio" name="filterPolicy" value="whitelist" checked>Only these types</input>
+            <input id="filterPolicyBL" type="radio" name="filterPolicy" value="blacklist">None of these types</input>
         </div>
 
         <div class="tabs">
@@ -737,9 +797,8 @@ function sparqlExample(i) {
 
             <div id="tabs-3">
 
-                <textarea id="sparql_type" rows="8">
-
-                </textarea>
+                <textarea id="sparql_type" rows="8"></textarea>
+                
                 <div id="sparqlExamples">
                     <strong>Example queries:</strong>
                     <a href="#" onclick="javascript: sparqlExample(1);">Politicians from Chicago</a>,

@@ -39,6 +39,7 @@
       'powered_by': 'yes',         // yes or no
       'showScores': 'yes',         // yes or no
       'types': '',
+      'policy' : 'whitelist',
       'spotter': 'LingPipeSpotter' // one of: LingPipeSpotter,AtLeastOneNounSelector,CoOccurrenceBasedSelector
     };
 
@@ -49,10 +50,10 @@
                  var li = "<li class='"+className+" "+className+"-" + i + "'><a href='http://dbpedia.org/resource/" + r["@uri"] + "' about='" + r["@uri"] + "'>" + r["@label"] + "</a>";
                  //TODO settings.showScores = ["finalScore"] foreach showscores, add k=v
                  if (settings.showScores == 'yes') li += " (<span class='finalScore'>" + parseFloat(r["@finalScore"]).toPrecision(3) +"</span>)";
-                 li += "<span class='hidden contextualScore'>"+parseFloat(r["@contextualScore"])+"</span>";
-                 li += "<span class='hidden percentageOfSecondRank'>"+parseFloat(r["@percentageOfSecondRank"])+"</span>";
-                 li += "<span class='hidden support'>"+parseFloat(r["@support"])+"</span>";
-                 li += "<span class='hidden priorScore'>"+parseFloat(r["@priorScore"])+"</span>";
+                 //li += "<span class='hidden contextualScore'>"+parseFloat(r["@contextualScore"])+"</span>";
+                 //li += "<span class='hidden percentageOfSecondRank'>"+parseFloat(r["@percentageOfSecondRank"])+"</span>";
+                 //li += "<span class='hidden support'>"+parseFloat(r["@support"])+"</span>";
+                 //li += "<span class='hidden priorScore'>"+parseFloat(r["@priorScore"])+"</span>";
                  li += "</li>";
                  var opt = $(li);
                  $.data(opt,"testProp","testValue");
@@ -82,7 +83,17 @@
                   var snippet = text.substring(start, offset)
                   var surfaceForm = text.substring(offset,offset+sfLength);
                   start = offset+sfLength;
-                  snippet += "<div id='"+(sfName+offset)+"' class='annotation'><a class='surfaceForm'>" + sfName + "</a>";
+
+                  if($.isArray(e["resource"]))
+                    var firstRes = e["resource"][0];
+                  else
+                    var firstRes = e["resource"];
+
+                  var support = parseInt(firstRes["@support"]);
+                  var confidence = parseFloat(firstRes["@finalScore"]);
+                  var classes = "annotation support_" + support + " confidence_" + confidence;
+
+                  snippet += "<div id='"+(sfName+offset)+"' class='" + classes + "'><a class='surfaceForm'>" + sfName + "</a>";
                   //TODO instead of showing directly the select box, it would be cuter to just show a span, and onClick on that span, build the select box.
                   var ul = Parser.getSelectBox($(e.resource),'candidate');
                   //ul.children().each(function() { console.log($.data($(this),"testProp")); });
@@ -96,6 +107,43 @@
              //console.log(annotatedText);
              return annotatedText;
         },
+        getAnnotatedTextFirstBest: function(response) {
+                     var json = $.parseJSON(response);
+        	     if (json==null) json = response; // when it comes already parsed
+
+                     var text = json["@text"];
+
+                     var start = 0;
+                     var annotatedText = text;
+
+                     if (json['Resources']!=undefined)
+                          var annotations = new Array().concat(json.Resources) // deals with the case of only one surfaceFrom returned (ends up not being an array)
+
+                          annotatedText = annotations.map(function(e) {
+                          if (e==undefined) return "";
+
+                          var sfName = e["@surfaceForm"];
+                          var offset = parseInt(e["@offset"]);
+                          var uri = e["@URI"];
+
+                          var sfLength = parseInt(sfName.length);
+                          var snippet = text.substring(start, offset)
+                          var surfaceForm = text.substring(offset,offset+sfLength);
+                          start = offset+sfLength;
+
+                          var support = parseInt(e["@support"]);
+                          var confidence = 0.0;
+                          var classes = "annotation support_" + support + " confidence_" + confidence;
+                          snippet += "<a id='"+(sfName+offset)+"' class='" + classes + "' about='" + uri + "' href='" + uri + "' title='" + uri + "'>" + sfName + "</a>";
+
+                          return snippet;
+        			    }).join("");
+                     //snippet after last surface form
+                     annotatedText += text.substring(start, text.length);
+                     //console.log(annotatedText);
+                     return annotatedText;
+                },
+
 	getSuggestions: function(response, targetSurfaceForm) {
              var json = $.parseJSON(response);
 	     if (json==null) json = response; // when it comes already parsed
@@ -112,6 +160,7 @@
         }
    };
 
+   var ajaxRequest;
    var methods = {
       init : function( options ) {           
           // If options exist, lets merge them with our default settings
@@ -122,13 +171,12 @@
       best: function( options ) {
           //init(options);
           function update(response) { 
-               //console.log($(response));
-               var content = $(response).find("div");  //the div with the annotated text
-               if (settings.powered_by == 'yes') { 
-                   $(content).append($(powered_by)); 
-               };
-               //var entities = $(content).find("a/[about]");
-               $(this).html(content);
+
+                   var content = "<div>" + Parser.getAnnotatedTextFirstBest(response) + "</div>";
+                   if (settings.powered_by == 'yes') {
+                       $(content).append($(powered_by));
+                   };
+                   $(this).html(content);
 
                if(settings.callback != undefined) {
                    settings.callback();
@@ -137,15 +185,16 @@
        
                return this.each(function() {            
                  //console.log($.quoteString($(this).text()));
-                 var params = {'text': $(this).text(), 'confidence': settings.confidence, 'support': settings.support, 'spotter': settings.spotter };
-                 if("types" in settings && settings["types"] != undefined){
+                 var params = {'text': $(this).text(), 'confidence': settings.confidence, 'support': settings.support, 'spotter': settings.spotter, 'policy': settings.policy };
+                 if("types" in settings && settings["types"] != undefined)
                    params["types"] = settings.types;
-                 }
+                 if("sparql" in settings && settings["sparql"] != undefined)
+                   params["sparql"] = settings.sparql;
     
-                 $.ajax({ 'url': settings.endpoint+"/annotate", 
+                 ajaxRequest = $.ajax({ 'url': settings.endpoint+"/annotate",
                       'data': params,
                       'context': this,
-                      'headers': {'Accept': 'application/xhtml+xml'},
+                      'headers': {'Accept': 'application/json'},
                       'success': update
                     });    
                  });
@@ -157,16 +206,21 @@
                    if (settings.powered_by == 'yes') { 
                        $(content).append($(powered_by)); 
                    };                        
-                   $(this).html(content);          
+                   $(this).html(content);
+
+                   if(settings.callback != undefined) {
+                    settings.callback();
+                   }
                }    
        
                return this.each(function() {            
-                 var params = {'text': $(this).text(), 'confidence': settings.confidence, 'support': settings.support, 'spotter': settings.spotter }; 
-                 if("types" in settings && settings["types"] != undefined){
+                 var params = {'text': $(this).text(), 'confidence': settings.confidence, 'support': settings.support, 'spotter': settings.spotter, 'policy': settings.policy };
+                 if("types" in settings && settings["types"] != undefined)
                    params['types'] = settings.types;
-                 }
+                 if("sparql" in settings && settings["sparql"] != undefined)
+                   params["sparql"] = settings.sparql;
     
-                 $.ajax({ 'url': settings.endpoint+"/candidates", 
+                 ajaxRequest = $.ajax({ 'url': settings.endpoint+"/candidates",
                       'data': params,
                       'context': this,
                       'headers': {'Accept': 'application/json'},
@@ -196,7 +250,7 @@
                    params['types'] = settings.types;
                  }
     
-                 $.ajax({ 'url': settings.endpoint+"/candidates", 
+                 ajaxRequest = $.ajax({ 'url': settings.endpoint+"/candidates",
                       'data': params,
                       'context': this,
                       'headers': {'Accept': 'application/json'},
@@ -220,5 +274,9 @@
         $.error( 'Method ' +  method + ' does not exist on jQuery.spotlight' );
       } 
   };
+
+    $.fn.cancelAnnotation = function() {
+        ajaxRequest.abort();
+    }
   
 })( jQuery );
