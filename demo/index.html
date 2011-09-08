@@ -584,6 +584,8 @@ $(document).ready(function() {
 
     $('.candidates').uniform()
     $("select, input").uniform();
+    $("select, input").attr("disabled", false);
+    $(".disabled").removeClass("disabled");
     $(".action_button").attr("disabled", false);
 
     $("#tree_dbpedia").jstree({
