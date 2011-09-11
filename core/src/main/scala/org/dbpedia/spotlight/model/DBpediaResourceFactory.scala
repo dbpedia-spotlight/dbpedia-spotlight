@@ -65,17 +65,14 @@ class DBpediaResourceFactorySQL(sqlDriver : String, sqlConnector : String, usern
         if (result.next() == false) {
             throw new ItemNotFoundException("Did not find DBpediaResource in database.")
         }
-
-        val dbCount = result.getInt("COUNT")
-        val count = if(dbCount == null) { 0 } else { dbCount }
+        
+        val count = result.getInt("COUNT")
 
         dbpediaResource.setSupport(count)
-        val dbpediaTypeString = Option(result.getString("TYPE_DBP"))
-        val freebaseTypeString = Option(result.getString("TYPES_FB"))
-
-        var allTypes : List[OntologyType] = (typesFromID(freebaseTypeString) :::
-                                             typesFromID(dbpediaTypeString) :::
-                                             Nil)
+        
+        val typesString = Option(result.getString("TYPES"))
+        var allTypes : List[OntologyType] = (typesFromID(typesString) ::: Nil)
+        allTypes :::= allTypes.flatMap(x => typeToSchemaType.get(x))
 
         dbpediaResource.setTypes(allTypes.filter(t => t != null))
 
@@ -89,9 +86,16 @@ class DBpediaResourceFactorySQL(sqlDriver : String, sqlConnector : String, usern
     val typeIDMap = new HashMap[Int, OntologyType]()
     var query: ResultSet = sqlConnection.createStatement().executeQuery("select * from OntologyType;")
     while(query.next()) {
-        var string: String = query.getString("TYPE")
-        typeIDMap.put(query.getString("TYPE_ID").toList(0).toInt, Factory.OntologyType.fromQName(string))
+        typeIDMap.put(query.getString("TYPE_ID").toList(0).toInt, Factory.OntologyType.fromQName(query.getString("TYPE")))
     }
+
+    //Read OntologyType <-> Schema.org mapping
+    val typeToSchemaType = new HashMap[OntologyType, OntologyType]()
+    query = sqlConnection.createStatement().executeQuery("select * from SchemaOrgMapping;")
+    while(query.next()) {
+        typeToSchemaType.put(Factory.OntologyType.fromQName(query.getString("TYPE_ONTOLOGY")), Factory.OntologyType.fromQName(query.getString("TYPE_SCHEMA")))
+    }
+
 
     def typesFromID(types: Option[String]) : List[OntologyType] = {
         types match {
