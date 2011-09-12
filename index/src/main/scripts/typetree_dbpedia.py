@@ -89,4 +89,4 @@ outObject = objectToOut("owl#Thing", countedTypes["owl#Thing"])
 outObject["state"] = "open"
 unknown = {"attr": {"id": "unknown"}, "data": "unknown type"}
 
-json.dump([outObject, unknown], open("tree.dbpedia.json", "w"))
+json.dumps([outObject, unknown])

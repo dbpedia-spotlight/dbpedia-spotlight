@@ -70,4 +70,4 @@ for domain in domains:
 
     objectOut.append(theDomain)
 
-json.dump(objectOut, open("tree.freebase.json", "w"))
+json.dumps(objectOut)
