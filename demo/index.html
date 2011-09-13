@@ -354,10 +354,11 @@ var annotated = false;
 var textInput = null;
 var server = 'http://spotlight.dbpedia.org/dev/rest'
 
+var lastResponse;
+
 function run(method) {
 
     $('#edit_text_wrapper').show();
-
     var settings = {
         'endpoint' : server,
         'confidence' : $('#confidence').val(),
@@ -366,7 +367,7 @@ function run(method) {
         'showScores': 'yes',
         'spotter' : $('#spotter').val(),
         'policy' : getFilterPolicy(),
-        'callback' : function callback() {$('#status_indicator').removeClass("loading");}
+        'callback' : function callback(response) {lastResponse = response; $('#status_indicator').removeClass("loading");}
     }
     if(getSPARQLQuery() != "")
         settings.sparql = getSPARQLQuery();
@@ -418,6 +419,9 @@ function getTypes() {
     });
     $("#tree_freebase").jstree( "get_checked" ).each(function () {
         checked_ids.push("Freebase:" + this.id);
+    });
+    $("#tree_schema").jstree( "get_checked" ).each(function () {
+        checked_ids.push("Schema:" + this.id);
     });
     return checked_ids.join(",");
 }
@@ -539,41 +543,53 @@ $(document).ready(function() {
         }
     );
 
+    function filter(occ, minConfidence, minSupport) {
+        var simThresholds = [0, 0.1155594, 0.1413648, 0.1555880, 0.1666082, 0.1769609, 0.1866261, 0.1957517,
+                             0.20482580,0.2138903,0.2237287,0.2335491,0.2442384,0.2560859,0.2693643,0.2848305,
+                             0.3033198,0.3288046,0.36692468,0.449684,0.5];
+        var simThreshold = simThresholds[Math.max(Math.round((simThresholds.length-1)*minConfidence), 0)]
+        var squaredConfidence = minConfidence*minConfidence
 
+        var support = parseInt(occ["@support"]);
+        var finalScore = parseFloat(occ["@finalScore"]);
+        var percentageOfSecondRank = parseFloat(occ["@percentageOfSecondRank"]);
+
+        console.log( "support: " + support + " < " + minSupport +
+                     " || finalScore: "+ finalScore + " < " + simThreshold +
+                     " || percentageOfSecondRank: " + percentageOfSecondRank + "<" + (1-squaredConfidence));
+
+        return ( (support < minSupport) ||
+                 (finalScore < simThreshold) ||
+                 (percentageOfSecondRank > (1-squaredConfidence)) );
+    }
+    
     function filterAnnotations() {
         var treshSupport = parseInt($( "#support" ).val());
         var treshConfidence = parseFloat($( "#confidence" ).val());
 
-        $(".annotation").each(function(){
-            var keep = true;
-            var classes = $(this).attr("class").split(" ");
+        //Read response:
+        var json = $.parseJSON(lastResponse);
+        if (json==null) json = lastResponse; // when it comes already parsed
 
-            for(i in classes) {
-                if(classes[i].indexOf("support_") != -1) {
-                  var support = parseInt(classes[i].replace("support_", ""));
-                  if(support < treshSupport) {
-                    keep = false;
-                    break;
-                  }
-                }else if(classes[i].indexOf("confidence_") != -1) {
-                  var confidence = parseFloat(classes[i].replace("confidence_", ""));
-                  if(confidence < treshConfidence) {
-                    keep = false;
-                    break;
-                  }
-                }
+        var annotations;
+        if(json["Resources"] != undefined) {
+            //first-best:
+            annotations = new Array().concat(json.Resources);
+        }else{
+            //n-best:
+            annotations = new Array().concat(json.annotation.surfaceForm).map(function(x) {return x[0]});
+        }
 
-
-            }
-            if(keep) {
-                $(this).removeClass("filtered")
+        for(annotation in annotations) {
+            var annID = annotation["@surfaceForm"] + annotation["@offset"];
+            if(filter(annotation, treshConfidence, treshSupport)) {
+                $("#" + annID).removeClass("filtered")
             }else{
-                $(this).addClass("filtered")
+                $("#" + annID).addClass("filtered")
             }
-        })
+        }
     }
-
-
+    
     $("#method").change(
             function() {
                 if(annotated){
@@ -611,6 +627,22 @@ $(document).ready(function() {
         "json_data" : {
             "ajax" : {
                 "url" : "tree.freebase.json",
+                "data" : function (n) {
+                    return { id : n.attr ? n.attr("id") : 0 };
+                }
+            }
+        }
+
+    });
+
+    $("#tree_schema").jstree({
+        "plugins" : [ "themes", "json_data", "checkbox" ],
+        "themes" : {
+            "icons" : false,
+        },
+        "json_data" : {
+            "ajax" : {
+                "url" : "tree.schema.json",
                 "data" : function (n) {
                     return { id : n.attr ? n.attr("id") : 0 };
                 }
@@ -782,7 +814,8 @@ function sparqlExample(i) {
             <ul>
                 <li><a href="#tabs-1">DBpedia</a></li>
                 <li><a href="#tabs-2">Freebase</a></li>
-                <li><a href="#tabs-3">Custom (SPARQL)</a></li>
+                <li><a href="#tabs-3">Schema.org</a></li>
+                <li><a href="#tabs-4">Custom (SPARQL)</a></li>
             </ul>
 
             <div id="tabs-1">
@@ -798,6 +831,12 @@ function sparqlExample(i) {
             </div>
 
             <div id="tabs-3">
+                <ul>
+                    <li id="tree_schema" class="tree" />
+                </ul>
+            </div>
+
+            <div id="tabs-4">
 
                 <textarea id="sparql_type" rows="8"></textarea>
                 

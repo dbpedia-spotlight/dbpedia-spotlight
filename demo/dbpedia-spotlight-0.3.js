@@ -83,15 +83,8 @@
                   var snippet = text.substring(start, offset)
                   var surfaceForm = text.substring(offset,offset+sfLength);
                   start = offset+sfLength;
-
-                  if($.isArray(e["resource"]))
-                    var firstRes = e["resource"][0];
-                  else
-                    var firstRes = e["resource"];
-
-                  var support = parseInt(firstRes["@support"]);
-                  var confidence = parseFloat(firstRes["@finalScore"]);
-                  var classes = "annotation support_" + support + " confidence_" + confidence;
+                  
+                  var classes = "annotation";
 
                   snippet += "<div id='"+(sfName+offset)+"' class='" + classes + "'><a class='surfaceForm'>" + sfName + "</a>";
                   //TODO instead of showing directly the select box, it would be cuter to just show a span, and onClick on that span, build the select box.
@@ -179,7 +172,7 @@
                    $(this).html(content);
 
                if(settings.callback != undefined) {
-                   settings.callback();
+                   settings.callback(response);
                }
           }    
        
@@ -209,7 +202,7 @@
                    $(this).html(content);
 
                    if(settings.callback != undefined) {
-                    settings.callback();
+                    settings.callback(response);
                    }
                }    
        
