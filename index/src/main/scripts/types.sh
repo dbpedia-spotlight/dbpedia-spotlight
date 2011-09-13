@@ -18,7 +18,7 @@
 ##
 
 #Read DBpedia instance types:
-bzcat instance_types_en.nt.bz2 | sed 's|<http://dbpedia.org/resource/\([^>]*\)> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <\([^>]*\)> .|\1     \2|' > types.dbpedia.tsv
+bzcat instance_types_en.nt.bz2 | sed 's|<http://dbpedia.org/resource/\([^>]*\)> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <\([^>]*\)> .|\1	\2|' > types.dbpedia.tsv
 
 #Read and extract Freebase types:
 python types_freebase.py page_ids_en.nt.bz2 wikipedia_links_en.nt.bz2 freebase-simple-topic-dump.tsv.bz2 > brokenFreebaseWikipediaLinks.tsv
@@ -29,5 +29,5 @@ python typemapping_schema.py dbpedia_3.7.owl > typemapping.schema_org.tsv
 
 #Write updated type selection trees to the demo directory
 python typetree_freebase.py typestats.freebase.tsv > ../../../../demo/tree.freebase.json
-python typetree_dbpedia.py types.dbpedia.tsv > ../../../../demo/tree.dbpedia.json
-python typetree_schema.py typemapping.schema_org.tsv > ../../../../demo/tree.schema.json
+python typetree_dbpedia+schema.py types.dbpedia.tsv --out_dbpedia ../../../../demo/tree.dbpedia.json --out_schema ../../../../demo/tree.schema.json
+

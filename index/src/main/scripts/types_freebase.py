@@ -5,6 +5,7 @@ type files (TSV) for DBpedia Spotlight.
 $ python types_freebase.py page_ids_en.nt.bz2 wikipedia_links_en.nt.bz2 freebase-simple-topic-dump.tsv.bz2
 
 """
+from collections import defaultdict
 
 import sys, csv, bz2, re
 import rdflib
@@ -82,17 +83,16 @@ def addToDictionary(ntfile, dictionary, predicate, label=None, safe=True, object
     return dictionary
 
 
-freebaseTypeDict = {}
-def storeFreebaseTypes(freebaseTypes):
+freebaseTypeDict = defaultdict(int)
+def countFreebaseTypes(freebaseTypes):
     #Extend the list of types with the base types but only count them once (list -> set)
     freebaseTypes.extend(set(map(lambda x: "/" + x.split("/")[1], freebaseTypes)))
 
-    for freebaseType in freebaseTypes:
-        if freebaseType not in freebaseTypeDict:
-            freebaseTypeDict[freebaseType] = 1
-        else:
-            freebaseTypeDict[freebaseType] += 1
+    if len(freebaseTypes) > 0:
+        freebaseTypes.append("owl#Thing")
 
+    for freebaseType in freebaseTypes:
+        freebaseTypeDict[freebaseType] += 1
 
 def main():
     page_ids = sys.argv[1]
@@ -129,8 +129,11 @@ def main():
                 dbpediaID = pageToDBpedia[wikiPage]
 
                 types = filter(filterTypes, row[4].split(","))
-                storeFreebaseTypes(types)
-                freebaseTypes[dbpediaID] = types
+
+                if len(types) > 0:
+                    countFreebaseTypes(types)
+                    freebaseTypes[dbpediaID] = types
+                
             except KeyError:
                 print "\t".join(row)
 

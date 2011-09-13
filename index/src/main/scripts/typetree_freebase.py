@@ -1,12 +1,14 @@
 """
 Convert Freebase types to JSON file as source for the tree in the demo.
 """
-
+from collections import defaultdict
 import sys, json, csv
+
+OWL_THING = "http://www.w3.org/2002/07/owl#Thing"
 
 csv.field_size_limit(1000000000)
 
-allTypes = {}
+allTypes = defaultdict(list)
 typesFile = sys.argv[1]
 
 
@@ -17,21 +19,20 @@ typeCounts = {}
 for row in typeReader:
     if row[0] == "":
         continue
-
+    elif row[0] == "owl#Thing":
+        owlThingCount = int(row[1])
+        continue
+        
     srow = row[0].split("/")
     if len(srow) == 3:
         (_, fb_domain, fb_type) = srow
 
-        try:
-            if fb_type not in allTypes[fb_domain]:
-                allTypes[fb_domain].append(fb_type)
-        except KeyError:
-            allTypes[fb_domain] = [fb_type]
-
+        allTypes[fb_domain].append(fb_type)
+    
     elif len(srow) == 2:
         (_, fb_domain) = srow
     else:
-        #There is only a single type which has more than two levels:""/award/award_nominee/award_nominations
+        #There is only a single type which has more than two levels:"/award/award_nominee/award_nominations
         continue
 
 
@@ -70,4 +71,12 @@ for domain in domains:
 
     objectOut.append(theDomain)
 
-json.dumps(objectOut)
+print json.dumps([{
+                "state": "open",
+                "attr": {"id": OWL_THING},
+                "data": "Thing (%s)" % locale.format("%d", owlThingCount, grouping=True),
+                "children": objectOut
+            },
+            {"attr": {"id": "unknown"}, "data": "unknown type"}
+        ]
+    )
