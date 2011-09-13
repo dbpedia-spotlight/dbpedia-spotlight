@@ -192,17 +192,10 @@ class SpotlightFactory(val configuration: SpotlightConfiguration,
     luceneManager.setDefaultAnalyzer(analyzer);
     luceneManager.setContextSimilarity(similarity);
 
-    //TODO grab from configuration
-    val path = "/data/spotlight/3.7/database/spotlight-db"
-    val dbpediaResourceFactory : DBpediaResourceFactory = new DBpediaResourceFactorySQL(
-            "org.hsqldb.jdbcDriver",
-            "jdbc:hsqldb:"+path+";shutdown=true&readonly=true",
-            "sa",
-            "")
-    println("DBpediaResource database read from "+path);
-    //TODO JO factory will be set here
+    // The dbpedia resource factory is used every time a document is retrieved from the index.
+    // We can use the index itself as provider, or we can use a database. whichever is faster.
+    val dbpediaResourceFactory : DBpediaResourceFactory = configuration.getDBpediaResourceFactory
     luceneManager.setDBpediaResourceFactory(dbpediaResourceFactory)
-    LOG.debug("DBpediaResource database read from "+path);
 
     val searcher = new MergedOccurrencesContextSearcher(luceneManager);
 

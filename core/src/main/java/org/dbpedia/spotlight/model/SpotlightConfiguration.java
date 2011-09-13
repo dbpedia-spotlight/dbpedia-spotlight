@@ -101,6 +101,15 @@ public class SpotlightConfiguration {
 		return maxCacheSize;
 	}
 
+    DBpediaResourceFactory dbpediaResourceFactory = null;
+    public DBpediaResourceFactory getDBpediaResourceFactory() {
+        return dbpediaResourceFactory;
+    }
+
+    public void createDBpediaResourceFactory(String driver, String connector, String user, String password) {
+        dbpediaResourceFactory = new DBpediaResourceFactorySQL(driver, connector, user, password);
+    }
+
 	
 	/**
 	 * The Spotter configuration is read with the SpotlightConfiguration.
@@ -198,6 +207,24 @@ public class SpotlightConfiguration {
             maxCacheSize = new Long(maxCacheSizeString);
         } catch (Exception ignored) { LOG.error(ignored); }
 
+
+        String coreDbType = config.getProperty("org.dbpedia.spotlight.core.database", "").trim();
+        String coreJdbcDriver = config.getProperty("org.dbpedia.spotlight.core.database.jdbcdriver", "").trim();
+		String coreDbConnector  = config.getProperty("org.dbpedia.spotlight.core.database.connector", "").trim();
+		String coreDbUser = config.getProperty("org.dbpedia.spotlight.core.database.user", "").trim();
+		String coreDbPassword = config.getProperty("org.dbpedia.spotlight.core.database.password", "").trim();
+        try {
+            if (coreDbType.equals("jdbc")) {
+                LOG.info("Core database from JDBC: "+coreDbConnector);
+                createDBpediaResourceFactory(coreJdbcDriver,coreDbConnector,coreDbUser,coreDbPassword);
+
+            } else {
+                //else we leave the factory null, in that case, lucene will be used in BaseSearcher
+                LOG.info("Core database from Lucene: "+contextIndexDirectory);
+            }
+        } catch (Exception e) {
+            LOG.warn("Tried to use core database provided, but failed. Will use Lucene index as core database.",e);
+        }
 		//...
 
 	}
