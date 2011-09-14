@@ -98,12 +98,18 @@ object Factory {
             try {
                 val r(prefix, suffix) = ontologyType
 
-                prefix.toLowerCase match {
-                    case "d" | "dbpedia"  => new DBpediaType(suffix)
-                    case "f" | "freebase" => new FreebaseType(suffix)
-                    case "s" | "schema" => new SchemaOrgType(suffix)
-                    case _ => new DBpediaType(ontologyType)
+                suffix.toLowerCase match {
+                    case "unknown" => DBpediaType.UNKNOWN
+                    case _ => {     
+                        prefix.toLowerCase match {
+                            case "d" | "dbpedia"  => new DBpediaType(suffix)
+                            case "f" | "freebase" => new FreebaseType(suffix)
+                            case "s" | "schema" => new SchemaOrgType(suffix)
+                            case _ => new DBpediaType(ontologyType)
+                        }
+                    }
                 }
+                
             }catch{
                 //The default type for non-prefixed type strings:
                 case e: scala.MatchError => new DBpediaType(ontologyType)
@@ -271,5 +277,5 @@ class SpotlightFactory(val configuration: SpotlightConfiguration,
         def from(dbpediaID : String) : DBpediaResource = dbpediaResourceFactory.from(dbpediaID)
         def from(dbpediaResource : DBpediaResource) = dbpediaResourceFactory.from(dbpediaResource.uri)
     }
-  
+
 }
