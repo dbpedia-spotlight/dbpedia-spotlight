@@ -5,7 +5,6 @@ import org.dbpedia.spotlight.lucene.LuceneManager
 import org.apache.lucene.util.Version
 import org.apache.lucene.analysis.{StopAnalyzer, Analyzer}
 import java.io.File
-import org.dbpedia.spotlight.lucene.similarity.{CachedInvCandFreqSimilarity, JCSTermCache}
 import org.apache.lucene.store.Directory
 import org.dbpedia.spotlight.annotate.DefaultAnnotator
 import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter
@@ -18,13 +17,17 @@ import org.dbpedia.spotlight.candidate.{CoOccurrenceBasedSelector}
 import com.aliasi.sentences.IndoEuropeanSentenceModel
 import org.dbpedia.spotlight.tagging.lingpipe.{LingPipeTextUtil, LingPipeTaggedTokenProvider, LingPipeFactory}
 import org.dbpedia.spotlight.disambiguate.{ DefaultDisambiguator}
-import org.apache.lucene.search.{ScoreDoc, Similarity}
 import org.dbpedia.spotlight.exceptions.{ItemNotFoundException, ConfigurationException}
 import org.dbpedia.spotlight.spot.{WikiMarkupSpotter, Spotter, AtLeastOneNounSelector, SpotterWithSelector}
 import java.util.HashMap
 import org.dbpedia.spotlight.disambiguate.{Disambiguator, DefaultDisambiguator}
 import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
 import org.apache.commons.logging.LogFactory
+import org.apache.lucene.analysis.standard.StandardAnalyzer
+import org.apache.lucene.analysis.snowball.SnowballAnalyzer
+import org.dbpedia.spotlight.lucene.similarity.{InvCandFreqSimilarity, CachedInvCandFreqSimilarity, JCSTermCache}
+import org.apache.lucene.misc.SweetSpotSimilarity
+import org.apache.lucene.search.{DefaultSimilarity, ScoreDoc, Similarity}
 
 /**
  * Class containing methods to create model objects in many different ways
@@ -78,42 +81,62 @@ object Factory {
     def ontologyType() = this.OntologyType
     object OntologyType {
 
-      def fromURI(uri: String) : OntologyType = {
-          if (uri.startsWith(DBpediaType.DBPEDIA_ONTOLOGY_PREFIX)) {
-              new DBpediaType(uri)
-          } else if (uri.startsWith(FreebaseType.FREEBASE_RDF_PREFIX)) {
-              new FreebaseType(uri)
-          } else if (uri.startsWith(SchemaOrgType.SCHEMAORG_PREFIX)) {
-              new SchemaOrgType(uri)
-          } else {
-              new DBpediaType(uri)
-          }
-      }
-
-    def fromQName(ontologyType : String) : OntologyType = {
-
-      val r = """^([A-Za-z]*):(.*)""".r
-
-        try {
-            val r(prefix, suffix) = ontologyType
-
-            prefix.toLowerCase match {
-                case "d" | "dbpedia"  => new DBpediaType(suffix)
-                case "f" | "freebase" => new FreebaseType(suffix)
-                case "s" | "schema" => new SchemaOrgType(suffix)                    
-                case _ => new DBpediaType(ontologyType)
+        def fromURI(uri: String) : OntologyType = {
+            if (uri.startsWith(DBpediaType.DBPEDIA_ONTOLOGY_PREFIX)) {
+                new DBpediaType(uri)
+            } else if (uri.startsWith(FreebaseType.FREEBASE_RDF_PREFIX)) {
+                new FreebaseType(uri)
+            } else if (uri.startsWith(SchemaOrgType.SCHEMAORG_PREFIX)) {
+                new SchemaOrgType(uri)
+            } else {
+                new DBpediaType(uri)
             }
-        }catch{
-            //The default type for non-prefixed type strings:
-            case e: scala.MatchError => new DBpediaType(ontologyType)
+        }
+
+        def fromQName(ontologyType : String) : OntologyType = {
+            val r = """^([A-Za-z]*):(.*)""".r
+            try {
+                val r(prefix, suffix) = ontologyType
+
+                prefix.toLowerCase match {
+                    case "d" | "dbpedia"  => new DBpediaType(suffix)
+                    case "f" | "freebase" => new FreebaseType(suffix)
+                    case "s" | "schema" => new SchemaOrgType(suffix)
+                    case _ => new DBpediaType(ontologyType)
+                }
+            }catch{
+                //The default type for non-prefixed type strings:
+                case e: scala.MatchError => new DBpediaType(ontologyType)
+            }
         }
     }
-
-  }
 
     object Paragraph {
         def from(a: AnnotatedParagraph) = {
             new Paragraph(a.id,a.text,a.occurrences.map( dro => Factory.SurfaceFormOccurrence.from(dro)))
+        }
+    }
+
+    def analyzer() = this.Analyzer //TODO for compatibility with java
+    object Analyzer {
+        def from(analyzerName : String, language: String, stopWords: java.util.Set[String]) : Analyzer = {
+            (new StandardAnalyzer(Version.LUCENE_29, stopWords) ::
+                new SnowballAnalyzer(Version.LUCENE_29, language, stopWords) ::
+                Nil)
+                .map(a => (a.getClass.getSimpleName, a))
+                .toMap
+                .get(analyzerName)
+                .getOrElse(throw new ConfigurationException("Unknown Analyzer: "+analyzerName))
+        }
+    }
+
+    object Similarity {
+        def fromName(similarityName : String) : Similarity = {
+            (new InvCandFreqSimilarity :: new SweetSpotSimilarity :: new DefaultSimilarity :: Nil)
+                .map(sim => (sim.getClass.getSimpleName, sim))
+                .toMap
+                .get(similarityName)
+                .getOrElse(throw new ConfigurationException("Unknown Similarity: "+similarityName))
         }
     }
 
@@ -196,6 +219,7 @@ class SpotlightFactory(val configuration: SpotlightConfiguration,
     // We can use the index itself as provider, or we can use a database. whichever is faster.
     val dbpediaResourceFactory : DBpediaResourceFactory = configuration.getDBpediaResourceFactory
     luceneManager.setDBpediaResourceFactory(dbpediaResourceFactory)
+    LOG.debug("DBpedia Resource Factory is null?? %s".format(luceneManager.getDBpediaResourceFactory == null))
 
     val searcher = new MergedOccurrencesContextSearcher(luceneManager);
 

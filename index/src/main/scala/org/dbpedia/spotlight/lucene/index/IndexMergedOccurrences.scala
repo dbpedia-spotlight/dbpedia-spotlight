@@ -22,6 +22,7 @@ import org.apache.commons.logging.LogFactory
 import org.apache.lucene.store.FSDirectory
 import org.dbpedia.spotlight.lucene.LuceneManager
 import org.dbpedia.spotlight.util.IndexingConfiguration
+import org.dbpedia.spotlight.model.Factory
 
 /**
  * Indexes all occurrences of a DBpedia Resource in Wikipedia as a Lucene index where each document represents one resource.
@@ -85,7 +86,7 @@ object IndexMergedOccurrences
 
         // Command line options
         val baseDir = config.get("org.dbpedia.spotlight.index.dir")   //getBaseDir(args(1))
-        val similarity = config.getSimilarity("InvCandFreqSimilarity")  //config.getSimilarity(args(2))
+        val similarity = Factory.Similarity.fromName("InvCandFreqSimilarity")  //config.getSimilarity(args(2))
         val analyzer = config.getAnalyzer  //config.getAnalyzer(args(3))
 
         LOG.info("Using dataset under: "+baseDir);

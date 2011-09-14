@@ -30,6 +30,7 @@ import org.dbpedia.spotlight.exceptions.ConfigurationException
 import java.io._
 import collection.immutable.List._
 import org.apache.lucene.analysis.standard.StandardAnalyzer
+import org.dbpedia.spotlight.model.Factory
 
 /**
  * Class that holds configuration values for indexing tasks.
@@ -102,32 +103,13 @@ class IndexingConfiguration(val configFile: File) {
         }
     }
 
-    def getAnalyzer(analyzerName : String, language: String) : Analyzer = {
-        val stopWords = getStopWords(language)
-
-        (new StandardAnalyzer(Version.LUCENE_29, stopWords) ::
-         new SnowballAnalyzer(Version.LUCENE_29, language, stopWords) ::
-         Nil)
-            .map(a => (a.getClass.getSimpleName, a))
-            .toMap
-            .get(analyzerName)
-            .getOrElse(throw new ConfigurationException("Unknown Analyzer: "+analyzerName))
-    }
-
-    def getSimilarity(similarityName : String) : Similarity = {
-        (new InvCandFreqSimilarity :: new SweetSpotSimilarity :: new DefaultSimilarity :: Nil)
-                .map(sim => (sim.getClass.getSimpleName, sim))
-                .toMap
-                .get(similarityName)
-                .getOrElse(throw new ConfigurationException("Unknown Similarity: "+similarityName))
-    }
-
     def getLanguage() = {
         get("org.dbpedia.spotlight.language")
     }
 
     def getAnalyzer : Analyzer = {
-        getAnalyzer(get("org.dbpedia.spotlight.lucene.analyzer"),get("org.dbpedia.spotlight.language"))
+        val lang = get("org.dbpedia.spotlight.language")
+        Factory.Analyzer.from(get("org.dbpedia.spotlight.lucene.analyzer"),lang, getStopWords(lang))
     }
 
     private def validate { //TODO move validation to finer grained factory classes that have specific purposes (e.g. candidate mapping, lucene indexing, etc.)

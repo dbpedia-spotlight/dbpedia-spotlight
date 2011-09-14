@@ -31,6 +31,7 @@ import java.io.{ByteArrayInputStream, File}
 import org.dbpedia.spotlight.model._
 import org.apache.lucene.index.Term
 import org.dbpedia.spotlight.lucene.search.{CandidateSearcher, MergedOccurrencesContextSearcher}
+import com.officedepot.cdap2.collection.CompactHashSet
 
 /**
  * Paragraph disambiguator that queries paragraphs once and uses candidate map to filter results.
@@ -52,10 +53,14 @@ class TwoStepDisambiguator(val configuration: SpotlightConfiguration) extends Pa
     val contextLuceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(contextIndexDir) // use this if all surface forms in the index are lower-cased
     val cache = JCSTermCache.getInstance(contextLuceneManager, configuration.getMaxCacheSize);
     contextLuceneManager.setContextSimilarity(new CachedInvCandFreqSimilarity(cache))        // set most successful Similarity
+    contextLuceneManager.setDBpediaResourceFactory(configuration.getDBpediaResourceFactory)
+    contextLuceneManager.setDefaultAnalyzer(configuration.getAnalyzer)
     val contextSearcher = new MergedOccurrencesContextSearcher(contextLuceneManager)
 
     //val candidateSearcher : CandidateSearcher = contextSearcher; // here we can reuse the same object because it implements both CandidateSearcher and ContextSearcher interfaces
     val candLuceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(candidateIndexDir) // use this if surface forms in the index are case-sensitive
+    candLuceneManager.setDBpediaResourceFactory(configuration.getDBpediaResourceFactory)
+
     val candidateSearcher = new CandidateSearcher(candLuceneManager) // or we can provide different functionality for surface forms (e.g. n-gram search)
 
     val disambiguator : Disambiguator = new MergedOccurrencesDisambiguator(contextSearcher)
@@ -78,6 +83,7 @@ class TwoStepDisambiguator(val configuration: SpotlightConfiguration) extends Pa
         val mlt = new MoreLikeThis(contextSearcher.mReader);
         mlt.setFieldNames(Array(DBpediaResourceField.CONTEXT.toString))
         mlt.setAnalyzer(contextLuceneManager.defaultAnalyzer)
+        LOG.debug("Analyzer %s".format(contextLuceneManager.defaultAnalyzer))
         val inputStream = new ByteArrayInputStream(text.text.getBytes("UTF-8"));
         val query = mlt.like(inputStream);
         contextSearcher.getHits(query, allowedUris.size, 50000, filter)
@@ -91,28 +97,37 @@ class TwoStepDisambiguator(val configuration: SpotlightConfiguration) extends Pa
 
         if (paragraph.occurrences.size==0) return Map[SurfaceFormOccurrence,List[DBpediaResourceOccurrence]]()
 
+        val m1 = if (candLuceneManager.getDBpediaResourceFactory == null) "lucene" else "jdbc"
+        val m2 = if (contextLuceneManager.getDBpediaResourceFactory == null) "lucene" else "jdbc"
+
+        val s1 = System.nanoTime()
         // step1: get candidates for all surface forms (TODO here building allCandidates directly, but could extract from occs)
-        var allCandidates = collection.mutable.HashSet[DBpediaResource]();
+        var allCandidates = CompactHashSet[DBpediaResource]();
         val occs = paragraph.occurrences
             .foldLeft( Map[SurfaceFormOccurrence,List[DBpediaResource]]())(
             (acc,sfOcc) => {
                 val candidates = candidateSearcher.getCandidates(sfOcc.surfaceForm).asScala //.map(r => r.uri)
-                //LOG.trace("# candidates for: %s = %s (%s)".format(sfOcc.surfaceForm,candidates.size,candidates))
-                allCandidates ++= candidates
+                LOG.debug("# candidates for: %s = %s (%s)".format(sfOcc.surfaceForm,candidates.size,candidates))
+                candidates.foreach( r => allCandidates.add(r))
                 acc + (sfOcc -> candidates.toList)
             });
+        val e1 = System.nanoTime()
+        LOG.debug("Time with %s: %f.".format(m1, (e1-s1) / 1000000.0 ))
 
-
+        val s2 = System.nanoTime()
         // step2: query once for the paragraph context, get scores for each candidate resource
         val hits = query(paragraph.text, allCandidates.toArray)
-        //LOG.debug("Hits (%d): %s".format(hits.size, hits.map( sd => "%s=%s".format(sd.doc,sd.score) ).mkString(",")))
+        LOG.debug("Hits (%d): %s".format(hits.size, hits.map( sd => "%s=%s".format(sd.doc,sd.score) ).mkString(",")))
         val scores = hits
             .foldRight(Map[String,Double]())((hit,acc) => {
             var resource: DBpediaResource = contextSearcher.getDBpediaResource(hit.doc)
             var score = hit.score
             acc + (resource.uri -> score)
         });
-        //LOG.debug("Scores (%d): %s".format(scores.size, scores))
+        val e2 = System.nanoTime()
+        LOG.debug("Scores (%d): %s".format(scores.size, scores))
+
+        LOG.debug("Time with %s: %f.".format(m2, (e2-s2) / 1000000.0 ))
 
         // pick the best k for each surface form
         occs.keys.foldLeft(Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]())( (acc,aSfOcc) => {

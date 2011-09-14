@@ -51,8 +51,8 @@ public class CandidateSearcher extends BaseSearcher implements org.dbpedia.spotl
      */
     public CandidateSearcher(LuceneManager searchManager) throws IOException {
         this.mLucene = searchManager;
-        LOG.info("Creating in-memory searcher for candidates.");
-        this.mLucene.mContextIndexDir = new RAMDirectory(this.mLucene.mContextIndexDir);
+        //LOG.info("Creating in-memory searcher for candidates.");
+        //this.mLucene.mContextIndexDir = new RAMDirectory(this.mLucene.mContextIndexDir);
         LOG.info("Using index at: "+this.mLucene.mContextIndexDir);
         LOG.debug("Opening IndexSearcher and IndexReader for Lucene directory "+this.mLucene.mContextIndexDir+" ...");
         this.mReader = IndexReader.open(this.mLucene.mContextIndexDir, true); // read-only=true

@@ -27,11 +27,11 @@ class Text(var text : String)
     // do some clean up on the text
     text = text.replace("’", "'")
 
-
-    override def equals(that : Any) =
-    {
-        text.isInstanceOf[Text] &&
-        text.equals(that.asInstanceOf[Text].text)
+    override def equals(that : Any) = {
+        that match {
+            case t: Text => this.text.equals(t.text)
+            case _ => false
+        }
     }
 
     override def hashCode() : Int = {

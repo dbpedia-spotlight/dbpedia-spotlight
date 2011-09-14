@@ -237,24 +237,24 @@ public class BaseSearcher implements Closeable {
      */
     public DBpediaResource getDBpediaResource(int docNo) throws SearchException {
         DBpediaResource r = null;
-
+        String method = "";
         long start = System.nanoTime();
         DBpediaResourceFactory f = mLucene.getDBpediaResourceFactory();
         if (f==null) {
-            LOG.debug("Using only lucene to create DBpediaResource objects.");
+            method = "lucene";
             String[] fields = {LuceneManager.DBpediaResourceField.TYPE.toString(),
                     LuceneManager.DBpediaResourceField.URI.toString(),
                     LuceneManager.DBpediaResourceField.URI_COUNT.toString()
             };
             r = getDBpediaResource(docNo,fields); // load all available info from Lucene
         } else {
-           LOG.debug("Using DBpediaResourceFactory to create objects.");
+           method = "database";
            String[] fields = {LuceneManager.DBpediaResourceField.URI.toString()};
            r = getDBpediaResource(docNo,fields);   // load only URI from Lucene
            r = mLucene.getDBpediaResourceFactory().from(r.uri()); // load the rest of the info from DB
         }
         long end = System.nanoTime();
-        LOG.info(String.format("DBpediaResource creation took %f ms.", (end-start) / 1000000.0) );
+        //LOG.debug(String.format("DBpediaResource (%s) creation with %s took %f ms.", r.uri(), method, (end-start) / 1000000.0) );
         objectCreationTime += (end-start);
 
         return r;

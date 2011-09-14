@@ -223,8 +223,8 @@
 
         <dependency>
             <groupId>org.scalaj</groupId>
-            <artifactId>scalaj-collection_2.8.0</artifactId>
-            <version>1.0</version>
+            <artifactId>scalaj-collection_2.9.0</artifactId>
+            <version>1.2</version>
         </dependency>
 
         <dependency>

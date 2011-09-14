@@ -18,6 +18,7 @@ package org.dbpedia.spotlight.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.StopAnalyzer;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 
@@ -110,7 +111,8 @@ public class SpotlightConfiguration {
         dbpediaResourceFactory = new DBpediaResourceFactorySQL(driver, connector, user, password);
     }
 
-	
+	Analyzer analyzer = null;
+
 	/**
 	 * The Spotter configuration is read with the SpotlightConfiguration.
 	 * However, to make the configuration more modular and readable, the
@@ -123,7 +125,11 @@ public class SpotlightConfiguration {
 	}
 
 
-	public SpotlightConfiguration(String fileName) throws ConfigurationException {
+    public Analyzer getAnalyzer() {
+        return analyzer;
+    }
+
+    public SpotlightConfiguration(String fileName) throws ConfigurationException {
 
 		//read config properties
 		Properties config = new Properties();
@@ -187,6 +193,8 @@ public class SpotlightConfiguration {
                 stopWords = StopAnalyzer.ENGLISH_STOP_WORDS_SET;
             }
         }
+
+        analyzer = Factory.analyzer().from(config.getProperty("org.dbpedia.spotlight.lucene.analyzer"), language, stopWords);
 
 		serverURI = config.getProperty("org.dbpedia.spotlight.web.rest.uri").trim();
 		if (!serverURI.endsWith("/")) {

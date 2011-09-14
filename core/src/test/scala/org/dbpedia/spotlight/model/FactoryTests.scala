@@ -4,10 +4,11 @@ package org.dbpedia.spotlight.model
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException
 import io.Source
 import org.junit.{Before, Test}
+import org.junit.Assert._
 
 class FactoryTests {
 
-    val spotlightFactory: SpotlightFactory = new SpotlightFactory(new SpotlightConfiguration("conf/server.properties"))
+    val spotlightFactory: SpotlightFactory = new SpotlightFactory(new SpotlightConfiguration("conf/dev.properties"))
 
     @Test
     def dbpediaResources() {
@@ -67,5 +68,30 @@ class FactoryTests {
         })
     }
 
+    @Test
+    def resOccToSFOcc() {
+        val examples = List("Germany", "Apple", "Train", "Giant_oil_and_gas_fields");
+        //Source.fromFile("/Users/jodaiber/Desktop/conceptURIs.list", "UTF-8").getLines().take(100)
+        val r = new DBpediaResource("Test")
+        val sf = new SurfaceForm("test")
+        val t = new Text("This is a test");
+        val resOcc = new DBpediaResourceOccurrence("paragraph1",r,sf,t,10)
+        val sfOcc = new SurfaceFormOccurrence(sf,t,10)
+        val convertedSfOcc = Factory.SurfaceFormOccurrence.from(resOcc)
+        assertEquals(sfOcc,convertedSfOcc)
+        assert(sfOcc.hashCode == convertedSfOcc.hashCode)
+        /*
+        val id : String,
+                                val resource : DBpediaResource,
+                                val surfaceForm : SurfaceForm,
+                                val context : Text,
+                                val textOffset : Int,
+                                val provenance : Provenance.Value = Provenance.Undefined,
+                                var similarityScore : Double = -1,
+                                var percentageOfSecondRank : Double = -1,
+                                var contextualScore: Double = -1
+         */
+
+    }
 
 }

@@ -33,7 +33,7 @@ class SurfaceFormOccurrence(val surfaceForm : SurfaceForm,
         that match {
             case sfo: SurfaceFormOccurrence => {
                 (this.surfaceForm.equals(sfo.surfaceForm)
-                && this.context.equals(sfo.context)
+                && this.context.equals(sfo.context)   // have to be careful here because context can be shortened
                 && (this.textOffset == sfo.textOffset)
                     )
             }

@@ -634,16 +634,44 @@ public class LuceneManager {
         }
     }
 
+    public static class CaseSensitiveSurfaceForms extends LuceneManager {
+
+        public CaseSensitiveSurfaceForms(Directory dir) throws IOException {
+            super(dir);
+            this.mPerFieldAnalyzers.put(DBpediaResourceField.SURFACE_FORM.toString(), new StopAnalyzer(Version.LUCENE_29));
+            setDefaultAnalyzer(new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_29), mPerFieldAnalyzers));
+        }
+
+        // Make getField case insensitive
+        @Override
+        public Field getField(SurfaceForm sf) {
+            return super.getField(new SurfaceForm(sf.name()));
+        }
+
+        // Make getQuery case insensitive and fuzzy matching
+        @Override
+        public Query getQuery(SurfaceForm sf) throws SearchException {
+            return super.getFuzzyQuery(new SurfaceForm(sf.name()));
+        }
+
+        @Override
+        public Set<Term> getTerms(SurfaceForm sf) {
+            Set<Term> sfTerms = new HashSet<Term>();
+            sfTerms.add(new Term(DBpediaResourceField.SURFACE_FORM.toString(), sf.name()));
+            return sfTerms;
+        }
+    }
+
     /**
      * LuceneManager subclass that uses a character NGramAnalyzer to do approximate matching of surface forms
      * @author pablomendes
      */
-    public static class CaseSensitiveSurfaceForms extends LuceneManager {
+    public static class NGramSurfaceForms extends LuceneManager {
 
         // How to break down the input text
         private Analyzer mSurfaceFormAnalyzer = new NGramAnalyzer(3,3);
 
-        public CaseSensitiveSurfaceForms(Directory dir) throws IOException {
+        public NGramSurfaceForms(Directory dir) throws IOException {
             super(dir);
             mPerFieldAnalyzers.put(LuceneManager.DBpediaResourceField.SURFACE_FORM.toString(), mSurfaceFormAnalyzer);
             setDefaultAnalyzer(new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_29), mPerFieldAnalyzers));
