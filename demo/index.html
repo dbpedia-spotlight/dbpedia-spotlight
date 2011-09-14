@@ -347,6 +347,9 @@ body .jstree li {
     background-position: 50% 50%;
     background-repeat: no-repeat;
 }
+.hidden {
+    display: none;
+}
 </style>
 
 <script>
@@ -550,9 +553,9 @@ $(document).ready(function() {
         var simThreshold = simThresholds[Math.max(Math.round((simThresholds.length-1)*minConfidence), 0)]
         var squaredConfidence = minConfidence*minConfidence
 
-        var support = parseInt(occ["@support"]);
-        var finalScore = parseFloat(occ["@finalScore"]);
-        var percentageOfSecondRank = parseFloat(occ["@percentageOfSecondRank"]);
+        var support = parseInt(occ["support"]);
+        var finalScore = parseFloat(occ["finalScore"]);
+        var percentageOfSecondRank = parseFloat(occ["percentageOfSecondRank"]);
 
         console.log( "support: " + support + " < " + minSupport +
                      " || finalScore: "+ finalScore + " < " + simThreshold +
@@ -564,30 +567,23 @@ $(document).ready(function() {
     }
     
     function filterAnnotations() {
-        var treshSupport = parseInt($( "#support" ).val());
-        var treshConfidence = parseFloat($( "#confidence" ).val());
+        var minSupport = parseInt($( "#support" ).val());
+        var minConfidence = parseFloat($( "#confidence" ).val());
 
-        //Read response:
-        var json = $.parseJSON(lastResponse);
-        if (json==null) json = lastResponse; // when it comes already parsed
 
-        var annotations;
-        if(json["Resources"] != undefined) {
-            //first-best:
-            annotations = new Array().concat(json.Resources);
-        }else{
-            //n-best:
-            annotations = new Array().concat(json.annotation.surfaceForm).map(function(x) {return x[0]});
-        }
+         $(".annotation").each(function() {
+             var occ = { 'support': parseInt($(".support", $(this)).text()),
+                         'finalScore': parseFloat($(".finalScore", $(this)).text()),
+                         'contextualScore': parseFloat($(".contextualScore", $(this)).text()),
+                         'percentageOfSecondRank': parseFloat($(".percentageOfSecondRank", $(this)).text()) }
+              console.log(occ);
+              if (filter(occ, minConfidence, minSupport)) {
+                  $(this).addClass("filtered");
+              } else {
+                  $(this).removeClass("filtered");
+              }
+         });
 
-        for(annotation in annotations) {
-            var annID = annotation["@surfaceForm"] + annotation["@offset"];
-            if(filter(annotation, treshConfidence, treshSupport)) {
-                $("#" + annID).removeClass("filtered")
-            }else{
-                $("#" + annID).addClass("filtered")
-            }
-        }
     }
     
     $("#method").change(

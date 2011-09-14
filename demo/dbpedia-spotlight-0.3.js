@@ -43,17 +43,32 @@
       'spotter': 'LingPipeSpotter' // one of: LingPipeSpotter,AtLeastOneNounSelector,CoOccurrenceBasedSelector
     };
 
+   function getScoreDOMElements(data) {
+        var li = ""
+        for (var key in data)
+            li  += "<span class='hidden "+ key +"'>" + data[key] +"</span>";
+        return li;
+   }
+
    var Parser = {
 	getSelectBox: function(resources, className) {
              var ul =  $("<ul class='"+className+"s'></ul>");
              $.each(resources, function(i, r) {
                  var li = "<li class='"+className+" "+className+"-" + i + "'><a href='http://dbpedia.org/resource/" + r["@uri"] + "' about='" + r["@uri"] + "'>" + r["@label"] + "</a>";
                  //TODO settings.showScores = ["finalScore"] foreach showscores, add k=v
-                 if (settings.showScores == 'yes') li += " (<span class='finalScore'>" + parseFloat(r["@finalScore"]).toPrecision(3) +"</span>)";
-                 //li += "<span class='hidden contextualScore'>"+parseFloat(r["@contextualScore"])+"</span>";
-                 //li += "<span class='hidden percentageOfSecondRank'>"+parseFloat(r["@percentageOfSecondRank"])+"</span>";
-                 //li += "<span class='hidden support'>"+parseFloat(r["@support"])+"</span>";
-                 //li += "<span class='hidden priorScore'>"+parseFloat(r["@priorScore"])+"</span>";
+
+                 if (settings.showScores == 'yes') {
+                    li += " (<span class='finalScoreDisplay'>" + parseFloat(r["@finalScore"]).toPrecision(3) +"</span>)";
+                 }
+
+                 li += getScoreDOMElements({
+                                     "finalScore": parseFloat(r["@finalScore"]).toPrecision(3),
+                                     "contextualScore": parseFloat(r["@contextualScore"]),
+                                     "percentageOfSecondRank": parseFloat(r["@percentageOfSecondRank"]),
+                                     "support": parseFloat(r["@support"]),
+                                     "priorScore": parseFloat(r["@priorScore"])
+                                    });
+                 
                  li += "</li>";
                  var opt = $(li);
                  $.data(opt,"testProp","testValue");
@@ -126,8 +141,17 @@
 
                           var support = parseInt(e["@support"]);
                           var confidence = 0.0;
-                          var classes = "annotation support_" + support + " confidence_" + confidence;
-                          snippet += "<a id='"+(sfName+offset)+"' class='" + classes + "' about='" + uri + "' href='" + uri + "' title='" + uri + "'>" + sfName + "</a>";
+
+                          var classes = "annotation"
+                          snippet += "<a id='"+(sfName+offset)+"' class='" + classes + "' about='" + uri + "' href='" + uri + "' title='" + uri + "'>" + sfName
+
+                          snippet += getScoreDOMElements({
+                                     "finalScore": parseFloat(e["@similarityScore"]).toPrecision(3),
+                                     "percentageOfSecondRank": parseFloat(e["@percentageOfSecondRank"]),
+                                     "support": parseFloat(e["@support"]),
+                                    });
+                          
+                          snippet += "</a>";
 
                           return snippet;
         			    }).join("");
