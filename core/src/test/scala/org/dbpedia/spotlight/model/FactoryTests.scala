@@ -8,12 +8,17 @@ import org.junit.Assert._
 
 class FactoryTests {
 
-    val spotlightFactory: SpotlightFactory = new SpotlightFactory(new SpotlightConfiguration("conf/dev.properties"))
+    val spotlightFactory: SpotlightFactory = new SpotlightFactory(new SpotlightConfiguration("conf/server.properties"))
 
     @Test
-    def dbpediaResources() {
-        val examples = List("Germany", "Apple", "Train", "Giant_oil_and_gas_fields");
-        //Source.fromFile("/Users/jodaiber/Desktop/conceptURIs.list", "UTF-8").getLines().take(100)
+    def createFreebaseType() {
+        assert(Factory.OntologyType.fromQName("Freebase:/location").equals(Factory.OntologyType.fromURI("http://rdf.freebase.com/ns/location")))
+    }
+
+
+    def dbpediaResourceForAllConcepts() {
+        //val configuration: IndexingConfiguration = new IndexingConfiguration("conf/indexing.properties")
+        val examples = Source.fromFile("/Users/jodaiber/Desktop/conceptURIs.list", "UTF-8").getLines().take(100)
 
         examples.foreach( dbpediaID => {
             val dBpediaResource: DBpediaResource = spotlightFactory.DBpediaResource.from(dbpediaID)
@@ -25,14 +30,28 @@ class FactoryTests {
 
     }
 
+  @Test
+  def createDBpediaResourcesOnce() {
+    dbpediaResourceForAllConcepts()
+  }
+
+  @Test
+  def createDBpediaResourcesTenTimes() {
+    (1 to 10 toList).foreach{ number =>
+      dbpediaResourceForAllConcepts()
+    }
+  }
+
     @Test
     def dbpediaResourcesNotThere() {
         try {
             val dBpediaResource: DBpediaResource = spotlightFactory.DBpediaResource.from("TotallyUnknownID")
         } catch {
-            case e: ItemNotFoundException =>  
+            case e: ItemNotFoundException =>
         }
     }
+
+
 
 
     @Test
