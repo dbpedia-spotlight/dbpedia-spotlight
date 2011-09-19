@@ -16,19 +16,19 @@ class FactoryTests {
     }
 
 
-    def dbpediaResourceForAllConcepts() {
-        //val configuration: IndexingConfiguration = new IndexingConfiguration("conf/indexing.properties")
-        val examples = Source.fromFile("/Users/jodaiber/Desktop/conceptURIs.list", "UTF-8").getLines().take(100)
+  def dbpediaResourceForAllConcepts() {
+    //val configuration: IndexingConfiguration = new IndexingConfiguration("conf/indexing.properties")
+    val examples = Source.fromFile("/Users/jodaiber/Desktop/DBpedia/conceptURIs.list", "UTF-8").getLines()
 
-        examples.foreach( dbpediaID => {
-            val dBpediaResource: DBpediaResource = spotlightFactory.DBpediaResource.from(dbpediaID)
-            assert(dBpediaResource.uri.equals(dbpediaID))
-            assert(dBpediaResource.getTypes.size() >= 0)
-            assert(dBpediaResource.support >= 0)
-            assert(!dBpediaResource.getTypes.contains(null))
-        })
+    examples.foreach( dbpediaID => {
+      val dBpediaResource: DBpediaResource = spotlightFactory.DBpediaResource.from(dbpediaID)
+      assert(dBpediaResource.uri.equals(dbpediaID))
+      assert(dBpediaResource.getTypes.size() >= 0)
+      assert(dBpediaResource.support >= 0)
+      assert(!dBpediaResource.getTypes.contains(null))
+    })
 
-    }
+  }
 
   @Test
   def createDBpediaResourcesOnce() {
