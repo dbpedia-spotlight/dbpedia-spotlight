@@ -39,6 +39,7 @@ import org.dbpedia.spotlight.model.vsm.FeatureVector;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.URI;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -69,6 +70,9 @@ public class BaseSearcher implements Closeable {
         LOG.debug("Opening IndexSearcher and IndexReader for Lucene directory "+this.mLucene.mContextIndexDir+" ...");
         this.mReader = IndexReader.open(this.mLucene.mContextIndexDir, true); // read-only=true
         this.mSearcher = new IndexSearcher(this.mReader);
+        LOG.debug("Done.");
+        LOG.debug("Caching all URIs" );
+        FieldCache.DEFAULT.getStrings(mReader, LuceneManager.DBpediaResourceField.URI.toString());
         LOG.debug("Done.");
     }
 
@@ -249,8 +253,9 @@ public class BaseSearcher implements Closeable {
             r = getDBpediaResource(docNo,fields); // load all available info from Lucene
         } else {
            method = "database";
-           String[] fields = {LuceneManager.DBpediaResourceField.URI.toString()};
-           r = getDBpediaResource(docNo,fields);   // load only URI from Lucene
+           //String[] fields = {LuceneManager.DBpediaResourceField.URI.toString()};
+           //r = getDBpediaResource(docNo,fields);   // load only URI from Lucene
+           r = getCachedDBpediaResource(docNo);   // load URI from Lucene's Cache
            r = mLucene.getDBpediaResourceFactory().from(r.uri()); // load the rest of the info from DB
         }
         long end = System.nanoTime();
@@ -259,6 +264,24 @@ public class BaseSearcher implements Closeable {
 
         return r;
     }
+
+    /**
+     * This is an experimental function to evaluate the feasibility of caching all URIs in Lucene
+     * @param docNo
+     * @return
+     * @throws SearchException
+     */
+    public DBpediaResource getCachedDBpediaResource(int docNo) throws SearchException {
+        try {
+            String[] uris = FieldCache.DEFAULT.getStrings(mReader, LuceneManager.DBpediaResourceField.URI.toString());
+            return new DBpediaResource(uris[docNo]);
+        } catch (IOException e) {
+            throw new SearchException("Error getting cached DBpediaResource.",e);
+        }
+    }
+
+
+
 
     /**
      * CONTEXT SEARCHER and SURROGATE SEARCHER
