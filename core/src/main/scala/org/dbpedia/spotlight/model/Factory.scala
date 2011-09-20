@@ -13,12 +13,11 @@ import org.apache.lucene.document.Document
 import org.dbpedia.spotlight.lucene.LuceneManager.DBpediaResourceField
 import collection.JavaConversions._
 import org.dbpedia.spotlight.lucene.search.{BaseSearcher, MergedOccurrencesContextSearcher}
-import org.dbpedia.spotlight.candidate.{CoOccurrenceBasedSelector}
+import org.dbpedia.spotlight.spot._
 import com.aliasi.sentences.IndoEuropeanSentenceModel
 import org.dbpedia.spotlight.tagging.lingpipe.{LingPipeTextUtil, LingPipeTaggedTokenProvider, LingPipeFactory}
 import org.dbpedia.spotlight.disambiguate.{ DefaultDisambiguator}
 import org.dbpedia.spotlight.exceptions.{ItemNotFoundException, ConfigurationException}
-import org.dbpedia.spotlight.spot.{WikiMarkupSpotter, Spotter, AtLeastOneNounSelector, SpotterWithSelector}
 import java.util.HashMap
 import org.dbpedia.spotlight.disambiguate.{Disambiguator, DefaultDisambiguator}
 import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator

@@ -35,7 +35,7 @@ import java.io.IOException;
  */
 public class CandidateResourceQuery extends TermQuery {
 
-    private Term term; // this is private in TermQuery, will have to use our own.
+    private Term contextTerm; // this is private in TermQuery, will have to use our own.
     private Term surfaceFormTerm;
 
     /**
@@ -44,7 +44,7 @@ public class CandidateResourceQuery extends TermQuery {
     public CandidateResourceQuery(Term surfaceFormTerm, Term t) {
         super(t);
         this.surfaceFormTerm = surfaceFormTerm;
-        this.term = t;
+        this.contextTerm = t;
     }
 
     private class CandidateResourceWeight extends Weight {
@@ -60,10 +60,10 @@ public class CandidateResourceQuery extends TermQuery {
             this.similarity = getSimilarity(searcher);
 
             if (this.similarity instanceof CachedSimilarity) { // this guy has a pointer to the cache and can benefit from explicit surface form
-                //System.err.println(surfaceFormTerm +","+ term);
-                idfExp = ((CachedSimilarity) similarity).idfExplain(surfaceFormTerm, term, searcher);
+                //System.err.println(surfaceFormTerm +","+ contextTerm);
+                idfExp = ((CachedSimilarity) similarity).idfExplain(surfaceFormTerm, contextTerm, searcher);
             } else {
-                idfExp = similarity.idfExplain(term, searcher); // otherwise it will have to decide inside which term is the surface form
+                idfExp = similarity.idfExplain(contextTerm, searcher); // otherwise it will have to decide inside which contextTerm is the surface form
             }
             idf = idfExp.getIdf();
         }
@@ -86,12 +86,12 @@ public class CandidateResourceQuery extends TermQuery {
         }
 
         public Scorer scorer(IndexReader reader, boolean scoreDocsInOrder, boolean topScorer) throws IOException { //SORRY copy+paste because TermWeight is private
-            TermDocs termDocs = reader.termDocs(term);
+            TermDocs termDocs = reader.termDocs(contextTerm);
 
             if (termDocs == null)
                 return null;
 
-            return new TermScorer(this, termDocs, similarity, reader.norms(term.field()));
+            return new TermScorer(this, termDocs, similarity, reader.norms(contextTerm.field()));
         }
 
         public Explanation explain(IndexReader reader, int doc)   //SORRY copy+paste because TermWeight is private
@@ -121,9 +121,9 @@ public class CandidateResourceQuery extends TermQuery {
             result.addDetail(queryExpl);
 
             // explain field weight
-            String field = term.field();
+            String field = contextTerm.field();
             ComplexExplanation fieldExpl = new ComplexExplanation();
-            fieldExpl.setDescription("fieldWeight("+term+" in "+doc+
+            fieldExpl.setDescription("fieldWeight("+ contextTerm +" in "+doc+
                     "), product of:");
 
             Explanation tfExpl = scorer(reader, true, false).explain(doc);
