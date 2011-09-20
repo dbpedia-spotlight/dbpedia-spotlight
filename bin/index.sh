@@ -29,7 +29,7 @@ mvn scala:run -DmainClass=org.dbpedia.spotlight.lucene.index.ExtractOccsFromWiki
 sort -t'   ' -k2 output/occs.tsv >output/occs.uriSorted.tsv
 
 # create a lucene index out of the occurrences
-mvn scala:run -DmainClass=org.dbpedia.spotlight.util.IndexMergedOccurrences "-DaddArgs=$INDEX_CONFIG_FILE|output/occs.uriSorted.tsv"
+mvn scala:run -DmainClass=org.dbpedia.spotlight.lucene.index.IndexMergedOccurrences "-DaddArgs=$INDEX_CONFIG_FILE|output/occs.uriSorted.tsv"
 
 # (optional) make a backup copy of the index before you lose all the time you've put into this
 cp -R output/index output/index-backup
@@ -38,13 +38,13 @@ cp -R output/index output/index-backup
 #
 
 # add surface forms to index
-mvn scala:run -DmainClass=org.dbpedia.spotlight.util.AddSurfaceFormsToIndex "-DaddArgs=$INDEX_CONFIG_FILE"
+mvn scala:run -DmainClass=org.dbpedia.spotlight.lucene.index.AddSurfaceFormsToIndex "-DaddArgs=$INDEX_CONFIG_FILE"
 
 # add entity types to index
-mvn scala:run -DmainClass=org.dbpedia.spotlight.util.AddTypesToIndex "-DaddArgs=$INDEX_CONFIG_FILE"
+mvn scala:run -DmainClass=org.dbpedia.spotlight.lucene.index.AddTypesToIndex "-DaddArgs=$INDEX_CONFIG_FILE"
 
 # (optional) reduce index size by unstoring fields (attention: you won't be able to see contents of fields anymore)
 mvn scala:run -DmainClass=org.dbpedia.spotlight.lucene.index.CompressIndex "-DaddArgs=$INDEX_CONFIG_FILE|10"
 
 # train a linker (most simple is based on similarity-thresholds)
-# mvn scala:run -DmainClass=org.dbpedia.spotlight.evaluation.EvalDisambiguationOnly
+# mvn scala:run -DmainClass=org.dbpedia.spotlight.evaluation.EvaluateDisambiguationOnly
