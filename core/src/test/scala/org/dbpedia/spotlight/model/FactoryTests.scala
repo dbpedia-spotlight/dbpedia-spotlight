@@ -8,39 +8,16 @@ import org.junit.Assert._
 
 class FactoryTests {
 
-    val spotlightFactory: SpotlightFactory = new SpotlightFactory(new SpotlightConfiguration("conf/server.properties"))
+  val configuration: SpotlightConfiguration = new SpotlightConfiguration("conf/server.properties")
+  val spotlightFactory: SpotlightFactory = new SpotlightFactory(configuration)
+
+
 
     @Test
     def createFreebaseType() {
         assert(Factory.OntologyType.fromQName("Freebase:/location").equals(Factory.OntologyType.fromURI("http://rdf.freebase.com/ns/location")))
     }
 
-
-  def dbpediaResourceForAllConcepts() {
-    //val configuration: IndexingConfiguration = new IndexingConfiguration("conf/indexing.properties")
-    val examples = Source.fromFile("/Users/jodaiber/Desktop/DBpedia/conceptURIs.list", "UTF-8").getLines()
-
-    examples.foreach( dbpediaID => {
-      val dBpediaResource: DBpediaResource = spotlightFactory.DBpediaResource.from(dbpediaID)
-      assert(dBpediaResource.uri.equals(dbpediaID))
-      assert(dBpediaResource.getTypes.size() >= 0)
-      assert(dBpediaResource.support >= 0)
-      assert(!dBpediaResource.getTypes.contains(null))
-    })
-
-  }
-
-  @Test
-  def createDBpediaResourcesOnce() {
-    dbpediaResourceForAllConcepts()
-  }
-
-  @Test
-  def createDBpediaResourcesTenTimes() {
-    (1 to 10 toList).foreach{ number =>
-      dbpediaResourceForAllConcepts()
-    }
-  }
 
     @Test
     def dbpediaResourcesNotThere() {
@@ -57,7 +34,7 @@ class FactoryTests {
     @Test
     def specificDBpediaResource() {
         val dBpediaResource: DBpediaResource = spotlightFactory.DBpediaResource.from("Berlin")
-        assert(dBpediaResource.getTypes.contains(Factory.OntologyType.fromQName("Freebase:/location/location")))
+        //assert(dBpediaResource.getTypes.contains(Factory.OntologyType.fromQName("Freebase:/location/location")))
         assert(dBpediaResource.getTypes.contains(Factory.OntologyType.fromQName("DBpedia:City")))
         assert(dBpediaResource.getTypes.contains(Factory.OntologyType.fromQName("Schema:City")))
 
