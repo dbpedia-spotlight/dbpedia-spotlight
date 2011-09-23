@@ -39,9 +39,7 @@ import org.dbpedia.spotlight.model.vsm.FeatureVector;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.net.URI;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * This class manages an index from surface form to candidate resources (surrogates)
@@ -56,6 +54,7 @@ public class BaseSearcher implements Closeable {
     LuceneManager mLucene;
     IndexSearcher mSearcher;
     public IndexReader mReader;
+    String[] uriCache;
 
     //TODO create method that iterates over all documents in the index and computes this. (if takes too long, think about storing somewhere at indexing time)
     private double mNumberOfOccurrences = 69772256;
@@ -72,7 +71,7 @@ public class BaseSearcher implements Closeable {
         this.mSearcher = new IndexSearcher(this.mReader);
         LOG.debug("Done.");
         LOG.debug("Caching all URIs" );
-        FieldCache.DEFAULT.getStrings(mReader, LuceneManager.DBpediaResourceField.URI.toString());
+        uriCache = FieldCache.DEFAULT.getStrings(mReader, LuceneManager.DBpediaResourceField.URI.toString());
         LOG.debug("Done.");
     }
 
@@ -158,12 +157,16 @@ public class BaseSearcher implements Closeable {
     public ScoreDoc[] getHits(Query query, int n, int timeout, Filter filter) throws SearchException {
         ScoreDoc[] hits = null;
         try {
-            LOG.trace("Start search. timeout="+timeout);
+            LOG.debug("Start search. timeout="+timeout);
             TopScoreDocCollector collector = TopScoreDocCollector.create(n, false);
             //TimeLimitingCollector collector = new TimeLimitingCollector(tCollector, timeout);  //TODO try to bring this back later
+            LOG.debug("Start search. timeout="+timeout);
+
             mSearcher.search(query, filter, collector);
+
+
             hits = collector.topDocs().scoreDocs;
-            LOG.trace("Done search. hits.length="+hits.length);
+            LOG.debug("Done search. hits.length="+hits.length);
         } catch (TimeLimitingCollector.TimeExceededException timedOutException) {
             throw new TimeoutException("Timeout (>"+timeout+"ms searching for surface form "+query.toString(),timedOutException);
         } catch (Exception e) {
@@ -272,12 +275,7 @@ public class BaseSearcher implements Closeable {
      * @throws SearchException
      */
     public DBpediaResource getCachedDBpediaResource(int docNo) throws SearchException {
-        try {
-            String[] uris = FieldCache.DEFAULT.getStrings(mReader, LuceneManager.DBpediaResourceField.URI.toString());
-            return new DBpediaResource(uris[docNo]);
-        } catch (IOException e) {
-            throw new SearchException("Error getting cached DBpediaResource.",e);
-        }
+        return new DBpediaResource(uriCache[docNo]);
     }
 
 
