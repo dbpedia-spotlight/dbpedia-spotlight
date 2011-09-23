@@ -1,4 +1,4 @@
-package org.dbpedia.spotlight.candidate.cooccurrence.training;
+package org.dbpedia.spotlight.spot.cooccurrence.training;
 
 import org.dbpedia.spotlight.candidate.cooccurrence.InstanceBuilderFactory;
 import org.dbpedia.spotlight.candidate.cooccurrence.features.data.OccurrenceDataProviderSQL;

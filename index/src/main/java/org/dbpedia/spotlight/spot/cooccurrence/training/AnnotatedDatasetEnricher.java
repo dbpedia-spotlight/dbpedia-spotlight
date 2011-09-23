@@ -1,4 +1,4 @@
-package org.dbpedia.spotlight.candidate.cooccurrence.training;
+package org.dbpedia.spotlight.spot.cooccurrence.training;
 
 
 import org.apache.commons.logging.Log;
