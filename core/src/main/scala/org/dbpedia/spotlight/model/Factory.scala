@@ -84,7 +84,7 @@ object Factory {
             if (uri.startsWith(DBpediaType.DBPEDIA_ONTOLOGY_PREFIX)) {
                 new DBpediaType(uri)
             } else if (uri.startsWith(FreebaseType.FREEBASE_RDF_PREFIX)) {
-                new FreebaseType(uri)
+                FreebaseType.fromTypeString(uri)
             } else if (uri.startsWith(SchemaOrgType.SCHEMAORG_PREFIX)) {
                 new SchemaOrgType(uri)
             } else {
@@ -102,7 +102,7 @@ object Factory {
                     case _ => {     
                         prefix.toLowerCase match {
                             case "d" | "dbpedia"  => new DBpediaType(suffix)
-                            case "f" | "freebase" => new FreebaseType(suffix)
+                            case "f" | "freebase" => FreebaseType.fromTypeString(suffix)
                             case "s" | "schema" => new SchemaOrgType(suffix)
                             case _ => new DBpediaType(ontologyType)
                         }
@@ -187,7 +187,7 @@ object Factory {
             case DBpediaResourceField.URI_COUNT =>
                 resource.setSupport(document.getField(field.name).stringValue.toInt)
             case DBpediaResourceField.TYPE =>
-                resource.setTypes(document.getValues(field.name).map( t => new DBpediaType(t) ).toList)
+                resource.setTypes(document.getValues(field.name).map( t => OntologyType.fromQName(t) ).toList)
             case _ =>
         }
     }

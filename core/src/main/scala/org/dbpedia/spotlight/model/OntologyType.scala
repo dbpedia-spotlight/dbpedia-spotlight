@@ -18,6 +18,8 @@
 
 package org.dbpedia.spotlight.model
 
+import java.lang.String
+
 /**
  * Representation of types (DBpedia, Freebase, Schema.org, etc.)
  *
@@ -67,9 +69,7 @@ class DBpediaType(var name : String) extends OntologyType {
     }
 
     override def getFullUri = DBpediaType.DBPEDIA_ONTOLOGY_PREFIX + name
-    override def typeID = "DBpedia:" + name
-
-    //override def toString = name
+    override def typeID = new StringBuilder("DBpedia:").append(name).toString()
 
 }
 
@@ -83,25 +83,38 @@ object DBpediaType {
  * Types from Freebase: non-hierarchical, grouped into domains.
  */
 
-class FreebaseType(var domain : String, var typeName : String) extends OntologyType {
+class FreebaseType(val domain: String, val typeName: String) extends OntologyType {
 
-  def this(typeString : String) { //TODO how to instantiate a FreebaseType from a full URI? http://rdf.freebase.com/ns/common/topic
-    this(typeString.split("/")(1), typeString.split("/")(2))
+  override def getFullUri = FreebaseType.FREEBASE_RDF_PREFIX + domain + "." + typeName
+  override def typeID = {
+    val typeID = "Freebase:/" + domain
+
+    if(typeName != null) {
+      typeID += typeName
+    }
+
+    typeID
   }
-  
-  override def getFullUri = "http://rdf.freebase.com/ns/" + domain + "." + typeName
-  override def typeID = "Freebase:/" + domain + "/" + typeName
-  //override def toString = FreebaseType.FREEBASE_RDF_PREFIX + domain + "/" + typeName
 }
 
 object FreebaseType {
-    val FREEBASE_RDF_PREFIX = "http://rdf.freebase.com/ns/"
-    val UNKNOWN = new FreebaseType("common", "topic")
-}
 
-object SchemaOrgType {
-    val SCHEMAORG_PREFIX = "http://schema.org/"
-    val UNKNOWN = new SchemaOrgType("Thing")
+  def fromTypeString(typeString: String) : FreebaseType = {
+    val typeParts: Array[String] = typeString.replace(FREEBASE_RDF_PREFIX, "").split("/")
+
+    var domain: String = null
+    var theType: String = null
+    typeParts.length match {
+      case 0 =>
+      case 1 => domain = typeParts(0)
+      case 2 => domain = typeParts(1)
+      case _ => {domain = typeParts(1); theType = typeParts(2)}
+    }
+
+    new FreebaseType(domain, theType)
+  }
+
+  val FREEBASE_RDF_PREFIX = "http://rdf.freebase.com/ns/"
 }
 
 class SchemaOrgType(var name : String) extends OntologyType {
@@ -117,4 +130,8 @@ class SchemaOrgType(var name : String) extends OntologyType {
 
    // override def toString = "%s/%s".format(SchemaOrgType.SCHEMAORG_PREFIX,name)
 
+}
+
+object SchemaOrgType {
+    val SCHEMAORG_PREFIX = "http://schema.org/"
 }
