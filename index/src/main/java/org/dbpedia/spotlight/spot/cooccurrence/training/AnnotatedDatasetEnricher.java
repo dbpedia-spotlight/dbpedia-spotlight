@@ -3,9 +3,9 @@ package org.dbpedia.spotlight.spot.cooccurrence.training;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dbpedia.spotlight.candidate.cooccurrence.weka.InstanceBuilder;
-import org.dbpedia.spotlight.candidate.cooccurrence.features.data.OccurrenceDataProvider;
-import org.dbpedia.spotlight.candidate.cooccurrence.filter.Filter;
+import org.dbpedia.spotlight.spot.cooccurrence.weka.InstanceBuilder;
+import org.dbpedia.spotlight.spot.cooccurrence.features.data.OccurrenceDataProvider;
+import org.dbpedia.spotlight.spot.cooccurrence.filter.Filter;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.model.SpotlightFactory;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
@@ -81,7 +81,7 @@ public abstract class AnnotatedDatasetEnricher {
 			/** Set the annotation */
 			int annotationValue = -1;
 
-			switch (trainingInstance.getCandidateClass()) {
+			switch (trainingInstance.getSpotClass()) {
 
 				case valid:
 					annotationValue = 0;
@@ -97,7 +97,7 @@ public abstract class AnnotatedDatasetEnricher {
 
 			}
 
-			System.err.println(i + ": " + trainingInstance.getCandidateClass() + " #############################################");
+			System.err.println(i + ": " + trainingInstance.getSpotClass() + " #############################################");
 			Instance instance = buildInstance(trainingInstance);
 			instance.setValue(attributeList.size() - 1, annotationValue);
 

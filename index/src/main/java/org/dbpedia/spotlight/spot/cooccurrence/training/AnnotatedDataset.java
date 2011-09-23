@@ -2,8 +2,8 @@ package org.dbpedia.spotlight.spot.cooccurrence.training;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
-import org.dbpedia.spotlight.candidate.cooccurrence.classification.CandidateClass;
-import org.dbpedia.spotlight.candidate.cooccurrence.filter.Filter;
+import org.dbpedia.spotlight.spot.cooccurrence.classification.SpotClass;
+import org.dbpedia.spotlight.spot.cooccurrence.filter.Filter;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.model.*;
 import org.json.JSONArray;
@@ -106,14 +106,14 @@ public class AnnotatedDataset {
 
 						if (annotation.has("annotation") && !annotation.getString("annotation").equals("")) {
 
-							CandidateClass userAnnotation;
+							SpotClass userAnnotation;
 
 							if (annotation.getString("annotation").contains("c"))
-								userAnnotation = CandidateClass.common;
+								userAnnotation = SpotClass.common;
 							else if(annotation.getString("annotation").contains("p"))
-								userAnnotation = CandidateClass.part;
+								userAnnotation = SpotClass.part;
 							else
-								userAnnotation = CandidateClass.valid;
+								userAnnotation = SpotClass.valid;
 
 							addInstance(annotation.getString("@surfaceForm"),
 									annotation.getInt("@offset"),
@@ -136,7 +136,7 @@ public class AnnotatedDataset {
 				String[] row;
 				while ((row = reader.readNext()) != null) {
 					try{
-						CandidateClass annotation = row[5].equals("t") ? CandidateClass.valid : CandidateClass.common;
+						SpotClass annotation = row[5].equals("t") ? SpotClass.valid : SpotClass.common;
 						addInstance(row[0], Integer.parseInt(row[1]), new TaggedText(row[2], spotlightFactory.taggedTokenProvider()), row[3], row[4], row[5], annotation);
 					}catch (ArrayIndexOutOfBoundsException ignored){}
 				}
@@ -220,7 +220,7 @@ public class AnnotatedDataset {
 								TaggedText text = textMap.get(docName);
 								addInstance(((Text) text).text().substring(offset, offset+length),
 										offset,	text, wikiName, "", "",
-										wikiName.equals("") ? CandidateClass.common : CandidateClass.valid);
+										wikiName.equals("") ? SpotClass.common : SpotClass.valid);
 							}
 						} catch (StringIndexOutOfBoundsException ignored) {
 
@@ -274,7 +274,7 @@ public class AnnotatedDataset {
 	 * @param annotation assigned candidate class
 	 */
 	public void addInstance(String candidate, int offset, TaggedText sentence, String annotationURI,
-							String annotationTitle, String annotationAbstract, CandidateClass annotation) {
+							String annotationTitle, String annotationAbstract, SpotClass annotation) {
 
 		instances.add(new AnnotatedSurfaceFormOccurrence(candidate, offset, sentence,
 				annotationURI,	annotationTitle, annotationAbstract, annotation));
@@ -304,7 +304,7 @@ public class AnnotatedDataset {
 		CSVWriter writer = new CSVWriter(new FileWriter(tsvFile), '\t');
 
 		for (AnnotatedSurfaceFormOccurrence instance : instances) {
-			String annotationString = instance.getCandidateClass() == CandidateClass.valid ? "t" : "c";
+			String annotationString = instance.getSpotClass() == SpotClass.valid ? "t" : "c";
 			writer.writeNext(new String[] {instance.getSurfaceForm(), "" + instance.getOffset(), instance.getTextString(),
 					instance.getAnnotationTitle(), instance.getAnnotationAbstract(), annotationString});
 		}
@@ -332,7 +332,7 @@ public class AnnotatedDataset {
 		Set<DBpediaResourceOccurrence> dbpediaResourceOccurrences = new HashSet<DBpediaResourceOccurrence>();
 
 		for(AnnotatedSurfaceFormOccurrence instance : getInstances()) {
-			if(instance.getCandidateClass() == CandidateClass.valid)
+			if(instance.getSpotClass() == SpotClass.valid)
 				dbpediaResourceOccurrences.add(instance.toDBpediaResourceOccurrence());
 		}
 

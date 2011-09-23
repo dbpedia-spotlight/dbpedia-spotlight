@@ -1,8 +1,9 @@
 package org.dbpedia.spotlight.spot.cooccurrence.training;
 
-import org.dbpedia.spotlight.candidate.cooccurrence.classification.CandidateClass;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
 import org.dbpedia.spotlight.model.*;
+import org.dbpedia.spotlight.spot.cooccurrence.classification.SpotClass;
+import org.dbpedia.spotlight.spot.cooccurrence.classification.SpotClass;
 import org.dbpedia.spotlight.tagging.TaggedToken;
 
 import java.util.List;
@@ -19,7 +20,7 @@ public class AnnotatedSurfaceFormOccurrence extends SurfaceFormOccurrence {
 	private String annotationURI;
 	private String annotationTitle;
 	private String annotationAbstract;
-	private CandidateClass candidateClass;
+	private SpotClass spotClass;
 	private int offset;
 	private String surfaceForm;
 	private TaggedText text;
@@ -27,14 +28,14 @@ public class AnnotatedSurfaceFormOccurrence extends SurfaceFormOccurrence {
 
 	public AnnotatedSurfaceFormOccurrence(String surfaceForm, int offset, TaggedText text, String annotationURI,
 										  String annotationTitle, String annotationAbstract,
-										  CandidateClass candidateClass) {
+										  SpotClass spotClass) {
 
 		super(new SurfaceForm(surfaceForm), text, offset);
 
 		this.annotationURI = annotationURI;
 		this.annotationTitle = annotationTitle;
 		this.annotationAbstract = annotationAbstract;
-		this.candidateClass = candidateClass;
+		this.spotClass = spotClass;
 		this.offset = offset;
 		this.text = text;
 		this.surfaceForm = surfaceForm;
@@ -64,12 +65,12 @@ public class AnnotatedSurfaceFormOccurrence extends SurfaceFormOccurrence {
 		this.annotationAbstract = annotationAbstract;
 	}
 
-	public CandidateClass getCandidateClass() {
-		return candidateClass;
+	public SpotClass getSpotClass() {
+		return spotClass;
 	}
 
-	public void setCandidateClass(CandidateClass candidateClass) {
-		this.candidateClass = candidateClass;
+	public void setSpotClass(SpotClass spotClass) {
+		this.spotClass = spotClass;
 	}
 
 	public boolean equals(Object o) {
@@ -85,7 +86,7 @@ public class AnnotatedSurfaceFormOccurrence extends SurfaceFormOccurrence {
 			return false;
 		if (annotationURI != null ? !annotationURI.equals(that.annotationURI) : that.annotationURI != null)
 			return false;
-		if (candidateClass != that.candidateClass) return false;
+		if (spotClass != that.spotClass) return false;
 
 		return true;
 	}
@@ -114,7 +115,7 @@ public class AnnotatedSurfaceFormOccurrence extends SurfaceFormOccurrence {
 		result = 31 * result + (annotationURI != null ? annotationURI.hashCode() : 0);
 		result = 31 * result + (annotationTitle != null ? annotationTitle.hashCode() : 0);
 		result = 31 * result + (annotationAbstract != null ? annotationAbstract.hashCode() : 0);
-		result = 31 * result + candidateClass.hashCode();
+		result = 31 * result + spotClass.hashCode();
 		return result;
 	}
 
