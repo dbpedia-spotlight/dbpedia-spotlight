@@ -1,3 +1,5 @@
+package org.dbpedia.spotlight.disambiguate
+
 /**
  * Copyright 2011 Pablo Mendes, Max Jakob
  *
@@ -14,31 +16,24 @@
  * limitations under the License.
  */
 
-package org.dbpedia.spotlight.disambiguate
-
 import mixtures.LinearRegressionMixture
 import org.dbpedia.spotlight.lucene.LuceneManager
 import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
 import java.io.File
 import org.dbpedia.spotlight.lucene.similarity._
 import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.exceptions.{SearchException, InputException}
 import org.apache.lucene.search.Explanation
 import org.dbpedia.spotlight.model._
-import org.dbpedia.spotlight.lucene.disambiguate.{MixedWeightsDisambiguator, MergedOccurrencesDisambiguator}
-import org.dbpedia.spotlight.exceptions.{ItemNotFoundException, SearchException, InputException}
+import org.dbpedia.spotlight.lucene.disambiguate.MixedWeightsDisambiguator
 import scalaj.collection.Imports._
-import scala.collection.JavaConversions._
 
 /**
- * Default implementation of the disambiguation functionality.
- * Uses classes and parameters we found to perform best (targeting new users that just want to test the system.)
- * This implementation will change with time, as we evolve the system.
- * If you want a stable implementation, copy this class to MyDisambiguator and use that instead.
+ * Implementation used for evaluation runs. Will change as new scores/implementations come in.
  *
- * @author maxjakob
  * @author pablomendes
  */
-class DefaultDisambiguator(val configuration: SpotlightConfiguration) extends Disambiguator with ParagraphDisambiguator  {
+class CuttingEdgeDisambiguator(val configuration: SpotlightConfiguration) extends Disambiguator with ParagraphDisambiguator {
 
     private val LOG = LogFactory.getLog(this.getClass)
 
@@ -53,11 +48,13 @@ class DefaultDisambiguator(val configuration: SpotlightConfiguration) extends Di
     val luceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(dir)  // use this if all surface forms in the index are lower-cased
     val cache = JCSTermCache.getInstance(luceneManager, configuration.getMaxCacheSize);
     luceneManager.setContextSimilarity(new CachedInvCandFreqSimilarity(cache))        // set most successful Similarity
+    luceneManager.setDBpediaResourceFactory(configuration.getDBpediaResourceFactory)
 
     val contextSearcher = new MergedOccurrencesContextSearcher(luceneManager)
 
-    val disambiguator : Disambiguator = new MergedOccurrencesDisambiguator(contextSearcher)
-    //val disambiguator : Disambiguator = new MixedWeightsDisambiguator(contextSearcher, new LinearRegressionMixture())
+    //val disambiguator : Disambiguator = new MergedOccurrencesDisambiguator(contextSearcher)
+    val disambiguator : Disambiguator = new MixedWeightsDisambiguator(contextSearcher, new LinearRegressionMixture())
+
 
     //TODO fix MultiThreading
     //val disambiguator : Disambiguator = new MultiThreadedDisambiguatorWrapper(new MixedWeightsDisambiguator(contextSearcher, new LinearRegressionMixture()))
@@ -72,45 +69,35 @@ class DefaultDisambiguator(val configuration: SpotlightConfiguration) extends Di
     def disambiguate(sfOccurrences: java.util.List[SurfaceFormOccurrence]): java.util.List[DBpediaResourceOccurrence] = {
         disambiguator.disambiguate(sfOccurrences)
     }
+    /**
+     * Method for ParagraphDisambiguator
+     */
+    def disambiguate(paragraph: Paragraph): List[DBpediaResourceOccurrence] = {
+        paragraph.occurrences.foldRight(List[DBpediaResourceOccurrence]())((o,acc) => disambiguate(o) :: acc)
+    }
 
     def bestK(sfOccurrence: SurfaceFormOccurrence, k: Int): java.util.List[DBpediaResourceOccurrence] = {
         disambiguator.bestK(sfOccurrence, k)
     }
-
     /**
-     * Executes disambiguation per paragraph (collection of occurrences).
-     * Can be seen as a classification task: unlabeled instances in, labeled instances out.
-     *
-     * @param paragraph
-     * @return
-     * @throws org.dbpedia.spotlight.exceptions.SearchException
-     * @throws org.dbpedia.spotlight.exceptions.InputException
+     * Method for ParagraphDisambiguator
      */
-    def disambiguate(paragraph: Paragraph): List[DBpediaResourceOccurrence] = {
-        asBuffer(disambiguator.disambiguate(paragraph.occurrences.asJava)).toList
-    }
-
-    /**
-     * Executes disambiguation per occurrence, returns a list of possible candidates.
-     * Can be seen as a ranking (rather than classification) task: query instance in, ranked list of target URIs out.
-     *
-     * @param sfOccurrences
-     * @param k
-     * @return
-     * @throws org.dbpedia.spotlight.exceptions.SearchException
-     * @throws org.dbpedia.spotlight.exceptions.ItemNotFoundException    when a surface form is not in the index
-     * @throws org.dbpedia.spotlight.exceptions.InputException
-     */
-    @throws(classOf[SearchException])
-    @throws(classOf[ItemNotFoundException])
-    @throws(classOf[InputException])
     def bestK(paragraph: Paragraph, k: Int): Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]] = {
-        paragraph.occurrences.foldLeft(Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]())
-            { (acc,o) => acc + (o -> asScalaBuffer(disambiguator.bestK(o,k)).toList) }
+        paragraph.occurrences.foldRight(Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]())((o,acc) => {
+            try {
+                acc + (o -> bestK(o,k).asScala.toList)
+            } catch {
+                case e: Exception => {
+                    LOG.debug("Exception: "+e.getMessage)
+                    //e.printStackTrace()
+                    acc
+                }
+            }
+        })
     }
 
     def name() : String = {
-        "Default:"+disambiguator.name
+        "CuttingEdge:"+disambiguator.name
     }
 
     def ambiguity(sf : SurfaceForm) : Int = {

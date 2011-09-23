@@ -211,8 +211,8 @@
 
         <dependency>
             <groupId>net.debasishg</groupId>
-            <artifactId>sjson_2.9.0</artifactId>
-            <version>0.12</version>
+            <artifactId>sjson_2.9.1</artifactId>
+            <version>0.15</version>
         </dependency>
 
         <dependency>
@@ -223,7 +223,7 @@
 
         <dependency>
             <groupId>org.scalaj</groupId>
-            <artifactId>scalaj-collection_2.9.0</artifactId>
+            <artifactId>scalaj-collection_2.9.1</artifactId>
             <version>1.2</version>
         </dependency>
 

@@ -31,7 +31,7 @@
         <maven.scala.plugin.version>2.15.0</maven.scala.plugin.version>
         <maven.install.plugin.version>2.3.1</maven.install.plugin.version>
         <maven.assembly.plugin.version>2.2-beta-5</maven.assembly.plugin.version>
-        <scala.compiler.version>2.9.0</scala.compiler.version>
+        <scala.compiler.version>2.9.1</scala.compiler.version>
     </properties>
 
     <groupId>org.dbpedia.spotlight</groupId>

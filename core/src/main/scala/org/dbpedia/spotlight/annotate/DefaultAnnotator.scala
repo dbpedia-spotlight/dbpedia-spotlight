@@ -19,13 +19,16 @@ package org.dbpedia.spotlight.annotate
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.spot.Spotter
-import org.dbpedia.spotlight.disambiguate.Disambiguator
 import org.dbpedia.spotlight.exceptions.InputException
+import scala.collection.JavaConversions._
+import org.dbpedia.spotlight.disambiguate.{ParagraphDisambiguatorJ, ParagraphDisambiguator, Disambiguator}
 
 /**
- * Annotates a text with DBpedia Resources
+ * Annotates a text with DBpedia Resources.
+ * This is just an example of how to wire the steps in our pipeline with default configurations.
+ *
+ * @author maxjakob, pablomendes
  */
-
 class DefaultAnnotator(val spotter : Spotter, val disambiguator: Disambiguator) extends Annotator {
 
     private val LOG = LogFactory.getLog(this.getClass)
@@ -38,6 +41,25 @@ class DefaultAnnotator(val spotter : Spotter, val disambiguator: Disambiguator) 
 
         LOG.info("Disambiguating... ("+disambiguator.name+")")
         val disambiguatedOccurrences : java.util.List[DBpediaResourceOccurrence] = disambiguator.disambiguate(spottedSurfaceForms)
+
+        LOG.info("Done.")
+        disambiguatedOccurrences
+    }
+
+}
+
+class DefaultParagraphAnnotator(val spotter : Spotter, val disambiguator: ParagraphDisambiguatorJ) {
+
+    private val LOG = LogFactory.getLog(this.getClass)
+
+    @throws(classOf[InputException])
+    def annotate(text : String) : java.util.List[DBpediaResourceOccurrence] = {
+
+        LOG.info("Spotting... ("+spotter.name()+")")
+        val spottedSurfaceForms : List[SurfaceFormOccurrence] = asBuffer(spotter.extract(new Text(text))).toList
+
+        LOG.info("Disambiguating... ("+disambiguator.name+")")
+        val disambiguatedOccurrences : java.util.List[DBpediaResourceOccurrence] = disambiguator.disambiguate(Factory.Paragraph.from(spottedSurfaceForms))
 
         LOG.info("Done.")
         disambiguatedOccurrences

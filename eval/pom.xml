@@ -28,7 +28,7 @@
 
 
     <artifactId>eval</artifactId>
-    <name>DBpedia Spotlight evaluation</name>
+    <name>DBpedia Spotlight Evaluation</name>
 
 
     <dependencies>
@@ -36,11 +36,7 @@
             <groupId>org.dbpedia.spotlight</groupId>
             <artifactId>core</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.dbpedia.spotlight</groupId>
-            <artifactId>jung</artifactId>
-            <version>0.4.9</version>
-        </dependency>
+
 
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>

@@ -18,8 +18,12 @@ package org.dbpedia.spotlight.web.rest;
 
 import com.sun.grizzly.http.SelectorThread;
 import com.sun.jersey.api.container.grizzly.GrizzlyWebContainerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.annotate.Annotator;
 import org.dbpedia.spotlight.disambiguate.Disambiguator;
+import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguator;
+import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ;
 import org.dbpedia.spotlight.exceptions.InitializationException;
 import org.dbpedia.spotlight.model.DBpediaResourceFactorySQL;
 import org.dbpedia.spotlight.model.SpotlightFactory;
@@ -42,6 +46,7 @@ import java.util.Map;
  */
 
 public class Server {
+    static Log LOG = LogFactory.getLog(Server.class);
 
     // Server reads configuration parameters into this static configuration object that will be used by other classes downstream
     protected static SpotlightConfiguration configuration;
@@ -51,6 +56,9 @@ public class Server {
 
     // Server will hold a few spotters that can be chosen from URL parameters
     protected static Map<SpotterConfiguration.SpotterPolicy,Spotter> spotters = new HashMap<SpotterConfiguration.SpotterPolicy,Spotter>();
+
+    // Server will hold a few disambiguators that can be chosen from URL parameters
+    protected static Map<SpotlightConfiguration.DisambiguationPolicy,ParagraphDisambiguatorJ> disambiguators = new HashMap<SpotlightConfiguration.DisambiguationPolicy,ParagraphDisambiguatorJ>();
 
     private static volatile Boolean running = true;
 
@@ -75,9 +83,11 @@ public class Server {
 
         // Set static annotator that will be used by Annotate and Disambiguate
         final SpotlightFactory factory = new SpotlightFactory(configuration);
+        setDisambiguators(factory.disambiguators());
         setAnnotator(factory.annotator());
         setSpotters(factory.spotters());
-        //setAnnotator(new DefaultAnnotator(spotterFile,//commonWordsFile,indexDir));
+
+        LOG.info(String.format("Initiated %d disambiguators.",disambiguators.size()));
 
         final Map<String, String> initParams = new HashMap<String, String>();
         initParams.put("com.sun.jersey.config.property.resourceConfigClass", "com.sun.jersey.api.core.PackagesResourceConfig");
@@ -120,11 +130,13 @@ public class Server {
 
     }
 
-    private static void setAnnotator(Annotator a) throws InitializationException {
-        if (annotator == null)
-            annotator = a;
-        else
-            throw new InitializationException("Trying to overwrite singleton Server.annotator. Something fishy happened!");
+
+    public static void setAnnotator(Annotator a) {
+        annotator = a;
+    }
+
+    public static Annotator getAnnotator() {
+        return annotator;
     }
 
     private static void setSpotters(Map<SpotterConfiguration.SpotterPolicy,Spotter> s) throws InitializationException {
@@ -134,20 +146,28 @@ public class Server {
             throw new InitializationException("Trying to overwrite singleton Server.spotters. Something fishy happened!");
     }
 
-    public static Annotator getAnnotator() {
-        return annotator;
-    }
-
-    public static Disambiguator getDisambiguator() {
-        return annotator.disambiguator();
+    private static void setDisambiguators(Map<SpotlightConfiguration.DisambiguationPolicy,ParagraphDisambiguatorJ> s) throws InitializationException {
+        if (disambiguators.size() == 0)
+            disambiguators = s;
+        else
+            throw new InitializationException("Trying to overwrite singleton Server.disambiguators. Something fishy happened!");
     }
 
     public static Map<SpotterConfiguration.SpotterPolicy,Spotter> getSpotters() {
         return spotters;
     }
 
+    public static Disambiguator getDisambiguator() {
+        return annotator.disambiguator();
+    }
+
+    public static Map<SpotlightConfiguration.DisambiguationPolicy,ParagraphDisambiguatorJ> getDisambiguators() {
+        return disambiguators;
+    }
+
     public static SpotlightConfiguration getConfiguration() {
         return configuration;
     }
+
 
 }

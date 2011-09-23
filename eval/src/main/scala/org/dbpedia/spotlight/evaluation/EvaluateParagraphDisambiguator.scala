@@ -22,6 +22,7 @@ import org.dbpedia.spotlight.model._
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.disambiguate.{CuttingEdgeDisambiguator, TwoStepDisambiguator, ParagraphDisambiguator}
 import java.io.{PrintWriter, File}
+import scalaj.collection.Imports._
 
 /**
  * Evaluation for disambiguators that take one paragraph at a time, instead of one occurrence at a time.
@@ -63,30 +64,32 @@ object EvaluateParagraphDisambiguator {
         var nZeros = 0
         var nCorrects = 0
         var nOccurrences = 0
-        var totalParagraphs = testSource.size
+        val paragraphs = testSource.toList
+        var totalParagraphs = paragraphs.size
         //testSource.view(10000,15000)
-        val mrrResults = testSource.map(a => {
+        val mrrResults = paragraphs.map(a => {
             i = i + 1
             LOG.info("Paragraph %d/%d: %s.".format(i, totalParagraphs, a.id))
             val paragraph = Factory.Paragraph.from(a)
-            //LOG.debug(a)
+
             val bestK = disambiguator.bestK(paragraph,100)
+
             var acc = 0.0
             a.occurrences
                 .filterNot(o => o.id.endsWith("DISAMBIG")) // discounting URIs from gold standard that we know are disambiguations
                 .foreach( correctOccurrence => {
-                nOccurrences = nOccurrences + 1
-                val rank = getRank(correctOccurrence,                                                     // correct
+                    nOccurrences = nOccurrences + 1
+                    val rank = getRank(correctOccurrence,                                                     // correct
                                    bestK.getOrElse(Factory.SurfaceFormOccurrence.from(correctOccurrence), // predicted
                                                    List[DBpediaResourceOccurrence]()))
-                val invRank = if (rank>0) (1.0/rank) else  0.0
-                if (rank==0)  {
-                    nZeros = nZeros + 1
-                } else if (rank==1)  {
-                    nCorrects = nCorrects + 1
-                }
-                acc = acc + invRank
-            });
+                    val invRank = if (rank>0) (1.0/rank) else  0.0
+                    if (rank==0)  {
+                        nZeros = nZeros + 1
+                    } else if (rank==1)  {
+                        nCorrects = nCorrects + 1
+                    }
+                    acc = acc + invRank
+                });
             val mrr = acc / a.occurrences.size
             LOG.info("Mean Reciprocal Rank (MRR) = %.5f".format(mrr))
             mrr
@@ -120,11 +123,13 @@ object EvaluateParagraphDisambiguator {
         //val default : Disambiguator = new DefaultDisambiguator(config)
         //val test : Disambiguator = new GraphCentralityDisambiguator(config)
 
-        val disambiguators = Set(//new TwoStepDisambiguator(config),
-                                 new CuttingEdgeDisambiguator(config))
+        val disambiguators = Set(new CuttingEdgeDisambiguator(config),
+                                 new TwoStepDisambiguator(config)
+                                 )
 
         val paragraphs = AnnotatedTextSource
                             .fromOccurrencesFile(new File(testFileName))
+
 
         // Read some text to test.
         disambiguators.foreach( d => evaluate(paragraphs, d, output))

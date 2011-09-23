@@ -47,6 +47,9 @@ public class SpotlightConfiguration {
 	public final static String DEFAULT_COREFERENCE_RESOLUTION = "true";
 
     public final static String DEFAULT_SPOTTER = "CoOccurrenceBasedSelector";
+    public final static String DEFAULT_DISAMBIGUATOR = "Default";
+
+    public enum DisambiguationPolicy { Document,Occurrences,CuttingEdge,Default }
 
     public String language;
 

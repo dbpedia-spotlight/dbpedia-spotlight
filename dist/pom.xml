@@ -29,7 +29,7 @@
 
     <artifactId>dist</artifactId>
     <packaging>pom</packaging>
-    <name>DBpedia Spotlight - Distribution Packaging</name>
+    <name>DBpedia Spotlight Distribution Packaging</name>
 
     <build>
 

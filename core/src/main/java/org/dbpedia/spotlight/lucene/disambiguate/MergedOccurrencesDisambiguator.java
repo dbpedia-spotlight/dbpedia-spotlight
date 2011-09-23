@@ -22,6 +22,7 @@ import org.apache.lucene.index.TermFreqVector;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.ScoreDoc;
 import org.dbpedia.spotlight.disambiguate.Disambiguator;
+import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguator;
 import org.dbpedia.spotlight.exceptions.DisambiguationException;
 import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
@@ -62,34 +63,11 @@ public class MergedOccurrencesDisambiguator implements Disambiguator {
         return prob;
     }
 
-
-    /*
-
-      TODO We never quite finished implementing these methods. Added a deprecated annotation as warning
-      */
+    @Override
     @Deprecated
-    public List<SurfaceFormOccurrence> spotProbability(List<SurfaceFormOccurrence> spotted) throws SearchException {
-        List<SurfaceFormOccurrence> result = new ArrayList<SurfaceFormOccurrence>();
-        for (SurfaceFormOccurrence spot: spotted) {
-            Double p = spotProbability(spot.surfaceForm());
-            //spot.spotProb = p;
-            result.add(new SurfaceFormOccurrence(spot.surfaceForm(), spot.context(), spot.textOffset(), spot.provenance(), p)); //FIXME create setter
-        }
-        return spotted;    
+    public List<SurfaceFormOccurrence> spotProbability(List<SurfaceFormOccurrence> sfOccurrences) throws SearchException {
+        return sfOccurrences;
     }
-
-    /*
-    TODO We never quite finished implementing these methods. Added a deprecated annotation as warning
-     */
-    @Deprecated
-    public Double spotProbability(SurfaceForm sf) throws SearchException {
-        long freqUnannotated = this.mMergedSearcher.getContextFrequency(sf);
-        long freqAnnotated = this.mMergedSearcher.getFrequency(sf);
-        double prob = (freqUnannotated == 0) ?  0.0 : new Double(freqAnnotated) / freqUnannotated;
-        LOG.info(String.format("%s; FreqAnnotated %s; FreqUnnanotated %s; Prob: %s", sf, freqAnnotated, freqUnannotated, prob));
-        return prob;
-    }
-
 
     public DBpediaResourceOccurrence disambiguate(SurfaceFormOccurrence sfOcc) throws SearchException, ItemNotFoundException, InputException  {
         return bestK(sfOcc,1).get(0);

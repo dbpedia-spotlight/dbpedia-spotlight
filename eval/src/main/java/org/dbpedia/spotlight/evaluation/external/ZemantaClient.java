@@ -111,8 +111,11 @@ public class ZemantaClient extends AnnotationClient {
 //        File input = new File("/home/pablo/eval/wikify/gold/WikifyAllInOne.txt");
 //        File output = new File("/home/pablo/eval/wikify/systems/Zemanta.list");
 
-        File input = new File("/home/pablo/eval/csaw/gold/paragraphs.txt");
-        File output = new File("/home/pablo/eval/csaw/systems/Zemanta.list");
+//        File input = new File("/home/pablo/eval/csaw/gold/paragraphs.txt");
+//        File output = new File("/home/pablo/eval/csaw/systems/Zemanta.list");
+
+        File input = new File("/home/pablo/eval/grounder/gold/g1b_spotlight.txt");
+        File output = new File("/home/pablo/eval/grounder/systems/Zemanta.list");
 
         c.evaluate(input, output);
 

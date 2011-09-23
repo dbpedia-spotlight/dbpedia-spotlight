@@ -6,7 +6,6 @@ import org.apache.lucene.util.Version
 import org.apache.lucene.analysis.{StopAnalyzer, Analyzer}
 import java.io.File
 import org.apache.lucene.store.Directory
-import org.dbpedia.spotlight.annotate.DefaultAnnotator
 import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter
 import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters
 import org.apache.lucene.document.Document
@@ -16,10 +15,8 @@ import org.dbpedia.spotlight.lucene.search.{BaseSearcher, MergedOccurrencesConte
 import org.dbpedia.spotlight.spot._
 import com.aliasi.sentences.IndoEuropeanSentenceModel
 import org.dbpedia.spotlight.tagging.lingpipe.{LingPipeTextUtil, LingPipeTaggedTokenProvider, LingPipeFactory}
-import org.dbpedia.spotlight.disambiguate.{ DefaultDisambiguator}
 import org.dbpedia.spotlight.exceptions.{ItemNotFoundException, ConfigurationException}
 import java.util.HashMap
-import org.dbpedia.spotlight.disambiguate.{Disambiguator, DefaultDisambiguator}
 import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
 import org.apache.commons.logging.LogFactory
 import org.apache.lucene.analysis.standard.StandardAnalyzer
@@ -27,6 +24,9 @@ import org.apache.lucene.analysis.snowball.SnowballAnalyzer
 import org.dbpedia.spotlight.lucene.similarity.{InvCandFreqSimilarity, CachedInvCandFreqSimilarity, JCSTermCache}
 import org.apache.lucene.misc.SweetSpotSimilarity
 import org.apache.lucene.search.{DefaultSimilarity, ScoreDoc, Similarity}
+import org.dbpedia.spotlight.disambiguate._
+import org.dbpedia.spotlight.annotate.{DefaultParagraphAnnotator, DefaultAnnotator}
+import scalaj.collection.Imports._
 
 /**
  * Class containing methods to create model objects in many different ways
@@ -116,9 +116,17 @@ object Factory {
         }
     }
 
+    def paragraph() = Paragraph
     object Paragraph {
         def from(a: AnnotatedParagraph) = {
             new Paragraph(a.id,a.text,a.occurrences.map( dro => Factory.SurfaceFormOccurrence.from(dro)))
+        }
+        def fromJ(occs: java.util.List[SurfaceFormOccurrence]) = {
+            from(occs.asScala.toList)
+        }
+        def from(occs: List[SurfaceFormOccurrence]) = {
+            val first = occs.head
+            new Paragraph("",first.context,occs)
         }
     }
 
@@ -195,86 +203,4 @@ object Factory {
 
 }
 
-/**
- * This class contains many of the "defaults" for DBpedia Spotlight. Maybe consider renaming to DefaultFactory.
- *
- *
- */
-class SpotlightFactory(val configuration: SpotlightConfiguration,
-                    val analyzer: Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET)
-                    ) {
 
-    private val LOG = LogFactory.getLog(this.getClass)
-
-    def this(configuration: SpotlightConfiguration) {
-        this(configuration, new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", configuration.getStopWords))
-        if (!new File(configuration.getTaggerFile).exists()) throw new ConfigurationException("POS tagger file does not exist! "+configuration.getTaggerFile);
-    }
-
-    val directory : Directory = LuceneManager.pickDirectory(new File(configuration.getContextIndexDirectory))
-    val luceneManager : LuceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(directory)
-    val similarity : Similarity = new CachedInvCandFreqSimilarity(JCSTermCache.getInstance(luceneManager, configuration.getMaxCacheSize))
-
-    val lingPipeFactory : LingPipeFactory = new LingPipeFactory(new File(configuration.getTaggerFile), new IndoEuropeanSentenceModel())
-
-    luceneManager.setDefaultAnalyzer(analyzer);
-    luceneManager.setContextSimilarity(similarity);
-
-    // The dbpedia resource factory is used every time a document is retrieved from the index.
-    // We can use the index itself as provider, or we can use a database. whichever is faster.
-    val dbpediaResourceFactory : DBpediaResourceFactory = configuration.getDBpediaResourceFactory
-    luceneManager.setDBpediaResourceFactory(dbpediaResourceFactory)
-    LOG.debug("DBpedia Resource Factory is null?? %s".format(luceneManager.getDBpediaResourceFactory == null))
-
-    val searcher = new MergedOccurrencesContextSearcher(luceneManager);
-
-    val spotters = new HashMap[SpotterConfiguration.SpotterPolicy,Spotter]()
-
-    def disambiguator() = {
-        //val mixture = new LinearRegressionMixture
-        //new MixedWeightsDisambiguator(searcher,mixture);
-        new MergedOccurrencesDisambiguator(searcher)
-        //new GraphCentralityDisambiguator(configuration)
-    }
-
-    def spotter(policy: SpotterConfiguration.SpotterPolicy) : Spotter = {
-        if (policy == SpotterConfiguration.SpotterPolicy.LingPipeSpotter)
-            spotters.getOrElse(policy, new LingPipeSpotter(new File(configuration.getSpotterConfiguration.getSpotterFile)))
-        else if (policy == SpotterConfiguration.SpotterPolicy.AtLeastOneNounSelector) {
-            spotters.getOrElse(policy, SpotterWithSelector.getInstance(spotter(SpotterConfiguration.SpotterPolicy.LingPipeSpotter),new AtLeastOneNounSelector(),taggedTokenProvider()))
-        } else if (policy == SpotterConfiguration.SpotterPolicy.CoOccurrenceBasedSelector) {
-            spotters.getOrElse(policy, SpotterWithSelector.getInstance(spotter(SpotterConfiguration.SpotterPolicy.LingPipeSpotter),new CoOccurrenceBasedSelector(configuration.getSpotterConfiguration),taggedTokenProvider()))
-        } else {
-            new WikiMarkupSpotter
-        }
-    }
-
-    def spotter() : Spotter = {
-        configuration.getSpotterConfiguration.getSpotterPolicies.foreach( policy => {
-            spotters.put(policy, spotter(policy))
-        })
-        spotters.head._2
-    }
-
-    def annotator() ={
-        new DefaultAnnotator(spotter(), disambiguator())
-    }
-
-    def filter() ={
-        new CombineAllAnnotationFilters(configuration)
-    }
-
-    def taggedTokenProvider() = {
-       new LingPipeTaggedTokenProvider(lingPipeFactory);
-    }
-
-    def textUtil() = {
-       new LingPipeTextUtil(lingPipeFactory);
-    }
-
-    object DBpediaResource {
-        def from(dbpediaID : String) : DBpediaResource = dbpediaResourceFactory.from(dbpediaID)
-        def from(dbpediaResource : DBpediaResource) = dbpediaResourceFactory.from(dbpediaResource.uri)
-    }
-
-}

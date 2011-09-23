@@ -34,10 +34,19 @@ import org.dbpedia.spotlight.disambiguate._
 import mixtures.LinearRegressionMixture
 import org.dbpedia.spotlight.lucene._
 import search.{CandidateSearcher, MergedOccurrencesContextSearcher}
-import org.dbpedia.spotlight.model.{SpotlightConfiguration, ContextSearcher}
+import org.dbpedia.spotlight.model.{DBpediaResource, SpotlightConfiguration, ContextSearcher}
 
 /**
  * This class is evolving to be the main disambiguation class that takes parameters for which dataset to run.
+ *
+ * Usage:
+ *  mvn scala:run -DmainClass=org.dbpedia.spotlight.evaluation.EvalDisambiguationOnly ../conf/server.properties output/occs.uriSorted.tsv
+ *
+ * Optionally you may want to get a random sample of paragraphs instead of running on all 60M
+ *  sort -R --random-source=/dev/urandom output/occs.uriSorted.tsv
+ *  split -l 1000000 occs.uriSorted.tsv occs.uriSorted.tsv.split
+ *
+ * TODO Move create*Disambiguator methods to a factory
  *
  * @author maxjakob
  */
@@ -230,7 +239,7 @@ object EvaluateDisambiguationOnly
 
     def exists(fileName: String) {
         if (!new File(fileName).exists) {
-            System.err.println("Important directory does not exist. "+fileName);
+            System.err.println("Important file/dir does not exist. "+fileName);
             exit(1);
         }
     }
@@ -272,9 +281,10 @@ object EvaluateDisambiguationOnly
         //val indexDir = baseDir+"/2.9.3/Index.wikipediaTraining.Merged";
 
         val default : Disambiguator = new DefaultDisambiguator(config)
+        val cuttingEdge : Disambiguator = new CuttingEdgeDisambiguator(config)
 
         //val test : Disambiguator = new GraphCentralityDisambiguator(config)
-        val disSet = Set(default);
+        val disSet = Set(default,cuttingEdge);
 
         /*val disSet = Set(
 
@@ -310,20 +320,17 @@ object EvaluateDisambiguationOnly
 
         // Read some text to test.
         val testSource = FileOccurrenceSource.fromFile(new File(testFileName))
-
-        //      // Now with most common amongst top K most similar contexts
-        //      var disambiguator2 : Disambiguator = new MergedOccurrencesDisambiguator(resourceSearcher, new RankingStrategy.MostCommonAmongTopK(contextSearcher))
-        //      // Now with most common URI by usage (prior) -- reading from file
-        //      //var disambiguator3 : Disambiguator = new CustomScoresDisambiguator(surrogateSearcher, new DataLoader(new DataLoader.TSVParser(), new File(resourcePriorsFileName)));
-        //      // Now with most common URI by usage (prior) -- reading from lucene
-        //      var disambiguator4 : Disambiguator = new LucenePriorDisambiguator(resourceSearcher);
+            //.filterNot(o => o.resource.uri == "NIL")
+           .filterNot(o => o.id.endsWith("DISAMBIG"))
 
 
-        //        LOG.info("=================================");
+        //testSource.view(10000,15000)
+        //testSource.filter(o => o.surfaceForm.name.toLowerCase.equals("on"))
+        //testSource.filter(o => o.surfaceForm.name.toLowerCase.startsWith("the"))
+        val evaluator = new DisambiguationEvaluator(testSource, disSet, resultsFileName);
+        evaluator.ambiguousOnly = false;
 
-          //testSource.view(10000,15000)
-          val evaluator = new DisambiguationEvaluator(testSource, disSet, resultsFileName);
-          evaluator.evaluate()
+        evaluator.evaluate(1)
 
 
     }
