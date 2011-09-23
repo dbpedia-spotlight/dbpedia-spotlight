@@ -1,6 +1,5 @@
 package org.dbpedia.spotlight.model;
 
-import com.sun.corba.se.impl.oa.poa.Policies;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 
 import java.io.File;
