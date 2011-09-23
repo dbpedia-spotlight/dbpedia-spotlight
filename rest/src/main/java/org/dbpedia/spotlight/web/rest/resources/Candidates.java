@@ -297,7 +297,7 @@ public class Candidates {
         }
 
         if (disambiguatorName==SpotlightConfiguration.DisambiguationPolicy.Default
-                && text.length() > 100) {
+                && text.length() > 2000) {
             disambiguatorName = SpotlightConfiguration.DisambiguationPolicy.Document;
             LOG.info(String.format("Text length: %d. Using %s to disambiguate.",text.length(),disambiguatorName));
         }

@@ -157,10 +157,10 @@ public class BaseSearcher implements Closeable {
     public ScoreDoc[] getHits(Query query, int n, int timeout, Filter filter) throws SearchException {
         ScoreDoc[] hits = null;
         try {
-            LOG.debug("Start search. timeout="+timeout);
+            //LOG.debug("Start search. timeout="+timeout);
             TopScoreDocCollector collector = TopScoreDocCollector.create(n, false);
             //TimeLimitingCollector collector = new TimeLimitingCollector(tCollector, timeout);  //TODO try to bring this back later
-            LOG.debug("Start search. timeout="+timeout);
+            //LOG.debug("Start search. timeout="+timeout);
 
             mSearcher.search(query, filter, collector);
 

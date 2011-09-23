@@ -2,6 +2,7 @@ package org.dbpedia.spotlight.spot.cooccurrence.classification;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.spot.cooccurrence.weka.InstanceBuilder;
 import org.dbpedia.spotlight.spot.cooccurrence.features.data.OccurrenceDataProvider;
 import org.dbpedia.spotlight.exceptions.InitializationException;
@@ -11,6 +12,8 @@ import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.SerializationHelper;
+
+import java.io.File;
 
 
 /**
@@ -45,7 +48,8 @@ public class SpotClassifier {
 	 */
 	public SpotClassifier(String modelFile, OccurrenceDataProvider dataProvider, InstanceBuilder instanceBuilder)
 			throws InitializationException {
-		
+		if (!new File(modelFile).exists()) //TODO Jo, please check during configuration if CoOccurrenceBasedSelector is in the config file, then check it at that point.
+            throw new InitializationException("Error initiating starting SpotClassifier.",new ConfigurationException("Could not find file for org.dbpedia.spotlight.spot.classifier.unigram"));
 		this.modelFile = modelFile;
 		this.dataProvider = dataProvider;
 		this.instanceBuilder = instanceBuilder;

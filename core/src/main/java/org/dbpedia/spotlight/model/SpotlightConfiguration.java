@@ -151,11 +151,12 @@ public class SpotlightConfiguration {
 			throw new ConfigurationException("Cannot find index directory "+ contextIndexDirectory);
 		}
 
-		//set spotterFile, indexDir...
+		//TODO use separate candidate map
 		candidateMapDirectory = config.getProperty("org.dbpedia.spotlight.candidateMap.dir").trim();
 		if(!new File(candidateMapDirectory).isDirectory()) {
-			throw new ConfigurationException("Cannot find candidate map directory "+ candidateMapDirectory);
+			//throw new ConfigurationException("Cannot find candidate map directory "+ candidateMapDirectory);
 		}
+        LOG.info("Read candidateMap.dir, but not used in this version.");
 
 		try {
 			BufferedReader r = new BufferedReader(new FileReader(new File(contextIndexDirectory, similarityThresholdsFile)));

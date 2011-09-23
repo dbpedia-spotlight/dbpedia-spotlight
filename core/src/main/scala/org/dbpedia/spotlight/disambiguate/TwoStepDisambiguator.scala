@@ -48,7 +48,9 @@ class TwoStepDisambiguator(val configuration: SpotlightConfiguration) extends Pa
     LOG.info("Initializing disambiguator object ...")
 
     val contextIndexDir = LuceneManager.pickDirectory(new File(configuration.getContextIndexDirectory))
-    val candidateIndexDir = LuceneManager.pickDirectory(new File(configuration.getCandidateIndexDirectory))
+                                                        //TODO Temporarily using the same index
+    val candidateIndexDir = LuceneManager.pickDirectory(new File(configuration.getContextIndexDirectory))
+    //val candidateIndexDir = LuceneManager.pickDirectory(new File(configuration.getCandidateIndexDirectory))
 
     val contextLuceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(contextIndexDir) // use this if all surface forms in the index are lower-cased
     val cache = JCSTermCache.getInstance(contextLuceneManager, configuration.getMaxCacheSize);
@@ -58,9 +60,8 @@ class TwoStepDisambiguator(val configuration: SpotlightConfiguration) extends Pa
     val contextSearcher = new MergedOccurrencesContextSearcher(contextLuceneManager)
 
     //val candidateSearcher : CandidateSearcher = contextSearcher; // here we can reuse the same object because it implements both CandidateSearcher and ContextSearcher interfaces
-    val candLuceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(candidateIndexDir) // use this if surface forms in the index are case-sensitive
+    val candLuceneManager = new LuceneManager.CaseSensitiveSurfaceForms(candidateIndexDir) // use this if surface forms in the index are case-sensitive
     candLuceneManager.setDBpediaResourceFactory(configuration.getDBpediaResourceFactory)
-
     val candidateSearcher = new CandidateSearcher(candLuceneManager) // or we can provide different functionality for surface forms (e.g. n-gram search)
 
     val disambiguator : Disambiguator = new MergedOccurrencesDisambiguator(contextSearcher)

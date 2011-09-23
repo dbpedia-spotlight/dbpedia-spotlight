@@ -87,7 +87,7 @@ class FreebaseType(val domain: String, val typeName: String) extends OntologyTyp
 
   override def getFullUri = FreebaseType.FREEBASE_RDF_PREFIX + domain + "." + typeName
   override def typeID = {
-    val typeID = "Freebase:/" + domain
+    var typeID = "Freebase:/" + domain
 
     if(typeName != null) {
       typeID += typeName

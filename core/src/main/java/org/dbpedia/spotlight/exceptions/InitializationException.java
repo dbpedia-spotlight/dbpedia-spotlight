@@ -19,6 +19,7 @@ package org.dbpedia.spotlight.exceptions;
 /**
  * Indicates that an error occurred during the initialization of something,
  * a cause of this may be incorrect configuration.
+ * TODO consider merging with ConfigurationException
  *
  * @author jodaiber
  */
