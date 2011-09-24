@@ -54,7 +54,6 @@ public class BaseSearcher implements Closeable {
     LuceneManager mLucene;
     IndexSearcher mSearcher;
     public IndexReader mReader;
-    String[] uriCache;
 
     //TODO create method that iterates over all documents in the index and computes this. (if takes too long, think about storing somewhere at indexing time)
     private double mNumberOfOccurrences = 69772256;
@@ -70,9 +69,18 @@ public class BaseSearcher implements Closeable {
         this.mReader = IndexReader.open(this.mLucene.mContextIndexDir, true); // read-only=true
         this.mSearcher = new IndexSearcher(this.mReader);
         LOG.debug("Done.");
-        LOG.debug("Caching all URIs" );
-        uriCache = FieldCache.DEFAULT.getStrings(mReader, LuceneManager.DBpediaResourceField.URI.toString());
-        LOG.debug("Done.");
+
+        //If the DBpediaResourceFactory uses SQL, the mapping from Lucene docID to URI must be cached:
+        if(mLucene.getDBpediaResourceFactory() instanceof DBpediaResourceFactorySQL) {
+            /*
+               Here, the Cache for the URIs is called (but not read) for the first time and will be
+               created from the index and held within the Lucene cache manager.
+            */
+            LOG.debug("Caching all URIs" );
+            FieldCache.DEFAULT.getStrings(mReader, LuceneManager.DBpediaResourceField.URI.toString());
+            LOG.debug("Done.");
+        }
+        
     }
 
     public int getNumberOfEntries() {
@@ -275,7 +283,12 @@ public class BaseSearcher implements Closeable {
      * @throws SearchException
      */
     public DBpediaResource getCachedDBpediaResource(int docNo) throws SearchException {
-        return new DBpediaResource(uriCache[docNo]);
+        try {
+            String[] uris = FieldCache.DEFAULT.getStrings(mReader, LuceneManager.DBpediaResourceField.URI.toString());
+            return new DBpediaResource(uris[docNo]);
+        } catch (IOException e) {
+            throw new SearchException("Error getting cached DBpediaResource.",e);
+        }
     }
 
 
