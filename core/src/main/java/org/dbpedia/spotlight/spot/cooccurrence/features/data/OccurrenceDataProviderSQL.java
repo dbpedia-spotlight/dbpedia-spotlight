@@ -27,11 +27,11 @@ public class OccurrenceDataProviderSQL implements OccurrenceDataProvider {
 	public OccurrenceDataProviderSQL(SpotterConfiguration spotterConfiguration) throws InitializationException {
 
 		try {
-			Class.forName(spotterConfiguration.getCandidateDatabaseDriver()).newInstance();
+			Class.forName(spotterConfiguration.getCoOcSelectorDatabaseDriver()).newInstance();
 
-			this.sqlConnection = DriverManager.getConnection(spotterConfiguration.getCandidateDatabaseConnector(),
-					spotterConfiguration.getCandidateDatabaseUser(),
-					spotterConfiguration.getCandidateDatabasePassword()
+			this.sqlConnection = DriverManager.getConnection(spotterConfiguration.getCoOcSelectorDatabaseConnector(),
+					spotterConfiguration.getCoOcSelectorDatabaseUser(),
+					spotterConfiguration.getCoOcSelectorDatabasePassword()
 			);
 
 		} catch (SQLException e) {

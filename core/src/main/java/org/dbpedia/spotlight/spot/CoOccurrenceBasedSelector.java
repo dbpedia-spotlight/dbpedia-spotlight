@@ -2,6 +2,10 @@ package org.dbpedia.spotlight.spot;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dbpedia.spotlight.exceptions.InitializationException;
+import org.dbpedia.spotlight.model.SpotterConfiguration;
+import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
+import org.dbpedia.spotlight.model.TaggedText;
 import org.dbpedia.spotlight.spot.cooccurrence.ClassifierFactory;
 import org.dbpedia.spotlight.spot.cooccurrence.classification.SpotClass;
 import org.dbpedia.spotlight.spot.cooccurrence.classification.SpotClassification;
@@ -10,18 +14,13 @@ import org.dbpedia.spotlight.spot.cooccurrence.features.data.OccurrenceDataProvi
 import org.dbpedia.spotlight.spot.cooccurrence.filter.FilterPOS;
 import org.dbpedia.spotlight.spot.cooccurrence.filter.FilterPattern;
 import org.dbpedia.spotlight.spot.cooccurrence.filter.FilterTermsize;
-import org.dbpedia.spotlight.exceptions.InitializationException;
-import org.dbpedia.spotlight.model.SpotterConfiguration;
-import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
-import org.dbpedia.spotlight.model.TaggedText;
-import org.dbpedia.spotlight.spot.TaggedSpotSelector;
 import org.dbpedia.spotlight.tagging.TaggedToken;
 
 import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Candidate selector based on co-occurrence data using two classifiers for unigram
+ * Spot selector based on co-occurrence data using two classifiers for unigram
  * and ngram candidates.
  *
  * @author Joachim Daiber
@@ -51,9 +50,9 @@ public class CoOccurrenceBasedSelector implements TaggedSpotSelector {
 		LOG.info("Done.");
 
 		LOG.info("Initializing spot candidate classifiers.");
-		new ClassifierFactory(spotterConfiguration.getCandidateClassifierUnigram(),
-				spotterConfiguration.getCandidateClassifierNGram(),
-				spotterConfiguration.getCandidateOccurrenceDataSource(),
+		new ClassifierFactory(spotterConfiguration.getCoOcSelectorClassifierUnigram(),
+				spotterConfiguration.getCoOcSelectorClassifierNGram(),
+				spotterConfiguration.getCoOcSelectorDatasource(),
 				OccurrenceDataProviderSQL.getInstance()
 			);
 		
@@ -129,20 +128,19 @@ public class CoOccurrenceBasedSelector implements TaggedSpotSelector {
 					decisions.add("Dropped by Pattern filter: " + surfaceFormOccurrence);
 				}else{
 
-                    SpotClassification candidateClassification = null;
+                    SpotClassification spotClassification;
                     try {
-                        candidateClassification = unigramClassifier.classify(surfaceFormOccurrence);
+                        spotClassification = unigramClassifier.classify(surfaceFormOccurrence);
 
-                        if(candidateClassification.getCandidateClass() == SpotClass.valid) {
+                        if(spotClassification.getCandidateClass() == SpotClass.valid) {
                             selectedOccurrences.add(surfaceFormOccurrence);
-                            //LOG.info(("Kept by UnigramClassifier (Confidence: " + candidateClassification.getConfidence() + "): " + surfaceFormOccurrence);
+                            //LOG.info(("Kept by UnigramClassifier (Confidence: " + spotClassification.getConfidence() + "): " + surfaceFormOccurrence);
                         }else{
-                            decisions.add("Dropped by UnigramClassifier (Confidence: " + candidateClassification.getConfidence() + "): " + surfaceFormOccurrence);
+                            decisions.add("Dropped by UnigramClassifier (Confidence: " + spotClassification.getConfidence() + "): " + surfaceFormOccurrence);
                         }
 
                     } catch (Exception e) {
                         LOG.error("Exception when classifying unigram candidate: " + e);
-                        continue;
                     }
 
 				}
@@ -154,17 +152,17 @@ public class CoOccurrenceBasedSelector implements TaggedSpotSelector {
 				 * n > 1
 				 */
 
-				SpotClassification candidateClassification = null;
+				SpotClassification spotClassification;
 				try{
-					candidateClassification = ngramClassifier.classify(surfaceFormOccurrence);
+					spotClassification = ngramClassifier.classify(surfaceFormOccurrence);
 				}catch (Exception e) {
 					LOG.error("Exception when classifying ngram candidate: " + e);
 					continue;
 				}
 
-				if(candidateClassification.getCandidateClass() == SpotClass.valid) {
+				if(spotClassification.getCandidateClass() == SpotClass.valid) {
 					selectedOccurrences.add(surfaceFormOccurrence);
-					//LOG.info("Kept by nGramClassifier (Confidence: " + candidateClassification.getConfidence() + "): " + surfaceFormOccurrence);
+					//LOG.info("Kept by nGramClassifier (Confidence: " + spotClassification.getConfidence() + "): " + surfaceFormOccurrence);
 				}else{
 					decisions.add("Dropped by NGramClassifier: " + surfaceFormOccurrence);
 				}

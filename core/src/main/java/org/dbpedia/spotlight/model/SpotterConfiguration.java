@@ -18,52 +18,109 @@ import java.util.Properties;
  */
 public class SpotterConfiguration {
 
+    public final String PREFIX_COOCCURRENCE_SELECTOR = "org.dbpedia.spotlight.spot.cooccurrence.";
+
     Properties config = new Properties();
 
     public enum SpotterPolicy {UserProvidedSpots,
-                               LingPipeSpotter,
-                               AtLeastOneNounSelector,
-                               CoOccurrenceBasedSelector
-                               }
+        LingPipeSpotter,
+        AtLeastOneNounSelector,
+        CoOccurrenceBasedSelector
+    }
 
-	protected String spotterFile    = "";
+    protected String spotterFile    = "";
 
-	protected String candidateDatabaseDriver = "";
-	protected String candidateDatabaseConnector = "";
-	protected String candidateDatabaseUser = "";
-	protected String candidateDatabasePassword = "";
+    public SpotterConfiguration(String fileName) throws ConfigurationException {
 
-	protected String candidateClassifierUnigram = "";
-	protected String candidateClassifierNGram = "";
-	protected String candidateOccurrenceDataSource = "";
+        //Read config properties:
+        try {
+            config.load(new FileInputStream(new File(fileName)));
+        } catch (IOException e) {
+            throw new ConfigurationException("Cannot find configuration file "+fileName,e);
+        }
 
-	public String getCandidateDatabaseDriver() {
-		return candidateDatabaseDriver;
-	}
+        // Validate spotters
+        List<SpotterPolicy> spotters = getSpotterPolicies();
 
-	public String getCandidateDatabaseConnector() {
-		return candidateDatabaseConnector;
-	}
+        // Validate LingPipeSpotter
+        if (spotters.contains(SpotterPolicy.LingPipeSpotter)) {
+            //Load spotter configuration:
+            spotterFile = config.getProperty("org.dbpedia.spotlight.spot.dictionary").trim();
+            if(!new File(spotterFile).isFile()) {
+                throw new ConfigurationException("Cannot find spotter file "+spotterFile);
+            }
+        }
 
-	public String getCandidateDatabaseUser() {
-		return candidateDatabaseUser;
-	}
 
-	public String getCandidateDatabasePassword() {
-		return candidateDatabasePassword;
-	}
+        // Validate CoOccurrenceBasedSelector
+        if (spotters.contains(SpotterPolicy.CoOccurrenceBasedSelector)) {
 
-	public String getCandidateClassifierNGram() {
-		return candidateClassifierNGram;
-	}
+            //Check if all required parameters are there, trim whitespace
+            String[] paramters = {"database.jdbcdriver", "database.connector", "database.user", "database.password",
+                    "classifier.unigram", "classifier.ngram", "datasource"};
 
-	public String getCandidateClassifierUnigram() {
-		return candidateClassifierUnigram;
-	}
-	
-	public String getSpotterFile() {
-		return spotterFile;
-	}
+            for(String parameter : paramters) {
+                try{
+                    //Trim whitepsace from the paramter
+                    config.setProperty(PREFIX_COOCCURRENCE_SELECTOR + parameter, config.getProperty(PREFIX_COOCCURRENCE_SELECTOR + parameter).trim());
+                }catch(NullPointerException e){
+                    //One of the configuration property required for this Spot selector was not there.
+                    throw new ConfigurationException("Cannot find required configuration property '" +
+                            PREFIX_COOCCURRENCE_SELECTOR + parameter + "' for co-occurrence based spot selector.");
+                }
+            }
+
+
+            //Check if all the required files are there:
+            String[] paramterFiles = {"classifier.unigram", "classifier.ngram"};
+            for(String fileParamter : paramterFiles) {
+                String file = config.getProperty(PREFIX_COOCCURRENCE_SELECTOR + fileParamter);
+                if(!new File(file).isFile()) {
+                    throw new ConfigurationException("Cannot find required file '"+file+"' for configuration paramter "+PREFIX_COOCCURRENCE_SELECTOR + fileParamter);
+                }
+            }
+
+            if(!config.getProperty(PREFIX_COOCCURRENCE_SELECTOR + "datasource").equalsIgnoreCase("ukwac") &&
+               !config.getProperty(PREFIX_COOCCURRENCE_SELECTOR + "datasource").equalsIgnoreCase("google")) {
+                throw new ConfigurationException(PREFIX_COOCCURRENCE_SELECTOR + "datasource must be one of 'ukwac' or 'google'.");
+            }
+
+        }
+
+    }
+
+    public String getCoOcSelectorDatabaseDriver() {
+        return config.getProperty(PREFIX_COOCCURRENCE_SELECTOR + "database.jdbcdriver");
+    }
+
+    public String getCoOcSelectorDatabaseConnector() {
+        return config.getProperty(PREFIX_COOCCURRENCE_SELECTOR + "database.connector");
+    }
+
+    public String getCoOcSelectorDatabaseUser() {
+        return config.getProperty(PREFIX_COOCCURRENCE_SELECTOR + "database.user");
+    }
+
+    public String getCoOcSelectorDatabasePassword() {
+        return config.getProperty(PREFIX_COOCCURRENCE_SELECTOR + "database.password");
+    }
+
+    public String getCoOcSelectorClassifierNGram() {
+        return config.getProperty(PREFIX_COOCCURRENCE_SELECTOR + "classifier.ngram");
+    }
+
+    public String getCoOcSelectorClassifierUnigram() {
+        return config.getProperty(PREFIX_COOCCURRENCE_SELECTOR + "classifier.unigram");
+    }
+
+    public String getCoOcSelectorDatasource() {
+        return config.getProperty(PREFIX_COOCCURRENCE_SELECTOR + "datasource");
+    }
+
+    public String getSpotterFile() {
+        return spotterFile;
+    }
+
 
     public List<SpotterPolicy> getSpotterPolicies() throws ConfigurationException {
         List<SpotterPolicy> policies = new ArrayList<SpotterPolicy>();
@@ -79,53 +136,6 @@ public class SpotterConfiguration {
 
         return policies;
     }
-
-	public SpotterConfiguration(String fileName) throws ConfigurationException {
-
-		//Read config properties:
-		try {
-			config.load(new FileInputStream(new File(fileName)));
-		} catch (IOException e) {
-			throw new ConfigurationException("Cannot find configuration file "+fileName,e);
-		}
-
-        // Validate spotters
-        List<SpotterPolicy> spotters = getSpotterPolicies();
-
-        // Validate LingPipeSpotter
-        if (spotters.contains(SpotterPolicy.LingPipeSpotter)) {
-            //Load spotter configuration:
-            spotterFile = config.getProperty("org.dbpedia.spotlight.spot.dictionary").trim();
-            if(!new File(spotterFile).isFile()) {
-                throw new ConfigurationException("Cannot find spotter file "+spotterFile);
-            }
-        }
-
-
-		//Load spot selector configuration:
-		candidateDatabaseDriver =
-				config.getProperty("org.dbpedia.spotlight.candidate.cooccurence.database.jdbcdriver", "").trim();
-		candidateDatabaseConnector =
-				config.getProperty("org.dbpedia.spotlight.candidate.cooccurence.database.connector", "").trim();
-		candidateDatabaseUser =
-				config.getProperty("org.dbpedia.spotlight.candidate.cooccurence.database.user", "").trim();
-		candidateDatabasePassword =
-				config.getProperty("org.dbpedia.spotlight.candidate.cooccurence.database.password", "").trim();
-
-		candidateClassifierUnigram =
-				config.getProperty("org.dbpedia.spotlight.candidate.cooccurence.classifier.unigram", "").trim();
-		candidateClassifierNGram =
-						config.getProperty("org.dbpedia.spotlight.candidate.cooccurence.classifier.ngram", "").trim();
-
-		candidateOccurrenceDataSource =
-				config.getProperty("org.dbpedia.spotlight.candidate.cooccurence.datasource", "").trim();
-
-
-	}
-
-	public String getCandidateOccurrenceDataSource() {
-		return candidateOccurrenceDataSource;
-	}
 
 
 }

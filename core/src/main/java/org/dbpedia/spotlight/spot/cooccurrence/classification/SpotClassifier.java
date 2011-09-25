@@ -49,7 +49,7 @@ public class SpotClassifier {
 	public SpotClassifier(String modelFile, OccurrenceDataProvider dataProvider, InstanceBuilder instanceBuilder)
 			throws InitializationException {
 		if (!new File(modelFile).exists()) //TODO Jo, please check during configuration if CoOccurrenceBasedSelector is in the config file, then check it at that point.
-            throw new InitializationException("Error initiating starting SpotClassifier.",new ConfigurationException("Could not find file for org.dbpedia.spotlight.spot.classifier.unigram"));
+            throw new InitializationException("Error initiating SpotClassifier.",new ConfigurationException("Could not find file for org.dbpedia.spotlight.spot.classifier.unigram"));
 		this.modelFile = modelFile;
 		this.dataProvider = dataProvider;
 		this.instanceBuilder = instanceBuilder;
