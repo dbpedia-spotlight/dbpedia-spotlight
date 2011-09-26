@@ -23,6 +23,7 @@ import java.util.{LinkedHashSet, LinkedList}
 import java.io.{InputStream, File}
 import org.semanticweb.yars.nx.parser.NxParser
 import org.dbpedia.spotlight.model.{OntologyType, Factory, DBpediaResource, DBpediaType}
+import collection.JavaConversions
 
 /**
  * Created by IntelliJ IDEA.
@@ -36,22 +37,41 @@ object TypesLoader
 {
     private val LOG = LogFactory.getLog(this.getClass)
 
-    def getTypesMap(typeDictFile : File) : Map[String,List[DBpediaType]] = {
+    def getTypesMap(typeDictFile : File) : Map[String, List[OntologyType]] = {
         LOG.info("Loading types map...")
         if (!(typeDictFile.getName.toLowerCase endsWith ".tsv"))
             throw new IllegalArgumentException("types mapping only accepted in tsv format so far! can't parse "+typeDictFile)
         // CAUTION: this assumes that the most specific type is listed last
-        var typesMap = Map[String,List[DBpediaType]]()
+        var typesMap = Map[String,List[OntologyType]]()
         for (line <- Source.fromFile(typeDictFile, "UTF-8").getLines) {
             val elements = line.split("\t")
             val uri = new DBpediaResource(elements(0)).uri
-            val t = new DBpediaType(elements(1))
-            val typesList : List[DBpediaType] = typesMap.get(uri).getOrElse(List[DBpediaType]()) ::: List(t)
+            val t = Factory.OntologyType.fromURI(elements(1))
+            val typesList : List[OntologyType] = typesMap.get(uri).getOrElse(List[OntologyType]()) ::: List(t)
             typesMap = typesMap.updated(uri, typesList)
         }
         LOG.info("Done.")
         typesMap
     }
+
+    def getTypesMapFromTSV_java(typeDictFile : File) : java.util.Map[String,java.util.LinkedHashSet[OntologyType]] = {
+        LOG.info("Loading types map...")
+        if (!(typeDictFile.getName.toLowerCase endsWith ".tsv"))
+            throw new IllegalArgumentException("types mapping only accepted in tsv format so far! can't parse "+typeDictFile)
+
+        var typesMap = Map[String,java.util.LinkedHashSet[OntologyType]]()
+        for (line <- Source.fromFile(typeDictFile, "UTF-8").getLines) {
+            val elements = line.split("\t")
+            val uri = new DBpediaResource(elements(0)).uri
+
+            val t = Factory.OntologyType.fromURI(elements(1))
+            val typesList : java.util.LinkedHashSet[OntologyType] = typesMap.get(uri).getOrElse(new LinkedHashSet[OntologyType]())
+            typesMap = typesMap.updated(uri, typesList)
+        }
+        LOG.info("Done.")
+        typesMap
+    }
+
 
     def getTypesMap_java(instanceTypesStream : InputStream) : java.util.Map[String,java.util.LinkedHashSet[OntologyType]] = {
         LOG.info("Loading types map...")

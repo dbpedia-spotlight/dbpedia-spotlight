@@ -31,7 +31,10 @@ import org.dbpedia.spotlight.util.{IndexingConfiguration, TypesLoader}
 object AddTypesToIndex {
 
     def loadTypes(instanceTypesFileName: String) = {
-        TypesLoader.getTypesMap_java(new FileInputStream(instanceTypesFileName));
+        instanceTypesFileName.endsWith(".tsv") match {
+          case true  => TypesLoader.getTypesMapFromTSV_java(new File(instanceTypesFileName))
+          case false => TypesLoader.getTypesMap_java(new FileInputStream(instanceTypesFileName))
+        }
     }
 
     def main(args : Array[String]) {

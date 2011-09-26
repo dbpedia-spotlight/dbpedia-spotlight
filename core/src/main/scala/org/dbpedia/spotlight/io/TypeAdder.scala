@@ -16,10 +16,11 @@
 
 package org.dbpedia.spotlight.io
 
+import scala.collection.JavaConversions._
 import java.io.File
 import org.apache.commons.logging.LogFactory
-import org.dbpedia.spotlight.model.{DBpediaType, DBpediaResourceOccurrence}
 import org.dbpedia.spotlight.util.TypesLoader
+import org.dbpedia.spotlight.model.{OntologyType, DBpediaResourceOccurrence}
 
 /**
  * User: Max
@@ -28,7 +29,7 @@ import org.dbpedia.spotlight.util.TypesLoader
  * Adds types to Occurrences
  */
 
-class TypeAdder(val occSource : OccurrenceSource, var typesMap : Map[String,List[DBpediaType]]) extends OccurrenceSource
+class TypeAdder(val occSource : OccurrenceSource, var typesMap : Map[String,List[OntologyType]]) extends OccurrenceSource
 {
     private val LOG = LogFactory.getLog(this.getClass)
     
@@ -39,7 +40,7 @@ class TypeAdder(val occSource : OccurrenceSource, var typesMap : Map[String,List
     override def foreach[U](f : DBpediaResourceOccurrence => U) {
         for (occ <- occSource) {
             if (occ.resource.types.isEmpty) {
-                occ.resource.types = typesMap.get(occ.resource.uri).getOrElse(List[DBpediaType]())
+                occ.resource.setTypes(typesMap.get(occ.resource.uri).getOrElse(List[OntologyType]()))
                 f( new DBpediaResourceOccurrence(occ.id,
                                                  occ.resource,
                                                  occ.surfaceForm,
