@@ -90,7 +90,7 @@ class FreebaseType(val domain: String, val typeName: String) extends OntologyTyp
     var typeID = "Freebase:/" + domain
 
     if(typeName != null) {
-      typeID += typeName
+      typeID += "/" + typeName
     }
 
     typeID
