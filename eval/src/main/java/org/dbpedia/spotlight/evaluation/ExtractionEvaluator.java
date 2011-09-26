@@ -23,21 +23,19 @@ public class ExtractionEvaluator {
 		SpotlightFactory spotlightFactory = new SpotlightFactory(configuration);
 
 		AnnotatedDataset evaluationCorpus =
-				new AnnotatedDataset(new File("/Users/jodaiber/Desktop/csaw"),
+				new AnnotatedDataset(new File(args[0]),
 						AnnotatedDataset.Format.CSAW, spotlightFactory);
 
 		int tp = 0, fp = 0, fn = 0;
 
 		Set<DBpediaResourceOccurrence> goldAnnotations = evaluationCorpus.toDBpediaResourceOccurrences();
-		//writeAnnotations(spotlightFactory, evaluationCorpus,
-		//		new File("/Users/jodaiber/Documents/" +
-		//				"workspace/ba/BachelorThesis/02 Implementation/DBPedia Spotlight data/eval/candidate selection/csaw_ukwac/"));
+		writeAnnotations(spotlightFactory, evaluationCorpus,
+				new File(args[1]));
 
 		/**
 		 * Read all annotations made by a configuration of DBpedia Spotlight.
 		 */
-		List<List<DBpediaResourceOccurrence>> allAnnotatedTexts = readAnnotations(new File("/Users/jodaiber/Documents/" +
-				"workspace/ba/BachelorThesis/02 Implementation/DBPedia Spotlight data/eval/candidate selection/csaw_ukwac/"),
+		List<List<DBpediaResourceOccurrence>> allAnnotatedTexts = readAnnotations(new File(args[1]),
 			evaluationCorpus);
 
 		/**
