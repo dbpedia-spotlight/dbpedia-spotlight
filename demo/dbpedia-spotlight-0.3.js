@@ -28,19 +28,17 @@
  *
  */
 
+//from http://www.wrichards.com/blog/2009/02/jquery-sorting-elements/
 jQuery.fn.sort = function() {
     return this.pushStack( [].sort.apply( this, arguments ), []);
 };
-
- function sortOffset(a,b){
+function sortOffset(a,b){
      if (a["@offset"] == b["@offset"]){
-         console.log("equal")
        return 0;
      }
-
-     console.log("a>b="+parseInt(a["@offset"])>parseInt(b["@offset"]))
      return parseInt(a["@offset"]) > parseInt(b["@offset"]) ? 1 : -1;
- };
+};
+
 
 (function( $ ){
 
@@ -258,34 +256,34 @@ jQuery.fn.sort = function() {
                });
        },
        suggest: function( options ) {
-	       //init(options);	
-               function update(response) {
-                   var keywords = Kolich.Selector.getSelected();  
-                   var suggestion = Parser.getSuggestions(response, keywords);
-			console.log('keywords:'+keywords);                   
-			console.log('suggestion:'+suggestion);
-                   var content = "<div style='overflow: auto'>" + suggestion + "</div>";
-                   if (settings.powered_by == 'yes') { 
-                       $(content).append($(powered_by)); 
-                   };                        
-                   $(this).html(content);          
-               }    
-       
-               return this.each(function() {            
-                 console.log('suggest');
-                 var keywords = $.trim("" + Kolich.Selector.getSelected());
-		 var params = {'text': $(this).text(), 'confidence': settings.confidence, 'support': settings.support, 'spotter': settings.spotter, 'surfaceForm': keywords }; 
-                 if("types" in settings && settings["types"] != undefined){
+           //init(options);
+           function update(response) {
+               var keywords = Kolich.Selector.getSelected();
+               var suggestion = Parser.getSuggestions(response, keywords);
+               console.log('keywords:'+keywords);
+               console.log('suggestion:'+suggestion);
+               var content = "<div style='overflow: auto'>" + suggestion + "</div>";
+               if (settings.powered_by == 'yes') {
+                   $(content).append($(powered_by));
+               };
+               $(this).html(content);
+           }
+
+           return this.each(function() {
+               console.log('suggest');
+               var keywords = $.trim("" + Kolich.Selector.getSelected());
+               var params = {'text': $(this).text(), 'confidence': settings.confidence, 'support': settings.support, 'spotter': settings.spotter, 'surfaceForm': keywords };
+               if("types" in settings && settings["types"] != undefined){
                    params['types'] = settings.types;
-                 }
-    
-                 ajaxRequest = $.ajax({ 'url': settings.endpoint+"/candidates",
-                      'data': params,
-                      'context': this,
-                      'headers': {'Accept': 'application/json'},
-                      'success': update
-                    });
+               }
+
+               ajaxRequest = $.ajax({ 'url': settings.endpoint+"/candidates",
+                   'data': params,
+                   'context': this,
+                   'headers': {'Accept': 'application/json'},
+                   'success': update
                });
+           });
        }
 
   }; 

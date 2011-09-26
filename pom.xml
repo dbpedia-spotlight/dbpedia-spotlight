@@ -21,7 +21,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
-        <dbpedia.spotlight.version>0.4.9</dbpedia.spotlight.version>
+        <dbpedia.spotlight.version>0.5</dbpedia.spotlight.version>
 
         <heapspace.Xmx.compiler>-Xmx5g</heapspace.Xmx.compiler>
         <heapspace.Xmx.indexer>-Xmx2g</heapspace.Xmx.indexer>

@@ -33,7 +33,6 @@ import java.io.File
 import org.dbpedia.spotlight.spot._
 import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters
 import org.dbpedia.spotlight.tagging.lingpipe.{LingPipeTextUtil, LingPipeTaggedTokenProvider, LingPipeFactory}
-import collection.mutable.HashMap
 import collection.JavaConversions._
 import org.dbpedia.spotlight.annotate.{DefaultAnnotator, DefaultParagraphAnnotator}
 import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
@@ -66,9 +65,9 @@ class SpotlightFactory(val configuration: SpotlightConfiguration,
 
     // The dbpedia resource factory is used every time a document is retrieved from the index.
     // We can use the index itself as provider, or we can use a database. whichever is faster.
+    // If the factory is left null, BaseSearcher will use Lucene. Otherwise, it will use the factory.
     val dbpediaResourceFactory : DBpediaResourceFactory = configuration.getDBpediaResourceFactory
     luceneManager.setDBpediaResourceFactory(dbpediaResourceFactory)
-    LOG.debug("DBpedia Resource Factory is null?? %s".format(luceneManager.getDBpediaResourceFactory == null))
 
     val searcher = new MergedOccurrencesContextSearcher(luceneManager);
 
@@ -87,7 +86,7 @@ class SpotlightFactory(val configuration: SpotlightConfiguration,
         disambiguators.head._2
     }
 
-    def disambiguator(name: SpotlightConfiguration.DisambiguationPolicy) : ParagraphDisambiguatorJ = { //TODO define enum
+    def disambiguator(name: SpotlightConfiguration.DisambiguationPolicy) : ParagraphDisambiguatorJ = {
         if (name == SpotlightConfiguration.DisambiguationPolicy.Document) {
             disambiguators.getOrElse(name, new ParagraphDisambiguatorJ(new TwoStepDisambiguator(configuration)))
         } else if (name == SpotlightConfiguration.DisambiguationPolicy.Occurrences) {
