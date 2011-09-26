@@ -84,21 +84,16 @@ public class SpotClassifier {
 	 * @param surfaceFormOccurrence the surface form occurrence
 	 * @return a Classification object containing the proposed classification and a confidence value
 	 */
-	public SpotClassification classify(SurfaceFormOccurrence surfaceFormOccurrence) {
+	public SpotClassification classify(SurfaceFormOccurrence surfaceFormOccurrence) throws Exception {
 		Instance instance = buildInstance(surfaceFormOccurrence);
 
-		try {
-			double candidateClassification = classifier.classifyInstance(instance);
+        double candidateClassification = classifier.classifyInstance(instance);
 
-			double[] distributionForInstance = classifier.distributionForInstance(instance);
-			double confidence = distributionForInstance[(int) candidateClassification];
-			SpotClass candidateClass = candidateClassification == 0 && confidence > MIN_CONFIDENCE ? SpotClass.valid : SpotClass.common;
+        double[] distributionForInstance = classifier.distributionForInstance(instance);
+        double confidence = distributionForInstance[(int) candidateClassification];
+        SpotClass candidateClass = candidateClassification == 0 && confidence > MIN_CONFIDENCE ? SpotClass.valid : SpotClass.common;
 
-			return new SpotClassification(confidence, candidateClass);
-		} catch (Exception e) {
-			LOG.error("Exception while classifing " + e);
-			return null;
-		}
+        return new SpotClassification(confidence, candidateClass);
 
 	}
 

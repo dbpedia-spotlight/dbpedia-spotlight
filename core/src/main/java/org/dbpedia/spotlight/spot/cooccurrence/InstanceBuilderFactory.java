@@ -56,7 +56,7 @@ public class InstanceBuilderFactory {
 			return new InstanceBuilderUnigramGoogle(dataProvider);
 		}else{
 			throw new InitializationException("No known occurrence data source found. Please check " +
-					"org.dbpedia.spotlight.candidate.cooccurence.datasource in the configuration file.");
+					"org.dbpedia.spotlight.spot.cooccurrence.datasource in the configuration file.");
 			
 		}
 	}
@@ -80,7 +80,7 @@ public class InstanceBuilderFactory {
 			return new InstanceBuilderNGramGoogle(dataProvider);
 		}else{
 			throw new InitializationException("No known occurrence data source found. Please check " +
-					"org.dbpedia.spotlight.candidate.cooccurence.datasource in the configuration file.");
+					"org.dbpedia.spotlight.spot.cooccurrence.datasource in the configuration file.");
 
 		}
 	

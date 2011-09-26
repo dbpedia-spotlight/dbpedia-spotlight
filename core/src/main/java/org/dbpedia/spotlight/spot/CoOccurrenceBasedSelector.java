@@ -3,9 +3,7 @@ package org.dbpedia.spotlight.spot;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.exceptions.InitializationException;
-import org.dbpedia.spotlight.model.SpotterConfiguration;
-import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
-import org.dbpedia.spotlight.model.TaggedText;
+import org.dbpedia.spotlight.model.*;
 import org.dbpedia.spotlight.spot.cooccurrence.ClassifierFactory;
 import org.dbpedia.spotlight.spot.cooccurrence.classification.SpotClass;
 import org.dbpedia.spotlight.spot.cooccurrence.classification.SpotClassification;
@@ -40,10 +38,11 @@ public class CoOccurrenceBasedSelector implements TaggedSpotSelector {
 	 *
 	 * @param spotterConfiguration SpotterConfiguration object with classifier paths and JDBC
 	 * 			description of occurrence data provider.
-	 * @throws InitializationException Either the OccurrenceDataProvider or the ClassifierFactory
+	 * @param spotlightFactory
+     * @throws InitializationException Either the OccurrenceDataProvider or the ClassifierFactory
 	 * 			could not be initialized.
 	 */
-	public CoOccurrenceBasedSelector(SpotterConfiguration spotterConfiguration) throws InitializationException {
+	public CoOccurrenceBasedSelector(SpotterConfiguration spotterConfiguration, SpotlightFactory spotlightFactory) throws InitializationException {
 		
 		LOG.info("Initializing spot occurrence data provider.");
 		OccurrenceDataProviderSQL.initialize(spotterConfiguration);
@@ -56,8 +55,33 @@ public class CoOccurrenceBasedSelector implements TaggedSpotSelector {
 				OccurrenceDataProviderSQL.getInstance()
 			);
 		
-		LOG.info("Done.");
-		
+
+        //Classify a single n-gram and unigram occurrence to make sure the classifiers are working.
+		SpotClassifier unigramClassifier = ClassifierFactory.getClassifierInstanceUnigram();
+		SpotClassifier ngramClassifier = ClassifierFactory.getClassifierInstanceNGram();
+
+        SurfaceFormOccurrence unigramOccurrence = new SurfaceFormOccurrence(new SurfaceForm("Berlin"),
+                new TaggedText("Berlin is a city.", spotlightFactory.taggedTokenProvider()),
+                0, Provenance.Undefined(), -1);
+        try {
+            unigramClassifier.classify(unigramOccurrence);
+        } catch (Exception e) {
+            throw new InitializationException("An error occurred while classifying a test spot using the co-occurrence " +
+                    "based spot selector. This is most probably caused by an outdated spot selector model. Please " +
+                    "check the spot selector models defined 'org.dbpedia.spotlight.spot.cooccurrence.classifier.*'.", e);
+        }
+
+        SurfaceFormOccurrence ngramOccurrence = new SurfaceFormOccurrence(new SurfaceForm("Bill Gates"),
+                new TaggedText("Bill Gates is an American.", spotlightFactory.taggedTokenProvider()),
+                0, Provenance.Undefined(), -1);
+        try {
+            ngramClassifier.classify(ngramOccurrence);
+        } catch (Exception e) {
+            throw new InitializationException("An error occurred while classifying a test spot using the co-occurrence " +
+                    "based spot selector. This is most probably caused by an outdated spot selector model. Please " +
+                    "check the spot selector models defined 'org.dbpedia.spotlight.spot.cooccurrence.classifier.*'.", e);        }
+
+        LOG.info("Done.");
 	}
 	
 
@@ -156,8 +180,8 @@ public class CoOccurrenceBasedSelector implements TaggedSpotSelector {
 				try{
 					spotClassification = ngramClassifier.classify(surfaceFormOccurrence);
 				}catch (Exception e) {
-					LOG.error("Exception when classifying ngram candidate: " + e);
-					continue;
+                    LOG.error("Exception when classifying ngram candidate: " + e);
+                    continue;
 				}
 
 				if(spotClassification.getCandidateClass() == SpotClass.valid) {
