@@ -43,7 +43,7 @@ public class  AnnotatedDatasetEnricherUnigram extends AnnotatedDatasetEnricher {
 		dataProvider  = OccurrenceDataProviderSQL.getInstance();
 
 		instanceBuilder = InstanceBuilderFactory.createInstanceBuilderUnigram(
-				configuration.getSpotterConfiguration().getCandidateOccurrenceDataSource(),
+				configuration.getSpotterConfiguration().getCoOcSelectorDatasource(),
 				dataProvider);
 		
 		instanceBuilder.setVerboseMode(true);

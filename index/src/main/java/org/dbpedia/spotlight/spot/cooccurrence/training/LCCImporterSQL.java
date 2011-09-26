@@ -33,11 +33,11 @@ public class LCCImporterSQL {
 		spotterConfiguration = new SpotterConfiguration("conf/server.properties");
 
 		try {
-			Class.forName(spotterConfiguration.getCandidateDatabaseDriver()).newInstance();
+			Class.forName(spotterConfiguration.getCoOcSelectorDatabaseDriver()).newInstance();
 
-			this.sqlConnection = DriverManager.getConnection(spotterConfiguration.getCandidateDatabaseConnector(),
-					spotterConfiguration.getCandidateDatabaseUser(),
-					spotterConfiguration.getCandidateDatabasePassword()
+			this.sqlConnection = DriverManager.getConnection(spotterConfiguration.getCoOcSelectorDatabaseConnector(),
+					spotterConfiguration.getCoOcSelectorDatabaseUser(),
+					spotterConfiguration.getCoOcSelectorDatabasePassword()
 					);
 
 		} catch(Exception e) {

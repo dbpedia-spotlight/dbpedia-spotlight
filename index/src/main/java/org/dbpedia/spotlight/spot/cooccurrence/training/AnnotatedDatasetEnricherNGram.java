@@ -39,7 +39,7 @@ public class AnnotatedDatasetEnricherNGram extends AnnotatedDatasetEnricher {
 		dataProvider  = OccurrenceDataProviderSQL.getInstance();
 
 		instanceBuilder = InstanceBuilderFactory.createInstanceBuilderNGram(
-				configuration.getSpotterConfiguration().getCandidateOccurrenceDataSource(), dataProvider);
+				configuration.getSpotterConfiguration().getCoOcSelectorDatasource(), dataProvider);
 		instanceBuilder.setVerboseMode(true);
 
 		/** Filter the data set: */
