@@ -9,16 +9,30 @@ from collections import defaultdict
 
 import sys, csv, bz2, re
 import rdflib
+import getopt
+
+#Read command line options
+options, operands = getopt.getopt(sys.argv[4:], "", ["one_type_per_line"])
+config = dict(options)
+config.setdefault("one_type_per_line", False)
 
 csv.field_size_limit(1000000000)
 
 IGNORED_PREFIXES = ["/base/", "/user/", "/m/", "/common/topic", "/freebase",
                     "/influence", "/dataworld", "/common", "/type", "/atom"]
+FREEBASE_RDF_PREFIX = "http://rdf.freebase.com/ns"
 
 def filterTypes(freebase_type):
+
+    #Ignore domains, since domain equality for Freebase is defined within DBpedia Spotlight (FreebaseType.equals(...))
+    if freebase_type.count("/") < 2:
+        return False
+
+    #Ignore all of these prefixes:
     for prefix in IGNORED_PREFIXES:
         if freebase_type.startswith(prefix):
             return False
+    
     return True
 
 def getSubjectAndObject(line, predicate, safe=True):
@@ -85,13 +99,12 @@ def addToDictionary(ntfile, dictionary, predicate, label=None, safe=True, object
 
 freebaseTypeDict = defaultdict(int)
 def countFreebaseTypes(freebaseTypes):
+
     #Extend the list of types with the base types but only count them once (list -> set)
-    freebaseTypes.extend(set(map(lambda x: "/" + x.split("/")[1], freebaseTypes)))
+    freebaseTypesToCount = freebaseTypes[:]
+    freebaseTypesToCount.extend(set(map(lambda x: "/" + x.split("/")[1], freebaseTypes)))
 
-    if len(freebaseTypes) > 0:
-        freebaseTypes.append("owl#Thing")
-
-    for freebaseType in freebaseTypes:
+    for freebaseType in freebaseTypesToCount:
         freebaseTypeDict[freebaseType] += 1
 
 def main():
@@ -101,10 +114,6 @@ def main():
 
     outfile_types = "types.freebase.tsv"
     outfile_freebase_identifier = "typestats.freebase.tsv"
-
-    #dbpediaTypes = addToDictionary(dbpedia_types, {}, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", safe=False,
-    #	sfunc=lambda x: str(x).replace("http://dbpedia.org/resource/", ""),
-    #	ofunc=lambda x: str(x).replace("http://dbpedia.org/ontology/", ""))
 
     print >>sys.stderr, "Reading Wikipedia id to Wikipedia page mapping..."
     idToPage = addToDictionary(page_ids, {}, "http://dbpedia.org/ontology/wikiPageID", reverse=True, safe=False,
@@ -116,9 +125,10 @@ def main():
         ofunc=lambda x: str(x).replace("http://dbpedia.org/resource/", ""))
 
     freebaseReader = csv.reader(bz2.BZ2File(freebase_dump), delimiter='\t')
-    freebaseTypes = {}
+    #freebaseTypes = {}
 
     print >>sys.stderr, "Processing Freebase dump..."
+    typeWriter = csv.writer(open(outfile_types, "w"), delimiter='\t')
     for row in freebaseReader:
         if row[3].startswith("/wikipedia/en_"):
             #There is a match with Wikipedia:
@@ -132,18 +142,16 @@ def main():
 
                 if len(types) > 0:
                     countFreebaseTypes(types)
-                    freebaseTypes[dbpediaID] = types
+                    #freebaseTypes[dbpediaID] = types
+                    if config.get("one_type_per_line"):
+                        for fbType in types:
+                            typeWriter.writerow([dbpediaID, FREEBASE_RDF_PREFIX + fbType])
+                    else:
+                        typeWriter.writerow([dbpediaID, ",".join(types)])
                 
             except KeyError:
-                print "\t".join(row)
-
-
-    typeWriter = csv.writer(open(outfile_types, "w"), delimiter='\t')
-
-    for (entity, freebaseTypesForEntity) in freebaseTypes.items():
-        if len(freebaseTypesForEntity) > 0:
-            typeWriter.writerow([entity, ",".join(freebaseTypesForEntity)])
-
+                print row[0]
+    
     typeIdentifierWriter = csv.writer(open(outfile_freebase_identifier, "w"), delimiter='\t')
     typeIdentifierWriter.writerows([[k, v] for (k, v) in freebaseTypeDict.items()])
 

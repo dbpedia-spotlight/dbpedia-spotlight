@@ -18,11 +18,16 @@
 ##
 
 #Read DBpedia instance types:
-bzcat instance_types_en.nt.bz2 | sed 's|<http://dbpedia.org/resource/\([^>]*\)> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <\([^>]*\)> .|\1	\2|' > types.dbpedia.tsv
+bzcat instance_types_en.nt.bz2 | grep -v -e ".*__[0-9]*> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>" | grep -e "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/.*" -e "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/.*" | sed 's|<http://dbpedia.org/resource/\([^>]*\)> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <\([^>]*\)> .|\1	\2|' > types.dbpedia.tsv
+
+#cat types.dbpedia.tsv types.freebase.tsv | sort -k1 -S5G > types.tsv
 
 #Read and extract Freebase types:
-python types_freebase.py page_ids_en.nt.bz2 wikipedia_links_en.nt.bz2 freebase-simple-topic-dump.tsv.bz2 > brokenFreebaseWikipediaLinks.tsv
+python types_freebase.py page_ids_en.nt.bz2 wikipedia_links_en.nt.bz2 freebase-simple-topic-dump.tsv.bz2 --one_type_per_line > brokenFreebaseWikipediaLinks.tsv
 sort -k2n,2r typestats.freebase.tsv -o typestats.freebase.tsv
+
+#Merge Freebase and DBpedia (incl. Schema.org)
+cat types.dbpedia.tsv types.freebase.tsv > instanceTypes.tsv
 
 #Read Schema.org type mapping from the ontology file:
 python typemapping_schema.py dbpedia_3.7.owl > typemapping.schema_org.tsv
