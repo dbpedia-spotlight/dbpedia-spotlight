@@ -126,7 +126,7 @@ object Factory {
         }
         def from(occs: List[SurfaceFormOccurrence]) = {
             val first = occs.head
-            new Paragraph("",first.context,occs)
+            new Paragraph("",first.context,occs.sortBy(o => o.textOffset))
         }
     }
 

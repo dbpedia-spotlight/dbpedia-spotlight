@@ -45,7 +45,7 @@ class CuttingEdgeDisambiguator(val configuration: SpotlightConfiguration) extend
     val dir = LuceneManager.pickDirectory(indexDir)
 
     //val luceneManager = new LuceneManager(dir)                              // use this if surface forms in the index are case-sensitive
-    val luceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(dir)  // use this if all surface forms in the index are lower-cased
+    val luceneManager = new LuceneManager.CaseSensitiveSurfaceForms(dir)  // use this if all surface forms in the index are lower-cased
     val cache = JCSTermCache.getInstance(luceneManager, configuration.getMaxCacheSize);
     luceneManager.setContextSimilarity(new CachedInvCandFreqSimilarity(cache))        // set most successful Similarity
     luceneManager.setDBpediaResourceFactory(configuration.getDBpediaResourceFactory)

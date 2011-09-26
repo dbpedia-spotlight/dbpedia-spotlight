@@ -28,6 +28,20 @@
  *
  */
 
+jQuery.fn.sort = function() {
+    return this.pushStack( [].sort.apply( this, arguments ), []);
+};
+
+ function sortOffset(a,b){
+     if (a["@offset"] == b["@offset"]){
+         console.log("equal")
+       return 0;
+     }
+
+     console.log("a>b="+parseInt(a["@offset"])>parseInt(b["@offset"]))
+     return parseInt(a["@offset"]) > parseInt(b["@offset"]) ? 1 : -1;
+ };
+
 (function( $ ){
 
    var powered_by = "<div style='font-size: 9px; float: right'><a href='http://spotlight.dbpedia.org'>Powered by DBpedia Spotlight</a></div>";
@@ -55,8 +69,8 @@
              var ul =  $("<ul class='"+className+"s'></ul>");
              $.each(resources, function(i, r) {
                  var li = "<li class='"+className+" "+className+"-" + i + "'><a href='http://dbpedia.org/resource/" + r["@uri"] + "' about='" + r["@uri"] + "'>" + r["@label"] + "</a>";
-                 //TODO settings.showScores = ["finalScore"] foreach showscores, add k=v
 
+                 //TODO settings.showScores = ["finalScore"] foreach showscores, add k=v
                  if (settings.showScores == 'yes') {
                     li += " (<span class='finalScoreDisplay'>" + parseFloat(r["@finalScore"]).toPrecision(3) +"</span>)";
                  }
@@ -71,8 +85,6 @@
                  
                  li += "</li>";
                  var opt = $(li);
-                 $.data(opt,"testProp","testValue");
-                 //console.log($.data(opt,"testProp"));
                  $(ul).append(opt);
              });
              return ul;
@@ -88,7 +100,8 @@
             
              if (json.annotation['surfaceForm']!=undefined)
                   //console.log(json.annotation['surfaceForm']);
-                  var annotations = new Array().concat(json.annotation.surfaceForm) // deals with the case of only one surfaceFrom returned (ends up not being an array)
+                  var annotations = new Array().concat(json.annotation.surfaceForm).sort(sortOffset) // deals with the case of only one surfaceFrom returned (ends up not being an array)
+                  console.log(annotations)
                   annotatedText = annotations.map(function(e) {
                   if (e==undefined) return "";
 		  //console.log(e);
@@ -102,7 +115,6 @@
                   var classes = "annotation";
 
                   snippet += "<div id='"+(sfName+offset)+"' class='" + classes + "'><a class='surfaceForm'>" + sfName + "</a>";
-                  //TODO instead of showing directly the select box, it would be cuter to just show a span, and onClick on that span, build the select box.
                   var ul = Parser.getSelectBox($(e.resource),'candidate');
                   //ul.children().each(function() { console.log($.data($(this),"testProp")); });
                   snippet += "<ul class='candidates'>"+ul.html()+"</ul>"; //FIXME this wrapper is a repeat from getSelectBox
