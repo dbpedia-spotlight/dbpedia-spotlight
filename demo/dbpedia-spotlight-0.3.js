@@ -113,7 +113,7 @@
              //snippet after last surface form
              annotatedText += text.substring(start, text.length);
              //console.log(annotatedText);
-             return annotatedText;
+             return annotatedText.replace(/\n/g, "<br />\n");
         },
         getAnnotatedTextFirstBest: function(response) {
                      var json = $.parseJSON(response);
@@ -158,7 +158,7 @@
                      //snippet after last surface form
                      annotatedText += text.substring(start, text.length);
                      //console.log(annotatedText);
-                     return annotatedText;
+                     return annotatedText.replace(/\n/g, "<br />\n");
                 },
 
 	getSuggestions: function(response, targetSurfaceForm) {

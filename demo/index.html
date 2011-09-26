@@ -372,10 +372,9 @@ function run(method) {
         'policy' : getFilterPolicy(),
         'callback' : function callback(response) {lastResponse = response; $('#status_indicator').removeClass("loading");}
     }
-    if(getSPARQLQuery() != "")
-        settings.sparql = getSPARQLQuery();
-    else if(getTypes() != "")
-        settings.types = getTypes();
+    
+    settings.sparql = getSPARQLQuery();
+    settings.types = getTypes();
 
 // will hide text object and show annotated text
     $('#text').hide();
@@ -665,12 +664,17 @@ $(document).ready(function() {
 
                 if(getSPARQLQuery() != "") {
                     filteredBy = "<strong>Filtered by SPARQL query</strong>";
+
+                    if(filteredBy)
+                        filteredBy += " (" + getFilterPolicy() + ").";
+
                 }else if(getTypes() != "") {
-                    filteredBy = "<strong>Filtered by types:</strong> " + getTypes().replace(/,/g, ", ");
+                    var typeFilterSetting = "<strong>Only showing the types:</strong> ";
+                    if(getFilterPolicy() == "blacklist")
+                        typeFilterSetting = "<strong>Showing none of the types:</strong> ";
+                    filteredBy = typeFilterSetting + getTypes().replace(/,/g, ", ");
                 }
 
-                if(filteredBy)
-                    filteredBy += " (" + getFilterPolicy() + ").";
 
                 if(filteredBy)
                     $("#filter_infobox").show().html(filteredBy);
@@ -767,7 +771,7 @@ function sparqlExample(i) {
     </div>
 
     <div id="text_container" class="container">
-        <textarea rows="10" id="text">A tropical cyclone is a storm system characterized by a large low-pressure center and numerous thunderstorms that produce strong winds and heavy rain. Tropical cyclones strengthen when water evaporated from the ocean is released as the saturated air rises, resulting in condensation of water vapor contained in the moist air. They are fueled by a different heat mechanism than other cyclonic windstorms such as nor'easters, European windstorms, and polar lows. The characteristic that separates tropical cyclones from other cyclonic systems is that any height in the atmosphere, the center of a tropical cyclone will be warmer than its surrounds; a phenomenon called "warm core" storm systems. The term "tropical" refers to both the geographic origin of these systems, which form almost exclusively in tropical regions of the globe, and their formation in maritime tropical air masses.</textarea>
+        <textarea rows="10" id="text">President Obama on Monday will call for a new minimum tax rate for individuals making more than $1 million a year to ensure that they pay at least the same percentage of their earnings as other taxpayers, according to administration officials.</textarea>
         <div id="edit_text_wrapper">
             <input id="edit_text" type="button" value="Back to Text"/>
         </div>
