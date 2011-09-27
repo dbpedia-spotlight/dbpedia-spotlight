@@ -22,8 +22,8 @@ import org.apache.commons.logging.LogFactory
 import java.util.{LinkedHashSet, LinkedList}
 import java.io.{InputStream, File}
 import org.semanticweb.yars.nx.parser.NxParser
-import org.dbpedia.spotlight.model.{OntologyType, Factory, DBpediaResource, DBpediaType}
 import collection.JavaConversions
+import org.dbpedia.spotlight.model._
 
 /**
  * Created by IntelliJ IDEA.
@@ -68,6 +68,10 @@ object TypesLoader
             i = i + 1;
             val typesList : java.util.LinkedHashSet[OntologyType] = typesMap.getOrElse(uri,new LinkedHashSet[OntologyType]())
             typesList.add(t)
+            t match {
+                case ft: FreebaseType => typesList.add(Factory.OntologyType.fromQName("Freebase:/"+ft.domain)) //Add supertype as well to mimic inference
+                case _ => //nothing
+            }
             typesMap = typesMap.updated(uri, typesList)
         }
         LOG.info("Done. Loaded %d types for %d resources.".format(i,typesMap.size))
