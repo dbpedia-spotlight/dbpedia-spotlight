@@ -114,7 +114,7 @@ class SpotlightFactory(val configuration: SpotlightConfiguration,
         configuration.getSpotterConfiguration.getSpotterPolicies.foreach( policy => {
             spotters.put(policy, spotter(policy))
         })
-        spotters.head._2
+        spotters.get(configuration.getSpotterConfiguration.getSpotterPolicies.get(0))
     }
 
     def annotator() ={
