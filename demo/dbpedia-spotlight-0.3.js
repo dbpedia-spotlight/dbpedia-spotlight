@@ -28,6 +28,11 @@
  *
  */
 
+// adding this in case we forget to remove some console.log statement that would make it break on firefox without firebug.
+if (console===undefined) {
+    console = { "log": function() {} }
+}
+
 //from http://www.wrichards.com/blog/2009/02/jquery-sorting-elements/
 jQuery.fn.sort = function() {
     return this.pushStack( [].sort.apply( this, arguments ), []);

@@ -6,46 +6,22 @@ import io.Source
 import org.junit.{Before, Test}
 import org.junit.Assert._
 
+/**
+ * For methods that create model objects, making sure factory works.
+ *
+ * @author pablomendes, Joachim Daiber
+ */
 class FactoryTests {
 
-  val configuration: SpotlightConfiguration = new SpotlightConfiguration("conf/server.properties")
-  val spotlightFactory: SpotlightFactory = new SpotlightFactory(configuration)
-
-
-
+    /**
+     * Makes sure that types are created correct from qNames and from URIs
+     * Freebase types can have one or two levels
+     */
     @Test
     def createFreebaseType() {
         assert(Factory.OntologyType.fromQName("Freebase:/location").equals(Factory.OntologyType.fromURI("http://rdf.freebase.com/ns/location")))
+        assert(Factory.OntologyType.fromQName("Freebase:/education/university").equals(Factory.OntologyType.fromURI("http://rdf.freebase.com/ns/education/university")))
     }
-
-
-    @Test
-    def dbpediaResourcesNotThere() {
-        try {
-            val dBpediaResource: DBpediaResource = spotlightFactory.DBpediaResource.from("TotallyUnknownID")
-        } catch {
-            case e: ItemNotFoundException =>
-        }
-    }
-
-
-
-
-    @Test
-    def specificDBpediaResource() {
-        val dBpediaResource: DBpediaResource = spotlightFactory.DBpediaResource.from("Berlin")
-        //assert(dBpediaResource.getTypes.contains(Factory.OntologyType.fromQName("Freebase:/location/location")))
-        assert(dBpediaResource.getTypes.contains(Factory.OntologyType.fromQName("DBpedia:City")))
-        assert(dBpediaResource.getTypes.contains(Factory.OntologyType.fromQName("Schema:City")))
-
-    }
-
-    @Test
-    def specificDBpediaResourceWithEmptyTypes() {
-        val dBpediaResource: DBpediaResource = spotlightFactory.DBpediaResource.from("Giant_oil_and_gas_fields")
-        assert(dBpediaResource.getTypes.size() == 0)
-    }
-
 
     @Test
     def uriToSurfaceForm() {

@@ -2,6 +2,9 @@
 # Script for the preparation of Types (DBpedia ontology types, Freebase types, Schema.org types).
 # This script needs zipped NTriple files from the latest DBpedia release and
 # the simple Freebase TSV dump.
+#   http://downloads.dbpedia.org/3.7/dbpedia_3.7.owl.bz2
+#   http://downloads.dbpedia.org/3.7/en/instance_types_en.nt.bz2
+#   http://download.freebase.com/datadumps/latest/freebase-simple-topic-dump.tsv.bz2
 # 
 # Files this script produces:
 # - types.dbpedia.tsv: Import file for DBpedia types
@@ -19,8 +22,6 @@
 
 #Read DBpedia instance types:
 bzcat instance_types_en.nt.bz2 | grep -v -e ".*__[0-9]*> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>" | grep -e "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/.*" -e "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/.*" | sed 's|<http://dbpedia.org/resource/\([^>]*\)> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <\([^>]*\)> .|\1	\2|' > types.dbpedia.tsv
-
-#cat types.dbpedia.tsv types.freebase.tsv | sort -k1 -S5G > types.tsv
 
 #Read and extract Freebase types:
 python types_freebase.py page_ids_en.nt.bz2 wikipedia_links_en.nt.bz2 freebase-simple-topic-dump.tsv.bz2 --one_type_per_line > brokenFreebaseWikipediaLinks.tsv

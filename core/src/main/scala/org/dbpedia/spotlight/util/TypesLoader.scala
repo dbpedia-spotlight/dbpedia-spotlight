@@ -60,15 +60,17 @@ object TypesLoader
             throw new IllegalArgumentException("types mapping only accepted in tsv format so far! can't parse "+typeDictFile)
 
         var typesMap = Map[String,java.util.LinkedHashSet[OntologyType]]()
+        var i = 0;
         for (line <- Source.fromFile(typeDictFile, "UTF-8").getLines) {
             val elements = line.split("\t")
             val uri = new DBpediaResource(elements(0)).uri
-
             val t = Factory.OntologyType.fromURI(elements(1))
-            val typesList : java.util.LinkedHashSet[OntologyType] = typesMap.get(uri).getOrElse(new LinkedHashSet[OntologyType]())
+            i = i + 1;
+            val typesList : java.util.LinkedHashSet[OntologyType] = typesMap.getOrElse(uri,new LinkedHashSet[OntologyType]())
+            typesList.add(t)
             typesMap = typesMap.updated(uri, typesList)
         }
-        LOG.info("Done.")
+        LOG.info("Done. Loaded %d types for %d resources.".format(i,typesMap.size))
         typesMap
     }
 

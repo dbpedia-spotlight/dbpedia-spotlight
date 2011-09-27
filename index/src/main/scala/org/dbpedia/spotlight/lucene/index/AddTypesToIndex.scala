@@ -24,9 +24,12 @@ import java.io.{FileInputStream, File}
 import org.dbpedia.spotlight.util.{IndexingConfiguration, TypesLoader}
 
 /**
- * Reads file instance_types_en.nt from DBpedia in order to add DBpedia Resource Types to the index.
+ * Reads file instance_types_en.nt from DBpedia in order to add Ontology Resource Types to the index.
  *
- * @author maxjakob
+ * Usage:
+ *
+ *
+ * @author maxjakob, Joachim Daiber (allows reading from TSV: used for DBpedia+Schema+Freebase types)
  */
 object AddTypesToIndex {
 

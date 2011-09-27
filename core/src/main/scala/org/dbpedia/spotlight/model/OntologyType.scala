@@ -114,7 +114,7 @@ object FreebaseType {
     new FreebaseType(domain, theType)
   }
 
-  val FREEBASE_RDF_PREFIX = "http://rdf.freebase.com/ns/"
+  val FREEBASE_RDF_PREFIX = "http://rdf.freebase.com/ns"
 }
 
 class SchemaOrgType(var name : String) extends OntologyType {

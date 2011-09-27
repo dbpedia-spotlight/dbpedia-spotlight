@@ -2,20 +2,16 @@ package org.dbpedia.spotlight.model
 
 import io.Source
 import org.junit.Test
-import org.dbpedia.spotlight.model.{SpotlightFactory, SpotlightConfiguration, DBpediaResourceFactoryLucene, DBpediaResource}
 
 /**
+ * Makes sure that the factory that uses a database to build resources is working. Also times execution,
  * @author Joachim Daiber
- *
- *
- *
  */
-
 class DBpediaResourceFactoryTests {
 
 
   val configuration: SpotlightConfiguration = new SpotlightConfiguration("conf/server.properties")
-  val spotlightFactory: SpotlightFactory = new SpotlightFactory(configuration)
+  val factory: SpotlightFactory = new SpotlightFactory(configuration)
 
   //val dbpediaResourceFactory = new DBpediaResourceFactoryLucene(spotlightFactory.luceneManager, spotlightFactory.searcher)
   val dbpediaResourceFactory = configuration.getDBpediaResourceFactory
