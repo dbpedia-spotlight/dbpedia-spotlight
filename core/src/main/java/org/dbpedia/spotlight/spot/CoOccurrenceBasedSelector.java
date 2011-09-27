@@ -42,7 +42,7 @@ public class CoOccurrenceBasedSelector implements TaggedSpotSelector {
      * @throws InitializationException Either the OccurrenceDataProvider or the ClassifierFactory
 	 * 			could not be initialized.
 	 */
-	private CoOccurrenceBasedSelector(SpotterConfiguration spotterConfiguration) throws InitializationException {
+	public CoOccurrenceBasedSelector(SpotterConfiguration spotterConfiguration) throws InitializationException {
 		
 		LOG.info("Initializing spot occurrence data provider.");
 		OccurrenceDataProviderSQL.initialize(spotterConfiguration);
