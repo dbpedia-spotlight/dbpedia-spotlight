@@ -139,7 +139,8 @@ def main():
                 dbpediaID = pageToDBpedia[wikiPage]
 
                 types = filter(filterTypes, row[4].split(","))
-
+                types.extend(set(map(lambda x: x[:x.rfind("/")], types)))
+                
                 if len(types) > 0:
                     countFreebaseTypes(types)
                     #freebaseTypes[dbpediaID] = types
