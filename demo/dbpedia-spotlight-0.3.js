@@ -57,7 +57,8 @@ function sortOffset(a,b){
       'showScores': 'yes',         // yes or no
       'types': '',
       'policy' : 'whitelist',
-      'spotter': 'LingPipeSpotter' // one of: LingPipeSpotter,AtLeastOneNounSelector,CoOccurrenceBasedSelector
+      'spotter': 'LingPipeSpotter', // one of: LingPipeSpotter,AtLeastOneNounSelector,CoOccurrenceBasedSelector
+      'disambiguator': 'Default' // one of: LingPipeSpotter,AtLeastOneNounSelector,CoOccurrenceBasedSelector
     };
 
    function getScoreDOMElements(data) {
@@ -104,10 +105,10 @@ function sortOffset(a,b){
              if (json.annotation['surfaceForm']!=undefined)
                   //console.log(json.annotation['surfaceForm']);
                   var annotations = new Array().concat(json.annotation.surfaceForm).sort(sortOffset) // deals with the case of only one surfaceFrom returned (ends up not being an array)
-                  console.log(annotations)
+                  //console.log(annotations)
                   annotatedText = annotations.map(function(e) {
                   if (e==undefined) return "";
-		  //console.log(e);
+		          //console.log(e);
                   var sfName = e["@name"];
                   var offset = parseInt(e["@offset"]);
                   var sfLength = parseInt(sfName.length);
@@ -217,7 +218,7 @@ function sortOffset(a,b){
        
                return this.each(function() {            
                  //console.log($.quoteString($(this).text()));
-                 var params = {'text': $(this).text(), 'confidence': settings.confidence, 'support': settings.support, 'spotter': settings.spotter, 'policy': settings.policy };
+                 var params = {'text': $(this).text(), 'confidence': settings.confidence, 'support': settings.support, 'spotter': settings.spotter, 'disambiguator': settings.disambiguator, 'policy': settings.policy };
                  if("types" in settings && settings["types"] != undefined)
                    params["types"] = settings.types;
                  if("sparql" in settings && settings["sparql"] != undefined)
@@ -246,7 +247,7 @@ function sortOffset(a,b){
                }    
        
                return this.each(function() {            
-                 var params = {'text': $(this).text(), 'confidence': settings.confidence, 'support': settings.support, 'spotter': settings.spotter, 'policy': settings.policy };
+                 var params = {'text': $(this).text(), 'confidence': settings.confidence, 'support': settings.support, 'spotter': settings.spotter, 'disambiguator': settings.disambiguator, 'policy': settings.policy };
                  if("types" in settings && settings["types"] != undefined)
                    params['types'] = settings.types;
                  if("sparql" in settings && settings["sparql"] != undefined)
@@ -265,8 +266,8 @@ function sortOffset(a,b){
            function update(response) {
                var keywords = Kolich.Selector.getSelected();
                var suggestion = Parser.getSuggestions(response, keywords);
-               console.log('keywords:'+keywords);
-               console.log('suggestion:'+suggestion);
+               //console.log('keywords:'+keywords);
+               //console.log('suggestion:'+suggestion);
                var content = "<div style='overflow: auto'>" + suggestion + "</div>";
                if (settings.powered_by == 'yes') {
                    $(content).append($(powered_by));
@@ -275,9 +276,10 @@ function sortOffset(a,b){
            }
 
            return this.each(function() {
-               console.log('suggest');
+               return;
+               //console.log('suggest');
                var keywords = $.trim("" + Kolich.Selector.getSelected());
-               var params = {'text': $(this).text(), 'confidence': settings.confidence, 'support': settings.support, 'spotter': settings.spotter, 'surfaceForm': keywords };
+               var params = {'text': $(this).text(), 'confidence': settings.confidence, 'support': settings.support, 'spotter': settings.spotter, 'disambiguator': settings.disambiguator, 'surfaceForm': keywords };
                if("types" in settings && settings["types"] != undefined){
                    params['types'] = settings.types;
                }
@@ -303,7 +305,7 @@ function sortOffset(a,b){
       } else if ( typeof method === 'object' || ! method ) {
         return methods.init.apply( this, arguments );
       } else {
-        $.error( 'Method ' +  method + ' does not exist on jQuery.spotlight' );
+        $.error( 'Method ' +  method + ' does not exist on jQuery.annotate (DBpedia Spotlight)' );
       } 
   };
 

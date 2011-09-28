@@ -198,7 +198,7 @@ a.ui-slider-handle {
     height: 8px;
 }
 
-#confidence, #support {
+#confidence, #support, #context {
     float: right;
     width: 30px;
     margin-top: 1em;
@@ -284,9 +284,6 @@ ul.candidates li.candidate-0 {
 
 }
 #tree_id a {background: transparent; border: none;}
-#types {
-    float: right;
-}
 body .jstree-default.jstree-focused {
     background: transparent;
 }
@@ -369,6 +366,7 @@ function run(method) {
         'powered_by': 'no',
         'showScores': 'yes',
         'spotter' : $('#spotter').val(),
+        'disambiguator' : $('#disambiguator').val(),
         'policy' : getFilterPolicy(),
         'callback' : function callback(response) {lastResponse = response; $('#status_indicator').removeClass("loading");}
     }
@@ -527,12 +525,11 @@ $(document).ready(function() {
         }
     );
 
-
     $("#confidence-slider").slider({
         value:0.0,
         min: 0,
         max: 1,
-        step: 0.1,
+        step: 0.05,
         change: function( event, ui ) {
             $( "#confidence" ).val( ui.value );
             if(annotated)
@@ -545,30 +542,50 @@ $(document).ready(function() {
         }
     );
 
-    function filter(occ, minConfidence, minSupport) {
+    $("#context-slider").slider({
+        value:0.0,
+        min: 0,
+        max: 1,
+        step: 0.1,
+        change: function( event, ui ) {
+            $( "#context" ).val( ui.value );
+            if(annotated)
+                filterAnnotations();
+        }
+    });
+    $( "#context" ).change(
+        function() {
+            $("#context-slider").slider("value", $( "#context" ).val());
+        }
+    );
+
+    function filter(occ, minConfidence, minSupport, minContextualScore) {
         var simThresholds = [0, 0.1155594, 0.1413648, 0.1555880, 0.1666082, 0.1769609, 0.1866261, 0.1957517,
                              0.20482580,0.2138903,0.2237287,0.2335491,0.2442384,0.2560859,0.2693643,0.2848305,
                              0.3033198,0.3288046,0.36692468,0.449684,0.5];
         var simThreshold = simThresholds[Math.max(Math.round((simThresholds.length-1)*minConfidence), 0)]
         var squaredConfidence = minConfidence*minConfidence
-
+        //console.log(occ);
         var support = parseInt(occ["support"]);
+        var contextualScore = parseFloat(occ["contextualScore"]);
         var finalScore = parseFloat(occ["finalScore"]);
         var percentageOfSecondRank = parseFloat(occ["percentageOfSecondRank"]);
 
-        console.log( "support: " + support + " < " + minSupport +
-                     " || finalScore: "+ finalScore + " < " + simThreshold +
-                     " || percentageOfSecondRank: " + percentageOfSecondRank + "<" + (1-squaredConfidence));
+        //console.log( "support: " + support + " < " + minSupport +
+        //            " || contextualScore: "+ contextualScore + " < " + minContextualScore +
+        //             " || finalScore: "+ finalScore + " < " + simThreshold +
+        //             " || percentageOfSecondRank: " + percentageOfSecondRank + "<" + (1-squaredConfidence));
 
         return ( (support < minSupport) ||
                  (finalScore < simThreshold) ||
+                 (contextualScore < minContextualScore) ||
                  (percentageOfSecondRank > (1-squaredConfidence)) );
     }
     
     function filterAnnotations() {
         var minSupport = parseInt($( "#support" ).val());
         var minConfidence = parseFloat($( "#confidence" ).val());
-
+        var minContextualScore = parseFloat($( "#context" ).val());
 
          $(".annotation").each(function() {
              var occ = { 'support': parseInt($(".support", $(this)).text()),
@@ -576,7 +593,7 @@ $(document).ready(function() {
                          'contextualScore': parseFloat($(".contextualScore", $(this)).text()),
                          'percentageOfSecondRank': parseFloat($(".percentageOfSecondRank", $(this)).text()) }
               console.log(occ);
-              if (filter(occ, minConfidence, minSupport)) {
+              if (filter(occ, minConfidence, minSupport, minContextualScore)) {
                   $(this).addClass("filtered");
               } else {
                   $(this).removeClass("filtered");
@@ -740,10 +757,13 @@ function sparqlExample(i) {
             <div class="option">
                 <label for="confidence">Confidence:</label><input type="text" id="confidence" name="confidence" value="0.0"/>
                 <div id="confidence-slider" class="slider"></div>
-
             </div>
             <div class="option">
-                <label for="support">Support:</label><input type="text" id="support" name="support" value="0"/>
+                <label for="context">Contextual score:</label><input type="text" id="context" name="context" value="0.0"/>
+                <div id="context-slider" class="slider"></div>
+            </div>
+            <div class="option">
+                <label for="support">Prominence (support):</label><input type="text" id="support" name="support" value="0"/>
                 <div id="support-slider" class="slider"></div>
             </div>
         </div>
@@ -751,19 +771,23 @@ function sparqlExample(i) {
         <div id="action_buttons">
 
             <select id="spotter" class="action_button">
-                <option value="LingPipeSpotter">Annotate all</option>
+                <option value="LingPipeSpotter">Annotate all spots</option>
                 <option value="AtLeastOneNounSelector">No verbs and adjs.</option>
                 <option value="CoOccurrenceBasedSelector" selected>No 'common words'</option>
             </select>
-
-            <input class="action_button" id="types" type="button" enabled value="Select types…"/>
-
-            <br />
-
-            <select id="method" class="action_button">
-                <option value="first-best">first-best</option>
-                <option value="n-best">n-best</option>
+            <br/>
+            <select id="disambiguator" class="action_button">
+                <option value="Default" selected>Default Disambiguation</option>
+                <option value="Occurrence">Occurrence-centric</option>
+                <option value="Document">Document-centric</option>
             </select>
+            <br />
+            <select id="method" class="action_button">
+                <option value="first-best">Show best candidate</option>
+                <option value="n-best">Show n-best candidates</option>
+            </select>
+            <br/>
+            <input class="action_button" id="types" type="button" enabled value="Select types…"/>
 
             <input class="action_button" id="annotate" type="button" enabled value="Annotate"/>
             <div id="status_indicator">&nbsp;</div>
