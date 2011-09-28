@@ -37,7 +37,7 @@ import java.util.Set;
  * Implements methods for searching an index that associates surface forms to (candidate) URIs.
  * This searcher does not work with Context. In order to use context to help select the correct URI for a surface forms, @see{ContextSearcher}.
  *
- * NOTE: This was previously called SurrogateSearcher, but we abandoned Surrogate from the terminology in favor of Candidate.
+ * NOTE: This was previously called SurrogateSearcher, but we abandoned Candidate from the terminology in favor of Candidate.
  * @author pablomendes
  */
 public class CandidateSearcher extends BaseSearcher implements org.dbpedia.spotlight.model.CandidateSearcher {

@@ -16,20 +16,20 @@
 
 package org.dbpedia.spotlight.model
 
-class Surrogate(val surfaceForm: SurfaceForm, val resource: DBpediaResource)
+class Candidate(val surfaceForm: SurfaceForm, val resource: DBpediaResource)
 {
-    def equals(that : Surrogate) : Boolean =
+    def equals(that : Candidate) : Boolean =
     {
         surfaceForm.equals(that.surfaceForm) && resource.equals(that.resource)
     }
 
-    override def toString = "Surrogate["+surfaceForm.name+","+resource.uri+"]"
+    override def toString = "Candidate["+surfaceForm.name+","+resource.uri+"]"
 }
 
 
-object Surrogate
+object Candidate
 {
     def apply(surfaceForm : SurfaceForm, resource: DBpediaResource) = {
-        new Surrogate(surfaceForm, resource)
+        new Candidate(surfaceForm, resource)
     }
 }

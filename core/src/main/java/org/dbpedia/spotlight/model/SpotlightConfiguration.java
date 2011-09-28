@@ -144,16 +144,15 @@ public class SpotlightConfiguration {
 
 		//set spotterFile, indexDir...
 		contextIndexDirectory = config.getProperty("org.dbpedia.spotlight.index.dir","").trim();
-		if(contextIndexDirectory!=null && !new File(contextIndexDirectory).isDirectory()) {
+		if(contextIndexDirectory==null || !new File(contextIndexDirectory).isDirectory()) {
 			throw new ConfigurationException("Cannot find index directory "+ contextIndexDirectory);
 		}
 
 		//TODO use separate candidate map
 		candidateMapDirectory = config.getProperty("org.dbpedia.spotlight.candidateMap.dir","").trim();
-		if(candidateMapDirectory!=null && !new File(candidateMapDirectory).isDirectory()) {
-			//throw new ConfigurationException("Cannot find candidate map directory "+ candidateMapDirectory);
+		if(candidateMapDirectory==null || !new File(candidateMapDirectory).isDirectory()) {
+			LOG.info("Could not use candidateMap.dir, using index.dir both for context and candidate searching.");
 		}
-        LOG.info("Read candidateMap.dir, but not used in this version.");
 
 		try {
 			BufferedReader r = new BufferedReader(new FileReader(new File(contextIndexDirectory, similarityThresholdsFile)));
@@ -171,7 +170,7 @@ public class SpotlightConfiguration {
 		}
 
         taggerFile = config.getProperty("org.dbpedia.spotlight.tagging.hmm","").trim();
-        if(taggerFile !=null && !new File(taggerFile).isFile()) {
+        if(taggerFile==null || !new File(taggerFile).isFile()) {
             throw new ConfigurationException("Cannot find POS tagger model file "+taggerFile);
         }
 

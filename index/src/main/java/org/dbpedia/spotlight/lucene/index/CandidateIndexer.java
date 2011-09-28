@@ -22,15 +22,16 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.store.FSDirectory;
 import org.dbpedia.spotlight.exceptions.IndexException;
 import org.dbpedia.spotlight.lucene.LuceneManager;
+import org.dbpedia.spotlight.model.Candidate;
 import org.dbpedia.spotlight.model.DBpediaResource;
 import org.dbpedia.spotlight.model.SurfaceForm;
-import org.dbpedia.spotlight.model.Surrogate;
 import org.semanticweb.yars.nx.Node;
 import org.semanticweb.yars.nx.parser.NxParser;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -39,7 +40,7 @@ import java.util.Scanner;
  * @author pablomendes
  * @author maxjakob
  */
-public class CandidateIndexer extends BaseIndexer<Surrogate> {
+public class CandidateIndexer extends BaseIndexer<Candidate> {
 
     final static Log LOG = LogFactory.getLog(BaseIndexer.class);
 
@@ -63,6 +64,20 @@ public class CandidateIndexer extends BaseIndexer<Surrogate> {
         LOG.debug("Added to " + mLucene.directory().toString() + ": " + surfaceForm.toString() + " -> " + resource.toString());
     }
 
+    public void add(List<SurfaceForm> surfaceForms, DBpediaResource resource) throws IndexException {
+        Document newDoc = mLucene.createDocument(surfaceForms.get(0), resource);
+        for (int i=1; i<surfaceForms.size(); i++) {
+            newDoc.add(mLucene.getField(surfaceForms.get(i)));
+        }
+        try {
+            mWriter.addDocument(newDoc); // do not commit for faster indexing.
+        } catch (IOException e) {
+            throw new IndexException("Error adding candidate map to the index. ", e);
+        }
+
+        LOG.debug("Added to " + mLucene.directory().toString() + ": " + surfaceForms.toString() + " -> " + resource.toString());
+    }
+
     public void add(SurfaceForm surfaceForm, DBpediaResource resource, int nTimes) throws IndexException {
         Document newDoc = mLucene.createDocument(surfaceForm, resource, nTimes);
         try {
@@ -74,8 +89,8 @@ public class CandidateIndexer extends BaseIndexer<Surrogate> {
         LOG.debug("Added to " + mLucene.directory().toString() + ": " + surfaceForm.toString() + " -> " + resource.toString());
     }
 
-    public void add(Surrogate surrogate) throws IndexException {
-        add(surrogate.surfaceForm(), surrogate.resource());
+    public void add(Candidate candidate) throws IndexException {
+        add(candidate.surfaceForm(), candidate.resource());
     }
 
     /**
@@ -89,7 +104,8 @@ public class CandidateIndexer extends BaseIndexer<Surrogate> {
             Node[] nodes = nxParser.next();
             String resourceString = nodes[0].toString().replace("http://dbpedia.org/resource/","");
             String surfaceFormString = nodes[2].toString();
-            add(new SurfaceForm(surfaceFormString), new DBpediaResource(resourceString));
+            List<SurfaceForm> surfaceForms = AddSurfaceFormsToIndex.fromTitlesToAlternativesJ(new SurfaceForm(surfaceFormString));
+            add(surfaceForms, new DBpediaResource(resourceString));
         }
 
         LOG.info("Done.");
@@ -108,7 +124,8 @@ public class CandidateIndexer extends BaseIndexer<Surrogate> {
             String[] line = tsvScanner.nextLine().split(separator);
             String surfaceFormString = line[0];
             String resourceString = line[1];
-            add(new SurfaceForm(surfaceFormString), new DBpediaResource(resourceString));
+            List<SurfaceForm> surfaceForms = AddSurfaceFormsToIndex.fromTitlesToAlternativesJ(new SurfaceForm(surfaceFormString));
+            add(surfaceForms, new DBpediaResource(resourceString));
         }
 
         LOG.info("Done.");
@@ -132,6 +149,8 @@ public class CandidateIndexer extends BaseIndexer<Surrogate> {
             String surfaceFormString = line[1];
             if (count>minCount)
                 add(new SurfaceForm(surfaceFormString), new DBpediaResource(resourceString), count);
+                List<SurfaceForm> surfaceForms = AddSurfaceFormsToIndex.fromTitlesToAlternativesJ(new SurfaceForm(surfaceFormString));
+                add(surfaceForms, new DBpediaResource(resourceString));
             } catch(ArrayIndexOutOfBoundsException e) {
                 LOG.error("Error parsing line: "+line);
                 e.printStackTrace();

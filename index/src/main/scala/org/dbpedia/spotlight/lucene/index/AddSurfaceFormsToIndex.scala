@@ -24,7 +24,7 @@ import org.dbpedia.spotlight.util.{IndexingConfiguration, ExtractCandidateMap}
 import java.util.Scanner
 import java.io.{FileInputStream, File}
 import org.apache.commons.logging.{LogFactory, Log}
-import javax.xml.crypto.dsig.Transform
+import scalaj.collection.Imports._
 
 /**
  * In our first implementation we used to index all anchor text found in Wikipedia as surface forms to a target URI.
@@ -42,6 +42,10 @@ object AddSurfaceFormsToIndex
 
     def toLowercase(sf: String, lowerCased: Boolean) : List[String] = {
         if (lowerCased) (sf.toLowerCase :: List(sf)) else List(sf)
+    }
+
+    def fromTitlesToAlternativesJ(sf: SurfaceForm) : java.util.List[SurfaceForm] = {
+        fromTitlesToAlternatives(sf.name).map(s => new SurfaceForm(s)).toList.asJava
     }
 
     def fromTitlesToAlternatives(sf: String) : List[String] = { //TODO move to an analyzer
