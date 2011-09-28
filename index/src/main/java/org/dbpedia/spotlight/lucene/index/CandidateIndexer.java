@@ -193,6 +193,8 @@ public class CandidateIndexer extends BaseIndexer<Candidate> {
         LuceneManager mLucene;
         if (luceneManagerType.contains("case-sensitive")) {
             mLucene = new LuceneManager.CaseSensitiveSurfaceForms(FSDirectory.open(new File(outputDirName)));
+        } else if (luceneManagerType.contains("buffered")){
+            mLucene = new LuceneManager.BufferedMerging(FSDirectory.open(new File(outputDirName)));
         } else {
             mLucene = new LuceneManager.CaseInsensitiveSurfaceForms(FSDirectory.open(new File(outputDirName)));
         }

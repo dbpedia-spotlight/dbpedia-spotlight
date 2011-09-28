@@ -33,8 +33,8 @@ import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.disambiguate._
 import mixtures.LinearRegressionMixture
 import org.dbpedia.spotlight.lucene._
-import search.{CandidateSearcher, MergedOccurrencesContextSearcher}
-import org.dbpedia.spotlight.model.{DBpediaResource, SpotlightConfiguration, ContextSearcher}
+import search.{LuceneCandidateSearcher, MergedOccurrencesContextSearcher}
+import org.dbpedia.spotlight.model.{SpotlightFactory, DBpediaResource, SpotlightConfiguration, ContextSearcher}
 
 /**
  * This class is evolving to be the main disambiguation class that takes parameters for which dataset to run.
@@ -231,7 +231,7 @@ object EvaluateDisambiguationOnly
         val luceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(directory)
         luceneManager.setDefaultAnalyzer(analyzer);
         luceneManager.setContextSimilarity(similarity);
-        val contextSearcher = new CandidateSearcher(luceneManager);
+        val contextSearcher = new LuceneCandidateSearcher(luceneManager, false);
         LOG.info("Number of entries in merged resource index ("+contextSearcher.getClass()+"): "+ contextSearcher.getNumberOfEntries());
         new RandomDisambiguator(contextSearcher)
     }
@@ -280,11 +280,12 @@ object EvaluateDisambiguationOnly
         // For merged disambiguators
         //val indexDir = baseDir+"/2.9.3/Index.wikipediaTraining.Merged";
 
-        val default : Disambiguator = new DefaultDisambiguator(config)
-        val cuttingEdge : Disambiguator = new CuttingEdgeDisambiguator(config)
+        val factory = new SpotlightFactory(config)
+        val default : Disambiguator = new DefaultDisambiguator(factory)
+        val cuttingEdge : Disambiguator = new CuttingEdgeDisambiguator(factory)
 
         //val test : Disambiguator = new GraphCentralityDisambiguator(config)
-        val disSet = Set(default,cuttingEdge);
+        val disSet = Set(cuttingEdge);
 
         /*val disSet = Set(
 

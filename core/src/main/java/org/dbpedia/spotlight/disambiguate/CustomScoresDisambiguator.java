@@ -27,6 +27,7 @@ import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
 import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.exceptions.TimeoutException;
 import org.dbpedia.spotlight.io.DataLoader;
+import org.dbpedia.spotlight.lucene.search.LuceneCandidateSearcher;
 import org.dbpedia.spotlight.model.*;
 import org.dbpedia.spotlight.lucene.LuceneManager;
 
@@ -133,7 +134,7 @@ public class CustomScoresDisambiguator implements Disambiguator {
       LuceneManager luceneManager = new LuceneManager(FSDirectory.open(new File(luceneIndexFileName)));
 
         try {
-            new CustomScoresDisambiguator(new org.dbpedia.spotlight.lucene.search.CandidateSearcher(luceneManager), new DataLoader(new DataLoader.TSVParser(), new File("data/Distinct-surfaceForm-By-uri.grouped")));
+            new CustomScoresDisambiguator(new LuceneCandidateSearcher(luceneManager, false), new DataLoader(new DataLoader.TSVParser(), new File("data/Distinct-surfaceForm-By-uri.grouped")));
         } catch (IOException e) {
             e.printStackTrace();
         }

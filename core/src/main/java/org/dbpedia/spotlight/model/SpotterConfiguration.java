@@ -134,7 +134,6 @@ public class SpotterConfiguration {
                 throw new ConfigurationException(String.format("Unknown spotter '%s' specified in 'org.dbpedia.spotlight.spot.spotters'.",s));
             }
         }
-
         return policies;
     }
 

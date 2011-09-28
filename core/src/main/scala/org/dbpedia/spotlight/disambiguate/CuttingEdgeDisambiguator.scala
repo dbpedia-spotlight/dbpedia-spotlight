@@ -33,28 +33,24 @@ import scalaj.collection.Imports._
  *
  * @author pablomendes
  */
-class CuttingEdgeDisambiguator(val configuration: SpotlightConfiguration) extends Disambiguator with ParagraphDisambiguator {
+class CuttingEdgeDisambiguator(val factory: SpotlightFactory) extends Disambiguator with ParagraphDisambiguator {
 
     private val LOG = LogFactory.getLog(this.getClass)
 
     LOG.info("Initializing disambiguator object ...")
 
-    val indexDir = new File(configuration.getContextIndexDirectory)
+//    val indexDir = new File(configuration.getContextIndexDirectory)
+//
+//    // Disambiguator
+//    val dir = LuceneManager.pickDirectory(indexDir)
+//
+//    //val luceneManager = new LuceneManager(dir)                              // use this if surface forms in the index are case-sensitive
+//    val luceneManager = new LuceneManager.CaseSensitiveSurfaceForms(dir)  // use this if all surface forms in the index are lower-cased
+//    val cache = JCSTermCache.getInstance(luceneManager, configuration.getMaxCacheSize);
+//    luceneManager.setContextSimilarity(new CachedInvCandFreqSimilarity(cache))        // set most successful Similarity
+//    luceneManager.setDBpediaResourceFactory(configuration.getDBpediaResourceFactory)
 
-    // Disambiguator
-    val dir = LuceneManager.pickDirectory(indexDir)
-
-    //val luceneManager = new LuceneManager(dir)                              // use this if surface forms in the index are case-sensitive
-    val luceneManager = new LuceneManager.CaseSensitiveSurfaceForms(dir)  // use this if all surface forms in the index are lower-cased
-    val cache = JCSTermCache.getInstance(luceneManager, configuration.getMaxCacheSize);
-    luceneManager.setContextSimilarity(new CachedInvCandFreqSimilarity(cache))        // set most successful Similarity
-    luceneManager.setDBpediaResourceFactory(configuration.getDBpediaResourceFactory)
-
-    val contextSearcher = new MergedOccurrencesContextSearcher(luceneManager)
-
-    //val disambiguator : Disambiguator = new MergedOccurrencesDisambiguator(contextSearcher)
-    val disambiguator : Disambiguator = new MixedWeightsDisambiguator(contextSearcher, new LinearRegressionMixture())
-
+    val disambiguator : Disambiguator = new MixedWeightsDisambiguator(factory.searcher, new LinearRegressionMixture())
 
     //TODO fix MultiThreading
     //val disambiguator : Disambiguator = new MultiThreadedDisambiguatorWrapper(new MixedWeightsDisambiguator(contextSearcher, new LinearRegressionMixture()))

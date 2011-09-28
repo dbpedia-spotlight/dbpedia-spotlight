@@ -43,9 +43,7 @@ import java.util.*;
 
 /**
  * This class manages an index from surface form to candidate resources (surrogates)
- * User: PabloMendes
- * Date: Jun 24, 2010
- * Time: 12:37:21 PM
+ * @author pablomendes
  */
 public class BaseSearcher implements Closeable {
 
@@ -166,15 +164,14 @@ public class BaseSearcher implements Closeable {
         ScoreDoc[] hits = null;
         try {
             //LOG.debug("Start search. timeout="+timeout);
+            long start = System.nanoTime();
             TopScoreDocCollector collector = TopScoreDocCollector.create(n, false);
             //TimeLimitingCollector collector = new TimeLimitingCollector(tCollector, timeout);  //TODO try to bring this back later
-            //LOG.debug("Start search. timeout="+timeout);
-
             mSearcher.search(query, filter, collector);
-
-
+            //mSearcher.
             hits = collector.topDocs().scoreDocs;
-            LOG.debug("Done search. hits.length="+hits.length);
+            long end = System.nanoTime();
+            LOG.debug(String.format("Done search in %f ms. hits.length=%d",(end-start) / 1000000.0, hits.length));
         } catch (TimeLimitingCollector.TimeExceededException timedOutException) {
             throw new TimeoutException("Timeout (>"+timeout+"ms searching for surface form "+query.toString(),timedOutException);
         } catch (Exception e) {
@@ -187,8 +184,9 @@ public class BaseSearcher implements Closeable {
     /**
      * Search method with default filter
      * @param query
-     * @param n
-     * @return
+     * @param n number of results to return
+     * @param timeout number of miliseconds before giving up this query
+     * @return array of document id,score
      * @throws SearchException
      */
     public ScoreDoc[] getHits(Query query, int n, int timeout) throws SearchException {
@@ -314,7 +312,6 @@ public class BaseSearcher implements Closeable {
         if (uri==null)
             throw new SearchException("Cannot find URI for document "+document);
 
-        //LOG.debug("uri:"+uri);
         DBpediaResource resource = new DBpediaResource(uri);
 
         for (String fieldName: fieldsToLoad) {

@@ -37,4 +37,14 @@ public interface CandidateSearcher {
      */
     public Set<DBpediaResource> getCandidates(SurfaceForm sf) throws SearchException, ItemNotFoundException;
 
+    /**
+     * Retrieves the number of DBpedia Resources that can be confused with surface form sf.
+     * Separated from getCandidates since some implementations have faster ways or computing ambiguity without retrieving candidates (e.g.Lucene)
+     *
+     * @param sf
+     * @return
+     * @throws SearchException
+     */
+    public int getAmbiguity(SurfaceForm sf) throws SearchException;
+
 }

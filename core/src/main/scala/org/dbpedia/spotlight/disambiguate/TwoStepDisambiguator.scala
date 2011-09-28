@@ -30,8 +30,8 @@ import collection.mutable.{HashMap, HashSet}
 import java.io.{ByteArrayInputStream, File}
 import org.dbpedia.spotlight.model._
 import org.apache.lucene.index.Term
-import org.dbpedia.spotlight.lucene.search.{CandidateSearcher, MergedOccurrencesContextSearcher}
 import com.officedepot.cdap2.collection.CompactHashSet
+import org.dbpedia.spotlight.lucene.search.{LuceneCandidateSearcher, MergedOccurrencesContextSearcher}
 
 /**
  * Paragraph disambiguator that queries paragraphs once and uses candidate map to filter results.
@@ -41,28 +41,38 @@ import com.officedepot.cdap2.collection.CompactHashSet
  *
  * @author pablomendes
  */
-class TwoStepDisambiguator(val configuration: SpotlightConfiguration) extends ParagraphDisambiguator  {
+class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisambiguator  {
+
+    val configuration = factory.configuration
 
     private val LOG = LogFactory.getLog(this.getClass)
 
     LOG.info("Initializing disambiguator object ...")
 
     val contextIndexDir = LuceneManager.pickDirectory(new File(configuration.getContextIndexDirectory))
-                                                        //TODO Temporarily using the same index
-    val candidateIndexDir = LuceneManager.pickDirectory(new File(configuration.getContextIndexDirectory))
-    //val candidateIndexDir = LuceneManager.pickDirectory(new File(configuration.getCandidateIndexDirectory))
-
     val contextLuceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(contextIndexDir) // use this if all surface forms in the index are lower-cased
     val cache = JCSTermCache.getInstance(contextLuceneManager, configuration.getMaxCacheSize);
     contextLuceneManager.setContextSimilarity(new CachedInvCandFreqSimilarity(cache))        // set most successful Similarity
     contextLuceneManager.setDBpediaResourceFactory(configuration.getDBpediaResourceFactory)
     contextLuceneManager.setDefaultAnalyzer(configuration.getAnalyzer)
-    val contextSearcher = new MergedOccurrencesContextSearcher(contextLuceneManager)
+    val contextSearcher : MergedOccurrencesContextSearcher = new MergedOccurrencesContextSearcher(contextLuceneManager)
 
-    //val candidateSearcher : CandidateSearcher = contextSearcher; // here we can reuse the same object because it implements both CandidateSearcher and ContextSearcher interfaces
-    val candLuceneManager = new LuceneManager.CaseSensitiveSurfaceForms(candidateIndexDir) // use this if surface forms in the index are case-sensitive
-    candLuceneManager.setDBpediaResourceFactory(configuration.getDBpediaResourceFactory)
-    val candidateSearcher = new CandidateSearcher(candLuceneManager) // or we can provide different functionality for surface forms (e.g. n-gram search)
+    var candidateSearcher : CandidateSearcher = null //TODO move to factory
+    var candLuceneManager : LuceneManager = contextLuceneManager;
+    if (configuration.getCandidateIndexDirectory!=configuration.getContextIndexDirectory) {
+        val candidateIndexDir = LuceneManager.pickDirectory(new File(configuration.getCandidateIndexDirectory))
+        //candLuceneManager = new LuceneManager.CaseSensitiveSurfaceForms(candidateIndexDir)
+        candLuceneManager = new LuceneManager(candidateIndexDir)
+        candLuceneManager.setDBpediaResourceFactory(configuration.getDBpediaResourceFactory)
+        candidateSearcher = new LuceneCandidateSearcher(candLuceneManager,true) // or we can provide different functionality for surface forms (e.g. n-gram search)
+        LOG.info("CandidateSearcher initialized from %s".format(candidateIndexDir))
+    } else {
+        candidateSearcher = contextSearcher match {
+            case cs: CandidateSearcher => cs
+            case _ => new LuceneCandidateSearcher(contextLuceneManager, false) // should never happen
+        }
+    }
+
 
     val disambiguator : Disambiguator = new MergedOccurrencesDisambiguator(contextSearcher)
 
@@ -107,8 +117,10 @@ class TwoStepDisambiguator(val configuration: SpotlightConfiguration) extends Pa
         val occs = paragraph.occurrences
             .foldLeft( Map[SurfaceFormOccurrence,List[DBpediaResource]]())(
             (acc,sfOcc) => {
+                LOG.debug("searching...")
                 val candidates = candidateSearcher.getCandidates(sfOcc.surfaceForm).asScala //.map(r => r.uri)
-                LOG.debug("# candidates for: %s = %s (%s)".format(sfOcc.surfaceForm,candidates.size,candidates))
+                //LOG.debug("# candidates for: %s = %s (%s)".format(sfOcc.surfaceForm,candidates.size,candidates))
+                LOG.debug("# candidates for: %s = %s.".format(sfOcc.surfaceForm,candidates.size))
                 candidates.foreach( r => allCandidates.add(r))
                 acc + (sfOcc -> candidates.toList)
             });

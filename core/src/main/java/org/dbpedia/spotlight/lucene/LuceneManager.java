@@ -90,7 +90,7 @@ public class LuceneManager {
     public boolean shouldOverwrite = false;  //BE CAREFUL: indices will be overwritten if true !!!!!
 
     // this value specifies how many top results Lucene should return
-    public int topResultsLimit = 100;
+    public int topResultsLimit = 100; //TODO Attention: impact of this for LuceneCandidateSearcher
 
     protected DBpediaResourceFactory resourceFactory = null;
 

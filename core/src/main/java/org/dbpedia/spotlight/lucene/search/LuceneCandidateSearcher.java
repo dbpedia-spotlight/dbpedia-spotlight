@@ -22,13 +22,16 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
+import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
 import org.dbpedia.spotlight.exceptions.SearchException;
+import org.dbpedia.spotlight.model.CandidateSearcher;
 import org.dbpedia.spotlight.model.DBpediaResource;
 import org.dbpedia.spotlight.model.SurfaceForm;
-import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 import org.dbpedia.spotlight.lucene.LuceneManager;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
@@ -40,28 +43,30 @@ import java.util.Set;
  * NOTE: This was previously called SurrogateSearcher, but we abandoned Candidate from the terminology in favor of Candidate.
  * @author pablomendes
  */
-public class CandidateSearcher extends BaseSearcher implements org.dbpedia.spotlight.model.CandidateSearcher {
+public class LuceneCandidateSearcher extends BaseSearcher implements org.dbpedia.spotlight.model.CandidateSearcher {
 
-    final static Log LOG = LogFactory.getLog(CandidateSearcher.class);
+    final static Log LOG = LogFactory.getLog(LuceneCandidateSearcher.class);
 
     /**
-     * For a caseInsensitive behavior, use {@link org.dbpedia.spotlight.lucene.LuceneManager.CaseInsensitiveSurfaceForms}.
-     * @param searchManager
+     * Searches associations between surface forms and URIs
+     *
+     * @param searchManager  For a caseInsensitive behavior, use {@link org.dbpedia.spotlight.lucene.LuceneManager.CaseInsensitiveSurfaceForms}.
+     * @param inMemory if true, will create RAMDirectory, if false, will use directory in searchmanager.
      * @throws IOException
      */
-    public CandidateSearcher(LuceneManager searchManager) throws IOException {
+    public LuceneCandidateSearcher(LuceneManager searchManager, boolean inMemory) throws IOException {
         this.mLucene = searchManager;
-        //LOG.info("Creating in-memory searcher for candidates.");
-        //this.mLucene.mContextIndexDir = new RAMDirectory(this.mLucene.mContextIndexDir);
-        LOG.info("Using index at: "+this.mLucene.mContextIndexDir);
-        LOG.debug("Opening IndexSearcher and IndexReader for Lucene directory "+this.mLucene.mContextIndexDir+" ...");
+        if (inMemory) {
+            LOG.info("Creating in-memory LuceneCandidateSearcher.");
+            this.mLucene.mContextIndexDir = new RAMDirectory(this.mLucene.mContextIndexDir);
+        }
         this.mReader = IndexReader.open(this.mLucene.mContextIndexDir, true); // read-only=true
         this.mSearcher = new IndexSearcher(this.mReader);
-        LOG.debug("Done.");
+        LOG.info(String.format("Opened LuceneCandidateSearcher from %s.", this.mLucene.mContextIndexDir));
     }
 
     /**
-     * CandidateSearcher method.
+     * LuceneCandidateSearcher method.
      * @param sf
      * @return
      * @throws org.dbpedia.spotlight.exceptions.SearchException
@@ -74,13 +79,15 @@ public class CandidateSearcher extends BaseSearcher implements org.dbpedia.spotl
         LOG.debug("Query: "+q);
         String[] fields = {LuceneManager.DBpediaResourceField.URI.toString()};
         // search index for surface form, iterate through the results
-        for (ScoreDoc hit : getHits(q)) {
+        for (ScoreDoc hit : getHits(q,100)) {  //TODO Attention: study impact of topResultsLimit
             int docNo = hit.doc;
-            DBpediaResource resource = getDBpediaResource(docNo, fields);
+            //DBpediaResource resource = getDBpediaResource(docNo, fields);
+            DBpediaResource resource = getCachedDBpediaResource(docNo);
             candidates.add(resource);
         }
 
         LOG.debug("Candidates for "+sf+"("+candidates.size()+"): "+candidates);
+        if (candidates.size()==0) LOG.debug(String.format("Used index:"+mLucene.mContextIndexDir));
 
         //TODO for the evaluation, this exception creates problems. But maybe we want to have it at a later stage.
         //if (surrogates.size() == 0)
@@ -110,9 +117,25 @@ public class CandidateSearcher extends BaseSearcher implements org.dbpedia.spotl
         return surfaceForms;
     }
 
+    /**
+     * Although one could get ambiguity by counting the size of getCandidates(), this method is faster since it does not require loading docs.
+     *
+     * @param sf
+     * @return
+     * @throws SearchException
+     */
     public int getAmbiguity(SurfaceForm sf) throws SearchException {
         ScoreDoc[] hits = getHits(mLucene.getQuery(sf));
         return hits.length;
     }
-    
+
+    public static void main(String[] args) throws IOException, SearchException, ItemNotFoundException {
+        //String dir = "/home/pablo/workspace/spotlight/output/candidateIndexTitRedDis";
+        String dir = "/home/pablo/workspace/spotlight/index/output/candidateIndexTitRedDis";
+        LuceneManager luceneManager = new LuceneManager.CaseSensitiveSurfaceForms(FSDirectory.open(new File(dir)));
+        CandidateSearcher searcher = new LuceneCandidateSearcher(luceneManager, true);
+        System.out.println(searcher.getCandidates(new SurfaceForm("berlin")));
+        System.out.println(searcher.getCandidates(new SurfaceForm("Berlin")));
+        System.out.println(searcher.getCandidates(new SurfaceForm("sdaf")));
+    }
 }

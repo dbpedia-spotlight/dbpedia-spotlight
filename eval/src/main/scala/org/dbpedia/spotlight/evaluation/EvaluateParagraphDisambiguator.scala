@@ -123,8 +123,9 @@ object EvaluateParagraphDisambiguator {
         //val default : Disambiguator = new DefaultDisambiguator(config)
         //val test : Disambiguator = new GraphCentralityDisambiguator(config)
 
-        val disambiguators = Set(new CuttingEdgeDisambiguator(config),
-                                 new TwoStepDisambiguator(config)
+        val factory = new SpotlightFactory(config)
+        val disambiguators = Set(new CuttingEdgeDisambiguator(factory),
+                                 new TwoStepDisambiguator(factory)
                                  )
 
         val paragraphs = AnnotatedTextSource

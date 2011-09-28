@@ -37,22 +37,19 @@ import collection.JavaConversions._
 import org.dbpedia.spotlight.annotate.{DefaultAnnotator, DefaultParagraphAnnotator}
 import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
 import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
+import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy
 
 /**
  * This class contains many of the "defaults" for DBpedia Spotlight. Maybe consider renaming to DefaultFactory.
  *
  * @author pablomendes
  */
-class SpotlightFactory(val configuration: SpotlightConfiguration,
-                    val analyzer: Analyzer = new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", StopAnalyzer.ENGLISH_STOP_WORDS_SET)
-                    ) {
+class SpotlightFactory(val configuration: SpotlightConfiguration) {
 
     private val LOG = LogFactory.getLog(this.getClass)
 
-    def this(configuration: SpotlightConfiguration) {
-        this(configuration, new org.apache.lucene.analysis.snowball.SnowballAnalyzer(Version.LUCENE_29, "English", configuration.getStopWords))
-        if (!new File(configuration.getTaggerFile).exists()) throw new ConfigurationException("POS tagger file does not exist! "+configuration.getTaggerFile);
-    }
+    val analyzer = configuration.analyzer
+    assert(analyzer!=null)
 
     val directory : Directory = LuceneManager.pickDirectory(new File(configuration.getContextIndexDirectory))
     val luceneManager : LuceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(directory)
@@ -78,31 +75,12 @@ class SpotlightFactory(val configuration: SpotlightConfiguration,
     spotter()
     disambiguator()
 
-    def disambiguator() : ParagraphDisambiguatorJ = {
-        //configuration.getDisambiguationConfiguration.getDisambiguationPolicies
-        SpotlightConfiguration.DisambiguationPolicy.values().foreach( policy => {
-            disambiguators.put(policy, disambiguator(policy))
-        })
-        disambiguators.head._2
-    }
-
-    def disambiguator(policy: SpotlightConfiguration.DisambiguationPolicy) : ParagraphDisambiguatorJ = {
-        if (policy == SpotlightConfiguration.DisambiguationPolicy.Document) {
-            disambiguators.getOrElse(policy, new ParagraphDisambiguatorJ(new TwoStepDisambiguator(configuration)))
-        } else if (policy == SpotlightConfiguration.DisambiguationPolicy.Occurrences) {
-            disambiguators.getOrElse(policy, new ParagraphDisambiguatorJ(new DefaultDisambiguator(configuration)))
-        } else if (policy == SpotlightConfiguration.DisambiguationPolicy.CuttingEdge) {
-            disambiguators.getOrElse(policy, new ParagraphDisambiguatorJ(new CuttingEdgeDisambiguator(configuration)))
-        } else { // by default use Occurrences
-            disambiguators.getOrElse(SpotlightConfiguration.DisambiguationPolicy.Occurrences, new ParagraphDisambiguatorJ(new DefaultDisambiguator(configuration)))
-        }
-    }
-
     def spotter(policy: SpotterConfiguration.SpotterPolicy) : Spotter = {
-        if ((policy == SpotterConfiguration.SpotterPolicy.Default) ||
-            (policy == SpotterConfiguration.SpotterPolicy.LingPipeSpotter))
+        if (policy == SpotterConfiguration.SpotterPolicy.Default) {
+            spotter(SpotterConfiguration.SpotterPolicy.LingPipeSpotter)
+        } else if(policy == SpotterConfiguration.SpotterPolicy.LingPipeSpotter) {
             spotters.getOrElse(policy, new LingPipeSpotter(new File(configuration.getSpotterConfiguration.getSpotterFile)))
-        else if (policy == SpotterConfiguration.SpotterPolicy.AtLeastOneNounSelector) {
+        } else if (policy == SpotterConfiguration.SpotterPolicy.AtLeastOneNounSelector) {
             spotters.getOrElse(policy, SpotterWithSelector.getInstance(spotter(SpotterConfiguration.SpotterPolicy.LingPipeSpotter),new AtLeastOneNounSelector(),taggedTokenProvider()))
         } else if (policy == SpotterConfiguration.SpotterPolicy.CoOccurrenceBasedSelector) {
             spotters.getOrElse(policy, SpotterWithSelector.getInstance(spotter(SpotterConfiguration.SpotterPolicy.LingPipeSpotter),new CoOccurrenceBasedSelector(configuration.getSpotterConfiguration, taggedTokenProvider()), taggedTokenProvider()))
@@ -112,10 +90,36 @@ class SpotlightFactory(val configuration: SpotlightConfiguration,
     }
 
     def spotter() : Spotter = {
+        val default = spotters.get(configuration.getSpotterConfiguration.getSpotterPolicies.get(0))
+        spotters.put(SpotterPolicy.Default, default)
         configuration.getSpotterConfiguration.getSpotterPolicies.foreach( policy => {
             spotters.put(policy, spotter(policy))
         })
-        spotters.get(configuration.getSpotterConfiguration.getSpotterPolicies.get(0))
+        default
+    }
+
+     def disambiguator() : ParagraphDisambiguatorJ = { //TODO add configuration option for disambiguators like spotter above
+         //val default = disambiguators.get(configuration.getSpotterConfiguration.getSpotterPolicies.get(0))
+         //disambiguators.put(DisambiguationPolicy.Default,default)
+        SpotlightConfiguration.DisambiguationPolicy.values().foreach( policy => {
+            disambiguators.put(policy, disambiguator(policy))
+        })
+        disambiguators.head._2
+        //default
+    }
+
+    def disambiguator(policy: SpotlightConfiguration.DisambiguationPolicy) : ParagraphDisambiguatorJ = {
+        if (policy == SpotlightConfiguration.DisambiguationPolicy.Default) {
+            disambiguator(SpotlightConfiguration.DisambiguationPolicy.Occurrences)
+        } else if (policy == SpotlightConfiguration.DisambiguationPolicy.Document) {
+            disambiguators.getOrElse(policy, new ParagraphDisambiguatorJ(new TwoStepDisambiguator(this)))
+        } else if (policy == SpotlightConfiguration.DisambiguationPolicy.Occurrences) {
+            disambiguators.getOrElse(policy, new ParagraphDisambiguatorJ(new DefaultDisambiguator(this)))
+        } else if (policy == SpotlightConfiguration.DisambiguationPolicy.CuttingEdge) {
+            disambiguators.getOrElse(policy, new ParagraphDisambiguatorJ(new CuttingEdgeDisambiguator(this)))
+        } else { // by default use Occurrences
+            disambiguators.getOrElse(SpotlightConfiguration.DisambiguationPolicy.Occurrences, new ParagraphDisambiguatorJ(new DefaultDisambiguator(this)))
+        }
     }
 
     def annotator() ={

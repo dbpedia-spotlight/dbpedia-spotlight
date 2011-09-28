@@ -152,6 +152,7 @@ public class SpotlightConfiguration {
 		candidateMapDirectory = config.getProperty("org.dbpedia.spotlight.candidateMap.dir","").trim();
 		if(candidateMapDirectory==null || !new File(candidateMapDirectory).isDirectory()) {
 			LOG.info("Could not use candidateMap.dir, using index.dir both for context and candidate searching.");
+            candidateMapDirectory = contextIndexDirectory;
 		}
 
 		try {
