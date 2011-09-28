@@ -130,7 +130,7 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
         val s2 = System.nanoTime()
         // step2: query once for the paragraph context, get scores for each candidate resource
         val hits = query(paragraph.text, allCandidates.toArray)
-        LOG.debug("Hits (%d): %s".format(hits.size, hits.map( sd => "%s=%s".format(sd.doc,sd.score) ).mkString(",")))
+        //LOG.debug("Hits (%d): %s".format(hits.size, hits.map( sd => "%s=%s".format(sd.doc,sd.score) ).mkString(",")))
         val scores = hits
             .foldRight(Map[String,Double]())((hit,acc) => {
             var resource: DBpediaResource = contextSearcher.getDBpediaResource(hit.doc)
@@ -138,7 +138,7 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
             acc + (resource.uri -> score)
         });
         val e2 = System.nanoTime()
-        LOG.debug("Scores (%d): %s".format(scores.size, scores))
+        //LOG.debug("Scores (%d): %s".format(scores.size, scores))
 
         LOG.debug("Time with %s: %f.".format(m2, (e2-s2) / 1000000.0 ))
 

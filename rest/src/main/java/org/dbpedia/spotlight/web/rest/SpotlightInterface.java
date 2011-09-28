@@ -128,6 +128,12 @@ public class SpotlightInterface  {
             if (!t.trim().equals("")) ontologyTypes.add(Factory.ontologyType().fromQName(t.trim()));
         }
 
+        if (disambiguator==SpotlightConfiguration.DisambiguationPolicy.Default
+                && text.length() > 1200) {
+            disambiguator = SpotlightConfiguration.DisambiguationPolicy.Document;
+            LOG.info(String.format("Text length: %d. Using %s to disambiguate.",text.length(),disambiguator));
+        }
+
         // Call annotation or disambiguation
         List<DBpediaResourceOccurrence> occList = process(text, spotter, disambiguator);
 
