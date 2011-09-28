@@ -58,7 +58,8 @@ function sortOffset(a,b){
       'types': '',
       'policy' : 'whitelist',
       'spotter': 'LingPipeSpotter', // one of: LingPipeSpotter,AtLeastOneNounSelector,CoOccurrenceBasedSelector
-      'disambiguator': 'Default' // one of: LingPipeSpotter,AtLeastOneNounSelector,CoOccurrenceBasedSelector
+      'disambiguator': 'Default', // one of: LingPipeSpotter,AtLeastOneNounSelector,CoOccurrenceBasedSelector
+      'callback': function() {}
     };
 
    function getScoreDOMElements(data) {
@@ -228,7 +229,8 @@ function sortOffset(a,b){
                       'data': params,
                       'context': this,
                       'headers': {'Accept': 'application/json'},
-                      'success': update
+                      'success': update,
+                      'error': settings.callback
                     });    
                  });
        },
@@ -257,7 +259,8 @@ function sortOffset(a,b){
                       'data': params,
                       'context': this,
                       'headers': {'Accept': 'application/json'},
-                      'success': update
+                      'success': update,
+                      'error': settings.callback
                     });
                });
        },
@@ -288,7 +291,8 @@ function sortOffset(a,b){
                    'data': params,
                    'context': this,
                    'headers': {'Accept': 'application/json'},
-                   'success': update
+                   'success': update,
+                   'error': settings.callback
                });
            });
        }
