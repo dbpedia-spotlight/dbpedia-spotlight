@@ -47,8 +47,6 @@
         <module>dist</module>
         <module>eval</module>
         <module>index</module>
-        <module>jung</module>
-        <module>webgraph</module>
     </modules>
 
     <build>

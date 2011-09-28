@@ -143,14 +143,14 @@ public class SpotlightConfiguration {
 		spotterConfiguration = new SpotterConfiguration(fileName);
 
 		//set spotterFile, indexDir...
-		contextIndexDirectory = config.getProperty("org.dbpedia.spotlight.index.dir");
-		if(contextIndexDirectory!=null && !new File(contextIndexDirectory.trim()).isDirectory()) {
+		contextIndexDirectory = config.getProperty("org.dbpedia.spotlight.index.dir","").trim();
+		if(contextIndexDirectory!=null && !new File(contextIndexDirectory).isDirectory()) {
 			throw new ConfigurationException("Cannot find index directory "+ contextIndexDirectory);
 		}
 
 		//TODO use separate candidate map
-		candidateMapDirectory = config.getProperty("org.dbpedia.spotlight.candidateMap.dir");
-		if(candidateMapDirectory!=null && !new File(candidateMapDirectory.trim()).isDirectory()) {
+		candidateMapDirectory = config.getProperty("org.dbpedia.spotlight.candidateMap.dir","").trim();
+		if(candidateMapDirectory!=null && !new File(candidateMapDirectory).isDirectory()) {
 			//throw new ConfigurationException("Cannot find candidate map directory "+ candidateMapDirectory);
 		}
         LOG.info("Read candidateMap.dir, but not used in this version.");
@@ -170,20 +170,20 @@ public class SpotlightConfiguration {
 			throw new ConfigurationException("Error reading '"+ contextIndexDirectory +"/"+similarityThresholdsFile,e);
 		}
 
-        taggerFile = config.getProperty("org.dbpedia.spotlight.tagging.hmm");
-        if(taggerFile !=null && !new File(taggerFile.trim()).isFile()) {
+        taggerFile = config.getProperty("org.dbpedia.spotlight.tagging.hmm","").trim();
+        if(taggerFile !=null && !new File(taggerFile).isFile()) {
             throw new ConfigurationException("Cannot find POS tagger model file "+taggerFile);
         }
 
         language = config.getProperty("org.dbpedia.spotlight.data.stopWords", "English");
 
-        stopWordsFile = config.getProperty("org.dbpedia.spotlight.data.stopWords."+language.toLowerCase());
+        stopWordsFile = config.getProperty("org.dbpedia.spotlight.data.stopWords."+language.toLowerCase(),"").trim();
         if( (stopWordsFile==null) || !new File(stopWordsFile.trim()).isFile()) {
             LOG.warn("Cannot find stopwords file '"+stopWordsFile+"'. Using default Lucene English StopWords.");
             stopWords = StopAnalyzer.ENGLISH_STOP_WORDS_SET;
         } else {
             try {
-                BufferedReader bufferedReader = new BufferedReader(new FileReader(stopWordsFile));
+                BufferedReader bufferedReader = new BufferedReader(new FileReader(stopWordsFile.trim()));
                 String line = null;
                 while ((line = bufferedReader.readLine()) != null) {
                     stopWords.add(line.trim());
@@ -195,10 +195,10 @@ public class SpotlightConfiguration {
             }
         }
 
-        analyzer = Factory.analyzer().from(config.getProperty("org.dbpedia.spotlight.lucene.analyzer"), language, stopWords);
+        analyzer = Factory.analyzer().from(config.getProperty("org.dbpedia.spotlight.lucene.analyzer","SnowballAnalyzer"), language, stopWords);
 
-		serverURI = config.getProperty("org.dbpedia.spotlight.web.rest.uri");
-		if (serverURI!=null && !serverURI.trim().endsWith("/")) {
+		serverURI = config.getProperty("org.dbpedia.spotlight.web.rest.uri","").trim();
+		if (serverURI!=null && !serverURI.endsWith("/")) {
 			serverURI = serverURI.concat("/");
 		}
 		try {
@@ -207,10 +207,10 @@ public class SpotlightConfiguration {
 			throw new ConfigurationException("Server URI not valid.",e);
 		}
 
-		sparqlEndpoint = config.getProperty("org.dbpedia.spotlight.sparql.endpoint").trim(); //TODO how to fail gracefully for endpoint?
-		sparqlMainGraph = config.getProperty("org.dbpedia.spotlight.sparql.graph").trim();
+		sparqlEndpoint = config.getProperty("org.dbpedia.spotlight.sparql.endpoint","").trim(); //TODO how to fail gracefully for endpoint?
+		sparqlMainGraph = config.getProperty("org.dbpedia.spotlight.sparql.graph","").trim();;
 
-        String maxCacheSizeString = config.getProperty("jcs.default.cacheattributes.MaxObjects");
+        String maxCacheSizeString = config.getProperty("jcs.default.cacheattributes.MaxObjects","").trim();
         try {
             maxCacheSize = new Long(maxCacheSizeString.trim());
         } catch (Exception ignored) { LOG.error(ignored); }
@@ -219,15 +219,15 @@ public class SpotlightConfiguration {
         /**
          * These configuration parameters are for an alternative way to load DBpediaResources (from an in-memory database instead of Lucene)
          */
-        String coreDbType = config.getProperty("org.dbpedia.spotlight.core.database", "");
-        String coreJdbcDriver = config.getProperty("org.dbpedia.spotlight.core.database.jdbcdriver", "");
-		String coreDbConnector  = config.getProperty("org.dbpedia.spotlight.core.database.connector", "");
-		String coreDbUser = config.getProperty("org.dbpedia.spotlight.core.database.user", "");
-		String coreDbPassword = config.getProperty("org.dbpedia.spotlight.core.database.password", "");
+        String coreDbType = config.getProperty("org.dbpedia.spotlight.core.database", "").trim();
+        String coreJdbcDriver = config.getProperty("org.dbpedia.spotlight.core.database.jdbcdriver","").trim();
+		String coreDbConnector  = config.getProperty("org.dbpedia.spotlight.core.database.connector","").trim();
+		String coreDbUser = config.getProperty("org.dbpedia.spotlight.core.database.user","").trim();
+		String coreDbPassword = config.getProperty("org.dbpedia.spotlight.core.database.password","").trim();
         try {
-            if (coreDbType.trim().equals("jdbc")) {
-                LOG.info("Core database from JDBC: "+coreDbConnector.trim());
-                createDBpediaResourceFactory(coreJdbcDriver.trim(),coreDbConnector.trim(),coreDbUser.trim(),coreDbPassword.trim());
+            if (coreDbType.equals("jdbc")) {
+                LOG.info("Core database from JDBC: "+coreDbConnector);
+                createDBpediaResourceFactory(coreJdbcDriver,coreDbConnector,coreDbUser,coreDbPassword);
             } else {
                 //else we leave the factory null, in that case, lucene will be used in BaseSearcher
                 LOG.info("Core database from Lucene: "+contextIndexDirectory);
