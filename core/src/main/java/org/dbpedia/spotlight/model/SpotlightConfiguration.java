@@ -46,9 +46,6 @@ public class SpotlightConfiguration {
 	public final static String DEFAULT_POLICY = "whitelist";
 	public final static String DEFAULT_COREFERENCE_RESOLUTION = "true";
 
-    public final static String DEFAULT_SPOTTER = "CoOccurrenceBasedSelector";
-    public final static String DEFAULT_DISAMBIGUATOR = "Default";
-
     public enum DisambiguationPolicy { Document,Occurrences,CuttingEdge,Default }
 
     public String language;
@@ -146,14 +143,14 @@ public class SpotlightConfiguration {
 		spotterConfiguration = new SpotterConfiguration(fileName);
 
 		//set spotterFile, indexDir...
-		contextIndexDirectory = config.getProperty("org.dbpedia.spotlight.index.dir").trim();
-		if(!new File(contextIndexDirectory).isDirectory()) {
+		contextIndexDirectory = config.getProperty("org.dbpedia.spotlight.index.dir");
+		if(contextIndexDirectory!=null && !new File(contextIndexDirectory.trim()).isDirectory()) {
 			throw new ConfigurationException("Cannot find index directory "+ contextIndexDirectory);
 		}
 
 		//TODO use separate candidate map
-		candidateMapDirectory = config.getProperty("org.dbpedia.spotlight.candidateMap.dir").trim();
-		if(!new File(candidateMapDirectory).isDirectory()) {
+		candidateMapDirectory = config.getProperty("org.dbpedia.spotlight.candidateMap.dir");
+		if(candidateMapDirectory!=null && !new File(candidateMapDirectory.trim()).isDirectory()) {
 			//throw new ConfigurationException("Cannot find candidate map directory "+ candidateMapDirectory);
 		}
         LOG.info("Read candidateMap.dir, but not used in this version.");
@@ -173,8 +170,8 @@ public class SpotlightConfiguration {
 			throw new ConfigurationException("Error reading '"+ contextIndexDirectory +"/"+similarityThresholdsFile,e);
 		}
 
-        taggerFile = config.getProperty("org.dbpedia.spotlight.tagging.hmm").trim();
-        if(!new File(taggerFile).isFile()) {
+        taggerFile = config.getProperty("org.dbpedia.spotlight.tagging.hmm");
+        if(taggerFile !=null && !new File(taggerFile.trim()).isFile()) {
             throw new ConfigurationException("Cannot find POS tagger model file "+taggerFile);
         }
 
@@ -200,8 +197,8 @@ public class SpotlightConfiguration {
 
         analyzer = Factory.analyzer().from(config.getProperty("org.dbpedia.spotlight.lucene.analyzer"), language, stopWords);
 
-		serverURI = config.getProperty("org.dbpedia.spotlight.web.rest.uri").trim();
-		if (!serverURI.endsWith("/")) {
+		serverURI = config.getProperty("org.dbpedia.spotlight.web.rest.uri");
+		if (serverURI!=null && !serverURI.trim().endsWith("/")) {
 			serverURI = serverURI.concat("/");
 		}
 		try {
@@ -213,23 +210,24 @@ public class SpotlightConfiguration {
 		sparqlEndpoint = config.getProperty("org.dbpedia.spotlight.sparql.endpoint").trim(); //TODO how to fail gracefully for endpoint?
 		sparqlMainGraph = config.getProperty("org.dbpedia.spotlight.sparql.graph").trim();
 
-
-        String maxCacheSizeString = config.getProperty("jcs.default.cacheattributes.MaxObjects").trim();
+        String maxCacheSizeString = config.getProperty("jcs.default.cacheattributes.MaxObjects");
         try {
-            maxCacheSize = new Long(maxCacheSizeString);
+            maxCacheSize = new Long(maxCacheSizeString.trim());
         } catch (Exception ignored) { LOG.error(ignored); }
 
 
-        String coreDbType = config.getProperty("org.dbpedia.spotlight.core.database", "").trim();
-        String coreJdbcDriver = config.getProperty("org.dbpedia.spotlight.core.database.jdbcdriver", "").trim();
-		String coreDbConnector  = config.getProperty("org.dbpedia.spotlight.core.database.connector", "").trim();
-		String coreDbUser = config.getProperty("org.dbpedia.spotlight.core.database.user", "").trim();
-		String coreDbPassword = config.getProperty("org.dbpedia.spotlight.core.database.password", "").trim();
+        /**
+         * These configuration parameters are for an alternative way to load DBpediaResources (from an in-memory database instead of Lucene)
+         */
+        String coreDbType = config.getProperty("org.dbpedia.spotlight.core.database", "");
+        String coreJdbcDriver = config.getProperty("org.dbpedia.spotlight.core.database.jdbcdriver", "");
+		String coreDbConnector  = config.getProperty("org.dbpedia.spotlight.core.database.connector", "");
+		String coreDbUser = config.getProperty("org.dbpedia.spotlight.core.database.user", "");
+		String coreDbPassword = config.getProperty("org.dbpedia.spotlight.core.database.password", "");
         try {
-            if (coreDbType.equals("jdbc")) {
-                LOG.info("Core database from JDBC: "+coreDbConnector);
-                createDBpediaResourceFactory(coreJdbcDriver,coreDbConnector,coreDbUser,coreDbPassword);
-
+            if (coreDbType.trim().equals("jdbc")) {
+                LOG.info("Core database from JDBC: "+coreDbConnector.trim());
+                createDBpediaResourceFactory(coreJdbcDriver.trim(),coreDbConnector.trim(),coreDbUser.trim(),coreDbPassword.trim());
             } else {
                 //else we leave the factory null, in that case, lucene will be used in BaseSearcher
                 LOG.info("Core database from Lucene: "+contextIndexDirectory);

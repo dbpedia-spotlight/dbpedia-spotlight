@@ -37,6 +37,11 @@
             <artifactId>core</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.dbpedia.spotlight</groupId>
+            <artifactId>index</artifactId>
+            <version>${dbpedia.spotlight.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>

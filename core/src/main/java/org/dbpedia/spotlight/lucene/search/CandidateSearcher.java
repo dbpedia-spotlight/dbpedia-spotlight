@@ -72,10 +72,11 @@ public class CandidateSearcher extends BaseSearcher implements org.dbpedia.spotl
 
         Query q = mLucene.getQuery(sf);
         LOG.debug("Query: "+q);
+        String[] fields = {LuceneManager.DBpediaResourceField.URI.toString()};
         // search index for surface form, iterate through the results
         for (ScoreDoc hit : getHits(q)) {
             int docNo = hit.doc;
-            DBpediaResource resource = getDBpediaResource(docNo);
+            DBpediaResource resource = getDBpediaResource(docNo, fields);
             candidates.add(resource);
         }
 

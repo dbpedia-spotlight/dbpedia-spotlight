@@ -148,8 +148,8 @@ public class Candidates {
                            @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
                            @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
                            @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution,
-                           @DefaultValue(SpotlightConfiguration.DEFAULT_SPOTTER) @QueryParam("spotter") String spotter,
-                           @DefaultValue(SpotlightConfiguration.DEFAULT_DISAMBIGUATOR) @QueryParam("disambiguator") String disambiguatorName,
+                           @DefaultValue("Default") @QueryParam("spotter") String spotter,
+                           @DefaultValue("Default") @QueryParam("disambiguator") String disambiguatorName,
                            @Context HttpServletRequest request) {
         String clientIp = request.getRemoteAddr();
 
@@ -172,8 +172,8 @@ public class Candidates {
                             @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
                             @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
                             @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution,
-                            @DefaultValue(SpotlightConfiguration.DEFAULT_SPOTTER) @QueryParam("spotter") String spotter,
-                            @DefaultValue(SpotlightConfiguration.DEFAULT_DISAMBIGUATOR) @QueryParam("disambiguator") String disambiguatorName,
+                            @DefaultValue("Default") @QueryParam("spotter") String spotter,
+                            @DefaultValue("Default") @QueryParam("disambiguator") String disambiguatorName,
                             @Context HttpServletRequest request) {
         String clientIp = request.getRemoteAddr();
 
@@ -232,8 +232,8 @@ public class Candidates {
             @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
             @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @FormParam("policy") String policy,
             @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @FormParam("coreferenceResolution") boolean coreferenceResolution,
-            @DefaultValue(SpotlightConfiguration.DEFAULT_SPOTTER) @QueryParam("spotter") String spotter,
-            @DefaultValue(SpotlightConfiguration.DEFAULT_DISAMBIGUATOR) @QueryParam("disambiguator") String disambiguatorName,
+            @DefaultValue("Default") @QueryParam("spotter") String spotter,
+            @DefaultValue("Default") @QueryParam("disambiguator") String disambiguatorName,
             @Context HttpServletRequest request
     ) {
         return getXML(text,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,spotter,disambiguatorName,request);
@@ -250,8 +250,8 @@ public class Candidates {
             @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
             @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @FormParam("policy") String policy,
             @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @FormParam("coreferenceResolution") boolean coreferenceResolution,
-            @DefaultValue(SpotlightConfiguration.DEFAULT_SPOTTER) @QueryParam("spotter") String spotter,
-            @DefaultValue(SpotlightConfiguration.DEFAULT_DISAMBIGUATOR) @QueryParam("disambiguator") String disambiguatorName,
+            @DefaultValue("Default") @QueryParam("spotter") String spotter,
+            @DefaultValue("Default") @QueryParam("disambiguator") String disambiguatorName,
             @Context HttpServletRequest request
     ) {
         return getJSON(text,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,spotter,disambiguatorName,request);

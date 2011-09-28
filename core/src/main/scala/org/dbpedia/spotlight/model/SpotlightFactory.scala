@@ -86,20 +86,21 @@ class SpotlightFactory(val configuration: SpotlightConfiguration,
         disambiguators.head._2
     }
 
-    def disambiguator(name: SpotlightConfiguration.DisambiguationPolicy) : ParagraphDisambiguatorJ = {
-        if (name == SpotlightConfiguration.DisambiguationPolicy.Document) {
-            disambiguators.getOrElse(name, new ParagraphDisambiguatorJ(new TwoStepDisambiguator(configuration)))
-        } else if (name == SpotlightConfiguration.DisambiguationPolicy.Occurrences) {
-            disambiguators.getOrElse(name, new ParagraphDisambiguatorJ(new DefaultDisambiguator(configuration)))
-        } else if (name == SpotlightConfiguration.DisambiguationPolicy.CuttingEdge) {
-            disambiguators.getOrElse(name, new ParagraphDisambiguatorJ(new CuttingEdgeDisambiguator(configuration)))
-        } else {
-            disambiguators.getOrElse(name, new ParagraphDisambiguatorJ(new DefaultDisambiguator(configuration)))
+    def disambiguator(policy: SpotlightConfiguration.DisambiguationPolicy) : ParagraphDisambiguatorJ = {
+        if (policy == SpotlightConfiguration.DisambiguationPolicy.Document) {
+            disambiguators.getOrElse(policy, new ParagraphDisambiguatorJ(new TwoStepDisambiguator(configuration)))
+        } else if (policy == SpotlightConfiguration.DisambiguationPolicy.Occurrences) {
+            disambiguators.getOrElse(policy, new ParagraphDisambiguatorJ(new DefaultDisambiguator(configuration)))
+        } else if (policy == SpotlightConfiguration.DisambiguationPolicy.CuttingEdge) {
+            disambiguators.getOrElse(policy, new ParagraphDisambiguatorJ(new CuttingEdgeDisambiguator(configuration)))
+        } else { // by default use Occurrences
+            disambiguators.getOrElse(SpotlightConfiguration.DisambiguationPolicy.Occurrences, new ParagraphDisambiguatorJ(new DefaultDisambiguator(configuration)))
         }
     }
 
     def spotter(policy: SpotterConfiguration.SpotterPolicy) : Spotter = {
-        if (policy == SpotterConfiguration.SpotterPolicy.LingPipeSpotter)
+        if ((policy == SpotterConfiguration.SpotterPolicy.Default) ||
+            (policy == SpotterConfiguration.SpotterPolicy.LingPipeSpotter))
             spotters.getOrElse(policy, new LingPipeSpotter(new File(configuration.getSpotterConfiguration.getSpotterFile)))
         else if (policy == SpotterConfiguration.SpotterPolicy.AtLeastOneNounSelector) {
             spotters.getOrElse(policy, SpotterWithSelector.getInstance(spotter(SpotterConfiguration.SpotterPolicy.LingPipeSpotter),new AtLeastOneNounSelector(),taggedTokenProvider()))

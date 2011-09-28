@@ -22,7 +22,8 @@ public class SpotterConfiguration {
 
     Properties config = new Properties();
 
-    public enum SpotterPolicy {UserProvidedSpots,
+    public enum SpotterPolicy {Default,
+        UserProvidedSpots,
         LingPipeSpotter,
         AtLeastOneNounSelector,
         CoOccurrenceBasedSelector
