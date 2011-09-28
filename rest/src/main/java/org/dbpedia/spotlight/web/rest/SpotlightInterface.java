@@ -128,10 +128,11 @@ public class SpotlightInterface  {
             if (!t.trim().equals("")) ontologyTypes.add(Factory.ontologyType().fromQName(t.trim()));
         }
 
+        int maxLengthForOccurrenceCentric = 1200;
         if (disambiguator==SpotlightConfiguration.DisambiguationPolicy.Default
-                && text.length() > 1200) {
+                && text.length() > maxLengthForOccurrenceCentric) {
             disambiguator = SpotlightConfiguration.DisambiguationPolicy.Document;
-            LOG.info(String.format("Text length: %d. Using %s to disambiguate.",text.length(),disambiguator));
+            LOG.info(String.format("Text length > %d. Using %s to disambiguate.",maxLengthForOccurrenceCentric,disambiguator));
         }
 
         // Call annotation or disambiguation

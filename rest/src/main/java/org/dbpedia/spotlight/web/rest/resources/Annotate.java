@@ -72,7 +72,7 @@ public class Annotate {
             return ok(response);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(e.getStackTrace()).type(MediaType.TEXT_HTML).build());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(e.getStackTrace().toString()).type(MediaType.TEXT_HTML).build());
         }
     }
 
@@ -94,7 +94,7 @@ public class Annotate {
         try {
             return ok(annotationInterface.getRDFa(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterConfiguration.SpotterPolicy.valueOf(spotter),SpotlightConfiguration.DisambiguationPolicy.valueOf(disambiguatorName)));
         } catch (Exception e) {
-            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(e.getStackTrace()).type(MediaType.APPLICATION_XHTML_XML).build());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(e.getStackTrace().toString()).type(MediaType.APPLICATION_XHTML_XML).build());
         }
     }
 
@@ -115,7 +115,7 @@ public class Annotate {
         try {
            return ok(annotationInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterConfiguration.SpotterPolicy.valueOf(spotter),SpotlightConfiguration.DisambiguationPolicy.valueOf(disambiguatorName)));
        } catch (Exception e) {
-            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(e.getStackTrace()).type(MediaType.TEXT_XML).build());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(e.getStackTrace().toString()).type(MediaType.TEXT_XML).build());
         }
     }
 
@@ -136,7 +136,7 @@ public class Annotate {
         try {
             return ok(annotationInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterConfiguration.SpotterPolicy.valueOf(spotter),SpotlightConfiguration.DisambiguationPolicy.valueOf(disambiguatorName)));
        } catch (Exception e) {
-            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(e.getStackTrace()).type(MediaType.APPLICATION_JSON).build());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(e.getStackTrace().toString()).type(MediaType.APPLICATION_JSON).build());
         }
     }
 
