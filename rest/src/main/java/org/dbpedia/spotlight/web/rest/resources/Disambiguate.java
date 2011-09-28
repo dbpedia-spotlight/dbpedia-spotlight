@@ -24,6 +24,7 @@ import org.dbpedia.spotlight.web.rest.SpotlightInterface;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
@@ -56,10 +57,11 @@ public class Disambiguate {
                           @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
                           @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
                           @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution,
+                          @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
                           @Context HttpServletRequest request
     ) throws Exception {
         String clientIp = request.getRemoteAddr();
-        return ok(disambigInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterConfiguration.SpotterPolicy.UserProvidedSpots));
+        return ok(disambigInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterConfiguration.SpotterPolicy.UserProvidedSpots,SpotlightConfiguration.DisambiguationPolicy.valueOf(disambiguatorName)));
     }
 
     @GET
@@ -71,10 +73,11 @@ public class Disambiguate {
                           @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
                           @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
                           @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution,
+                          @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
                           @Context HttpServletRequest request
     ) throws Exception {
         String clientIp = request.getRemoteAddr();
-        return ok(disambigInterface.getRDFa(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterConfiguration.SpotterPolicy.UserProvidedSpots));
+        return ok(disambigInterface.getRDFa(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterConfiguration.SpotterPolicy.UserProvidedSpots,SpotlightConfiguration.DisambiguationPolicy.valueOf(disambiguatorName)));
     }
 
     @GET
@@ -86,11 +89,12 @@ public class Disambiguate {
                          @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
                          @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
                          @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution,
-                          @Context HttpServletRequest request
+                         @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
+                         @Context HttpServletRequest request
     ) throws Exception {
         String clientIp = request.getRemoteAddr();
 
-        return ok(disambigInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterConfiguration.SpotterPolicy.UserProvidedSpots));
+        return ok(disambigInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterConfiguration.SpotterPolicy.UserProvidedSpots,SpotlightConfiguration.DisambiguationPolicy.valueOf(disambiguatorName)));
     }
 
     @GET
@@ -102,11 +106,81 @@ public class Disambiguate {
                           @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
                           @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
                           @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution,
+                          @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
                           @Context HttpServletRequest request
     ) throws Exception {
         String clientIp = request.getRemoteAddr();
 
-        return ok(disambigInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterConfiguration.SpotterPolicy.UserProvidedSpots));
+        return ok(disambigInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterConfiguration.SpotterPolicy.UserProvidedSpots,SpotlightConfiguration.DisambiguationPolicy.valueOf(disambiguatorName)));
     }
 
+    //----------------
+
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.TEXT_HTML)
+    public Response postHTML(
+      @DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @FormParam("confidence") Double confidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @FormParam("support") int support,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @FormParam("types") String dbpediaTypes,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @FormParam("policy") String policy,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @FormParam("coreferenceResolution") boolean coreferenceResolution,
+      @DefaultValue("Default") @QueryParam("disambiguator") String disambiguatorName,
+      @Context HttpServletRequest request
+      ) throws Exception {
+        return getHTML(text,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,disambiguatorName,request);
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_XHTML_XML)
+    public Response postRDFa(
+      @DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @FormParam("confidence") Double confidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @FormParam("support") int support,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @FormParam("types") String dbpediaTypes,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @FormParam("policy") String policy,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @FormParam("coreferenceResolution") boolean coreferenceResolution,
+      @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
+      @Context HttpServletRequest request
+      ) throws Exception {
+        return getRDFa(text,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,disambiguatorName,request);
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.TEXT_XML)
+    public Response postXML(
+      @DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @FormParam("confidence") Double confidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @FormParam("support") int support,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @FormParam("types") String dbpediaTypes,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @FormParam("policy") String policy,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @FormParam("coreferenceResolution") boolean coreferenceResolution,
+      @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
+      @Context HttpServletRequest request
+      ) throws Exception {
+        return getXML(text,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,disambiguatorName,request);
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response postJSON(
+      @DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @FormParam("confidence") Double confidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @FormParam("support") int support,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @FormParam("types") String dbpediaTypes,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @FormParam("policy") String policy,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @FormParam("coreferenceResolution") boolean coreferenceResolution,
+      @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
+      @Context HttpServletRequest request
+      ) throws Exception {
+        return getJSON(text,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,disambiguatorName,request);
+      }
 }

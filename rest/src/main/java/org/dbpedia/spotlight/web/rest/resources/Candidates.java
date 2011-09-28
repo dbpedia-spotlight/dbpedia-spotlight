@@ -267,7 +267,7 @@ public class Candidates {
                                     String policy,
                                     boolean coreferenceResolution,
                                     SpotterConfiguration.SpotterPolicy spotter,
-                                    SpotlightConfiguration.DisambiguationPolicy disambiguatorName,
+                                    SpotlightConfiguration.DisambiguationPolicy disambiguator,
                                     String clientIp) throws SearchException, InputException, ItemNotFoundException {
 
         LOG.info("******************************** Parameters ********************************");
@@ -290,16 +290,16 @@ public class Candidates {
         LOG.info("policy: "+policy);
         LOG.info("coreferenceResolution: "+String.valueOf(coreferenceResolution));
         LOG.info("spotter: "+String.valueOf(spotter));
-        LOG.info("disambiguator: "+disambiguatorName.name());
+        LOG.info("disambiguator: " +disambiguator.name());
 
         if (text.trim().equals("")) {
             throw new InputException("No text was specified in the &text parameter.");
         }
 
-        if (disambiguatorName==SpotlightConfiguration.DisambiguationPolicy.Default
+        if (disambiguator==SpotlightConfiguration.DisambiguationPolicy.Default
                 && text.length() > 1200) {
-            disambiguatorName = SpotlightConfiguration.DisambiguationPolicy.Document;
-            LOG.info(String.format("Text length: %d. Using %s to disambiguate.",text.length(),disambiguatorName));
+            disambiguator = SpotlightConfiguration.DisambiguationPolicy.Document;
+            LOG.info(String.format("Text length: %d. Using %s to disambiguate.",text.length(),disambiguator));
         }
 
         List<OntologyType> ontologyTypes = new ArrayList<OntologyType>();
@@ -309,7 +309,7 @@ public class Candidates {
             //LOG.info("type:"+t.trim());
         }
 
-        Annotation annotation = process(text, confidence, support, ontologyTypes, sparqlQuery, blacklist, coreferenceResolution, spotter, disambiguatorName);
+        Annotation annotation = process(text, confidence, support, ontologyTypes, sparqlQuery, blacklist, coreferenceResolution, spotter, disambiguator);
 
         LOG.info("Shown: "+annotation.toXML());
 

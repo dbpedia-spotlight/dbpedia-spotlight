@@ -19,6 +19,7 @@ package org.dbpedia.spotlight.web.rest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.disambiguate.Disambiguator;
+import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ;
 import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
 import org.dbpedia.spotlight.exceptions.SearchException;
@@ -46,40 +47,17 @@ public class SpotlightInterface  {
 
     // Name of the REST api so that we can announce it in the log (can be disambiguate, annotate, candidates)
     String apiName;
-    // List of available spotting behaviors
-    Map<SpotterConfiguration.SpotterPolicy,Spotter> spotters;
-    // Disambiguator implementation chosen (TODO could also be a list)
-    Disambiguator disambiguator;
 
     private OutputManager outputManager = new OutputManager();
 
-    private SpotlightInterface(Map<SpotterConfiguration.SpotterPolicy,Spotter> spotters, Disambiguator disambiguator) {
-        this.spotters = spotters;
-        this.disambiguator = disambiguator;
+    private SpotlightInterface(String apiName) {
+        this.apiName = apiName;
     }
 
-    /**
-     * If no spotterName is specified, just runs the first spotter it finds.
-     * @param text
-     * @return
-     * @throws SearchException
-     * @throws InputException
-     */
-    public List<DBpediaResourceOccurrence> process(String text) throws SearchException, InputException {
-        return process(text, this.spotters.keySet().iterator().next());
-    }
-
-    public List<DBpediaResourceOccurrence> process(String text, SpotterConfiguration.SpotterPolicy spotter) throws SearchException, InputException {
-        List<DBpediaResourceOccurrence> resources = new ArrayList<DBpediaResourceOccurrence>();
-        List<SurfaceFormOccurrence> spots = this.spotters.get(spotter).extract(new Text(text));
-
-        for(SurfaceFormOccurrence sfOcc: spots) {
-            try {
-                resources.add(disambiguator.disambiguate(sfOcc));
-            } catch (ItemNotFoundException e) {
-                LOG.error("SurfaceForm not found. Using incompatible spotter.dict and index?");
-            }
-        }
+    public List<DBpediaResourceOccurrence> process(String text, SpotterConfiguration.SpotterPolicy spotter, SpotlightConfiguration.DisambiguationPolicy disambiguatorPolicy) throws SearchException, InputException {
+        List<SurfaceFormOccurrence> spots = Server.getSpotters().get(spotter).extract(new Text(text));
+        ParagraphDisambiguatorJ disambiguator = Server.getDisambiguators().get(disambiguatorPolicy);
+        List<DBpediaResourceOccurrence> resources = disambiguator.disambiguate(Factory.paragraph().fromJ(spots));
         return resources;
     }
 
@@ -89,10 +67,7 @@ public class SpotlightInterface  {
      * @return
      */
     public static SpotlightInterface getInstance(Disambiguator disambiguator) {
-        HashMap<SpotterConfiguration.SpotterPolicy,Spotter> spotters = new HashMap<SpotterConfiguration.SpotterPolicy,Spotter>();
-        spotters.put(SpotterConfiguration.SpotterPolicy.UserProvidedSpots, new WikiMarkupSpotter());
-        SpotlightInterface controller = new SpotlightInterface(spotters, disambiguator);
-        controller.setApiName("/disambiguate");
+        SpotlightInterface controller = new SpotlightInterface("/disambiguate");
         return controller;
     }
 
@@ -100,8 +75,7 @@ public class SpotlightInterface  {
      * Initialize the interface to perform annotation
      */
     public static SpotlightInterface getInstance(Map<SpotterConfiguration.SpotterPolicy,Spotter> spotters, Disambiguator disambiguator) {
-        SpotlightInterface controller = new SpotlightInterface(spotters, disambiguator);
-        controller.setApiName("/annotate");
+        SpotlightInterface controller = new SpotlightInterface("/annotate");
         return controller;
     }
 
@@ -118,7 +92,8 @@ public class SpotlightInterface  {
                                                           String policy,
                                                           boolean coreferenceResolution,
                                                           String clientIp,
-                                                          SpotterConfiguration.SpotterPolicy spotter
+                                                          SpotterConfiguration.SpotterPolicy spotter ,
+                                                          SpotlightConfiguration.DisambiguationPolicy disambiguator
                                                           ) throws SearchException, InputException {
 
         LOG.info("******************************** Parameters ********************************");
@@ -141,6 +116,7 @@ public class SpotlightInterface  {
         LOG.info("policy: "+policy);
         LOG.info("coreferenceResolution: "+String.valueOf(coreferenceResolution));
         LOG.info("spotter: "+String.valueOf(spotter));
+        LOG.info("disambiguator: "+String.valueOf(disambiguator));
 
         if (text.trim().equals("")) {
             throw new InputException("No text was specified in the &text parameter.");
@@ -150,11 +126,10 @@ public class SpotlightInterface  {
         String types[] = ontologyTypesString.trim().split(",");
         for (String t : types){
             if (!t.trim().equals("")) ontologyTypes.add(Factory.ontologyType().fromQName(t.trim()));
-            //LOG.info("type:"+t.trim());
         }
 
         // Call annotation or disambiguation
-        List<DBpediaResourceOccurrence> occList = process(text, spotter);
+        List<DBpediaResourceOccurrence> occList = process(text, spotter, disambiguator);
 
         // Filter: Old monolithic way
         CombineAllAnnotationFilters annotationFilter = new CombineAllAnnotationFilters(Server.getConfiguration());
@@ -180,11 +155,12 @@ public class SpotlightInterface  {
                           String policy,
                           boolean coreferenceResolution,
                           String clientIp,
-                          SpotterConfiguration.SpotterPolicy spotter
+                          SpotterConfiguration.SpotterPolicy spotter,
+                          SpotlightConfiguration.DisambiguationPolicy disambiguator
     ) throws Exception {
         String result;
         try {
-            List<DBpediaResourceOccurrence> occs = getOccurrences(text, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter);
+            List<DBpediaResourceOccurrence> occs = getOccurrences(text, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter,disambiguator);
             result = outputManager.makeHTML(text, occs);
         }
         catch (InputException e) { //TODO throw exception up to Annotate for WebApplicationException to handle.
@@ -203,11 +179,12 @@ public class SpotlightInterface  {
                           String policy,
                           boolean coreferenceResolution,
                           String clientIp,
-                          SpotterConfiguration.SpotterPolicy spotter
+                          SpotterConfiguration.SpotterPolicy spotter,
+                          SpotlightConfiguration.DisambiguationPolicy disambiguator
     ) throws Exception {
         String result;
         try {
-            List<DBpediaResourceOccurrence> occs = getOccurrences(text, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter);
+            List<DBpediaResourceOccurrence> occs = getOccurrences(text, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter,disambiguator);
             result = outputManager.makeRDFa(text, occs);
         }
         catch (InputException e) { //TODO throw exception up to Annotate for WebApplicationException to handle.
@@ -226,11 +203,12 @@ public class SpotlightInterface  {
                          String policy,
                          boolean coreferenceResolution,
                          String clientIp,
-                         SpotterConfiguration.SpotterPolicy spotter
+                         SpotterConfiguration.SpotterPolicy spotter,
+                         SpotlightConfiguration.DisambiguationPolicy disambiguator
    ) throws Exception {
         String result;
 //        try {
-            List<DBpediaResourceOccurrence> occs = getOccurrences(text, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter);
+            List<DBpediaResourceOccurrence> occs = getOccurrences(text, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter,disambiguator);
             result = outputManager.makeXML(text, occs, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution);
 //        }
 //        catch (Exception e) { //TODO throw exception up to Annotate for WebApplicationException to handle.
@@ -241,6 +219,7 @@ public class SpotlightInterface  {
         return result;
     }
 
+    //FIXME
     public String getCandidateXML(String text,
                          double confidence,
                          int support,
@@ -249,10 +228,11 @@ public class SpotlightInterface  {
                          String policy,
                          boolean coreferenceResolution,
                          String clientIp,
-                         SpotterConfiguration.SpotterPolicy spotter
+                         SpotterConfiguration.SpotterPolicy spotter,
+                         SpotlightConfiguration.DisambiguationPolicy disambiguator
    ) throws Exception {
         String result;
-        List<DBpediaResourceOccurrence> occs = getOccurrences(text, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter);
+        List<DBpediaResourceOccurrence> occs = getOccurrences(text, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter,disambiguator);
         result = outputManager.makeXML(text, occs, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution);
         LOG.info("XML format");
         return result;
@@ -266,10 +246,11 @@ public class SpotlightInterface  {
                           String policy,
                           boolean coreferenceResolution,
                           String clientIp,
-                          SpotterConfiguration.SpotterPolicy spotter
+                          SpotterConfiguration.SpotterPolicy spotter,
+                          SpotlightConfiguration.DisambiguationPolicy disambiguator
     ) throws Exception {
         String result;
-        String xml = getXML(text, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter);
+        String xml = getXML(text, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter,disambiguator);
         result = outputManager.xml2json(xml);
         LOG.info("JSON format");
         return result;
