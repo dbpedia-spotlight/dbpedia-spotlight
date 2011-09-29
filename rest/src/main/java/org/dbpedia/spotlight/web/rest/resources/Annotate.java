@@ -16,6 +16,8 @@
 
 package org.dbpedia.spotlight.web.rest.resources;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SpotterConfiguration;
 import org.dbpedia.spotlight.web.rest.Server;
@@ -41,6 +43,8 @@ import javax.ws.rs.core.UriInfo;
 @Consumes("text/plain")
 public class Annotate {
 
+    Log LOG = LogFactory.getLog(this.getClass());
+
     @Context
     private UriInfo context;
 
@@ -52,12 +56,36 @@ public class Annotate {
         return Response.ok().entity(response).header("Access-Control-Allow-Origin","*").build();
     }
     
-    private String print(StackTraceElement[] elements) {
+    private String print(Exception exception) {
+        String eMessage = exception.getMessage();
+        StackTraceElement[] elements = exception.getStackTrace();
         StringBuilder msg = new StringBuilder();
+        msg.append(eMessage);
         for (StackTraceElement e: elements) {
             msg.append(e.toString());
+            msg.append("\n");
         }
         return msg.toString();
+    }
+
+    private SpotlightConfiguration.DisambiguationPolicy disambiguationPolicy(String disambiguatorName) {
+        SpotlightConfiguration.DisambiguationPolicy disambiguator = SpotlightConfiguration.DisambiguationPolicy.Default;
+        try {
+            disambiguator = SpotlightConfiguration.DisambiguationPolicy.valueOf(disambiguatorName);
+        } catch (IllegalArgumentException e) {
+            LOG.error(String.format("Could not find requested &disambiguator=%s. Using Default.",disambiguatorName)); //TODO include error msg in output to client
+        }
+        return disambiguator;
+    }
+
+    private SpotterConfiguration.SpotterPolicy spottingPolicy(String spotterName) {
+        SpotterConfiguration.SpotterPolicy spotter = SpotterConfiguration.SpotterPolicy.Default;
+        try {
+            spotter = SpotterConfiguration.SpotterPolicy.valueOf(spotterName);
+        } catch (IllegalArgumentException e) {
+            LOG.error(String.format("Could not find requested &spotter=%s. Using Default.",spotterName)); //TODO include error msg in output to client
+        }
+        return spotter;
     }
 
     @GET
@@ -69,18 +97,18 @@ public class Annotate {
                             @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
                             @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
                             @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution,
-                            @DefaultValue("Default") @QueryParam("spotter") String spotter,                             
+                            @DefaultValue("Default") @QueryParam("spotter") String spotterName,
                             @DefaultValue("Default") @QueryParam("disambiguator") String disambiguatorName, 
                             @Context HttpServletRequest request) {
 
         String clientIp = request.getRemoteAddr();
 
         try {
-            String response = annotationInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterConfiguration.SpotterPolicy.valueOf(spotter), SpotlightConfiguration.DisambiguationPolicy.valueOf(disambiguatorName));
+            String response = annotationInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spottingPolicy(spotterName), disambiguationPolicy(disambiguatorName));
             return ok(response);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(print(e.getStackTrace())).type(MediaType.TEXT_HTML).build());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(print(e)).type(MediaType.TEXT_HTML).build());
         }
     }
 
@@ -94,15 +122,15 @@ public class Annotate {
                           @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
                           @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
                           @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution,
-                          @DefaultValue("Default") @QueryParam("spotter") String spotter,
+                          @DefaultValue("Default") @QueryParam("spotter") String spotterName,
                           @DefaultValue("Default") @QueryParam("disambiguator") String disambiguatorName,
                           @Context HttpServletRequest request) {
         String clientIp = request.getRemoteAddr();
 
         try {
-            return ok(annotationInterface.getRDFa(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterConfiguration.SpotterPolicy.valueOf(spotter),SpotlightConfiguration.DisambiguationPolicy.valueOf(disambiguatorName)));
+            return ok(annotationInterface.getRDFa(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spottingPolicy(spotterName),disambiguationPolicy(disambiguatorName)));
         } catch (Exception e) {
-            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(print(e.getStackTrace())).type(MediaType.APPLICATION_XHTML_XML).build());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(print(e)).type(MediaType.APPLICATION_XHTML_XML).build());
         }
     }
 
@@ -115,15 +143,15 @@ public class Annotate {
                          @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
                          @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
                          @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution,
-                         @DefaultValue("Default") @QueryParam("spotter") String spotter,
+                         @DefaultValue("Default") @QueryParam("spotter") String spotterName,
                          @DefaultValue("Default") @QueryParam("disambiguator") String disambiguatorName,
                           @Context HttpServletRequest request) {
         String clientIp = request.getRemoteAddr();
 
         try {
-           return ok(annotationInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterConfiguration.SpotterPolicy.valueOf(spotter),SpotlightConfiguration.DisambiguationPolicy.valueOf(disambiguatorName)));
+           return ok(annotationInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spottingPolicy(spotterName),disambiguationPolicy(disambiguatorName)));
        } catch (Exception e) {
-            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(print(e.getStackTrace())).type(MediaType.TEXT_XML).build());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(print(e)).type(MediaType.TEXT_XML).build());
         }
     }
 
@@ -136,15 +164,15 @@ public class Annotate {
                           @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
                           @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
                           @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution,
-                          @DefaultValue("Default") @QueryParam("spotter") String spotter,
+                          @DefaultValue("Default") @QueryParam("spotter") String spotterName,
                           @DefaultValue("Default") @QueryParam("disambiguator") String disambiguatorName,
                           @Context HttpServletRequest request) {
         String clientIp = request.getRemoteAddr();
 
         try {
-            return ok(annotationInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterConfiguration.SpotterPolicy.valueOf(spotter),SpotlightConfiguration.DisambiguationPolicy.valueOf(disambiguatorName)));
+            return ok(annotationInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spottingPolicy(spotterName),disambiguationPolicy(disambiguatorName)));
        } catch (Exception e) {
-            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(print(e.getStackTrace())).type(MediaType.APPLICATION_JSON).build());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(print(e)).type(MediaType.APPLICATION_JSON).build());
         }
     }
 
@@ -161,11 +189,11 @@ public class Annotate {
       @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
       @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @FormParam("policy") String policy,
       @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @FormParam("coreferenceResolution") boolean coreferenceResolution,
-      @DefaultValue("Default") @QueryParam("spotter") String spotter,
-      @DefaultValue("Default") @QueryParam("disambiguator") String disambiguatorName,
+      @DefaultValue("Default") @FormParam("spotter") String spotterName,
+      @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
       @Context HttpServletRequest request              
       ) {
-        return getHTML(text,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,spotter,disambiguatorName,request);
+        return getHTML(text,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,spotterName,disambiguatorName,request);
     }
     
     @POST
