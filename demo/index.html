@@ -113,7 +113,7 @@ body {
 
     position: relative;
 }
-#bookmarklet_container {
+#instructions {
     font-size: 80%;
     color: #666;
     text-align: left;
@@ -356,6 +356,7 @@ body .jstree li {
 <script>
 var annotated = false;
 var textInput = null;
+//var server = 'http://localhost:2223/rest'
 var server = 'http://spotlight.dbpedia.org/dev/rest'
 
 var lastResponse;
@@ -718,6 +719,17 @@ $(document).ready(function() {
         }
     });
 
+    $("#bookmarklet_container").hide();
+    $("#bookmarklet_link").click(function(event) { $("#bookmarklet_container").show().dialog({
+        dialogClass: 'alert',
+        width: 700,
+        height: 200,
+        modal: true,
+        position: ['center', 50],
+        title : "Bookmarklet"
+      });
+    });
+
     if (execute==true) runWithSettings;
 });
 
@@ -807,20 +819,28 @@ function sparqlExample(i) {
     <div id=suggestdialog></div>
 
 
+    <div id="instructions" class="container">
+        <h2>You should know:</h2>
+        <ul>
+            <li>This interface has been tested with Firefox 6.0.2 and Chromium 12.0.</li>
+            <li>We have a cute <a id="bookmarklet_link" href="#bookmarklet_container">bookmarklet</a> that you should try out!</li>
+            <li>DBpedia Spotlight is currently only available for <b>English</b>. <br/> However, it could be adapted for any language for which there is a DBpedia. <a href="http://sourceforge.net/mailarchive/forum.php?forum_name=dbp-spotlight-users">Contact us</a> if you'd like to help!</li>
+        </ul>
+    </div>
 
     <div id="bookmarklet_container" class="container">
-
-        <h2>Bookmarklet</h2>
         <div>
-            Tired of copying and pasting text here?
-            Drag the box "Annotate with DBpedia Spotlight" below to your bookmarks bar.
+            <br/>
+            Tired of copying and pasting text here?<br/>
+            Drag the box "Annotate with DBpedia Spotlight" below to your bookmarks bar (Or right-click and "Bookmark this link").
             After doing that, simply select text in any page and click on the bookmark you've just saved to your bookmarks bar.
             That will send the text you've selected to DBpedia Spotlight and take you to the annotated text in a blink!
             <div class="bookmarklet">
                 <p>
                     <a href="javascript:function se(d) {return d.selection ? d.selection.createRange().text : d.getSelection()} s = se(document); for (i=0; i<frames.length && !s; i++) s = se(frames[i].document); if (!s || s=='') s = prompt('Enter%20text%20to%20annotate%20with%20DBpedia%20Spotlight',''); open('http://spotlight.dbpedia.org/dev/demo/index.html' + (s ? '?execute=yes&client=bookmarklet&text=' + encodeURIComponent(s) : '')).focus();">
                         Annotate with DBpedia Spotlight
-                    </a></p>
+                    </a>
+                </p>
             </div>
 
 
@@ -879,7 +899,6 @@ function sparqlExample(i) {
 
 <div class=copyright>This demonstration uses the <a href=http://plugins.jquery.com/project/dbpedia-spotlight>DBpedia Spotlight jQuery Plugin v0.3</a> and the Web Service for <a href=http://dbp-spotlight.svn.sourceforge.net/viewvc/dbp-spotlight/tags/release-0.5/>DBpedia Spotlight v0.5</a>. <br/> For the latest versions, please visit: <a href=http://spotlight.dbpedia.org>http://spotlight.dbpedia.org</a></div>
 <br/>
-<div class=copyright>DBpedia Spotlight is currently only available for <b>English</b>. <br/> However, it could be adapted for any language for which there is a DBpedia. <a href="http://sourceforge.net/mailarchive/forum.php?forum_name=dbp-spotlight-users">Contact us</a> if you'd like to help!</div>
 
 </body>
 </html>

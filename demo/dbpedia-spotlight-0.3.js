@@ -169,6 +169,7 @@ function sortOffset(a,b){
 
                 snippet += getScoreDOMElements({
                     "finalScore": parseFloat(e["@similarityScore"]).toPrecision(3),
+                    "contextualScore": parseFloat(e["@similarityScore"]).toPrecision(3), //TODO send contextualScore from server and grab here
                     "percentageOfSecondRank": parseFloat(e["@percentageOfSecondRank"]),
                     "support": parseFloat(e["@support"])
                 });

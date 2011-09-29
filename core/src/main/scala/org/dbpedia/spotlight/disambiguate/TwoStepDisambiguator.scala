@@ -87,7 +87,8 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
     //WARNING: this is repetition of BaseSearcher.getHits
     //TODO move to subclass of BaseSearcher
     def query(text: Text, allowedUris: Array[DBpediaResource]) = {
-        val context = if (text.text.size<250) (1 to 3).foldLeft(text.text)((acc, t) => acc.concat(" "+text.text)) else text.text //HACK for text that is too short
+        //val context = if (text.text.size<250) (1 to 3).foldLeft(text.text)((acc, t) => acc.concat(" "+text.text)) else text.text //HACK for text that is too short
+        val context = if (text.text.size<250) text.text.concat(" "+text.text) else text.text //HACK for text that is too short
         LOG.debug(context)
         //val filter = new FieldCacheTermsFilter(DBpediaResourceField.CONTEXT.toString,allowedUris)
         val filter = new org.apache.lucene.search.TermsFilter()
