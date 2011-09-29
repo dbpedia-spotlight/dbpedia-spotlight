@@ -58,6 +58,7 @@ object Factory {
 
     object DBpediaResourceOccurrence {
         def from(sfOcc: SurfaceFormOccurrence, resource: DBpediaResource, score: Double) = {
+            LOG.debug("Factory test: support=%s, ctxScore=%s, sfOcc=%s".format(resource.support, score, sfOcc));
             new DBpediaResourceOccurrence("",  // there is no way to know this here
                 resource,
                 sfOcc.surfaceForm,
@@ -67,6 +68,17 @@ object Factory {
                 score,
                 -1,         // there is no way to know percentage of second here
                 score)      // to be set later
+        }
+        def from(sfOcc: SurfaceFormOccurrence, resource: DBpediaResource, score: Tuple2[Int,Double]) = {
+            new DBpediaResourceOccurrence("",  // there is no way to know this here
+                new DBpediaResource(resource.uri, score._1),
+                sfOcc.surfaceForm,
+                sfOcc.context,
+                sfOcc.textOffset,
+                Provenance.Annotation,
+                score._2,
+                -1,         // there is no way to know percentage of second here
+                score._2)      // to be set later
         }
         def from(sfOcc: SurfaceFormOccurrence, hit: ScoreDoc, contextSearcher: BaseSearcher) = {
             var resource: DBpediaResource = contextSearcher.getDBpediaResource(hit.doc)

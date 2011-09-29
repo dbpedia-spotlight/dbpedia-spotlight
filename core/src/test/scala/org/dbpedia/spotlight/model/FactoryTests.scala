@@ -66,4 +66,30 @@ class FactoryTests {
 
     }
 
+    /**
+     * Tests if DBpediaResourceOccurrence creation methods are working.
+     *
+     */
+    @Test
+    def DBpediaResourceOccurrenceFrom2Step {
+        val r = new DBpediaResource("Test",1000)
+
+        val sf = new SurfaceForm("test")
+        val t = new Text("This is a test");
+        val sfOcc: SurfaceFormOccurrence = new SurfaceFormOccurrence(sf,t,10)
+
+        // First test method used in old TwoStepDisambiguator
+        val created1 = Factory.DBpediaResourceOccurrence.from(sfOcc,r,0.5)
+        val desired = new DBpediaResourceOccurrence("paragraph1",r,sf,t,10,Provenance.Undefined,0.5,-1,0.5)
+
+        assertEquals(created1,desired)
+        assertEquals(created1.resource.support,1000)
+
+        // now test method used in the new TwoStepDisambiguator
+        val created2 = Factory.DBpediaResourceOccurrence.from(sfOcc,r,(2000,0.5))
+        assertEquals(created2.resource.support,2000)
+
+
+    }
+
 }

@@ -87,6 +87,8 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
     //WARNING: this is repetition of BaseSearcher.getHits
     //TODO move to subclass of BaseSearcher
     def query(text: Text, allowedUris: Array[DBpediaResource]) = {
+        val context = if (text.text.size<250) (1 to 3).foldLeft(text.text)((acc, t) => acc.concat(" "+text.text)) else text.text //HACK for text that is too short
+        LOG.debug(context)
         //val filter = new FieldCacheTermsFilter(DBpediaResourceField.CONTEXT.toString,allowedUris)
         val filter = new org.apache.lucene.search.TermsFilter()
         allowedUris.foreach( u => filter.addTerm(new Term(DBpediaResourceField.URI.toString,u.uri)) )
@@ -94,8 +96,8 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
         val mlt = new MoreLikeThis(contextSearcher.mReader);
         mlt.setFieldNames(Array(DBpediaResourceField.CONTEXT.toString))
         mlt.setAnalyzer(contextLuceneManager.defaultAnalyzer)
-        LOG.debug("Analyzer %s".format(contextLuceneManager.defaultAnalyzer))
-        val inputStream = new ByteArrayInputStream(text.text.getBytes("UTF-8"));
+        //LOG.debug("Analyzer %s".format(contextLuceneManager.defaultAnalyzer))
+        val inputStream = new ByteArrayInputStream(context.getBytes("UTF-8"));
         val query = mlt.like(inputStream);
         contextSearcher.getHits(query, allowedUris.size, 50000, filter)
     }
@@ -118,7 +120,7 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
             .foldLeft( Map[SurfaceFormOccurrence,List[DBpediaResource]]())(
             (acc,sfOcc) => {
                 LOG.debug("searching...")
-                val candidates = candidateSearcher.getCandidates(sfOcc.surfaceForm).asScala //.map(r => r.uri)
+                val candidates = candidateSearcher.getCandidates(sfOcc.surfaceForm).asScala //.map(r => r.uri)    //ATTENTION there is no r.support at this point
                 //LOG.debug("# candidates for: %s = %s (%s)".format(sfOcc.surfaceForm,candidates.size,candidates))
                 LOG.debug("# candidates for: %s = %s.".format(sfOcc.surfaceForm,candidates.size))
                 candidates.foreach( r => allCandidates.add(r))
@@ -130,15 +132,15 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
         val s2 = System.nanoTime()
         // step2: query once for the paragraph context, get scores for each candidate resource
         val hits = query(paragraph.text, allCandidates.toArray)
-        //LOG.debug("Hits (%d): %s".format(hits.size, hits.map( sd => "%s=%s".format(sd.doc,sd.score) ).mkString(",")))
+        LOG.debug("Hits (%d): %s".format(hits.size, hits.map( sd => "%s=%s".format(sd.doc,sd.score) ).mkString(",")))
         val scores = hits
-            .foldRight(Map[String,Double]())((hit,acc) => {
-            var resource: DBpediaResource = contextSearcher.getDBpediaResource(hit.doc)
+            .foldRight(Map[String,Tuple2[Int,Double]]())((hit,acc) => {
+            var resource: DBpediaResource = contextSearcher.getDBpediaResource(hit.doc) //this method returns resource.support
             var score = hit.score
-            acc + (resource.uri -> score)
+            acc + (resource.uri -> (resource.support,score))
         });
         val e2 = System.nanoTime()
-        //LOG.debug("Scores (%d): %s".format(scores.size, scores))
+        LOG.debug("Scores (%d): %s".format(scores.size, scores))
 
         LOG.debug("Time with %s: %f.".format(m2, (e2-s2) / 1000000.0 ))
 
@@ -147,8 +149,8 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
             val candOccs = occs(aSfOcc)
                 .map( resource => Factory.DBpediaResourceOccurrence.from(aSfOcc,
                                                                   resource,
-                                                                  scores.getOrElse(resource.uri,0.0)) )
-                .sortBy(o => o.contextualScore)
+                                                                  scores.getOrElse(resource.uri,(0,0.0))) )
+                .sortBy(o => o.contextualScore) //TODO should be final score
                 .reverse
                 .take(k)
             acc + (aSfOcc -> candOccs)
