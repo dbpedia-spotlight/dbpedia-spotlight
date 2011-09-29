@@ -30,11 +30,11 @@ class ConfidenceFilter(val simThresholds : List[Double], val confidence : Double
 
     override def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
         if(occ.similarityScore < simThreshold) {
-            LOG.info("filtered out by similarity score threshold (%.3f<%.3f): %s".format(occ.similarityScore, simThreshold, occ))
+            LOG.info("(c=%s) filtered out by similarity score threshold (%.3f<%.3f): %s".format(confidence,occ.similarityScore, simThreshold, occ))
             None
         }
         else if(occ.percentageOfSecondRank > (1-squaredConfidence)) {
-            LOG.info("filtered out by threshold of second ranked percentage (%.3f>%.3f): %s".format(occ.percentageOfSecondRank, 1-squaredConfidence, occ))
+            LOG.info("(c=%s) filtered out by threshold of second ranked percentage (%.3f>%.3f): %s".format(confidence,occ.percentageOfSecondRank, 1-squaredConfidence, occ))
             None
         }
         else {

@@ -77,7 +77,7 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
 
     def spotter(policy: SpotterConfiguration.SpotterPolicy) : Spotter = {
         if (policy == SpotterConfiguration.SpotterPolicy.Default) {
-            spotter(SpotterConfiguration.SpotterPolicy.LingPipeSpotter)
+            spotters.getOrElse(policy, spotter(SpotterConfiguration.SpotterPolicy.LingPipeSpotter)); // if no default, use lingpipe
         } else if(policy == SpotterConfiguration.SpotterPolicy.LingPipeSpotter) {
             spotters.getOrElse(policy, new LingPipeSpotter(new File(configuration.getSpotterConfiguration.getSpotterFile)))
         } else if (policy == SpotterConfiguration.SpotterPolicy.AtLeastOneNounSelector) {
@@ -90,7 +90,7 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
     }
 
     def spotter() : Spotter = {
-        val default = spotters.get(configuration.getSpotterConfiguration.getSpotterPolicies.get(0))
+        val default = spotters.get(configuration.getSpotterConfiguration.getSpotterPolicies.get(0)) // default is first in configuration list
         spotters.put(SpotterPolicy.Default, default)
         configuration.getSpotterConfiguration.getSpotterPolicies.foreach( policy => {
             spotters.put(policy, spotter(policy))
