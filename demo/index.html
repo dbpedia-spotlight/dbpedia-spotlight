@@ -481,29 +481,24 @@ $(document).ready(function() {
 
     $('#edit_text_wrapper').hide();
 
-//accept parameters from URL
+    //accept parameters from URL
     var t = $(document).getUrlParam('text');
     var execute = ($(document).getUrlParam('execute') == "yes");
-    console.log("Execute:"+execute);
 
     if ($.trim(t)!='' && t != "null") { $('#text').val(decodeURIComponent(t)); }
 
     $('textarea#text').autoResize({
-
-// On resize:
+        // On resize:
         onResize : function() {
             $(this).css({opacity:0.8});
         },
-
-// After resize:
+        // After resize:
         animateCallback : function() {
             $(this).css({opacity:1});
         },
-
-// Quite slow animation:
+        // Quite slow animation:
         animateDuration : 150,
-
-// More extra space:
+        // More extra space:
         extraSpace : 15
     });
 

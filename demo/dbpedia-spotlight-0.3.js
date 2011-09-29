@@ -58,8 +58,7 @@ function sortOffset(a,b){
       'types': '',
       'policy' : 'whitelist',
       'spotter': 'LingPipeSpotter', // one of: LingPipeSpotter,AtLeastOneNounSelector,CoOccurrenceBasedSelector
-      'disambiguator': 'Default', // one of: LingPipeSpotter,AtLeastOneNounSelector,CoOccurrenceBasedSelector
-      'callback': function() {}
+      'disambiguator': 'Default' // one of: LingPipeSpotter,AtLeastOneNounSelector,CoOccurrenceBasedSelector
     };
 
    function getScoreDOMElements(data) {
@@ -94,89 +93,95 @@ function sortOffset(a,b){
              });
              return ul;
         },
-	getAnnotatedText: function(response) {
-             var json = $.parseJSON(response);
-	     if (json==null) json = response; // when it comes already parsed
-    
-             var text = json["annotation"]["@text"];
+       getAnnotatedText: function(response) {
+           var json = $.parseJSON(response);
+           if (json==null) json = response; // when it comes already parsed
 
-             var start = 0;
-             var annotatedText = text; 
-            
-             if (json.annotation['surfaceForm']!=undefined)
-                  //console.log(json.annotation['surfaceForm']);
-                  var annotations = new Array().concat(json.annotation.surfaceForm).sort(sortOffset) // deals with the case of only one surfaceFrom returned (ends up not being an array)
-                  //console.log(annotations)
-                  annotatedText = annotations.map(function(e) {
-                  if (e==undefined) return "";
-		          //console.log(e);
-                  var sfName = e["@name"];
-                  var offset = parseInt(e["@offset"]);
-                  var sfLength = parseInt(sfName.length);
-                  var snippet = text.substring(start, offset)
-                  var surfaceForm = text.substring(offset,offset+sfLength);
-                  start = offset+sfLength;
-                  
-                  var classes = "annotation";
+           var text = json["annotation"]["@text"];
 
-                  snippet += "<div id='"+(sfName+offset)+"' class='" + classes + "'><a class='surfaceForm'>" + sfName + "</a>";
-                  var ul = Parser.getSelectBox($(e.resource),'candidate');
-                  //ul.children().each(function() { console.log($.data($(this),"testProp")); });
-                  snippet += "<ul class='candidates'>"+ul.html()+"</ul>"; //FIXME this wrapper is a repeat from getSelectBox
-                  snippet += "</div>";
+           var start = 0;
+           var annotatedText = text;
 
-                  return snippet;
-			    }).join("");
-             //snippet after last surface form
-             annotatedText += text.substring(start, text.length);
-             //console.log(annotatedText);
-             return annotatedText.replace(/\n/g, "<br />\n");
-        },
+           var annotations = new Array();
+           if (json.annotation['surfaceForm']!=undefined) {
+               annotations = annotations.concat(json.annotation.surfaceForm).sort(sortOffset) // deals with the case of only one surfaceFrom returned (ends up not being an array)
+           } else {
+               //TODO show a message saying that no annotations were found
+           }
+           annotatedText = annotations.map(function(e) {
+               if (e==undefined) return "";
+               //console.log(e);
+               var sfName = e["@name"];
+               var offset = parseInt(e["@offset"]);
+               var sfLength = parseInt(sfName.length);
+               var snippet = text.substring(start, offset)
+               var surfaceForm = text.substring(offset,offset+sfLength);
+               start = offset+sfLength;
+
+               var classes = "annotation";
+
+               snippet += "<div id='"+(sfName+offset)+"' class='" + classes + "'><a class='surfaceForm'>" + sfName + "</a>";
+               var ul = Parser.getSelectBox($(e.resource),'candidate');
+               //ul.children().each(function() { console.log($.data($(this),"testProp")); });
+               snippet += "<ul class='candidates'>"+ul.html()+"</ul>"; //FIXME this wrapper is a repeat from getSelectBox
+               snippet += "</div>";
+
+               return snippet;
+           }).join("");
+           //snippet after last surface form
+           annotatedText += text.substring(start, text.length);
+           //console.log(annotatedText);
+           return annotatedText.replace(/\n/g, "<br />\n");
+       },
         getAnnotatedTextFirstBest: function(response) {
-                     var json = $.parseJSON(response);
-        	     if (json==null) json = response; // when it comes already parsed
+            var json = $.parseJSON(response);
+            if (json==null) json = response; // when it comes already parsed
 
-                     var text = json["@text"];
+            var text = json["@text"];
 
-                     var start = 0;
-                     var annotatedText = text;
+            var start = 0;
+            var annotatedText = text;
 
-                     if (json['Resources']!=undefined)
-                          var annotations = new Array().concat(json.Resources) // deals with the case of only one surfaceFrom returned (ends up not being an array)
+            var annotations = new Array();
+            if (json['Resources']!=undefined) {
+                annotations = annotations.concat(json['Resources']); // deals with the case of only one surfaceFrom returned (ends up not being an array)
+            } else {
+                //TODO show a message saying that no annotations were found
+            }
 
-                          annotatedText = annotations.map(function(e) {
-                          if (e==undefined) return "";
+            annotatedText = annotations.map(function(e) {
+                if (e==undefined) return "";
 
-                          var sfName = e["@surfaceForm"];
-                          var offset = parseInt(e["@offset"]);
-                          var uri = e["@URI"];
+                var sfName = e["@surfaceForm"];
+                var offset = parseInt(e["@offset"]);
+                var uri = e["@URI"];
 
-                          var sfLength = parseInt(sfName.length);
-                          var snippet = text.substring(start, offset)
-                          var surfaceForm = text.substring(offset,offset+sfLength);
-                          start = offset+sfLength;
+                var sfLength = parseInt(sfName.length);
+                var snippet = text.substring(start, offset)
+                var surfaceForm = text.substring(offset,offset+sfLength);
+                start = offset+sfLength;
 
-                          var support = parseInt(e["@support"]);
-                          var confidence = 0.0;
+                var support = parseInt(e["@support"]);
+                var confidence = 0.0;
 
-                          var classes = "annotation"
-                          snippet += "<a id='"+(sfName+offset)+"' class='" + classes + "' about='" + uri + "' href='" + uri + "' title='" + uri + "'>" + sfName
+                var classes = "annotation"
+                snippet += "<a id='"+(sfName+offset)+"' class='" + classes + "' about='" + uri + "' href='" + uri + "' title='" + uri + "'>" + sfName
 
-                          snippet += getScoreDOMElements({
-                                     "finalScore": parseFloat(e["@similarityScore"]).toPrecision(3),
-                                     "percentageOfSecondRank": parseFloat(e["@percentageOfSecondRank"]),
-                                     "support": parseFloat(e["@support"]),
-                                    });
-                          
-                          snippet += "</a>";
+                snippet += getScoreDOMElements({
+                    "finalScore": parseFloat(e["@similarityScore"]).toPrecision(3),
+                    "percentageOfSecondRank": parseFloat(e["@percentageOfSecondRank"]),
+                    "support": parseFloat(e["@support"])
+                });
 
-                          return snippet;
-        			    }).join("");
-                     //snippet after last surface form
-                     annotatedText += text.substring(start, text.length);
-                     //console.log(annotatedText);
-                     return annotatedText.replace(/\n/g, "<br />\n");
-                },
+                snippet += "</a>";
+
+                return snippet;
+            }).join("");
+            //snippet after last surface form
+            annotatedText += text.substring(start, text.length);
+            //console.log(annotatedText);
+            return annotatedText.replace(/\n/g, "<br />\n");
+        },
 
 	getSuggestions: function(response, targetSurfaceForm) {
              var json = $.parseJSON(response);
@@ -230,7 +235,7 @@ function sortOffset(a,b){
                       'context': this,
                       'headers': {'Accept': 'application/json'},
                       'success': update,
-                      'error': settings.callback
+                      'error': function(response) { if(settings.callback != undefined) { settings.callback(response); } }
                     });    
                  });
        },
@@ -260,7 +265,7 @@ function sortOffset(a,b){
                       'context': this,
                       'headers': {'Accept': 'application/json'},
                       'success': update,
-                      'error': settings.callback
+                      'error': function(response) { if(settings.callback != undefined) { settings.callback(response); } }
                     });
                });
        },
@@ -292,7 +297,7 @@ function sortOffset(a,b){
                    'context': this,
                    'headers': {'Accept': 'application/json'},
                    'success': update,
-                   'error': settings.callback
+                   'error': function(response) { if(settings.callback != undefined) { settings.callback(response); } }
                });
            });
        }
