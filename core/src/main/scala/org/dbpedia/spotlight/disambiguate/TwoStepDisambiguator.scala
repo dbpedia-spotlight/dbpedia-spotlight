@@ -89,7 +89,7 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
     def query(text: Text, allowedUris: Array[DBpediaResource]) = {
         //val context = if (text.text.size<250) (1 to 3).foldLeft(text.text)((acc, t) => acc.concat(" "+text.text)) else text.text //HACK for text that is too short
         val context = if (text.text.size<250) text.text.concat(" "+text.text) else text.text //HACK for text that is too short
-        LOG.debug(context)
+        //LOG.debug(context)
         //val filter = new FieldCacheTermsFilter(DBpediaResourceField.CONTEXT.toString,allowedUris)
         val filter = new org.apache.lucene.search.TermsFilter()
         allowedUris.foreach( u => filter.addTerm(new Term(DBpediaResourceField.URI.toString,u.uri)) )
@@ -133,7 +133,7 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
         val s2 = System.nanoTime()
         // step2: query once for the paragraph context, get scores for each candidate resource
         val hits = query(paragraph.text, allCandidates.toArray)
-        LOG.debug("Hits (%d): %s".format(hits.size, hits.map( sd => "%s=%s".format(sd.doc,sd.score) ).mkString(",")))
+        //LOG.debug("Hits (%d): %s".format(hits.size, hits.map( sd => "%s=%s".format(sd.doc,sd.score) ).mkString(",")))
         val scores = hits
             .foldRight(Map[String,Tuple2[Int,Double]]())((hit,acc) => {
             var resource: DBpediaResource = contextSearcher.getDBpediaResource(hit.doc) //this method returns resource.support
@@ -141,7 +141,7 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
             acc + (resource.uri -> (resource.support,score))
         });
         val e2 = System.nanoTime()
-        LOG.debug("Scores (%d): %s".format(scores.size, scores))
+        //LOG.debug("Scores (%d): %s".format(scores.size, scores))
 
         LOG.debug("Time with %s: %f.".format(m2, (e2-s2) / 1000000.0 ))
 
