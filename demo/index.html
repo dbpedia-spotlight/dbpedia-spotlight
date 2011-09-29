@@ -449,7 +449,7 @@ function getSuggestions(eventObject){
     var st = ''+Kolich.Selector.getSelected();
 //console.log(st);
     if(st!=''){
-        console.log("You selected:\n"+st);
+        //console.log("You selected:\n"+st);
         $("#suggestdialog").hide().text($('#text').val());
         $('#suggestdialog').annotate("suggest");
         $('#suggestdialog').show(); //TODO instead of a div on the bottom, make it a popup
@@ -592,7 +592,7 @@ $(document).ready(function() {
                          'finalScore': parseFloat($(".finalScore", $(this)).text()),
                          'contextualScore': parseFloat($(".contextualScore", $(this)).text()),
                          'percentageOfSecondRank': parseFloat($(".percentageOfSecondRank", $(this)).text()) }
-              console.log(occ);
+              //console.log(occ);
               if (filter(occ, minConfidence, minSupport, minContextualScore)) {
                   $(this).addClass("filtered");
               } else {
