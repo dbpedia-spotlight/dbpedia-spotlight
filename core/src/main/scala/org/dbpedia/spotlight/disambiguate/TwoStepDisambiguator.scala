@@ -157,8 +157,8 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
         LOG.debug("Time with %s: %f.".format(m2, (e2-s2) / 1000000.0 ))
 
         // pick the best k for each surface form
-        occs.keys.foldLeft(Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]())( (acc,aSfOcc) => {
-            val candOccs = occs(aSfOcc)
+        val r = occs.keys.foldLeft(Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]())( (acc,aSfOcc) => {
+            val candOccs = occs.getOrElse(aSfOcc,List[DBpediaResource]())
                 .map( resource => Factory.DBpediaResourceOccurrence.from(aSfOcc,
                 resource,
                 scores.getOrElse(resource.uri,(0,0.0))) )
@@ -168,6 +168,9 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
             acc + (aSfOcc -> candOccs)
         });
 
+        LOG.debug("Reranked (%d): %s".format(r.size, r))
+
+        r
     }
 
     def name() : String = {
