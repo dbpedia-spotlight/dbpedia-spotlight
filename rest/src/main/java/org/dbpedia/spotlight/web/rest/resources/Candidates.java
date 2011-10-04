@@ -311,7 +311,8 @@ public class Candidates {
 
         Annotation annotation = process(text, confidence, support, ontologyTypes, sparqlQuery, blacklist, coreferenceResolution, spotter, disambiguator);
 
-        LOG.info("Shown: "+annotation.toXML());
+        LOG.debug("Shown: "+annotation.toXML());
+        LOG.debug("****************************************************************");
 
         return annotation;
     }

@@ -22,16 +22,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.annotate.Annotator;
 import org.dbpedia.spotlight.disambiguate.Disambiguator;
-import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguator;
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ;
 import org.dbpedia.spotlight.exceptions.InitializationException;
-import org.dbpedia.spotlight.model.DBpediaResourceFactorySQL;
-import org.dbpedia.spotlight.model.SpotlightFactory;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
+import org.dbpedia.spotlight.model.SpotlightFactory;
 import org.dbpedia.spotlight.model.SpotterConfiguration;
 import org.dbpedia.spotlight.spot.Spotter;
+import org.dbpedia.spotlight.web.rest.wadl.ExternalUriWadlGeneratorConfig;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -78,8 +76,7 @@ public class Server {
         }
 
         URI serverURI = new URI(configuration.getServerURI());       // "http://localhost:"+args[0]+"/rest/"
-        File indexDir = new File(configuration.getContextIndexDirectory()); //"/home/pablo/web/dbpedia36data/2.9.3/small/Index.wikipediaTraining.Merged.SnowballAnalyzer.DefaultSimilarity"
-        File spotterFile = new File(configuration.getSpotterConfiguration().getSpotterFile()); //"/home/pablo/eval/manual/Eval.spotterDictionary"
+        ExternalUriWadlGeneratorConfig.setUri(configuration.getServerURI());
 
         // Set static annotator that will be used by Annotate and Disambiguate
         final SpotlightFactory factory = new SpotlightFactory(configuration);
@@ -93,6 +90,7 @@ public class Server {
         initParams.put("com.sun.jersey.config.property.resourceConfigClass", "com.sun.jersey.api.core.PackagesResourceConfig");
         initParams.put("com.sun.jersey.config.property.packages", "org.dbpedia.spotlight.web.rest.resources");
         initParams.put("com.sun.jersey.config.property.WadlGeneratorConfig", "org.dbpedia.spotlight.web.rest.wadl.ExternalUriWadlGeneratorConfig");
+
 
         SelectorThread threadSelector = GrizzlyWebContainerFactory.create(serverURI, initParams);
         threadSelector.start();

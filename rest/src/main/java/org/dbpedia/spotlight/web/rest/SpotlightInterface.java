@@ -21,17 +21,12 @@ import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.disambiguate.Disambiguator;
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ;
 import org.dbpedia.spotlight.exceptions.InputException;
-import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
 import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters;
 import org.dbpedia.spotlight.model.*;
 import org.dbpedia.spotlight.spot.Spotter;
-import org.dbpedia.spotlight.spot.WikiMarkupSpotter;
-import org.dbpedia.spotlight.web.rest.output.Resource;
 
-import javax.annotation.Resources;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -57,7 +52,12 @@ public class SpotlightInterface  {
     public List<DBpediaResourceOccurrence> process(String text, SpotterConfiguration.SpotterPolicy spotter, SpotlightConfiguration.DisambiguationPolicy disambiguatorPolicy) throws SearchException, InputException {
         List<SurfaceFormOccurrence> spots = Server.getSpotters().get(spotter).extract(new Text(text));
         ParagraphDisambiguatorJ disambiguator = Server.getDisambiguators().get(disambiguatorPolicy);
-        List<DBpediaResourceOccurrence> resources = disambiguator.disambiguate(Factory.paragraph().fromJ(spots));
+        List<DBpediaResourceOccurrence> resources = new ArrayList<DBpediaResourceOccurrence>();
+        try {
+            disambiguator.disambiguate(Factory.paragraph().fromJ(spots));
+        } catch (UnsupportedOperationException e) {
+            throw new SearchException(e);
+        }
         return resources;
     }
 
@@ -146,10 +146,11 @@ public class SpotlightInterface  {
         // Map<String,AnnotationFilter> annotationFilters = buildFilters(occList, confidence, support, dbpediaTypes, sparqlQuery, blacklist, coreferenceResolution);
         //AnnotationFilter annotationFilter = annotationFilters.get(CombineAllAnnotationFilters.class.getSimpleName());
 
-        LOG.info("Shown:");
+        LOG.debug("Shown:");
         for(DBpediaResourceOccurrence occ : occList) {
-            LOG.info(String.format("%s <- %s; score: %s, ctxscore: %3.2f, support: %s, prior: %s", occ.resource(),occ.surfaceForm(), occ.similarityScore(), occ.contextualScore(),  occ.resource().support(), occ.resource().prior()));
+            LOG.debug(String.format("%s <- %s; score: %s, ctxscore: %3.2f, support: %s, prior: %s", occ.resource(), occ.surfaceForm(), occ.similarityScore(), occ.contextualScore(), occ.resource().support(), occ.resource().prior()));
         }
+        LOG.debug("****************************************************************");
 
         return occList;
     }
