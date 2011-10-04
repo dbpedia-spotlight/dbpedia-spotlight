@@ -410,6 +410,11 @@
             </snapshots>
         </repository>
 
+        <repository>
+            <id>opennlp.sf.net</id>
+            <url>http://opennlp.sourceforge.net/maven2/</url>
+        </repository>
+
     </repositories>
 
 

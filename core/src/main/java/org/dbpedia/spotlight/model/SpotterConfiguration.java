@@ -1,6 +1,8 @@
 package org.dbpedia.spotlight.model;
 
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
+import org.dbpedia.spotlight.spot.CoOccurrenceBasedSelector;
+import org.dbpedia.spotlight.spot.NESpotter;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,15 +23,16 @@ public class SpotterConfiguration {
     public final String PREFIX_COOCCURRENCE_SELECTOR = "org.dbpedia.spotlight.spot.cooccurrence.";
 
     Properties config = new Properties();
+    protected String spotterFile    = "";
 
     public enum SpotterPolicy {Default,
         UserProvidedSpots,
         LingPipeSpotter,
         AtLeastOneNounSelector,
-        CoOccurrenceBasedSelector
+        CoOccurrenceBasedSelector,
+        NESpotter
     }
 
-    protected String spotterFile    = "";
 
     public SpotterConfiguration(String fileName) throws ConfigurationException {
 
@@ -52,7 +55,6 @@ public class SpotterConfiguration {
             }
         }
 
-
         // Validate CoOccurrenceBasedSelector
         if (spotters.contains(SpotterPolicy.CoOccurrenceBasedSelector)) {
 
@@ -66,8 +68,7 @@ public class SpotterConfiguration {
                     config.setProperty(PREFIX_COOCCURRENCE_SELECTOR + parameter, config.getProperty(PREFIX_COOCCURRENCE_SELECTOR + parameter).trim());
                 }catch(NullPointerException e){
                     //One of the configuration property required for this Spot selector was not there.
-                    throw new ConfigurationException("Cannot find required configuration property '" +
-                            PREFIX_COOCCURRENCE_SELECTOR + parameter + "' for co-occurrence based spot selector.");
+                    throw new ConfigurationException(String.format("Cannot find required configuration property '%s' for co-occurrence based spot selector %s.",PREFIX_COOCCURRENCE_SELECTOR + parameter, CoOccurrenceBasedSelector.class));
                 }
             }
 
@@ -86,6 +87,12 @@ public class SpotterConfiguration {
                 throw new ConfigurationException(PREFIX_COOCCURRENCE_SELECTOR + "datasource must be one of 'ukwac' or 'google'.");
             }
 
+        }
+
+        // Validate CoOccurrenceBasedSelector
+        if (spotters.contains(SpotterPolicy.NESpotter)) {
+            if (!new File(getOpenNLPModelDir()).exists())
+                throw new ConfigurationException(String.format("OpenNLP model directory was not found. It is required by %s.", NESpotter.class));
         }
 
     }
@@ -122,6 +129,9 @@ public class SpotterConfiguration {
         return spotterFile;
     }
 
+    public String getOpenNLPModelDir() {
+        return config.getProperty("org.dbpedia.spotlight.spot.opennlp.dir");
+    }
 
     public List<SpotterPolicy> getSpotterPolicies() throws ConfigurationException {
         List<SpotterPolicy> policies = new ArrayList<SpotterPolicy>();
