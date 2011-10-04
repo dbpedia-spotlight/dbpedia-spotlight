@@ -87,6 +87,7 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
     //WARNING: this is repetition of BaseSearcher.getHits
     //TODO move to subclass of BaseSearcher
     def query(text: Text, allowedUris: Array[DBpediaResource]) = {
+        LOG.debug("Setting up query.")
         //val context = if (text.text.size<250) (1 to 3).foldLeft(text.text)((acc, t) => acc.concat(" "+text.text)) else text.text //HACK for text that is too short
         val context = if (text.text.size<250) text.text.concat(" "+text.text) else text.text //HACK for text that is too short
         //LOG.debug(context)
@@ -100,6 +101,7 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
         //LOG.debug("Analyzer %s".format(contextLuceneManager.defaultAnalyzer))
         val inputStream = new ByteArrayInputStream(context.getBytes("UTF-8"));
         val query = mlt.like(inputStream);
+        LOG.debug("Running query.")
         contextSearcher.getHits(query, allowedUris.size, 50000, filter)
     }
 
@@ -132,8 +134,17 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
 
         val s2 = System.nanoTime()
         // step2: query once for the paragraph context, get scores for each candidate resource
-        val hits = query(paragraph.text, allCandidates.toArray)
-        //LOG.debug("Hits (%d): %s".format(hits.size, hits.map( sd => "%s=%s".format(sd.doc,sd.score) ).mkString(",")))
+        var hits : Array[ScoreDoc] = null
+        try {
+            hits = query(paragraph.text, allCandidates.toArray)
+        } catch {
+            case e: Exception => throw new SearchException(e);
+            case r: RuntimeException => throw new SearchException(r);
+            case _ => LOG.error("Unknown really scary error happened. You can cry now.")
+        }
+
+        LOG.debug("Hits (%d): %s".format(hits.size, hits.map( sd => "%s=%s".format(sd.doc,sd.score) ).mkString(",")))
+        LOG.debug("Reading DBpediaResources.")
         val scores = hits
             .foldRight(Map[String,Tuple2[Int,Double]]())((hit,acc) => {
             var resource: DBpediaResource = contextSearcher.getDBpediaResource(hit.doc) //this method returns resource.support
@@ -149,13 +160,14 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
         occs.keys.foldLeft(Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]())( (acc,aSfOcc) => {
             val candOccs = occs(aSfOcc)
                 .map( resource => Factory.DBpediaResourceOccurrence.from(aSfOcc,
-                                                                  resource,
-                                                                  scores.getOrElse(resource.uri,(0,0.0))) )
+                resource,
+                scores.getOrElse(resource.uri,(0,0.0))) )
                 .sortBy(o => o.contextualScore) //TODO should be final score
                 .reverse
                 .take(k)
             acc + (aSfOcc -> candOccs)
         });
+
     }
 
     def name() : String = {
