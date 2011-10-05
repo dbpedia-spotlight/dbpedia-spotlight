@@ -28,7 +28,6 @@ import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SpotlightFactory;
 import org.dbpedia.spotlight.model.SpotterConfiguration;
 import org.dbpedia.spotlight.spot.Spotter;
-import org.dbpedia.spotlight.web.rest.wadl.ExternalUriWadlGeneratorConfig;
 
 import java.io.IOException;
 import java.net.URI;

@@ -60,6 +60,7 @@ public class Annotate {
         String eMessage = exception.getMessage();
         StackTraceElement[] elements = exception.getStackTrace();
         StringBuilder msg = new StringBuilder();
+        msg.append(exception);
         msg.append(eMessage);
         for (StackTraceElement e: elements) {
             msg.append(e.toString());

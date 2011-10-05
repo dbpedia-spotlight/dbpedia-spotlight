@@ -17,10 +17,6 @@ package org.dbpedia.spotlight.disambiguate
  */
 
 import mixtures.LinearRegressionMixture
-import org.dbpedia.spotlight.lucene.LuceneManager
-import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
-import java.io.File
-import org.dbpedia.spotlight.lucene.similarity._
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.exceptions.{SearchException, InputException}
 import org.apache.lucene.search.Explanation
@@ -38,17 +34,6 @@ class CuttingEdgeDisambiguator(val factory: SpotlightFactory) extends Disambigua
     private val LOG = LogFactory.getLog(this.getClass)
 
     LOG.info("Initializing disambiguator object ...")
-
-//    val indexDir = new File(configuration.getContextIndexDirectory)
-//
-//    // Disambiguator
-//    val dir = LuceneManager.pickDirectory(indexDir)
-//
-//    //val luceneManager = new LuceneManager(dir)                              // use this if surface forms in the index are case-sensitive
-//    val luceneManager = new LuceneManager.CaseSensitiveSurfaceForms(dir)  // use this if all surface forms in the index are lower-cased
-//    val cache = JCSTermCache.getInstance(luceneManager, configuration.getMaxCacheSize);
-//    luceneManager.setContextSimilarity(new CachedInvCandFreqSimilarity(cache))        // set most successful Similarity
-//    luceneManager.setDBpediaResourceFactory(configuration.getDBpediaResourceFactory)
 
     val disambiguator : Disambiguator = new MixedWeightsDisambiguator(factory.searcher, new LinearRegressionMixture())
 

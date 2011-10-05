@@ -81,7 +81,7 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
     @throws(classOf[InputException])
     def disambiguate(paragraph: Paragraph): List[DBpediaResourceOccurrence] = {
         // return first from each candidate set
-        bestK(paragraph, 5).map( kv => kv._2(0) ).toList
+        bestK(paragraph, 5).map( kv => kv._2.head).toList
     }
 
     //WARNING: this is repetition of BaseSearcher.getHits
@@ -107,7 +107,7 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
 
 
     //TODO break down into two steps: candidates and context query
-    def bestK(paragraph:  Paragraph, k: Int): Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]= {
+    def bestK(paragraph:  Paragraph, k: Int): Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]] = {
 
         LOG.debug("Running bestK for paragraph %s.".format(paragraph.id))
 
@@ -130,7 +130,7 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
                 acc + (sfOcc -> candidates.toList)
             });
         val e1 = System.nanoTime()
-        LOG.debug("Time with %s: %f.".format(m1, (e1-s1) / 1000000.0 ))
+        //LOG.debug("Time with %s: %f.".format(m1, (e1-s1) / 1000000.0 ))
 
         val s2 = System.nanoTime()
         // step2: query once for the paragraph context, get scores for each candidate resource
@@ -143,8 +143,8 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
             case _ => LOG.error("Unknown really scary error happened. You can cry now.")
         }
 
-        LOG.debug("Hits (%d): %s".format(hits.size, hits.map( sd => "%s=%s".format(sd.doc,sd.score) ).mkString(",")))
-        LOG.debug("Reading DBpediaResources.")
+       // LOG.debug("Hits (%d): %s".format(hits.size, hits.map( sd => "%s=%s".format(sd.doc,sd.score) ).mkString(",")))
+       // LOG.debug("Reading DBpediaResources.")
         val scores = hits
             .foldRight(Map[String,Tuple2[Int,Double]]())((hit,acc) => {
             var resource: DBpediaResource = contextSearcher.getDBpediaResource(hit.doc) //this method returns resource.support
@@ -154,7 +154,7 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
         val e2 = System.nanoTime()
         //LOG.debug("Scores (%d): %s".format(scores.size, scores))
 
-        LOG.debug("Time with %s: %f.".format(m2, (e2-s2) / 1000000.0 ))
+        //LOG.debug("Time with %s: %f.".format(m2, (e2-s2) / 1000000.0 ))
 
         // pick the best k for each surface form
         val r = occs.keys.foldLeft(Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]())( (acc,aSfOcc) => {
@@ -168,7 +168,7 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
             acc + (aSfOcc -> candOccs)
         });
 
-        LOG.debug("Reranked (%d): %s".format(r.size, r))
+       // LOG.debug("Reranked (%d)".format(r.size))
 
         r
     }
