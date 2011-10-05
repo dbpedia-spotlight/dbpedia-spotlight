@@ -610,7 +610,7 @@ $(document).ready(function() {
             }
     );
 
-    $('.candidates').uniform()
+    $(".candidates").uniform()
     $("select, input").uniform();
     $("select, input").attr("disabled", false);
     $(".disabled").removeClass("disabled");
@@ -730,7 +730,9 @@ $(document).ready(function() {
       });
     });
 
-    if (execute==true) runWithSettings;
+    if (execute) {
+        runWithSettings();
+    }
 });
 
 function sparqlExample(i) {
@@ -785,7 +787,7 @@ function sparqlExample(i) {
                 <option value="LingPipeSpotter">Annotate all spots</option>
                 <option value="AtLeastOneNounSelector">No verbs and adjs.</option>
                 <option value="CoOccurrenceBasedSelector" selected>No 'common words'</option>
-                <option value="NESpotter" selected>Only Per.,Org.,Loc.</option>
+                <option value="NESpotter">Only Per.,Org.,Loc.</option>
             </select>
             <br/>
             <select id="disambiguator" class="action_button">
