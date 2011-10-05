@@ -54,7 +54,7 @@ public class SpotlightInterface  {
         ParagraphDisambiguatorJ disambiguator = Server.getDisambiguators().get(disambiguatorPolicy);
         List<DBpediaResourceOccurrence> resources = new ArrayList<DBpediaResourceOccurrence>();
         try {
-            disambiguator.disambiguate(Factory.paragraph().fromJ(spots));
+            resources = disambiguator.disambiguate(Factory.paragraph().fromJ(spots));
         } catch (UnsupportedOperationException e) {
             throw new SearchException(e);
         }
@@ -146,11 +146,12 @@ public class SpotlightInterface  {
         // Map<String,AnnotationFilter> annotationFilters = buildFilters(occList, confidence, support, dbpediaTypes, sparqlQuery, blacklist, coreferenceResolution);
         //AnnotationFilter annotationFilter = annotationFilters.get(CombineAllAnnotationFilters.class.getSimpleName());
 
-        LOG.debug("Shown:");
-        for(DBpediaResourceOccurrence occ : occList) {
-            LOG.debug(String.format("%s <- %s; score: %s, ctxscore: %3.2f, support: %s, prior: %s", occ.resource(), occ.surfaceForm(), occ.similarityScore(), occ.contextualScore(), occ.resource().support(), occ.resource().prior()));
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Shown:");
+            for(DBpediaResourceOccurrence occ : occList) {
+                LOG.debug(String.format("%s <- %s; score: %s, ctxscore: %3.2f, support: %s, prior: %s", occ.resource(), occ.surfaceForm(), occ.similarityScore(), occ.contextualScore(), occ.resource().support(), occ.resource().prior()));
+            }
         }
-        LOG.debug("****************************************************************");
 
         return occList;
     }
@@ -176,6 +177,7 @@ public class SpotlightInterface  {
             result = "<html><body><b>ERROR:</b> <i>"+e.getMessage()+"</i></body></html>";
         }
         LOG.info("HTML format");
+        LOG.debug("****************************************************************");
         return result;
     }
 
@@ -200,6 +202,7 @@ public class SpotlightInterface  {
             result = "<html><body><b>ERROR:</b> <i>"+e.getMessage()+"</i></body></html>";
         }
         LOG.info("RDFa format");
+        LOG.debug("****************************************************************");
         return result;
     }
 
@@ -224,6 +227,8 @@ public class SpotlightInterface  {
 //            result = outputManager.makeErrorXML(e.getMessage(), text, confidence, support, dbpediaTypesString, spqarlQuery, policy, coreferenceResolution);
 //        }
         LOG.info("XML format");
+        LOG.debug("****************************************************************");
+
         return result;
     }
 
@@ -243,6 +248,7 @@ public class SpotlightInterface  {
         List<DBpediaResourceOccurrence> occs = getOccurrences(text, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter,disambiguator);
         result = outputManager.makeXML(text, occs, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution);
         LOG.info("XML format");
+        LOG.debug("****************************************************************");
         return result;
     }
 
@@ -261,6 +267,8 @@ public class SpotlightInterface  {
         String xml = getXML(text, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter,disambiguator);
         result = outputManager.xml2json(xml);
         LOG.info("JSON format");
+        LOG.debug("****************************************************************");
+
         return result;
     }
 
