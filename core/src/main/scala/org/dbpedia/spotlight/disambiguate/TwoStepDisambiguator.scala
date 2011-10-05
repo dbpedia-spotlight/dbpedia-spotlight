@@ -81,7 +81,12 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
     @throws(classOf[InputException])
     def disambiguate(paragraph: Paragraph): List[DBpediaResourceOccurrence] = {
         // return first from each candidate set
-        bestK(paragraph, 5).map( kv => kv._2.head).toList
+        bestK(paragraph, 5)
+            .filter(kv =>
+                kv._2.nonEmpty)
+            .map( kv =>
+                kv._2.head)
+            .toList
     }
 
     //WARNING: this is repetition of BaseSearcher.getHits
