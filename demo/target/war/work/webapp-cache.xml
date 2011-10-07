@@ -4,76 +4,76 @@
       <string>currentBuild</string>
       <path-set>
         <pathsSet class="linked-hash-set">
-          <string>js/dhtmlXTree.js</string>
-          <string>js/dhtmlXCommon.js</string>
-          <string>dbpedia_spotlight_logo.jpg</string>
-          <string>css/dhtmlXTree.css</string>
-          <string>css/stylesheet.css</string>
-          <string>treeImgs/arrow_next.gif</string>
-          <string>treeImgs/plus.gif</string>
-          <string>treeImgs/btn_up1.gif</string>
-          <string>treeImgs/book_titel.gif</string>
-          <string>treeImgs/open2.gif</string>
-          <string>treeImgs/iconUnCheckAll.gif</string>
-          <string>treeImgs/minus4.gif</string>
-          <string>treeImgs/iconTask.gif</string>
-          <string>treeImgs/tombs.gif</string>
-          <string>treeImgs/xml.php</string>
-          <string>treeImgs/plus3.gif</string>
-          <string>treeImgs/books_close.gif</string>
-          <string>treeImgs/tree4.xml</string>
-          <string>treeImgs/plus5.gif</string>
-          <string>treeImgs/line2.gif</string>
-          <string>treeImgs/books_open.gif</string>
-          <string>treeImgs/folderOpen.gif</string>
-          <string>treeImgs/iconCheckGray.gif</string>
-          <string>treeImgs/iconReport.gif</string>
-          <string>treeImgs/xml.asp</string>
-          <string>treeImgs/blank.gif</string>
-          <string>treeImgs/iconJob.gif</string>
-          <string>treeImgs/minus2.gif</string>
-          <string>treeImgs/tree5.xml</string>
-          <string>treeImgs/iconCheckAll.gif</string>
-          <string>treeImgs/magazines_open.gif</string>
-          <string>treeImgs/tree3.xml</string>
-          <string>treeImgs/iconTimeRecordsEdit.gif</string>
-          <string>treeImgs/Thumbs.db</string>
-          <string>treeImgs/minus.gif</string>
-          <string>treeImgs/minus5.gif</string>
-          <string>treeImgs/close2.gif</string>
-          <string>treeImgs/folderClosed.gif</string>
-          <string>treeImgs/iconDeleteSelected.gif</string>
-          <string>treeImgs/tombs_mag.gif</string>
-          <string>treeImgs/item.gif</string>
-          <string>treeImgs/plus4.gif</string>
-          <string>treeImgs/plus_ar.gif</string>
-          <string>treeImgs/magazines_close.gif</string>
-          <string>treeImgs/leaf.gif</string>
-          <string>treeImgs/DBpediaTypes.xml</string>
-          <string>treeImgs/line1.gif</string>
-          <string>treeImgs/iconClient.gif</string>
-          <string>treeImgs/minus_ar.gif</string>
-          <string>treeImgs/btn_up2.gif</string>
-          <string>treeImgs/book.gif</string>
-          <string>treeImgs/line3.gif</string>
-          <string>treeImgs/plus2.gif</string>
-          <string>treeImgs/item2.gif</string>
-          <string>treeImgs/minus3.gif</string>
-          <string>treeImgs/line4.gif</string>
-          <string>treeImgs/mytree.xml</string>
+          <string>welcomeICEfaces.xhtml</string>
           <string>WEB-INF/web.xml</string>
           <string>WEB-INF/sun-web.xml</string>
-          <string>Annotations.xhtml</string>
-          <string>welcomeICEfaces.xhtml</string>
+          <string>js/dhtmlXTree.js</string>
+          <string>js/dhtmlXCommon.js</string>
+          <string>treeImgs/plus2.gif</string>
+          <string>treeImgs/minus4.gif</string>
+          <string>treeImgs/close2.gif</string>
+          <string>treeImgs/blank.gif</string>
+          <string>treeImgs/plus.gif</string>
+          <string>treeImgs/iconReport.gif</string>
+          <string>treeImgs/tombs_mag.gif</string>
+          <string>treeImgs/iconUnCheckAll.gif</string>
+          <string>treeImgs/iconTimeRecordsEdit.gif</string>
+          <string>treeImgs/line1.gif</string>
+          <string>treeImgs/plus4.gif</string>
+          <string>treeImgs/tree5.xml</string>
+          <string>treeImgs/plus3.gif</string>
+          <string>treeImgs/item.gif</string>
+          <string>treeImgs/open2.gif</string>
+          <string>treeImgs/iconCheckAll.gif</string>
+          <string>treeImgs/item2.gif</string>
+          <string>treeImgs/folderOpen.gif</string>
+          <string>treeImgs/minus2.gif</string>
+          <string>treeImgs/tree3.xml</string>
+          <string>treeImgs/xml.asp</string>
+          <string>treeImgs/minus.gif</string>
+          <string>treeImgs/iconJob.gif</string>
+          <string>treeImgs/book.gif</string>
+          <string>treeImgs/iconCheckGray.gif</string>
+          <string>treeImgs/magazines_close.gif</string>
+          <string>treeImgs/line3.gif</string>
+          <string>treeImgs/btn_up2.gif</string>
+          <string>treeImgs/minus5.gif</string>
+          <string>treeImgs/plus5.gif</string>
+          <string>treeImgs/magazines_open.gif</string>
+          <string>treeImgs/iconTask.gif</string>
+          <string>treeImgs/books_open.gif</string>
+          <string>treeImgs/arrow_next.gif</string>
+          <string>treeImgs/xml.php</string>
+          <string>treeImgs/folderClosed.gif</string>
+          <string>treeImgs/minus_ar.gif</string>
+          <string>treeImgs/leaf.gif</string>
+          <string>treeImgs/plus_ar.gif</string>
+          <string>treeImgs/btn_up1.gif</string>
+          <string>treeImgs/Thumbs.db</string>
+          <string>treeImgs/line2.gif</string>
+          <string>treeImgs/minus3.gif</string>
+          <string>treeImgs/DBpediaTypes.xml</string>
+          <string>treeImgs/iconClient.gif</string>
+          <string>treeImgs/mytree.xml</string>
+          <string>treeImgs/iconDeleteSelected.gif</string>
+          <string>treeImgs/books_close.gif</string>
+          <string>treeImgs/line4.gif</string>
+          <string>treeImgs/book_titel.gif</string>
+          <string>treeImgs/tombs.gif</string>
+          <string>treeImgs/tree4.xml</string>
           <string>Disambiguations.xhtml</string>
+          <string>Annotations.xhtml</string>
           <string>index.xhtml</string>
-          <string>WEB-INF/classes/org/dbpedia/spotlight/web/demo/AnnotationWebServiceClient.class</string>
+          <string>css/dhtmlXTree.css</string>
+          <string>css/stylesheet.css</string>
+          <string>dbpedia_spotlight_logo.jpg</string>
           <string>WEB-INF/classes/org/dbpedia/spotlight/web/demo/AnnotationBean.class</string>
+          <string>WEB-INF/classes/org/dbpedia/spotlight/web/demo/AnnotationWebServiceClient.class</string>
           <string>WEB-INF/lib/rest-0.1.1.jar</string>
           <string>WEB-INF/lib/core-0.1.1.jar</string>
           <string>WEB-INF/lib/core-2.0-SNAPSHOT.jar</string>
           <string>WEB-INF/lib/json-1.1.jar</string>
-          <string>WEB-INF/lib/openrdf-1.jar</string>
+          <string>WEB-INF/lib/openrdf-1.0.jar</string>
           <string>WEB-INF/lib/log4j-1.2.16.jar</string>
           <string>WEB-INF/lib/scala-library-2.8.1.jar</string>
           <string>WEB-INF/lib/scalatest-1.2.jar</string>
