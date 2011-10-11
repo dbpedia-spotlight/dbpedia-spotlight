@@ -3,7 +3,6 @@ package org.dbpedia.spotlight.tagging.lingpipe;
 import com.aliasi.sentences.IndoEuropeanSentenceModel;
 import junit.framework.TestCase;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
-import org.dbpedia.spotlight.model.SpotlightFactory;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.tagging.TaggedToken;
 
@@ -42,12 +41,11 @@ public class LingPipeTaggedTokenProviderTest extends TestCase {
 
 		SpotlightConfiguration configuration = new SpotlightConfiguration("conf/server.properties");
         LingPipeFactory lingPipeFactory = new LingPipeFactory(new File(configuration.getTaggerFile()), new IndoEuropeanSentenceModel());
-        LingPipeTaggedTokenProvider tagger = new LingPipeTaggedTokenProvider(lingPipeFactory);
 
-		lingPipeTaggedTokenProvider1 = tagger;
+		lingPipeTaggedTokenProvider1 = new LingPipeTaggedTokenProvider(lingPipeFactory);
 		lingPipeTaggedTokenProvider1.initialize(text1);
 
-		lingPipeTaggedTokenProvider2 = tagger;
+		lingPipeTaggedTokenProvider2 = new LingPipeTaggedTokenProvider(lingPipeFactory);
 		lingPipeTaggedTokenProvider2.initialize(text2);
 
 	}
