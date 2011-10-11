@@ -43,7 +43,7 @@ class SurfaceFormOccurrence(val surfaceForm : SurfaceForm,
     }
 
     override def hashCode() = {
-        3 * this.surfaceForm.hashCode() + 5 * this.context.hashCode() + 7 * this.textOffset.hashCode()
+        3 * this.surfaceForm.asInstanceOf[SurfaceForm].hashCode() + 5 * this.context.asInstanceOf[Text].hashCode() + 7 * this.textOffset.hashCode()
     }
     
     override def toString = {

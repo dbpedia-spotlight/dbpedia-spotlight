@@ -21,20 +21,27 @@ import org.dbpedia.spotlight.string.ModifiedWikiUtil
 
 class SurfaceForm(var name : String)
 {
-    name = name.replace("’", "'")
+  name = name.replace("’", "'")
 
-    name = if (ModifiedWikiUtil.isEncoded(name)) {
-               ModifiedWikiUtil.wikiDecode(name)
-           }
-           else {
-               ModifiedWikiUtil.cleanSpace(name)
-           }
+  name = if (ModifiedWikiUtil.isEncoded(name)) {
+    ModifiedWikiUtil.wikiDecode(name)
+  }
+  else {
+    ModifiedWikiUtil.cleanSpace(name)
+  }
 
-    def equals(that : SurfaceForm) : Boolean =
-    {
-        //TODO: instead of equalsIgnoreCase, fix the Spotter // (should be fixed now)
-        name.equalsIgnoreCase(that.name)
+
+  //TODO: instead of equalsIgnoreCase, fix the Spotter // (should be fixed now)
+  override def equals(that : Any) = {
+    that match {
+      case t: SurfaceForm => name.equalsIgnoreCase(that.asInstanceOf[SurfaceForm].name)
+      case _ => false
     }
+  }
 
-    override def toString = "SurfaceForm["+name+"]"
+  override def hashCode() : Int = {
+    (if (name != null) name.hashCode else 0)
+  }
+
+  override def toString = "SurfaceForm["+name+"]"
 }

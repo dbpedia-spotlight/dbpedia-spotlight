@@ -61,8 +61,20 @@ public class EqualityTests {
     SurfaceForm sf1 = new SurfaceForm("test");
     SurfaceForm sf2 = new SurfaceForm("test");
 
+    @Test
+    public void testSurfaceForm() {
+        assertEquals(sf1, sf2);
+    }
+
     Text text1 = new Text("This is a test.");
     Text text2 = new Text("This is a test.");
+
+
+    @Test
+    public void testText() {
+        assertEquals(text1, text2);
+    }
+
 
     SurfaceFormOccurrence sfOcc1 = new SurfaceFormOccurrence(sf1, text1, 11);
     SurfaceFormOccurrence sfOcc2 = new SurfaceFormOccurrence(sf2, text2, 11);
@@ -74,7 +86,7 @@ public class EqualityTests {
 
     @Test
     public void testSurfaceFormOccurrenceEqualityInHashSet() {
-        HashSet hashSet = new HashSet();
+        HashSet<SurfaceFormOccurrence> hashSet = new HashSet<SurfaceFormOccurrence>();
         hashSet.add(sfOcc1);
         assertTrue(hashSet.contains(sfOcc2));
     }
