@@ -18,7 +18,6 @@
 
 package org.dbpedia.spotlight.model;
 
-import org.dbpedia.spotlight.lucene.LuceneManager;
 import org.junit.Test;
 
 import java.util.HashSet;
@@ -58,5 +57,29 @@ public class EqualityTests {
     }
 
     //TODO DBpediaResourceOccurrence
+
+    SurfaceForm sf1 = new SurfaceForm("test");
+    SurfaceForm sf2 = new SurfaceForm("test");
+
+    Text text1 = new Text("This is a test.");
+    Text text2 = new Text("This is a test.");
+
+    SurfaceFormOccurrence sfOcc1 = new SurfaceFormOccurrence(sf1, text1, 11);
+    SurfaceFormOccurrence sfOcc2 = new SurfaceFormOccurrence(sf2, text2, 11);
+
+    @Test
+    public void testSurfaceFormOccurrenceEquality() {
+        assertEquals(sfOcc1, sfOcc2);
+    }
+
+    @Test
+    public void testSurfaceFormOccurrenceEqualityInHashSet() {
+        HashSet hashSet = new HashSet();
+        hashSet.add(sfOcc1);
+        assertTrue(hashSet.contains(sfOcc2));
+    }
+
+
+
 
 }
