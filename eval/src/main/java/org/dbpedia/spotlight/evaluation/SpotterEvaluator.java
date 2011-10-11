@@ -22,7 +22,6 @@ import com.aliasi.sentences.IndoEuropeanSentenceModel;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.InitializationException;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
-import org.dbpedia.spotlight.model.SpotlightFactory;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 import org.dbpedia.spotlight.model.Text;
 import org.dbpedia.spotlight.spot.*;
@@ -51,7 +50,6 @@ public class SpotterEvaluator {
 		SpotlightConfiguration configuration = new SpotlightConfiguration("conf/server.properties");
 
         LingPipeFactory lingPipeFactory = new LingPipeFactory(new File(configuration.getTaggerFile()), new IndoEuropeanSentenceModel());
-        LingPipeTaggedTokenProvider tagger = new LingPipeTaggedTokenProvider(lingPipeFactory);
 
 		//AnnotatedDataset evaluationCorpus = new AnnotatedDataset(new File("/Users/jodaiber/Documents/workspace/ba/" +
 		//		"BachelorThesis/01 Evaluation/02 Annotation/Software/custom/src/annotation/final.test.json"),
@@ -59,7 +57,7 @@ public class SpotterEvaluator {
 //
 		AnnotatedDataset evaluationCorpus =
 				new AnnotatedDataset(new File("/home/pablo/eval/csaw/original"),
-						AnnotatedDataset.Format.CSAW, tagger);
+						AnnotatedDataset.Format.CSAW, new LingPipeTaggedTokenProvider(lingPipeFactory));
 		
 		/**
 		 * Base:
@@ -82,7 +80,7 @@ public class SpotterEvaluator {
 		Spotter spotterWithSelector = SpotterWithSelector.getInstance(
 				spotter,
 				new CoOccurrenceBasedSelector(configuration.getSpotterConfiguration()),
-				tagger
+				new LingPipeTaggedTokenProvider(lingPipeFactory)
 		);
 
 		SelectorResult selectorResultCoOc = getSelectorResult(spotterWithSelector, evaluationCorpus);
@@ -95,7 +93,7 @@ public class SpotterEvaluator {
 		spotterWithSelector = SpotterWithSelector.getInstance(
 				spotter,
 				new AtLeastOneNounSelector(),
-				tagger
+				new LingPipeTaggedTokenProvider(lingPipeFactory)
 		);
 
 		SelectorResult selectorResultOneNoun = getSelectorResult(spotterWithSelector, evaluationCorpus);
