@@ -171,7 +171,7 @@ public class NESpotter implements Spotter {
     @Override
     public List<SurfaceFormOccurrence> extract(Text intext) {
         String text = intext.text();
-        List<SurfaceFormOccurrence> ret = null;
+        List<SurfaceFormOccurrence> ret = new ArrayList<SurfaceFormOccurrence>();
         try {
             for (Map.Entry<String, Object[]> type : entityTypes.entrySet()) {
                 List<SurfaceFormOccurrence> res = null;
@@ -266,6 +266,7 @@ public class NESpotter implements Spotter {
 
     public enum OpenNlpModels {
         SentenceModel("en-sent"),
+        ChunkModel("en-chunker"),
         TokenizerModel("en-token"),
         POSModel("en-pos-maxent"),
         person("en-ner-person"),

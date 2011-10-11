@@ -18,6 +18,7 @@
 
 package org.dbpedia.spotlight.evaluation;
 
+import com.aliasi.sentences.IndoEuropeanSentenceModel;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.InitializationException;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
@@ -28,6 +29,8 @@ import org.dbpedia.spotlight.spot.*;
 import org.dbpedia.spotlight.spot.cooccurrence.training.AnnotatedDataset;
 import org.dbpedia.spotlight.spot.cooccurrence.training.AnnotatedSurfaceFormOccurrence;
 import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter;
+import org.dbpedia.spotlight.tagging.lingpipe.LingPipeFactory;
+import org.dbpedia.spotlight.tagging.lingpipe.LingPipeTaggedTokenProvider;
 import org.json.JSONException;
 
 import java.io.File;
@@ -46,15 +49,17 @@ public class SpotterEvaluator {
 	public static void main(String[] args) throws IOException, ConfigurationException, JSONException, InitializationException {
 
 		SpotlightConfiguration configuration = new SpotlightConfiguration("conf/server.properties");
-		SpotlightFactory spotlightFactory = new SpotlightFactory(configuration);
+
+        LingPipeFactory lingPipeFactory = new LingPipeFactory(new File(configuration.getTaggerFile()), new IndoEuropeanSentenceModel());
+        LingPipeTaggedTokenProvider tagger = new LingPipeTaggedTokenProvider(lingPipeFactory);
 
 		//AnnotatedDataset evaluationCorpus = new AnnotatedDataset(new File("/Users/jodaiber/Documents/workspace/ba/" +
 		//		"BachelorThesis/01 Evaluation/02 Annotation/Software/custom/src/annotation/final.test.json"),
 		//		AnnotatedDataset.Format.JSON, spotlightFactory);
 //
 		AnnotatedDataset evaluationCorpus =
-				new AnnotatedDataset(new File("/Users/jodaiber/Desktop/csaw"),
-						AnnotatedDataset.Format.CSAW, spotlightFactory);
+				new AnnotatedDataset(new File("/home/pablo/eval/csaw/original"),
+						AnnotatedDataset.Format.CSAW, tagger);
 		
 		/**
 		 * Base:
@@ -77,7 +82,7 @@ public class SpotterEvaluator {
 		Spotter spotterWithSelector = SpotterWithSelector.getInstance(
 				spotter,
 				new CoOccurrenceBasedSelector(configuration.getSpotterConfiguration()),
-				spotlightFactory.taggedTokenProvider()
+				tagger
 		);
 
 		SelectorResult selectorResultCoOc = getSelectorResult(spotterWithSelector, evaluationCorpus);
@@ -90,7 +95,7 @@ public class SpotterEvaluator {
 		spotterWithSelector = SpotterWithSelector.getInstance(
 				spotter,
 				new AtLeastOneNounSelector(),
-				spotlightFactory.taggedTokenProvider()
+				tagger
 		);
 
 		SelectorResult selectorResultOneNoun = getSelectorResult(spotterWithSelector, evaluationCorpus);

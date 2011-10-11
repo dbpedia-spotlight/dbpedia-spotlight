@@ -17,6 +17,7 @@
 package org.dbpedia.spotlight.string
 
 import java.net.{URLDecoder, URLEncoder}
+import org.apache.commons.logging.{LogFactory, Log}
 
 /**
  * Contains code for processing URLs from Wikipedia, performing cleaning, etc.
@@ -25,6 +26,8 @@ import java.net.{URLDecoder, URLEncoder}
  * @author pablomendes - started changing for i18n
  */
 object ModifiedWikiUtil {
+
+    val LOG: Log = LogFactory.getLog(this.getClass)
 
     def cleanSpace( string : String ) : String = {
         return string.replaceAll("_", " ").replaceAll(" +", " ").trim
@@ -65,9 +68,18 @@ object ModifiedWikiUtil {
 
     def wikiDecode(name : String) : String =
     {
+        var decoded = "";
         // Capitalize must be Locale-specific. We must use a different method for languages tr, az, lt.
         // Example: [[istanbul]] generates a link to ?stanbul (dot on the I) on tr.wikipedia.org
-        return cleanSpace(URLDecoder.decode(name, "UTF-8"))
+        try {
+            decoded = cleanSpace(URLDecoder.decode(name, "UTF-8"))
+        } catch {
+            case e: java.lang.IllegalArgumentException => {
+                LOG.error("ERROR when trying to clean up funny SurfaceForm[%s].\n%s".format(name,e.getStackTraceString));
+                decoded = name;
+            };
+        }
+        return decoded;
     }
 
     //TODO make code in SurrogatesUtil use this method

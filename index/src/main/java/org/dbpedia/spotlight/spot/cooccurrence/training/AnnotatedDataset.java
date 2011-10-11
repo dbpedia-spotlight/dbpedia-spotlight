@@ -6,6 +6,7 @@ import org.dbpedia.spotlight.spot.cooccurrence.classification.SpotClass;
 import org.dbpedia.spotlight.spot.cooccurrence.filter.Filter;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.model.*;
+import org.dbpedia.spotlight.tagging.lingpipe.LingPipeTaggedTokenProvider;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,7 +38,7 @@ public class AnnotatedDataset {
 
 	private List<Text> texts = new LinkedList<Text>();
 
-
+    private LingPipeTaggedTokenProvider taggedTokenProvider;
 	/**
 	 * Input formats:
 	 */
@@ -48,13 +49,18 @@ public class AnnotatedDataset {
 
 	}
 
-	public List<Text> getTexts() {
-		return texts;
-	}
-
-
-
-
+    /**
+     *
+     * @param file
+     * @param format
+     * @param spotlightFactory SpotlightFactory for creating
+     * @throws IOException
+     * @throws JSONException
+     * @throws ConfigurationException
+     */
+      public AnnotatedDataset(File file, Format format, SpotlightFactory spotlightFactory) throws IOException, JSONException, ConfigurationException {
+          this(file, format, spotlightFactory.taggedTokenProvider());
+      }
 
 	/**
 	 * Create a new training dataset from an annotated file.
@@ -70,14 +76,18 @@ public class AnnotatedDataset {
 	 *
 	 * @param file the input file containing annotations.
 	 * @param format the format of the input file, see currently supported formats
-	 * @param spotlightFactory SpotlightFactory for creating {@link org.dbpedia.spotlight.tagging.TaggedTokenProvider}s etc.
+	 * @param {@link org.dbpedia.spotlight.tagging.TaggedTokenProvider}s for POS tagging
 	 * @throws IOException Error while reading file.
 	 * @throws org.dbpedia.spotlight.exceptions.ConfigurationException Error in the configuration.
 	 * @throws org.json.JSONException Error while deserializing JSON file.
 	 */
-	public AnnotatedDataset(File file, Format format, SpotlightFactory spotlightFactory) throws IOException, JSONException, ConfigurationException {
+	public AnnotatedDataset(File file, Format format, LingPipeTaggedTokenProvider taggedTokenProvider) throws IOException, JSONException, ConfigurationException {
+        this.taggedTokenProvider = taggedTokenProvider;
+        if (!file.exists()) {
+            throw new ConfigurationException(String.format("Could not find dataset on path provided %s.",file.getAbsolutePath()));
+        }
 
-		switch (format) {
+        switch (format) {
 
 			case JSON:
 
@@ -91,7 +101,7 @@ public class AnnotatedDataset {
 
 					JSONObject jsonObject = jsonObjects.getJSONObject(i).getJSONObject("annotations");
 					String text = jsonObject.getString("@text");
-					TaggedText taggedText = new TaggedText(text, spotlightFactory.taggedTokenProvider());
+					TaggedText taggedText = new TaggedText(text, taggedTokenProvider);
 					texts.add(taggedText);
 
 					JSONArray annotations = jsonObject.getJSONArray("Resources");
@@ -137,7 +147,7 @@ public class AnnotatedDataset {
 				while ((row = reader.readNext()) != null) {
 					try{
 						SpotClass annotation = row[5].equals("t") ? SpotClass.valid : SpotClass.common;
-						addInstance(row[0], Integer.parseInt(row[1]), new TaggedText(row[2], spotlightFactory.taggedTokenProvider()), row[3], row[4], row[5], annotation);
+						addInstance(row[0], Integer.parseInt(row[1]), new TaggedText(row[2], taggedTokenProvider), row[3], row[4], row[5], annotation);
 					}catch (ArrayIndexOutOfBoundsException ignored){}
 				}
 
@@ -169,7 +179,7 @@ public class AnnotatedDataset {
 						if (f != null) try { f.close(); } catch (IOException ignored) { }
 					}
 
-					TaggedText text = new TaggedText(new String(buffer), spotlightFactory.taggedTokenProvider());
+					TaggedText text = new TaggedText(new String(buffer), taggedTokenProvider);
 					textMap.put(crawledDoc, text);
 					texts.add(text);
 
@@ -312,7 +322,16 @@ public class AnnotatedDataset {
 		writer.close();
 
 	}
-	
+
+
+    /**
+     * Get all documents in the dataset.
+     *
+     * @return List of text objects representing documents
+     */
+    public List<Text> getTexts() {
+        return texts;
+    }
 
 	/**
 	 * Get all instances in the dataset.

@@ -38,6 +38,7 @@ public class SpotlightConfiguration {
 
 	private static Log LOG = LogFactory.getLog(SpotlightConfiguration.class);
 
+    //TODO could get all of these from configuration file
 	public final static String DEFAULT_TEXT = "";
 	public final static String DEFAULT_CONFIDENCE = "0.5";
 	public final static String DEFAULT_SUPPORT = "30";
