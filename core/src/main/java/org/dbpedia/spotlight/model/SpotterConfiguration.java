@@ -30,7 +30,8 @@ public class SpotterConfiguration {
         LingPipeSpotter,
         AtLeastOneNounSelector,
         CoOccurrenceBasedSelector,
-        NESpotter
+        NESpotter,
+        WikiMarkupSpotter
     }
 
 

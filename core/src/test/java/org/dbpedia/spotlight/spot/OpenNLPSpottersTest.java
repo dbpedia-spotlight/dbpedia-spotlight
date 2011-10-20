@@ -19,6 +19,7 @@
 package org.dbpedia.spotlight.spot;
 
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
+import org.dbpedia.spotlight.exceptions.SpottingException;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 import org.dbpedia.spotlight.model.Text;
@@ -32,12 +33,21 @@ import java.util.List;
  *
  * @author pablomendes
  */
-public class NESpotterTest {
+public class OpenNLPSpottersTest {
 
      @Test
-     public void assureItRuns() throws ConfigurationException {
+     public void assureNESpotterRuns() throws ConfigurationException, SpottingException {
         SpotlightConfiguration config = new SpotlightConfiguration("conf/dev.properties");
         Spotter spotter = new NESpotter(config.getSpotterConfiguration().getOpenNLPModelDir());
+        Text t = new Text("The financial crunch threatens to undermine a foreign policy described as “smart power” in Texas by President Obama and Secretary of State Hillary Rodham Clinton, one that emphasizes diplomacy and development as a complement to American military power. It also would begin to reverse the increase in foreign aid that President George W. Bush supported after the attacks of Sept. 11, 2001, as part of an effort to combat the roots of extremism and anti-American sentiment, especially in the most troubled countries. ");
+        List<SurfaceFormOccurrence> spots = spotter.extract(t);
+        System.out.println(spots);
+    }
+
+         @Test
+     public void assureOpenNLPNGramSpotterRuns() throws ConfigurationException, SpottingException {
+        SpotlightConfiguration config = new SpotlightConfiguration("conf/dev.properties");
+        Spotter spotter = new OpenNLPNGramSpotter(config.getSpotterConfiguration().getOpenNLPModelDir());
         Text t = new Text("The financial crunch threatens to undermine a foreign policy described as “smart power” in Texas by President Obama and Secretary of State Hillary Rodham Clinton, one that emphasizes diplomacy and development as a complement to American military power. It also would begin to reverse the increase in foreign aid that President George W. Bush supported after the attacks of Sept. 11, 2001, as part of an effort to combat the roots of extremism and anti-American sentiment, especially in the most troubled countries. ");
         List<SurfaceFormOccurrence> spots = spotter.extract(t);
         System.out.println(spots);

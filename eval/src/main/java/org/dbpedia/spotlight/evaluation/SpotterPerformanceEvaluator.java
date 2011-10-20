@@ -1,5 +1,6 @@
 package org.dbpedia.spotlight.evaluation;
 
+import org.dbpedia.spotlight.exceptions.SpottingException;
 import org.dbpedia.spotlight.spot.CoOccurrenceBasedSelector;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.InitializationException;
@@ -28,7 +29,7 @@ import java.util.List;
 public class SpotterPerformanceEvaluator {
 
 
-	public static void main(String[] args) throws InitializationException, ConfigurationException, IOException, JSONException {
+	public static void main(String[] args) throws InitializationException, ConfigurationException, IOException, JSONException, SpottingException {
 
 		SpotlightConfiguration configuration = new SpotlightConfiguration("conf/server.properties");
 		SpotlightFactory spotlightFactory = new SpotlightFactory(configuration);
@@ -66,7 +67,7 @@ public class SpotterPerformanceEvaluator {
 
 	}
 
-	private static void extract(JSONObject jsonObject, Spotter spotter) throws JSONException {
+	private static void extract(JSONObject jsonObject, Spotter spotter) throws JSONException, SpottingException {
 		Iterator keys = jsonObject.keys();
 		while(keys.hasNext()) {
 			String domain = (String) keys.next();

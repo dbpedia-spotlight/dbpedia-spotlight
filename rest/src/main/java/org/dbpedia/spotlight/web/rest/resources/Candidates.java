@@ -24,6 +24,7 @@ import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ;
 import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
 import org.dbpedia.spotlight.exceptions.SearchException;
+import org.dbpedia.spotlight.exceptions.SpottingException;
 import org.dbpedia.spotlight.model.*;
 import org.dbpedia.spotlight.web.rest.Server;
 import org.dbpedia.spotlight.web.rest.output.Annotation;
@@ -65,7 +66,7 @@ public class Candidates {
      */
     public Annotation process(String text, double confidence, int support, List<OntologyType> dbpediaTypes,
                               String sparqlQuery, boolean blacklist, boolean coreferenceResolution, SpotterConfiguration.SpotterPolicy spotter, SpotlightConfiguration.DisambiguationPolicy disambiguatorName)
-            throws SearchException, ItemNotFoundException, InputException {
+            throws SearchException, ItemNotFoundException, InputException, SpottingException {
 
         Annotation annotation = new Annotation(text);
         List<Spot> spots = new LinkedList<Spot>();
@@ -187,7 +188,6 @@ public class Candidates {
         }
     }
 
-//    //Patch provided by Paul Houle
 //
 //    @POST
 //    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -268,7 +268,7 @@ public class Candidates {
                                     boolean coreferenceResolution,
                                     SpotterConfiguration.SpotterPolicy spotter,
                                     SpotlightConfiguration.DisambiguationPolicy disambiguator,
-                                    String clientIp) throws SearchException, InputException, ItemNotFoundException {
+                                    String clientIp) throws SearchException, InputException, ItemNotFoundException, SpottingException {
 
         LOG.info("******************************** Parameters ********************************");
         //announceAPI();

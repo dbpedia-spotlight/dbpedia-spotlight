@@ -81,6 +81,20 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>install-kea-jar</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>edu.umd</groupId>
+                            <artifactId>cloud9</artifactId>
+                            <version>SNAPSHOT</version>
+                            <packaging>jar</packaging>
+                            <file>${basedir}/../lib/kea-goss-5.0-weka-3.7.3-SNAPSHOT.jar</file>
+                        </configuration>
+                    </execution>
+                    <!--execution>
                         <id>install-weka-jar</id>
                         <phase>generate-resources</phase>
                         <goals>
@@ -93,7 +107,7 @@
                             <packaging>jar</packaging>
                             <file>${basedir}/../lib/weka-trunk.jar</file>
                         </configuration>
-                    </execution>
+                    </execution-->
                 </executions>
             </plugin>
 
@@ -209,6 +223,7 @@
             <version>3.7.3</version>
         </dependency>
 
+
         <dependency>
             <groupId>net.debasishg</groupId>
             <artifactId>sjson_2.9.1</artifactId>
@@ -268,6 +283,11 @@
             <artifactId>tools</artifactId>
             <version>1.5.0</version>
         </dependency-->
+
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+        </dependency>
 
     </dependencies>
 

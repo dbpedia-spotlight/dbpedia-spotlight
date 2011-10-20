@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 Pablo Mendes, Max Jakob
+ * Copyright 2011 DBpedia Spotlight Development Team
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ import java.util.*;
 /**
  * Spotter that uses Named Entity Recognition (NER) models from OpenNLP. Only spots People, Organisations and Locations.
  *
- * @author Rohana Rajapakse implemented the class
+ * @author Rohana Rajapakse (GOSS Interactive Limited) - implemented the class
  * @author pablomendes  adjustments to logging, class rename, integrated with the rest of architecture
  */
 public class NESpotter implements Spotter {
@@ -56,9 +56,9 @@ public class NESpotter implements Spotter {
     protected static BaseModel sentenceModel = null;
     protected static Map<String, Object[]> entityTypes = new HashMap<String, Object[]>() {
         {
-            put(OpenNlpModels.person.toString(), null);
-            put(OpenNlpModels.location.toString(), null);
-            put(OpenNlpModels.organization.toString(), null);
+            put(OpenNLPUtil.OpenNlpModels.person.toString(), null);
+            put(OpenNLPUtil.OpenNlpModels.location.toString(), null);
+            put(OpenNLPUtil.OpenNlpModels.organization.toString(), null);
         }
     };
 
@@ -66,16 +66,16 @@ public class NESpotter implements Spotter {
 
         try {
             if (NESpotter.sentenceModel == null) {
-                NESpotter.sentenceModel  = loadModel(onlpModelDir, "english/en-sent.zip", OpenNlpModels.SentenceModel.toString());
+                NESpotter.sentenceModel  = OpenNLPUtil.loadModel(onlpModelDir, "english/en-sent.zip", OpenNLPUtil.OpenNlpModels.SentenceModel.toString());
             }
-            if (NESpotter.entityTypes.get(OpenNlpModels.person.toString()) == null) {
-                buildNameModel(onlpModelDir, OpenNlpModels.person.toString(),  new URI("http://dbpedia.org/ontology/Person"));
+            if (NESpotter.entityTypes.get(OpenNLPUtil.OpenNlpModels.person.toString()) == null) {
+                buildNameModel(onlpModelDir, OpenNLPUtil.OpenNlpModels.person.toString(),  new URI("http://dbpedia.org/ontology/Person"));
             }
-            if (NESpotter.entityTypes.get(OpenNlpModels.location.toString()) == null) {
-                buildNameModel(onlpModelDir, OpenNlpModels.location.toString(), new URI("http://dbpedia.org/ontology/Place"));
+            if (NESpotter.entityTypes.get(OpenNLPUtil.OpenNlpModels.location.toString()) == null) {
+                buildNameModel(onlpModelDir, OpenNLPUtil.OpenNlpModels.location.toString(), new URI("http://dbpedia.org/ontology/Place"));
             }
-            if (NESpotter.entityTypes.get(OpenNlpModels.organization.toString()) == null) {
-                buildNameModel(onlpModelDir, OpenNlpModels.organization.toString(), new URI("http://dbpedia.org/ontology/Organisation"));
+            if (NESpotter.entityTypes.get(OpenNLPUtil.OpenNlpModels.organization.toString()) == null) {
+                buildNameModel(onlpModelDir, OpenNLPUtil.OpenNlpModels.organization.toString(), new URI("http://dbpedia.org/ontology/Organisation"));
             }
         } catch (Exception e) {
             throw new ConfigurationException("Error initializing NESpotter", e);
@@ -83,90 +83,14 @@ public class NESpotter implements Spotter {
 
     }
 
-    protected BaseModel buildNameModel(String directoryPath, String modelType, URI typeUri) throws IOException {
-        String fname = OpenNlpModels.valueOf(modelType).filename();
-        String modelRelativePath = String.format("english/%s.zip",	fname);
-        BaseModel model = loadModel(directoryPath, modelRelativePath, modelType);
+    protected BaseModel buildNameModel(String directoryPath, String modelType, URI typeUri) throws IOException, ConfigurationException {
+        String fname = OpenNLPUtil.OpenNlpModels.valueOf(modelType).filename();
+        String modelRelativePath = String.format("english/%s.zip", fname);
+        BaseModel model = OpenNLPUtil.loadModel(directoryPath, modelRelativePath, modelType);
         entityTypes.put(modelType, new Object[] { typeUri, model });
         return model;
     }
 
-
-    public BaseModel loadOpenNlpModel(String modelType, InputStream in) throws IOException {
-        OpenNlpModels m = OpenNlpModels.valueOf(modelType);
-        BaseModel mdl = loadgivenmodeltype( m, in);
-        return mdl;
-    }
-
-
-    private BaseModel loadgivenmodeltype(OpenNlpModels m, InputStream in) throws InvalidFormatException, IOException {
-        BaseModel mdl = null;
-        switch(m) {
-            case TokenizerModel: {
-                mdl = new TokenizerModel(in);
-                LOG.info("OpenNLP5 Tokenizer Model loaded: " + mdl);
-                break;
-            }
-            case SentenceModel: {
-                mdl = new SentenceModel(in);
-                LOG.info("OpenNLP5 Sentence Model loaded: " + mdl);
-                break;
-            }
-            case POSModel: {
-                mdl = new POSModel(in);
-                LOG.info("OpenNLP5 POS Model loaded: " + mdl);
-                break;
-            }
-            case person:
-            case organization:
-            case location:
-            {
-                mdl = new TokenNameFinderModel(in);
-                LOG.info("OpenNLP5 TokenNameFinderModel Model loaded: " + mdl);
-                break;
-            }
-            default: System.out.println("Unknown Model Type!");
-
-        }
-        return mdl;
-    }
-
-
-    /**Loads OpenNLP 5 models.
-     * @param directoryPath Path of the FS directory. Used when creating/opening an InputStream to a file
-     *        model file in the folder (direct file reading)
-     * @param modelRelativePath This is the to the model file starting from a resource folder (i.e. when reading
-     *   from a jar, this is the path of the model file in the jar file followed by the model file name.
-     *   e.g. in case if model files are in a folder named "opennlp" in the jar file, then we can set "opennlp"
-     *   to directorypath and "english/en-sent.zip" to model relativepath (note the modelfile en-sent.zip) is
-     *   assumed to to be in opennlp/english/en-sent.zip.
-     * @param modelType
-     * @return
-     * @throws IOException
-     */
-    protected BaseModel loadModel(String directoryPath, String modelRelativePath, String modelType) throws IOException {
-
-        OpenNlpModels m = OpenNlpModels.valueOf(modelType);
-        ClassLoader loader = this.getClass().getClassLoader();
-        InputStream in = null;
-        if (directoryPath != null && directoryPath.length() > 0) {
-            // load custom models from the provided FS directory
-            File modelData = new File(new File(directoryPath),
-                    modelRelativePath);
-            in = new FileInputStream(modelData);
-            LOG.debug(String.format("** OpenNLP is Loading OpenNLP 1.5 from a given directory path: ", modelData.getAbsolutePath()));
-        } else {
-            // load default OpenNLP models from jars
-            String resourcePath = "opennlp/" + modelRelativePath;
-            in = loader.getResourceAsStream(resourcePath);
-            LOG.debug(String.format("** OpenNLP is Loading OpenNLP 1.5 models by Regular class loading: ", in.getClass().getCanonicalName()));
-            //            }
-            if (in == null) {
-                throw new IOException(String.format("Could not find resource: %s",resourcePath));
-            }
-        }
-        return loadOpenNlpModel(modelType, in);
-    }
 
     @Override
     public List<SurfaceFormOccurrence> extract(Text intext) {
@@ -197,9 +121,15 @@ public class NESpotter implements Spotter {
         return ret;
     }
 
+    String name = "NESpotter";
+
+	@Override
+	public String getName() {
+		return name;
+	}
     @Override
-    public String name() {
-        return "NESpotter";
+    public void setName(String n) {
+        this.name = n;
     }
 
     protected List<SurfaceFormOccurrence> extractNameOccurrences(BaseModel nameFinderModel, String text) {
@@ -264,22 +194,6 @@ public class NESpotter implements Spotter {
         return sfOccurrences;
     }
 
-    public enum OpenNlpModels {
-        SentenceModel("en-sent"),
-        ChunkModel("en-chunker"),
-        TokenizerModel("en-token"),
-        POSModel("en-pos-maxent"),
-        person("en-ner-person"),
-        organization("en-ner-organization"),
-        location("en-ner-location");
-
-        private final String name; // filename
-        OpenNlpModels(String fname) {
-            this.name = fname;
-        }
-        public String filename()   { return name; }
-
-    }
 
 
 }

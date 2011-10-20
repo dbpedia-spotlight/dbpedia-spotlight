@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.annotate.Annotator;
 import org.dbpedia.spotlight.disambiguate.Disambiguator;
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ;
+import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.InitializationException;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SpotlightFactory;
@@ -47,9 +48,6 @@ public class Server {
 
     // Server reads configuration parameters into this static configuration object that will be used by other classes downstream
     protected static SpotlightConfiguration configuration;
-
-    // Server will hold a singleton annotator that will be used by all Annotate and Disambiguate objects
-    protected static Annotator annotator;
 
     // Server will hold a few spotters that can be chosen from URL parameters
     protected static Map<SpotterConfiguration.SpotterPolicy,Spotter> spotters = new HashMap<SpotterConfiguration.SpotterPolicy,Spotter>();
@@ -80,7 +78,7 @@ public class Server {
         // Set static annotator that will be used by Annotate and Disambiguate
         final SpotlightFactory factory = new SpotlightFactory(configuration);
         setDisambiguators(factory.disambiguators());
-        setAnnotator(factory.annotator());
+        //setAnnotator(factory.annotator());
         setSpotters(factory.spotters());
 
         LOG.info(String.format("Initiated %d disambiguators.",disambiguators.size()));
@@ -128,14 +126,6 @@ public class Server {
     }
 
 
-    public static void setAnnotator(Annotator a) {
-        annotator = a;
-    }
-
-    public static Annotator getAnnotator() {
-        return annotator;
-    }
-
     private static void setSpotters(Map<SpotterConfiguration.SpotterPolicy,Spotter> s) throws InitializationException {
         if (spotters.size() == 0)
             spotters = s;
@@ -154,8 +144,11 @@ public class Server {
         return spotters;
     }
 
-    public static Disambiguator getDisambiguator() {
-        return annotator.disambiguator();
+    public static ParagraphDisambiguatorJ getDisambiguator() throws ConfigurationException {
+        if (disambiguators.size() > 0)
+            return disambiguators.get(SpotlightConfiguration.DisambiguationPolicy.Default);
+        else
+            throw new ConfigurationException("No disambiguators found. Please check your configuration file. ");
     }
 
     public static Map<SpotlightConfiguration.DisambiguationPolicy,ParagraphDisambiguatorJ> getDisambiguators() {

@@ -49,7 +49,7 @@ public class Annotate {
     private UriInfo context;
 
     // Annotation interface
-    private static SpotlightInterface annotationInterface = SpotlightInterface.getInstance(Server.getSpotters(), Server.getDisambiguator());
+    private static SpotlightInterface annotationInterface =  new SpotlightInterface("/annotate");
 
     // Sets the necessary headers in order to enable CORS
     private Response ok(String response) {

@@ -86,6 +86,8 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
             spotters.getOrElse(policy, SpotterWithSelector.getInstance(spotter(SpotterConfiguration.SpotterPolicy.LingPipeSpotter),new CoOccurrenceBasedSelector(configuration.getSpotterConfiguration, taggedTokenProvider()), taggedTokenProvider()))
         } else if (policy == SpotterConfiguration.SpotterPolicy.NESpotter) {
             spotters.getOrElse(policy, new NESpotter(configuration.getSpotterConfiguration.getOpenNLPModelDir))
+        } else if (policy == SpotterConfiguration.SpotterPolicy.WikiMarkupSpotter) {
+            new WikiMarkupSpotter
         } else {
             new WikiMarkupSpotter
         }

@@ -32,6 +32,8 @@ import org.dbpedia.spotlight.string.ParseSurfaceFormText
 
 class WikiMarkupSpotter extends Spotter {
 
+    var name = "WikiMarkupSpotter"
+
     /**
      * Extracts a set of surface form occurrences from the text
      */
@@ -39,6 +41,7 @@ class WikiMarkupSpotter extends Spotter {
         ParseSurfaceFormText.parse(markedText.text)
     }
 
-    def name() = "WikiMarkupSpotter"
+    def getName() = name
+    def setName(n: String) { name = n; }
 
 }

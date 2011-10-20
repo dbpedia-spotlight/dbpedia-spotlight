@@ -1,18 +1,19 @@
 /*
+ * Copyright 2011 DBpedia Spotlight Development Team
  *
- * Copyright 2011 Pablo Mendes, Max Jakob, Joachim Daiber
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Check our project website for information on how to acknowledge the authors and how to contribute to the project: http://spotlight.dbpedia.org
  */
 
 package org.dbpedia.spotlight.spot;
@@ -20,6 +21,7 @@ package org.dbpedia.spotlight.spot;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.annotate.DefaultAnnotator;
+import org.dbpedia.spotlight.exceptions.SpottingException;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 import org.dbpedia.spotlight.model.TaggedText;
 import org.dbpedia.spotlight.model.Text;
@@ -40,6 +42,7 @@ public abstract class SpotterWithSelector implements Spotter {
 	protected Spotter spotter;
 	protected SpotSelector spotSelector;
 
+    protected String name;
 
 	public static SpotterWithSelector getInstance(Spotter spotter, UntaggedSpotSelector spotSelector) {
 		return new UntaggedSpotterWithSelector(spotter, spotSelector);
@@ -51,8 +54,8 @@ public abstract class SpotterWithSelector implements Spotter {
 
 	protected abstract Text buildText(Text text);
 
-	public List<SurfaceFormOccurrence> extract(Text text) {
-        LOG.debug(String.format("Spotting with spotter %s and selector %s.",spotter.name(),spotSelector));
+	public List<SurfaceFormOccurrence> extract(Text text) throws SpottingException {
+        LOG.debug(String.format("Spotting with spotter %s and selector %s.",spotter.getName(),spotSelector));
 
 		Text textObject = buildText(text);
 
@@ -75,11 +78,19 @@ public abstract class SpotterWithSelector implements Spotter {
 
 	}
 
-	public String name() {
-		String name = "SpotterWithSelector:"+spotter.name();
-		if (spotSelector!=null) name += ", " + spotSelector.getClass().toString();
-		return name;
+    public String getName() {
+        if (this.name==null || this.name.equals("")) {
+            String newName = "SpotterWithSelector:"+spotter.getName();
+            if (spotSelector!=null) newName += ", " + spotSelector.getClass().toString();
+            return newName;
+        } else {
+            return this.name;
+        }
 	}
+
+    public void setName(String n) {
+        this.name = n;
+    }
 
 	protected static class TaggedSpotterWithSelector extends SpotterWithSelector {
 		private TaggedTokenProvider tagger = null;

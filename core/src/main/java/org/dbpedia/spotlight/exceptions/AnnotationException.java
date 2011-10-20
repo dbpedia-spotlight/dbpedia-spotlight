@@ -17,7 +17,7 @@
 package org.dbpedia.spotlight.exceptions;
 
 /**
- * Thrown when the user tries to call some unauthorized action.
+ * Used by (external) annotation clients to communicate an error when trying to annotate text.
  *
  * @author pablomendes
  */

@@ -6,14 +6,16 @@ import org.dbpedia.spotlight.spot.cooccurrence.classification.SpotClass;
 import org.dbpedia.spotlight.spot.cooccurrence.filter.Filter;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.model.*;
+import org.dbpedia.spotlight.tagging.lingpipe.LingPipeFactory;
 import org.dbpedia.spotlight.tagging.lingpipe.LingPipeTaggedTokenProvider;
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -38,7 +40,7 @@ public class AnnotatedDataset {
 
 	private List<Text> texts = new LinkedList<Text>();
 
-    private LingPipeTaggedTokenProvider taggedTokenProvider;
+    private LingPipeFactory lingPipeFactory;
 	/**
 	 * Input formats:
 	 */
@@ -48,6 +50,10 @@ public class AnnotatedDataset {
 	public AnnotatedDataset() {
 
 	}
+
+    private LingPipeTaggedTokenProvider getTaggedTokenProvider() {
+        return new LingPipeTaggedTokenProvider(lingPipeFactory);
+    }
 
     /**
      *
@@ -59,7 +65,7 @@ public class AnnotatedDataset {
      * @throws ConfigurationException
      */
       public AnnotatedDataset(File file, Format format, SpotlightFactory spotlightFactory) throws IOException, JSONException, ConfigurationException {
-          this(file, format, spotlightFactory.taggedTokenProvider());
+          this(file, format, spotlightFactory.lingPipeFactory());
       }
 
 	/**
@@ -81,8 +87,8 @@ public class AnnotatedDataset {
 	 * @throws org.dbpedia.spotlight.exceptions.ConfigurationException Error in the configuration.
 	 * @throws org.json.JSONException Error while deserializing JSON file.
 	 */
-	public AnnotatedDataset(File file, Format format, LingPipeTaggedTokenProvider taggedTokenProvider) throws IOException, JSONException, ConfigurationException {
-        this.taggedTokenProvider = taggedTokenProvider;
+	public AnnotatedDataset(File file, Format format, LingPipeFactory lingPipeFactory) throws IOException, ConfigurationException, JSONException {
+        this.lingPipeFactory = lingPipeFactory;
         if (!file.exists()) {
             throw new ConfigurationException(String.format("Could not find dataset on path provided %s.",file.getAbsolutePath()));
         }
@@ -101,7 +107,7 @@ public class AnnotatedDataset {
 
 					JSONObject jsonObject = jsonObjects.getJSONObject(i).getJSONObject("annotations");
 					String text = jsonObject.getString("@text");
-					TaggedText taggedText = new TaggedText(text, taggedTokenProvider);
+					TaggedText taggedText = new TaggedText(text, getTaggedTokenProvider());
 					texts.add(taggedText);
 
 					JSONArray annotations = jsonObject.getJSONArray("Resources");
@@ -110,9 +116,9 @@ public class AnnotatedDataset {
 						JSONObject annotation = annotations.getJSONObject(j);
 
 
-						/**
-						 * Important: ignore empty annotations!
-						 */
+
+						//Important: ignore empty annotations!
+
 
 						if (annotation.has("annotation") && !annotation.getString("annotation").equals("")) {
 
@@ -147,7 +153,7 @@ public class AnnotatedDataset {
 				while ((row = reader.readNext()) != null) {
 					try{
 						SpotClass annotation = row[5].equals("t") ? SpotClass.valid : SpotClass.common;
-						addInstance(row[0], Integer.parseInt(row[1]), new TaggedText(row[2], taggedTokenProvider), row[3], row[4], row[5], annotation);
+						addInstance(row[0], Integer.parseInt(row[1]), new TaggedText(row[2], getTaggedTokenProvider()), row[3], row[4], row[5], annotation);
 					}catch (ArrayIndexOutOfBoundsException ignored){}
 				}
 
@@ -179,7 +185,7 @@ public class AnnotatedDataset {
 						if (f != null) try { f.close(); } catch (IOException ignored) { }
 					}
 
-					TaggedText text = new TaggedText(new String(buffer), taggedTokenProvider);
+					TaggedText text = new TaggedText(new String(buffer), getTaggedTokenProvider());
 					textMap.put(crawledDoc, text);
 					texts.add(text);
 

@@ -65,6 +65,12 @@
             <artifactId>jericho-html</artifactId>
             <version>3.1</version>
         </dependency>
+
+        <dependency>
+            <groupId>weka</groupId>
+            <artifactId>weka</artifactId>
+            <version>3.7.3</version>
+        </dependency>
     </dependencies>
 
 

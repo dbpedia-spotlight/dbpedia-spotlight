@@ -41,7 +41,7 @@ public class Disambiguate {
     private UriInfo context;
 
     // Disambiguation interface
-    private static SpotlightInterface disambigInterface = SpotlightInterface.getInstance(Server.getDisambiguator());
+    private static SpotlightInterface disambigInterface = new SpotlightInterface("/disambiguate");
 
     // Sets the necessary headers in order to enable CORS
     private Response ok(String response) {

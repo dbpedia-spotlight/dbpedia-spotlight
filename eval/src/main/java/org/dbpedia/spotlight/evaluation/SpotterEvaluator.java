@@ -19,8 +19,10 @@
 package org.dbpedia.spotlight.evaluation;
 
 import com.aliasi.sentences.IndoEuropeanSentenceModel;
+import net.sf.json.JSONException;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.InitializationException;
+import org.dbpedia.spotlight.exceptions.SpottingException;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 import org.dbpedia.spotlight.model.Text;
@@ -30,7 +32,6 @@ import org.dbpedia.spotlight.spot.cooccurrence.training.AnnotatedSurfaceFormOccu
 import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter;
 import org.dbpedia.spotlight.tagging.lingpipe.LingPipeFactory;
 import org.dbpedia.spotlight.tagging.lingpipe.LingPipeTaggedTokenProvider;
-import org.json.JSONException;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,7 +46,7 @@ import java.util.Set;
  */
 public class SpotterEvaluator {
 
-	public static void main(String[] args) throws IOException, ConfigurationException, JSONException, InitializationException {
+	public static void main(String[] args) throws IOException, ConfigurationException, JSONException, InitializationException, SpottingException, org.json.JSONException {
 
 		SpotlightConfiguration configuration = new SpotlightConfiguration("conf/server.properties");
 
@@ -57,7 +58,7 @@ public class SpotterEvaluator {
 //
 		AnnotatedDataset evaluationCorpus =
 				new AnnotatedDataset(new File("/home/pablo/eval/csaw/original"),
-						AnnotatedDataset.Format.CSAW, new LingPipeTaggedTokenProvider(lingPipeFactory));
+						AnnotatedDataset.Format.CSAW, lingPipeFactory);
 		
 		/**
 		 * Base:
@@ -120,15 +121,19 @@ public class SpotterEvaluator {
 	 * @return Overlap between annotated dataset and Spotter result per
 	 * candidate class
 	 */
-	private static SelectorResult getSelectorResult(Spotter spotter, AnnotatedDataset evaluationCorpus) {
-		SelectorResult selectorResult = new SelectorResult(spotter.name());
+	private static SelectorResult getSelectorResult(Spotter spotter, AnnotatedDataset evaluationCorpus)  {
+		SelectorResult selectorResult = new SelectorResult(spotter.getName());
 
 		Set<SurfaceFormOccurrence> extractedSurfaceFormOccurrences = new HashSet<SurfaceFormOccurrence>();
 
 		long start = System.currentTimeMillis();
 		for(Text text : evaluationCorpus.getTexts())
-			extractedSurfaceFormOccurrences.addAll(spotter.extract(text));
-		long end = System.currentTimeMillis();
+            try {
+                extractedSurfaceFormOccurrences.addAll(spotter.extract(text));
+            } catch (SpottingException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+        long end = System.currentTimeMillis();
 		selectorResult.setTime(end - start);
 
 		for(AnnotatedSurfaceFormOccurrence annotatedSurfaceFormOccurrence : evaluationCorpus.getInstances()) {

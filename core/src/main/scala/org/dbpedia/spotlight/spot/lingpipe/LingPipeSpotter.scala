@@ -25,9 +25,6 @@ import java.io.File
 import org.dbpedia.spotlight.spot.Spotter
 
 /**
- * User: Max
- * Date: 24.08.2010
- * Time: 11:59:29
  * Spotter using LingPipe (http://alias-i.com/lingpipe/demos/tutorial/ne/read-me.html)
  *
  * To initialize the spotter for a dictionary with
@@ -35,6 +32,9 @@ import org.dbpedia.spotlight.spot.Spotter
  *     you need at least 4G of Java heap space (3500M is too little)
  *   - 2.77 mio entries (typed resources, titles, redirects, disambiguations)
  *     you need at least 3500M of Java heap space (3G is too little)
+ *
+ * @author maxjakob
+ * @modified-date 24.08.2010
  */
 
 class LingPipeSpotter(val dictionary : Dictionary[String], val overlap : Boolean=false, val caseSensitive : Boolean=false)
@@ -42,6 +42,8 @@ class LingPipeSpotter(val dictionary : Dictionary[String], val overlap : Boolean
 {
     private val LOG = LogFactory.getLog(this.getClass)
     var fileName = "Dictionary[String]";
+
+    var name = ""
 
     def this(dictionaryFile : File, overlap : Boolean, caseSensitive : Boolean) = {
         this(AbstractExternalizable.readObject(dictionaryFile).asInstanceOf[Dictionary[String]], overlap, caseSensitive)
@@ -83,10 +85,19 @@ class LingPipeSpotter(val dictionary : Dictionary[String], val overlap : Boolean
      * Every spotter has a name that describes its strategy
      * (for comparing multiple spotters during evaluation)
      */
-    def name() : String = {
-        val allMatches = if (dictionaryChunker.returnAllMatches) "overlapping" else "non-overlapping"
-        val caseSensitivity = if (dictionaryChunker.caseSensitive) "case-sensitive" else "case-insensitive"
-        "LingPipeExactSpotter["+allMatches+","+caseSensitivity+"]"
+    def getName() : String = {
+        if (name=="") {
+            val allMatches = if (dictionaryChunker.returnAllMatches) "overlapping" else "non-overlapping"
+            val caseSensitivity = if (dictionaryChunker.caseSensitive) "case-sensitive" else "case-insensitive"
+            "LingPipeExactSpotter["+allMatches+","+caseSensitivity+"]"
+        } else {
+            name
+        }
+
+    }
+
+    def setName(newName: String) {
+        name = newName;
     }
     
 }

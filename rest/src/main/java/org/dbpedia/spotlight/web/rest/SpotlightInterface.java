@@ -18,17 +18,15 @@ package org.dbpedia.spotlight.web.rest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dbpedia.spotlight.disambiguate.Disambiguator;
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ;
 import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.exceptions.SearchException;
+import org.dbpedia.spotlight.exceptions.SpottingException;
 import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters;
 import org.dbpedia.spotlight.model.*;
-import org.dbpedia.spotlight.spot.Spotter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Controller that interfaces between the REST API and the DBpedia Spotlight core.
@@ -45,11 +43,11 @@ public class SpotlightInterface  {
 
     private OutputManager outputManager = new OutputManager();
 
-    private SpotlightInterface(String apiName) {
+    public SpotlightInterface(String apiName) {
         this.apiName = apiName;
     }
 
-    public List<DBpediaResourceOccurrence> process(String text, SpotterConfiguration.SpotterPolicy spotter, SpotlightConfiguration.DisambiguationPolicy disambiguatorPolicy) throws SearchException, InputException {
+    public List<DBpediaResourceOccurrence> process(String text, SpotterConfiguration.SpotterPolicy spotter, SpotlightConfiguration.DisambiguationPolicy disambiguatorPolicy) throws SearchException, InputException, SpottingException {
         List<SurfaceFormOccurrence> spots = Server.getSpotters().get(spotter).extract(new Text(text));
         ParagraphDisambiguatorJ disambiguator = Server.getDisambiguators().get(disambiguatorPolicy);
         List<DBpediaResourceOccurrence> resources = new ArrayList<DBpediaResourceOccurrence>();
@@ -59,24 +57,6 @@ public class SpotlightInterface  {
             throw new SearchException(e);
         }
         return resources;
-    }
-
-    /**
-     * Initialize the interface to perform disambiguation
-     * @param disambiguator
-     * @return
-     */
-    public static SpotlightInterface getInstance(Disambiguator disambiguator) {
-        SpotlightInterface controller = new SpotlightInterface("/disambiguate");
-        return controller;
-    }
-
-    /**
-     * Initialize the interface to perform annotation
-     */
-    public static SpotlightInterface getInstance(Map<SpotterConfiguration.SpotterPolicy,Spotter> spotters, Disambiguator disambiguator) {
-        SpotlightInterface controller = new SpotlightInterface("/annotate");
-        return controller;
     }
 
 
@@ -94,7 +74,7 @@ public class SpotlightInterface  {
                                                           String clientIp,
                                                           SpotterConfiguration.SpotterPolicy spotter ,
                                                           SpotlightConfiguration.DisambiguationPolicy disambiguator
-                                                          ) throws SearchException, InputException {
+                                                          ) throws SearchException, InputException, SpottingException {
 
         LOG.info("******************************** Parameters ********************************");
         LOG.info("API: " + getApiName());

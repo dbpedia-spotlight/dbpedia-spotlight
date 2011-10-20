@@ -36,7 +36,7 @@ class DefaultAnnotator(val spotter : Spotter, val disambiguator: Disambiguator) 
     @throws(classOf[InputException])
     def annotate(text : String) : java.util.List[DBpediaResourceOccurrence] = {
 
-        LOG.info("Spotting... ("+spotter.name()+")")
+        LOG.info("Spotting... ("+spotter.getName()+")")
         val spottedSurfaceForms : java.util.List[SurfaceFormOccurrence] = spotter.extract(new Text(text))
 
         LOG.info("Disambiguating... ("+disambiguator.name+")")
@@ -55,7 +55,7 @@ class DefaultParagraphAnnotator(val spotter : Spotter, val disambiguator: Paragr
     @throws(classOf[InputException])
     def annotate(text : String) : java.util.List[DBpediaResourceOccurrence] = {
 
-        LOG.info("Spotting... ("+spotter.name()+")")
+        LOG.info("Spotting... ("+spotter.getName()+")")
         val spottedSurfaceForms : List[SurfaceFormOccurrence] = asBuffer(spotter.extract(new Text(text))).toList
 
         LOG.info("Disambiguating... ("+disambiguator.name+")")
