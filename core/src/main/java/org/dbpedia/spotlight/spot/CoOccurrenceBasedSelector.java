@@ -143,14 +143,20 @@ public class CoOccurrenceBasedSelector implements TaggedSpotSelector {
 		assert unigramClassifier != null;
 		assert ngramClassifier != null;
 
-		//ngramClassifier.setVerboseMode(true);
+		//ngramClassifier.setVerboseMode(true);                                         f
 		//unigramClassifier.setVerboseMode(true);
 		List<String> decisions = new LinkedList<String>();
 
 		for(SurfaceFormOccurrence surfaceFormOccurrence : surfaceFormOccurrences) {
 
+            if (surfaceFormOccurrence.surfaceForm().name().trim().length()==0) {
+                LOG.warn("I have an occurrence with empty surface form. :-O Ignoring.");
+                LOG.error(surfaceFormOccurrence);
+                continue;
+            }
+
             if (! (surfaceFormOccurrence.context() instanceof TaggedText)) { //FIXME added this to avoid breaking, but code below will never run if we don't pass the taggedtext
-                LOG.warn("SurfaceFormOccurrence did not contain TaggedText. Cannot apply "+this.getClass());
+                LOG.error(String.format("SurfaceFormOccurrence did not contain TaggedText. Cannot apply %s",this.getClass()));
 				
                 selectedOccurrences.add(surfaceFormOccurrence);
                 continue;

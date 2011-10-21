@@ -54,6 +54,15 @@ public abstract class SpotterWithSelector implements Spotter {
 
 	protected abstract Text buildText(Text text);
 
+    /**
+     * Applies the base spotter specified, then applies the selector on the generated spots.
+     * Before applying the spotter it uses the abstract method buildText to create a Text object.
+     * As a result, it will first POS tag the sentence if this is a TaggedSpotSelector,
+     *
+     * @param text
+     * @return
+     * @throws SpottingException
+     */
 	public List<SurfaceFormOccurrence> extract(Text text) throws SpottingException {
         LOG.debug(String.format("Spotting with spotter %s and selector %s.",spotter.getName(),spotSelector));
 

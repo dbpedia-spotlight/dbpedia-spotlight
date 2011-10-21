@@ -105,10 +105,10 @@ public class OpenNLPNGramSpotter implements Spotter {
     }
 
 	@Override
-	public List<SurfaceFormOccurrence> extract(Text intext) {
+	public List<SurfaceFormOccurrence> extract(Text text) {
 
 		//System.out.println("\n\nRR- extract(...) method called! with text: " + intext + "\n\n");
-		String text = intext.text();
+
 		//extracting NounPhrase nGrams
 		List<SurfaceFormOccurrence> npNgrams = extractNPNGrams(text);
 		/*
@@ -139,10 +139,11 @@ public class OpenNLPNGramSpotter implements Spotter {
 
 
 	/**Extracts noun-phrase n-grams from the given piece of input text. 
-	 * @param intext
+	 * @param text  A Text object containing the input from where to extract NP n-grams
 	 * @return A list of SurfaceFormOccurrence objects.
 	 */
-	protected List<SurfaceFormOccurrence> extractNPNGrams(String intext) {
+	protected List<SurfaceFormOccurrence> extractNPNGrams(Text text) {
+        String intext = text.text();
 		//System.out.println("\n\nRR- nextractNPNGrams(...) method called! with text: " + intext + "\n\n");
 		List<SurfaceFormOccurrence> npNgramSFLst = new ArrayList<SurfaceFormOccurrence>();
 		SentenceDetectorME  sentenceDetector = new SentenceDetectorME((SentenceModel)sentenceModel);
@@ -172,15 +173,16 @@ public class OpenNLPNGramSpotter implements Spotter {
 					int begin = tokSpans[chunk.getStart()].getStart();
 					int end =   tokSpans[chunk.getEnd() - 1].getEnd();
 					List<Map<String,Integer>> ngrampos = extractNGramPos(chunk.getStart(),chunk.getEnd() + -1);
-					extractNGrams(ngrampos, start, intext, tokSpans, npNgramSFLst);
+					extractNGrams(ngrampos, start, text, tokSpans, npNgramSFLst);
 				}
 			}
 		}
 		return npNgramSFLst;
 	}
 	
-	public void extractNGrams(List<Map<String,Integer>> ngrampos, int start, String text, Span[] tokSpans, List<SurfaceFormOccurrence> sfOccurrences) {
-		for( Map<String,Integer> mapelem: ngrampos) {
+	public void extractNGrams(List<Map<String,Integer>> ngrampos, int start, Text text, Span[] tokSpans, List<SurfaceFormOccurrence> sfOccurrences) {
+		String intext = text.text();
+        for( Map<String,Integer> mapelem: ngrampos) {
 			int starttokenidx = mapelem.get("start");
 			int endtokenidx = mapelem.get("end");
 			//restrict to max 3-word phrases
@@ -188,27 +190,34 @@ public class OpenNLPNGramSpotter implements Spotter {
 			boolean ignorephrase = false;
 			int begin = start + tokSpans[starttokenidx].getStart();
 			int end =   start + tokSpans[endtokenidx].getEnd();
-			String txtform = text.substring(begin,end);
-
-			//Ignore phrases that contain more than 3-terms. It is unlikely that such long phrases to hit any resources. Need to experiment
-			//with the cut-off value though.
+			String txtform = intext.substring(begin,end);
+            //ignore empty phrases
+            if (txtform.trim().length()==0) {
+                //System.out.println("empty txtform");
+                continue;
+            }
+			//Ignore phrases that contain more than 3-terms. It is unlikely that such long phrases to hit any resources.
+			//TODO Need to experiment with the cut-off value though.
 			if ( noftkens > 2) 	ignorephrase = true;
 			//ignore phrases starting with a stopword
 			int starttkn_begin = start + tokSpans[starttokenidx].getStart();
 			int starttkn_end = start + tokSpans[starttokenidx].getEnd();
-			String starttknTxt = text.substring(starttkn_begin,starttkn_end);
+			String starttknTxt = intext.substring(starttkn_begin,starttkn_end);
 			if (isStopWord(starttknTxt)) ignorephrase = true;
 			//ignore phrases ending with a stopword
 			int endtkn_begin = start + tokSpans[endtokenidx].getStart();
 			int endtkn_end = start + tokSpans[endtokenidx].getEnd();
-			String endtknTxt = text.substring(endtkn_begin,endtkn_end);
+			String endtknTxt = intext.substring(endtkn_begin,endtkn_end);
 			if (isStopWord(endtknTxt)) ignorephrase = true;
 
 			if (!ignorephrase) {								
 				NGram ng = new NGram(txtform, begin, end);
 				SurfaceForm surfaceForm = new SurfaceForm(ng.getTextform());
-				SurfaceFormOccurrence sfocc =  new SurfaceFormOccurrence(surfaceForm, new Text(text), ng.getStart());
-				if (!sfOccurrences.contains(sfocc)) {
+
+                assert !ng.getTextform().isEmpty();
+
+				SurfaceFormOccurrence sfocc =  new SurfaceFormOccurrence(surfaceForm, text, ng.getStart());
+				if (surfaceForm.name().trim().length()>0 && !sfOccurrences.contains(sfocc)) {
 					sfOccurrences.add(sfocc);
 				}
 			}

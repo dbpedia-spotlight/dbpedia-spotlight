@@ -75,7 +75,7 @@ object ModifiedWikiUtil {
             decoded = cleanSpace(URLDecoder.decode(name, "UTF-8"))
         } catch {
             case e: java.lang.IllegalArgumentException => {
-                LOG.error("ERROR when trying to clean up funny SurfaceForm[%s].\n%s".format(name,e.getStackTraceString));
+                LOG.warn("ERROR cannot cleanup SurfaceForm[%s]. WARN kept it as is.\n%s".format(name,e.getStackTraceString));
                 decoded = name;
             };
         }

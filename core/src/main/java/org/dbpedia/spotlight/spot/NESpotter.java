@@ -33,6 +33,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
+import org.dbpedia.spotlight.exceptions.SpottingException;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SurfaceForm;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
@@ -93,17 +94,18 @@ public class NESpotter implements Spotter {
 
 
     @Override
-    public List<SurfaceFormOccurrence> extract(Text intext) {
-        String text = intext.text();
+    public List<SurfaceFormOccurrence> extract(Text text) throws SpottingException {
+
         List<SurfaceFormOccurrence> ret = new ArrayList<SurfaceFormOccurrence>();
         try {
             for (Map.Entry<String, Object[]> type : entityTypes.entrySet()) {
                 List<SurfaceFormOccurrence> res = null;
+                //TODO pass type information within SurfaceFormOccurrence to later stages
                 String typeLabel = type.getKey();
                 Object[] typeInfo = type.getValue();
                 URI typeUri = (URI) typeInfo[0];
                 BaseModel nameFinderModel = (BaseModel) typeInfo[1];
-                res =extractNameOccurrences(nameFinderModel, text);
+                res = extractNameOccurrences(nameFinderModel, text);
                 if (res != null && !res.isEmpty()) {
                     if (ret == null) {
                         ret = res;
@@ -115,7 +117,7 @@ public class NESpotter implements Spotter {
 
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new SpottingException(e);
         }
 
         return ret;
@@ -132,11 +134,11 @@ public class NESpotter implements Spotter {
         this.name = n;
     }
 
-    protected List<SurfaceFormOccurrence> extractNameOccurrences(BaseModel nameFinderModel, String text) {
-
+    protected List<SurfaceFormOccurrence> extractNameOccurrences(BaseModel nameFinderModel, Text text) {
+        String intext = text.text();
         SentenceDetectorME sentenceDetector = new SentenceDetectorME((SentenceModel)sentenceModel);
-        String[] sentences = sentenceDetector.sentDetect(text);
-        Span[] sentenceEndings = sentenceDetector.sentPosDetect(text);
+        String[] sentences = sentenceDetector.sentDetect(intext);
+        Span[] sentenceEndings = sentenceDetector.sentPosDetect(intext);
         int[] sentencePositions = new int[sentences.length + 1];
         for (int k=0; k<sentenceEndings.length; k++) {
             sentencePositions[k] = sentenceEndings[k].getStart();
@@ -180,7 +182,7 @@ public class NESpotter implements Spotter {
                     */
 
                     SurfaceForm surfaceForm = new SurfaceForm(buf.toString());
-                    SurfaceFormOccurrence sfocc =  new SurfaceFormOccurrence(surfaceForm, new Text(text), entStart);
+                    SurfaceFormOccurrence sfocc =  new SurfaceFormOccurrence(surfaceForm, text, entStart);
                     sfOccurrences.add(sfocc);
                 }
             }
