@@ -19,6 +19,9 @@ import io.Source._
  * @author Joachim Daiber
  *
  * OpenNLP based Spotter performing NP chunking and selecting the longest sub-chunk in the dictionary of surface forms.
+ *
+ * This is similar to OpenNLPNGramSpotter but a bit simpler and uses a dictionary of known surface forms instead of NER.
+ *
  */
 
 class OpenNLPChunkerSpotter(sentenceModel: File, tokenizerModel: File, posModel: File, chunkerModel: File, surfaceFormDictionaryFile: File) extends Spotter {
@@ -76,9 +79,12 @@ class OpenNLPChunkerSpotter(sentenceModel: File, tokenizerModel: File, posModel:
 
     spots
   }
-  
-  def name() = "Spotter based on an OpenNLP NP chunker and a simple spot dictionary."
 
+  private var name = "Spotter based on an OpenNLP NP chunker and a simple spot dictionary."
+  def getName = name
+  def setName(name: String) {
+    this.name = name
+  }
 }
 
 class SurfaceFormDictionary(dictionaryFile: File) {
@@ -92,11 +98,9 @@ class SurfaceFormDictionary(dictionaryFile: File) {
   def normalizeEntry(entry: String) = entry
 }
 
-
 class SurfaceFormDictionaryCaseInsensitive(dictionaryFile: File) extends SurfaceFormDictionary(dictionaryFile) {
   override def normalizeEntry(entry: String) = entry.toLowerCase
 }
-
 
 object OpenNLPChunkerSpotter {
   def main(args: Array[String]) {
