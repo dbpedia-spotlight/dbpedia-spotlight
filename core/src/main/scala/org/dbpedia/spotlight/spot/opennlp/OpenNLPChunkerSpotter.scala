@@ -11,8 +11,6 @@ import opennlp.tools.sentdetect.{SentenceModel, SentenceDetectorME, SentenceDete
 import java.util.LinkedList
 import scala.util.control.Breaks._
 import org.dbpedia.spotlight.model.{SurfaceForm, SurfaceFormOccurrence, Text}
-import collection.mutable.HashSet
-import io.Source._
 
 
 /**
@@ -24,7 +22,7 @@ import io.Source._
  *
  */
 
-class OpenNLPChunkerSpotter(sentenceModel: File, tokenizerModel: File, posModel: File, chunkerModel: File, surfaceFormDictionaryFile: File) extends Spotter {
+class OpenNLPChunkerSpotter(sentenceModel: File, tokenizerModel: File, posModel: File, chunkerModel: File, surfaceFormDictionary: SurfaceFormDictionary) extends Spotter {
 
   val posTagger: POSTagger =
     new POSTaggerME(new POSModel(new FileInputStream(posModel)))
@@ -38,14 +36,14 @@ class OpenNLPChunkerSpotter(sentenceModel: File, tokenizerModel: File, posModel:
   val chunker: Chunker =
     new ChunkerME(new ChunkerModel(new FileInputStream(chunkerModel)))
 
-  val surfaceFormDictionary: SurfaceFormDictionary = new SurfaceFormDictionaryCaseInsensitive(surfaceFormDictionaryFile)
-
   def extract(text: Text): java.util.List[SurfaceFormOccurrence] = {
     val spots = new LinkedList[SurfaceFormOccurrence]
-    val sentences = sentenceDetector.sentDetect(text.text)
+    val sentences = sentenceDetector.sentPosDetect(text.text)
 
     //Go through all sentences
-    sentences.foreach(sentence => {
+    sentences.foreach(sentencePosition => {
+      val sentence = text.text.substring(sentencePosition.getStart, sentencePosition.getEnd)
+
       val tokens = tokenizer.tokenize(sentence);
       val tokensPositions = tokenizer.tokenizePos(sentence);
       val tags = posTagger.tag(tokens)
@@ -68,7 +66,7 @@ class OpenNLPChunkerSpotter(sentenceModel: File, tokenizerModel: File, posModel:
 
               if(surfaceFormDictionary.contains(spot)) {
                 //The sub-chunk is in the dictionary, finish the processing of this chunk
-                spots.add(new SurfaceFormOccurrence(new SurfaceForm(spot), text, startOffset))
+                spots.add(new SurfaceFormOccurrence(new SurfaceForm(spot), text, sentencePosition.getStart + startOffset))
                 break()
               }
               
@@ -87,29 +85,18 @@ class OpenNLPChunkerSpotter(sentenceModel: File, tokenizerModel: File, posModel:
   }
 }
 
-class SurfaceFormDictionary(dictionaryFile: File) {
-
-  val lines = fromFile(dictionaryFile).getLines()
-  val surfaceFormDictionary = new HashSet[String]
-  lines.foreach(line => surfaceFormDictionary += normalizeEntry(line))
-
-  def contains(surfaceform: String): Boolean = surfaceFormDictionary.contains(normalizeEntry(surfaceform))
-
-  def normalizeEntry(entry: String) = entry
-}
-
-class SurfaceFormDictionaryCaseInsensitive(dictionaryFile: File) extends SurfaceFormDictionary(dictionaryFile) {
-  override def normalizeEntry(entry: String) = entry.toLowerCase
-}
-
 object OpenNLPChunkerSpotter {
   def main(args: Array[String]) {
     val text: Text = new Text(" Col. Muammar el-Qaddafi, the former Libyan strongman who fled into hiding after an armed uprising toppled his regime two months ago, met a violent and vengeful death Thursday in the hands of rebel fighters who stormed his final stronghold in his Mediterranean hometown Surt. At least one of his sons was also killed.")
     val d = new File("/Users/jodaiber/Desktop/")
-    val spotter: OpenNLPChunkerSpotter = new OpenNLPChunkerSpotter(new File(d, "en-sent.bin"), new File(d, "en-token.bin"), new File(d, "en-pos-maxent.bin"), new File(d, "en-chunker.bin"), new File(d, "spots.list"))
+    
+    val surfaceFormDictionary: SurfaceFormDictionary = ProbabilisticSurfaceFormDictionary.fromFile(new File(d, "spots.set"))
+    val spotter: OpenNLPChunkerSpotter = new OpenNLPChunkerSpotter(new File(d, "en-sent.bin"), new File(d, "en-token.bin"),
+        new File(d, "en-pos-maxent.bin"), new File(d, "en-chunker.bin"), surfaceFormDictionary)
+    
     val spots = spotter.extract(text)
     print()
   }
-  
+
 
 }

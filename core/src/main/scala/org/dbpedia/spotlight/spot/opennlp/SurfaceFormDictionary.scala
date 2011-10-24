@@ -1,0 +1,81 @@
+package org.dbpedia.spotlight.spot.opennlp
+
+import java.io.File
+import collection.mutable.HashSet
+import com.skjegstad.utils.BloomFilter
+
+/**
+ * @author Joachim Daiber
+ */
+
+
+/**
+ * A surface form dictionary (or set, lookup) can be used to check if a surface form
+ * is known to be a valid spot candidate.
+ */
+abstract class SurfaceFormDictionary(caseSensitive: Boolean = true) {
+  def contains(surfaceForm: String): Boolean
+  def add(surfaceForm: String)
+  def normalizeEntry(entry: String) = if(caseSensitive) entry else entry.toLowerCase
+}
+
+/**
+ * This is a SurfaceForm dictionary using a HashSet, hence it is fully reliable but requires more space
+ * than a fuzzy dictionary.
+ */
+class ExactSurfaceFormDictionary(caseSensitive: Boolean = true) extends SurfaceFormDictionary(caseSensitive) {
+  val surfaceFormDictionary = new HashSet[String]
+
+  def add(surfaceForm: String) {
+    surfaceFormDictionary += normalizeEntry(surfaceForm)
+  }
+  def contains(surfaceForm: String): Boolean = surfaceFormDictionary.contains(normalizeEntry(surfaceForm))
+
+}
+
+/**
+ * This is a SurfaceForm dictionary using a Bloom filter. The properties of Bloom filters are very helpful
+ * here. There will never be false negatives, but false positives may occur with a probability
+ * that can be specified when creating the {@link BloomFilter}.
+ */
+class ProbabilisticSurfaceFormDictionary(expectedSize: Int, caseSensitive: Boolean = true, falsePositiveProbability: Double = 0.01)
+  extends SurfaceFormDictionary(caseSensitive) {
+
+  val bloomFilter: BloomFilter[String] = new BloomFilter[String](falsePositiveProbability, expectedSize)
+
+  def add(surfaceForm: String) {
+    bloomFilter.add(normalizeEntry(surfaceForm))
+  }
+  def contains(surfaceForm: String) = bloomFilter.contains(normalizeEntry(surfaceForm))
+}
+
+
+/**
+ * Simple factory methods for each of the SurfaceFormDictionary implementations.
+ */
+object SurfaceFormDictionary {
+  def fromIterator(entries: scala.collection.Iterator[String],
+                   surfaceformDictionary: SurfaceFormDictionary = new ExactSurfaceFormDictionary())
+    : SurfaceFormDictionary = {
+
+    entries.foreach(line => surfaceformDictionary.add(line))
+    surfaceformDictionary
+  }
+}
+
+object ProbabilisticSurfaceFormDictionary {
+  def fromFile(dictionaryFile: File, caseSensitive: Boolean = true) : SurfaceFormDictionary = {
+    SurfaceFormDictionary.fromIterator(io.Source.fromFile(dictionaryFile).getLines(),
+      new ProbabilisticSurfaceFormDictionary(io.Source.fromFile(dictionaryFile).size, caseSensitive))
+  }
+}
+
+object ExactSurfaceFormDictionary {
+  def fromFile(dictionaryFile: File, caseSensitive: Boolean = true) : SurfaceFormDictionary = {
+    SurfaceFormDictionary.fromIterator(io.Source.fromFile(dictionaryFile).getLines(),
+      new ExactSurfaceFormDictionary(caseSensitive))
+  }
+}
+
+
+
