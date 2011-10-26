@@ -117,7 +117,7 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
         }
     }
 
-    def evaluate(maxNumberOfOutputResults: Int = Integer.MAX_VALUE,
+    def evaluate(maxNumberOfOutputResults: Int = Integer.MAX_VALUE, //how many n-best disambiguations to write to log
                  filter: DBpediaResource => DBpediaResource // decide if keeps resource (potentially transform resource to something)
                          = { r => r } ) // by default return itself
     {

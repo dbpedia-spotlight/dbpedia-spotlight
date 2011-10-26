@@ -56,6 +56,7 @@ public class OpenNLPUtil {
             this.name = fname;
         }
         public String filename()   { return name; }
+        public File file()   { return new File(name); }
 
     }
 

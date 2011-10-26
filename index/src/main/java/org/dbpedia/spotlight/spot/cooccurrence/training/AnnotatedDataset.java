@@ -2,6 +2,10 @@ package org.dbpedia.spotlight.spot.cooccurrence.training;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
+import com.aliasi.sentences.IndoEuropeanSentenceModel;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.spot.cooccurrence.classification.SpotClass;
 import org.dbpedia.spotlight.spot.cooccurrence.filter.Filter;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
@@ -32,6 +36,7 @@ import java.util.*;
 
 public class AnnotatedDataset {
 
+    private final static Log LOG = LogFactory.getLog(AnnotatedDataset.class);
 
 	/**
 	 * Instances, i.e. annotated occurrences of a candidate
@@ -310,12 +315,13 @@ public class AnnotatedDataset {
 	/**
 	 * Write training dataset to a TSV file.
 	 *
+     *
 	 * @param tsvFile TSV file to write to
 	 * @throws IOException Error while writing to TSV file.
 	 */
 	public void write(File tsvFile) throws IOException {
 
-		System.out.println("Writting instances: " + this.instances.size());
+		LOG.info("Writing instances: " + this.instances.size());
 
 		CSVWriter writer = new CSVWriter(new FileWriter(tsvFile), '\t');
 
@@ -323,12 +329,39 @@ public class AnnotatedDataset {
 			String annotationString = instance.getSpotClass() == SpotClass.valid ? "t" : "c";
 			writer.writeNext(new String[] {instance.getSurfaceForm(), "" + instance.getOffset(), instance.getTextString(),
 					instance.getAnnotationTitle(), instance.getAnnotationAbstract(), annotationString});
+                                                         // getAnnotationAbstract() seems to be always null?
 		}
 
 		writer.close();
+        LOG.info("Done.");
 
 	}
 
+    /**
+	 * Write training dataset to a TSV file.
+	 * TODO allow other formats as well
+     *
+	 * @param tsvFile TSV file to write to
+	 * @throws IOException Error while writing to TSV file.
+	 */
+	public void reformat(File tsvFile) throws IOException {
+
+		LOG.info("Writing instances: " + this.instances.size());
+
+		FileWriter writer = new FileWriter(tsvFile);
+        int i = 0;
+		for (AnnotatedSurfaceFormOccurrence instance : instances) {
+            i++;
+            String text = (instance.getTextString()!=null) ? instance.getTextString().replaceAll("\\s", " ") : "";
+            String uri = new org.dbpedia.spotlight.model.DBpediaResource(instance.getAnnotationURI()).uri();
+			//occId	URI surfaceForm text offset
+            writer.write(String.format("%s\t%s\t%s\t%s\t%s\n", instance.getSpotClass().toString() +"-"+ i, uri, instance.getSurfaceForm(), text, "" + instance.getOffset()));
+		}
+
+		writer.close();
+        LOG.info("Done.");
+
+	}
 
     /**
      * Get all documents in the dataset.
@@ -373,5 +406,36 @@ public class AnnotatedDataset {
 	public int size() {
 		return instances.size();
 	}
+
+    public static void main(String[] args) throws ConfigurationException, IOException, JSONException, InputException {
+
+        String usage = "\nUsage: AnnotatedDataset  [config]  [dataset]  [type] \n\n";
+        String configFile = "conf/dev.properties";
+        String datasetLocation = "/home/pablo/eval/jo/jo.json";
+        Format datasetType = Format.JSON;
+        try {
+            configFile = args[0]; //
+            datasetLocation = args[1]; //"/home/pablo/eval/jo/jo.json"
+            datasetType = Format.valueOf(args[2]);
+        } catch (IndexOutOfBoundsException e) {
+            System.err.println(usage);
+            throw new InputException("Missing parameters in command line.",e);
+        } catch (Exception e) {
+            System.err.println(usage);
+            throw new InputException("Error in parameters provided in command line.",e);
+        }
+
+        SpotlightConfiguration configuration = new SpotlightConfiguration(configFile);
+        LingPipeFactory lingPipeFactory = new LingPipeFactory(new File(configuration.getTaggerFile()), new IndoEuropeanSentenceModel());
+        LOG.info("Reading gold standard.");
+
+        AnnotatedDataset evaluationCorpus =
+				new AnnotatedDataset(new File(datasetLocation),
+						AnnotatedDataset.Format.JSON, lingPipeFactory);
+
+        evaluationCorpus.reformat(new File(datasetLocation + ".tsv"));
+
+    }
+
 
 }
