@@ -1,17 +1,19 @@
-/**
- * Copyright 2011 Pablo Mendes, Max Jakob
+/*
+ * Copyright 2011 DBpedia Spotlight Development Team
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  Check our project website for information on how to acknowledge the authors and how to contribute to the project: http://spotlight.dbpedia.org
  */
 
 package org.dbpedia.spotlight.disambiguate
@@ -128,7 +130,11 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
             .foldLeft( Map[SurfaceFormOccurrence,List[DBpediaResource]]())(
             (acc,sfOcc) => {
                 LOG.debug("searching...")
-                val candidates = candidateSearcher.getCandidates(sfOcc.surfaceForm).asScala //.map(r => r.uri)    //ATTENTION there is no r.support at this point
+                val candidates = candidateSearcher.getCandidates(sfOcc.surfaceForm).asScala //.map(r => r.uri)
+
+                //ATTENTION there is no r.support at this point
+                //TODO if support comes from candidate index, it means c(sf,r).
+
                 //LOG.debug("# candidates for: %s = %s (%s)".format(sfOcc.surfaceForm,candidates.size,candidates))
                 LOG.debug("# candidates for: %s = %s.".format(sfOcc.surfaceForm,candidates.size))
                 candidates.foreach( r => allCandidates.add(r))
@@ -152,8 +158,9 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
        // LOG.debug("Reading DBpediaResources.")
         val scores = hits
             .foldRight(Map[String,Tuple2[Int,Double]]())((hit,acc) => {
-            var resource: DBpediaResource = contextSearcher.getDBpediaResource(hit.doc) //this method returns resource.support
+            var resource: DBpediaResource = contextSearcher.getDBpediaResource(hit.doc) //this method returns resource.support=c(r)
             var score = hit.score
+            //TODO can mix here the scores: c(s,r) / c(r)
             acc + (resource.uri -> (resource.support,score))
         });
         val e2 = System.nanoTime()
@@ -165,7 +172,7 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
         val r = occs.keys.foldLeft(Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]())( (acc,aSfOcc) => {
             val candOccs = occs.getOrElse(aSfOcc,List[DBpediaResource]())
                 .map( resource => Factory.DBpediaResourceOccurrence.from(aSfOcc,
-                resource,
+                resource, //TODO this resource may contain the c(s,r) that can be used for conditional prob.
                 scores.getOrElse(resource.uri,(0,0.0))) )
                 .sortBy(o => o.contextualScore) //TODO should be final score
                 .reverse
