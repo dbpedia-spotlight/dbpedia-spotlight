@@ -96,20 +96,22 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
     }
 
     def spotter() : Spotter = {
-        val default = spotters.get(configuration.getSpotterConfiguration.getSpotterPolicies.get(0)) // default is first in configuration list
-        spotters.put(SpotterPolicy.Default, default)
-        configuration.getSpotterConfiguration.getSpotterPolicies.foreach( policy => {
+        val spotterPolicies = configuration.getSpotterConfiguration.getSpotterPolicies
+        spotterPolicies.foreach( policy => {
             spotters.put(policy, spotter(policy))
         })
+        val default = spotter(spotterPolicies.get(0)) // default is first in configuration list
+        spotters.put(SpotterPolicy.Default, default)
         default
     }
 
-     def disambiguator() : ParagraphDisambiguatorJ = {
-        val default = disambiguators.get(configuration.getDisambiguatorConfiguration.getDisambiguatorPolicies.get(0))
-        disambiguators.put(DisambiguationPolicy.Default,default)
-        configuration.getDisambiguatorConfiguration.getDisambiguatorPolicies.foreach( policy => {
+    def disambiguator() : ParagraphDisambiguatorJ = {
+        val disambiguatorPolicies = configuration.getDisambiguatorConfiguration.getDisambiguatorPolicies
+        disambiguatorPolicies.foreach( policy => {
             disambiguators.put(policy, disambiguator(policy))
         })
+        val default = disambiguator(disambiguatorPolicies.get(0)) // default is first in configuration list
+        disambiguators.put(DisambiguationPolicy.Default,default)
         default
     }
 
