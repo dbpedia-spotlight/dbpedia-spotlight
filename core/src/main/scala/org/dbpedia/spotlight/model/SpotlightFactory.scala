@@ -74,8 +74,11 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
     val disambiguators = new java.util.HashMap[SpotlightConfiguration.DisambiguationPolicy,ParagraphDisambiguatorJ]()
 
     //populate
+    LOG.info("Initiating spotters...")
     spotter()
+    LOG.info("Initiating disambiguators...")
     disambiguator()
+    LOG.info("Done.")
 
     def spotter(policy: SpotterConfiguration.SpotterPolicy) : Spotter = {
         if (policy == SpotterConfiguration.SpotterPolicy.Default) {
