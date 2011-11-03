@@ -1,17 +1,19 @@
-/**
- * Copyright 2011 Pablo Mendes, Max Jakob
+/*
+ * Copyright 2011 DBpedia Spotlight Development Team
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  Check our project website for information on how to acknowledge the authors and how to contribute to the project: http://spotlight.dbpedia.org
  */
 
 package org.dbpedia.spotlight.web.rest;
@@ -25,10 +27,13 @@ import org.dbpedia.spotlight.disambiguate.Disambiguator;
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.InitializationException;
+import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SpotlightFactory;
 import org.dbpedia.spotlight.model.SpotterConfiguration;
 import org.dbpedia.spotlight.spot.Spotter;
+import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy;
+import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy;
 
 import java.io.IOException;
 import java.net.URI;
@@ -46,14 +51,16 @@ import java.util.Map;
 public class Server {
     static Log LOG = LogFactory.getLog(Server.class);
 
+    public static final String APPLICATION_PATH = "http://spotlight.dbpedia.org/rest";
+
     // Server reads configuration parameters into this static configuration object that will be used by other classes downstream
     protected static SpotlightConfiguration configuration;
 
     // Server will hold a few spotters that can be chosen from URL parameters
-    protected static Map<SpotterConfiguration.SpotterPolicy,Spotter> spotters = new HashMap<SpotterConfiguration.SpotterPolicy,Spotter>();
+    protected static Map<SpotterPolicy,Spotter> spotters = new HashMap<SpotterConfiguration.SpotterPolicy,Spotter>();
 
     // Server will hold a few disambiguators that can be chosen from URL parameters
-    protected static Map<SpotlightConfiguration.DisambiguationPolicy,ParagraphDisambiguatorJ> disambiguators = new HashMap<SpotlightConfiguration.DisambiguationPolicy,ParagraphDisambiguatorJ>();
+    protected static Map<DisambiguationPolicy,ParagraphDisambiguatorJ> disambiguators = new HashMap<SpotlightConfiguration.DisambiguationPolicy,ParagraphDisambiguatorJ>();
 
     private static volatile Boolean running = true;
 
@@ -78,10 +85,10 @@ public class Server {
         // Set static annotator that will be used by Annotate and Disambiguate
         final SpotlightFactory factory = new SpotlightFactory(configuration);
         setDisambiguators(factory.disambiguators());
-        //setAnnotator(factory.annotator());
         setSpotters(factory.spotters());
 
         LOG.info(String.format("Initiated %d disambiguators.",disambiguators.size()));
+        LOG.info(String.format("Initiated %d spotters.",spotters.size()));
 
         final Map<String, String> initParams = new HashMap<String, String>();
         initParams.put("com.sun.jersey.config.property.resourceConfigClass", "com.sun.jersey.api.core.PackagesResourceConfig");
@@ -126,7 +133,7 @@ public class Server {
     }
 
 
-    private static void setSpotters(Map<SpotterConfiguration.SpotterPolicy,Spotter> s) throws InitializationException {
+    private static void setSpotters(Map<SpotterPolicy,Spotter> s) throws InitializationException {
         if (spotters.size() == 0)
             spotters = s;
         else
@@ -140,24 +147,51 @@ public class Server {
             throw new InitializationException("Trying to overwrite singleton Server.disambiguators. Something fishy happened!");
     }
 
-    public static Map<SpotterConfiguration.SpotterPolicy,Spotter> getSpotters() {
-        return spotters;
+    public static Spotter getSpotter(String name) throws InputException {
+        SpotterPolicy policy = SpotterPolicy.Default;
+        try {
+            policy = SpotterPolicy.valueOf(name);
+        } catch (IllegalArgumentException e) {
+            throw new InputException(String.format("Specified parameter spotter=%s is invalid. Use one of %s.",policy,SpotterPolicy.values()));
+        }
+        Spotter spotter = spotters.get(policy);
+        if (spotters.size()==0 || spotter==null) {
+            throw new InputException(String.format("Specified spotter=%s has not been loaded. Use one of %s.",policy,spotters.keySet()));
+        }
+        return spotter;
     }
 
-    public static ParagraphDisambiguatorJ getDisambiguator() throws ConfigurationException {
-        if (disambiguators.size() > 0)
-            return disambiguators.get(SpotlightConfiguration.DisambiguationPolicy.Default);
-        else
-            throw new ConfigurationException("No disambiguators found. Please check your configuration file. ");
+    public static ParagraphDisambiguatorJ getDisambiguator(String name) throws InputException {
+        DisambiguationPolicy policy = DisambiguationPolicy.Default;
+        try {
+            policy = DisambiguationPolicy.valueOf(name);
+        } catch (IllegalArgumentException e) {
+            throw new InputException(String.format("Specified parameter disambiguator=%s is invalid. Use one of %s.",policy,DisambiguationPolicy.values()));
+        }
+        ParagraphDisambiguatorJ disambiguator = disambiguators.get(policy);
+        if (disambiguators.size() == 0 || disambiguators == null)
+            throw new InputException(String.format("Specified disambiguator=%s has not been loaded. Use one of %s.",policy,disambiguators.keySet()));
+        return disambiguator;
+
     }
 
-    public static Map<SpotlightConfiguration.DisambiguationPolicy,ParagraphDisambiguatorJ> getDisambiguators() {
-        return disambiguators;
-    }
+//    public static Spotter getSpotter(SpotterPolicy policy) throws InputException {
+//        Spotter spotter = spotters.get(policy);
+//        if (spotters.size()==0 || spotter==null) {
+//            throw new InputException(String.format("Specified spotter=%s has not been loaded. Use one of %s.",policy,spotters.keySet()));
+//        }
+//        return spotter;
+//    }
+//
+//    public static ParagraphDisambiguatorJ getDisambiguator(DisambiguationPolicy policy) throws InputException {
+//        ParagraphDisambiguatorJ disambiguator = disambiguators.get(policy);
+//        if (disambiguators.size() == 0 || disambiguators == null)
+//            throw new InputException(String.format("Specified disambiguator=%s has not been loaded. Use one of %s.",policy,disambiguators.keySet()));
+//        return disambiguator;
+//    }
 
     public static SpotlightConfiguration getConfiguration() {
         return configuration;
     }
-
 
 }

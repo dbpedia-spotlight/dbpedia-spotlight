@@ -1,17 +1,19 @@
-/**
- * Copyright 2011 Pablo Mendes, Max Jakob
+/*
+ * Copyright 2011 DBpedia Spotlight Development Team
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  Check our project website for information on how to acknowledge the authors and how to contribute to the project: http://spotlight.dbpedia.org
  */
 
 package org.dbpedia.spotlight.web.rest.resources;
@@ -19,9 +21,11 @@ package org.dbpedia.spotlight.web.rest.resources;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
-import org.dbpedia.spotlight.model.SpotterConfiguration;
 import org.dbpedia.spotlight.web.rest.Server;
 import org.dbpedia.spotlight.web.rest.SpotlightInterface;
+
+import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy;
+import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -38,7 +42,7 @@ import javax.ws.rs.core.UriInfo;
  * @author Paul Houle (patch for POST)
  */
 
-@ApplicationPath("http://spotlight.dbpedia.org/rest")
+@ApplicationPath(Server.APPLICATION_PATH)
 @Path("/annotate")
 @Consumes("text/plain")
 public class Annotate {
@@ -69,26 +73,6 @@ public class Annotate {
         return msg.toString();
     }
 
-    private SpotlightConfiguration.DisambiguationPolicy disambiguationPolicy(String disambiguatorName) {
-        SpotlightConfiguration.DisambiguationPolicy disambiguator = SpotlightConfiguration.DisambiguationPolicy.Default;
-        try {
-            disambiguator = SpotlightConfiguration.DisambiguationPolicy.valueOf(disambiguatorName);
-        } catch (IllegalArgumentException e) {
-            LOG.error(String.format("Could not find requested &disambiguator=%s. Using Default.",disambiguatorName)); //TODO include error msg in output to client
-        }
-        return disambiguator;
-    }
-
-    private SpotterConfiguration.SpotterPolicy spottingPolicy(String spotterName) {
-        SpotterConfiguration.SpotterPolicy spotter = SpotterConfiguration.SpotterPolicy.Default;
-        try {
-            spotter = SpotterConfiguration.SpotterPolicy.valueOf(spotterName);
-        } catch (IllegalArgumentException e) {
-            LOG.error(String.format("Could not find requested &spotter=%s. Using Default.",spotterName)); //TODO include error msg in output to client
-        }
-        return spotter;
-    }
-
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response getHTML(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
@@ -105,7 +89,7 @@ public class Annotate {
         String clientIp = request.getRemoteAddr();
 
         try {
-            String response = annotationInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spottingPolicy(spotterName), disambiguationPolicy(disambiguatorName));
+            String response = annotationInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName,  disambiguatorName);
             return ok(response);
         } catch (Exception e) {
             e.printStackTrace();
@@ -129,7 +113,7 @@ public class Annotate {
         String clientIp = request.getRemoteAddr();
 
         try {
-            return ok(annotationInterface.getRDFa(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spottingPolicy(spotterName),disambiguationPolicy(disambiguatorName)));
+            return ok(annotationInterface.getRDFa(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName, disambiguatorName));
         } catch (Exception e) {
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(print(e)).type(MediaType.APPLICATION_XHTML_XML).build());
         }
@@ -150,7 +134,7 @@ public class Annotate {
         String clientIp = request.getRemoteAddr();
 
         try {
-           return ok(annotationInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spottingPolicy(spotterName),disambiguationPolicy(disambiguatorName)));
+           return ok(annotationInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName, disambiguatorName));
        } catch (Exception e) {
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(print(e)).type(MediaType.TEXT_XML).build());
         }
@@ -171,7 +155,7 @@ public class Annotate {
         String clientIp = request.getRemoteAddr();
 
         try {
-            return ok(annotationInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spottingPolicy(spotterName),disambiguationPolicy(disambiguatorName)));
+            return ok(annotationInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName, disambiguatorName));
        } catch (Exception e) {
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(print(e)).type(MediaType.APPLICATION_JSON).build());
         }

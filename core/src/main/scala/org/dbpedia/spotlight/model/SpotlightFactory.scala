@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 Pablo Mendes, Max Jakob
+ * Copyright 2011 DBpedia Spotlight Development Team
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -38,9 +38,11 @@ import org.dbpedia.spotlight.annotate.{DefaultAnnotator, DefaultParagraphAnnotat
 import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
 import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy
+import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy
 
 /**
- * This class contains many of the "defaults" for DBpedia Spotlight. Maybe consider renaming to DefaultFactory.
+ * This class contains many of the "defaults" for DBpedia Spotlight.
+ * Maybe consider renaming to DefaultFactory or DBpediaSpotlightController
  *
  * @author pablomendes
  */
@@ -102,14 +104,13 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
         default
     }
 
-     def disambiguator() : ParagraphDisambiguatorJ = { //TODO add configuration option for disambiguators like spotter above
-         //val default = disambiguators.get(configuration.getSpotterConfiguration.getSpotterPolicies.get(0))
-         //disambiguators.put(DisambiguationPolicy.Default,default)
-        SpotlightConfiguration.DisambiguationPolicy.values().foreach( policy => {
+     def disambiguator() : ParagraphDisambiguatorJ = {
+        val default = disambiguators.get(configuration.getDisambiguatorConfiguration.getDisambiguatorPolicies.get(0))
+        disambiguators.put(DisambiguationPolicy.Default,default)
+        configuration.getDisambiguatorConfiguration.getDisambiguatorPolicies.foreach( policy => {
             disambiguators.put(policy, disambiguator(policy))
         })
-        disambiguators.head._2
-        //default
+        default
     }
 
     def disambiguator(policy: SpotlightConfiguration.DisambiguationPolicy) : ParagraphDisambiguatorJ = {

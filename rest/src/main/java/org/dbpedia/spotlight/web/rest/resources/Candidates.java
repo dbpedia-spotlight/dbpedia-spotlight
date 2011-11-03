@@ -1,19 +1,19 @@
 /*
- * *
- *  * Copyright 2011 Pablo Mendes, Max Jakob
- *  *
- *  * Licensed under the Apache License, Version 2.0 (the "License");
- *  * you may not use this file except in compliance with the License.
- *  * You may obtain a copy of the License at
- *  *
- *  * http://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  * Unless required by applicable law or agreed to in writing, software
- *  * distributed under the License is distributed on an "AS IS" BASIS,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
+ * Copyright 2011 DBpedia Spotlight Development Team
  *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  Check our project website for information on how to acknowledge the authors and how to contribute to the project: http://spotlight.dbpedia.org
  */
 
 package org.dbpedia.spotlight.web.rest.resources;
@@ -26,11 +26,15 @@ import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
 import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.exceptions.SpottingException;
 import org.dbpedia.spotlight.model.*;
+import org.dbpedia.spotlight.spot.Spotter;
 import org.dbpedia.spotlight.web.rest.Server;
 import org.dbpedia.spotlight.web.rest.output.Annotation;
 import org.dbpedia.spotlight.web.rest.output.OutputSerializer;
 import org.dbpedia.spotlight.web.rest.output.Resource;
 import org.dbpedia.spotlight.web.rest.output.Spot;
+
+import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy;
+import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -44,16 +48,18 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * REST Web Service
+ * REST Web Service for /candidates API, which outputs the n-best disambiguations for each surface form
+ *
  * @author maxjakob
+ * @author pablomendes - refactored, added support for spotter and disambiguator parameters, friendlier error messages
  */
 
-@ApplicationPath("http://spotlight.dbpedia.org/rest")
+@ApplicationPath(Server.APPLICATION_PATH)
 @Path("/candidates")
 @Consumes("text/plain")
 public class Candidates {
 
-    private static int k = 100; //FIXME this is hard-coded !!!!!
+    private static int k = 100; //TODO configuration
 
     @Context
     private UriInfo context;
@@ -62,23 +68,21 @@ public class Candidates {
 
     // Annotation interface
     /**
-     * Does not do any filtering at the moment!!!
+     * TODO Does not do any filtering at the moment!!!
      */
     public Annotation process(String text, double confidence, int support, List<OntologyType> dbpediaTypes,
-                              String sparqlQuery, boolean blacklist, boolean coreferenceResolution, SpotterConfiguration.SpotterPolicy spotter, SpotlightConfiguration.DisambiguationPolicy disambiguatorName)
+                              String sparqlQuery, boolean blacklist, boolean coreferenceResolution, Spotter spotter, ParagraphDisambiguatorJ disambiguator)
             throws SearchException, ItemNotFoundException, InputException, SpottingException {
 
         Annotation annotation = new Annotation(text);
         List<Spot> spots = new LinkedList<Spot>();
 
-        List<SurfaceFormOccurrence> entityMentions = Server.getSpotters().get(spotter).extract(new Text(text));
+        List<SurfaceFormOccurrence> entityMentions = spotter.extract(new Text(text));
         Paragraph paragraph = Factory.paragraph().fromJ(entityMentions);
         LOG.info(String.format("Spotted %d entity mentions.",entityMentions.size()));
 
-        ParagraphDisambiguatorJ disambiguator = Server.getDisambiguators().get(disambiguatorName);
-
         Map<SurfaceFormOccurrence,List<DBpediaResourceOccurrence>> entityCandidates = disambiguator.bestK(paragraph,k);
-        LOG.info(String.format("Disambiguated %d candidates with %s (%s).",entityCandidates.size(),disambiguatorName,disambiguator.name()));
+        LOG.info(String.format("Disambiguated %d candidates with %s.",entityCandidates.size(),disambiguator.name()));
 
         for(SurfaceFormOccurrence sfOcc : entityCandidates.keySet()) {
             Spot spot = Spot.getInstance(sfOcc);
@@ -155,7 +159,7 @@ public class Candidates {
         String clientIp = request.getRemoteAddr();
 
         try {
-            Annotation a = getAnnotation(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, SpotterConfiguration.SpotterPolicy.valueOf(spotter), SpotlightConfiguration.DisambiguationPolicy.valueOf(disambiguatorName), clientIp);
+            Annotation a = getAnnotation(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, spotter, disambiguatorName, clientIp);
             LOG.info("XML format");
             String content = output.toXML(a);
             return ok(content);
@@ -179,7 +183,7 @@ public class Candidates {
         String clientIp = request.getRemoteAddr();
 
         try {
-            Annotation a = getAnnotation(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, SpotterConfiguration.SpotterPolicy.valueOf(spotter), SpotlightConfiguration.DisambiguationPolicy.valueOf(disambiguatorName), clientIp);
+            Annotation a = getAnnotation(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, spotter, disambiguatorName, clientIp);
             LOG.info("JSON format");
             String content = output.toJSON(a);
             return ok(content);
@@ -266,8 +270,8 @@ public class Candidates {
                                     String sparqlQuery,
                                     String policy,
                                     boolean coreferenceResolution,
-                                    SpotterConfiguration.SpotterPolicy spotter,
-                                    SpotlightConfiguration.DisambiguationPolicy disambiguator,
+                                    String spotterName,
+                                    String disambiguatorName,
                                     String clientIp) throws SearchException, InputException, ItemNotFoundException, SpottingException {
 
         LOG.info("******************************** Parameters ********************************");
@@ -289,17 +293,13 @@ public class Candidates {
         LOG.info("sparqlQuery: "+ sparqlQuery);
         LOG.info("policy: "+policy);
         LOG.info("coreferenceResolution: "+String.valueOf(coreferenceResolution));
-        LOG.info("spotter: "+String.valueOf(spotter));
-        LOG.info("disambiguator: " +disambiguator.name());
+        LOG.info("spotter: "+ spotterName);
+        LOG.info("disambiguator: " + disambiguatorName);
+
+        /* Validating parameters */
 
         if (text.trim().equals("")) {
             throw new InputException("No text was specified in the &text parameter.");
-        }
-
-        if (disambiguator==SpotlightConfiguration.DisambiguationPolicy.Default
-                && text.length() > 1200) {
-            disambiguator = SpotlightConfiguration.DisambiguationPolicy.Document;
-            LOG.info(String.format("Text length: %d. Using %s to disambiguate.",text.length(),disambiguator));
         }
 
         List<OntologyType> ontologyTypes = new ArrayList<OntologyType>();
@@ -308,6 +308,19 @@ public class Candidates {
             if (!t.trim().equals("")) ontologyTypes.add(Factory.ontologyType().fromQName(t.trim()));
             //LOG.info("type:"+t.trim());
         }
+
+        /* Setting defaults */
+
+        if (disambiguatorName==SpotlightConfiguration.DisambiguationPolicy.Default.name()
+                && text.length() > 1200) {
+            disambiguatorName = SpotlightConfiguration.DisambiguationPolicy.Document.name();
+            LOG.info(String.format("Text length: %d. Using %s to disambiguate.",text.length(),disambiguatorName));
+        }
+
+        Spotter spotter = Server.getSpotter(spotterName);
+        ParagraphDisambiguatorJ disambiguator = Server.getDisambiguator(disambiguatorName);
+
+        /* Running Annotation */
 
         Annotation annotation = process(text, confidence, support, ontologyTypes, sparqlQuery, blacklist, coreferenceResolution, spotter, disambiguator);
 

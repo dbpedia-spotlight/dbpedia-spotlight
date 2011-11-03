@@ -1,23 +1,28 @@
-/**
- * Copyright 2011 Pablo Mendes, Max Jakob
+/*
+ * Copyright 2011 DBpedia Spotlight Development Team
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  Check our project website for information on how to acknowledge the authors and how to contribute to the project: http://spotlight.dbpedia.org
  */
 
 package org.dbpedia.spotlight.web.rest.resources;
 
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SpotterConfiguration;
+import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy;
+import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy;
+
 import org.dbpedia.spotlight.web.rest.Server;
 import org.dbpedia.spotlight.web.rest.SpotlightInterface;
 
@@ -33,7 +38,7 @@ import javax.ws.rs.core.UriInfo;
  * TODO Merge with Annotate (only difference is the SpotlightInterface object, which can be given in constructor)
  */
 
-@ApplicationPath("http://spotlight.dbpedia.org/rest")
+@ApplicationPath(Server.APPLICATION_PATH)
 @Path("/disambiguate")
 @Consumes("text/plain")
 public class Disambiguate {
@@ -61,7 +66,7 @@ public class Disambiguate {
                           @Context HttpServletRequest request
     ) throws Exception {
         String clientIp = request.getRemoteAddr();
-        return ok(disambigInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterConfiguration.SpotterPolicy.UserProvidedSpots,SpotlightConfiguration.DisambiguationPolicy.valueOf(disambiguatorName)));
+        return ok(disambigInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name(),disambiguatorName));
     }
 
     @GET
@@ -77,7 +82,7 @@ public class Disambiguate {
                           @Context HttpServletRequest request
     ) throws Exception {
         String clientIp = request.getRemoteAddr();
-        return ok(disambigInterface.getRDFa(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterConfiguration.SpotterPolicy.UserProvidedSpots,SpotlightConfiguration.DisambiguationPolicy.valueOf(disambiguatorName)));
+        return ok(disambigInterface.getRDFa(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name() , disambiguatorName));
     }
 
     @GET
@@ -94,7 +99,7 @@ public class Disambiguate {
     ) throws Exception {
         String clientIp = request.getRemoteAddr();
 
-        return ok(disambigInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterConfiguration.SpotterPolicy.UserProvidedSpots,SpotlightConfiguration.DisambiguationPolicy.valueOf(disambiguatorName)));
+        return ok(disambigInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name(), disambiguatorName));
     }
 
     @GET
@@ -111,7 +116,7 @@ public class Disambiguate {
     ) throws Exception {
         String clientIp = request.getRemoteAddr();
 
-        return ok(disambigInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterConfiguration.SpotterPolicy.UserProvidedSpots,SpotlightConfiguration.DisambiguationPolicy.valueOf(disambiguatorName)));
+        return ok(disambigInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name(), disambiguatorName));
     }
 
     //----------------

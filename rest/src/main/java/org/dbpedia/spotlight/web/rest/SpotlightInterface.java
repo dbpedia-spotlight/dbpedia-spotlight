@@ -1,17 +1,19 @@
-/**
- * Copyright 2011 Pablo Mendes, Max Jakob
+/*
+ * Copyright 2011 DBpedia Spotlight Development Team
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  Check our project website for information on how to acknowledge the authors and how to contribute to the project: http://spotlight.dbpedia.org
  */
 
 package org.dbpedia.spotlight.web.rest;
@@ -24,6 +26,9 @@ import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.exceptions.SpottingException;
 import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters;
 import org.dbpedia.spotlight.model.*;
+import org.dbpedia.spotlight.spot.Spotter;
+import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy;
+import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,9 +52,10 @@ public class SpotlightInterface  {
         this.apiName = apiName;
     }
 
-    public List<DBpediaResourceOccurrence> process(String text, SpotterConfiguration.SpotterPolicy spotter, SpotlightConfiguration.DisambiguationPolicy disambiguatorPolicy) throws SearchException, InputException, SpottingException {
-        List<SurfaceFormOccurrence> spots = Server.getSpotters().get(spotter).extract(new Text(text));
-        ParagraphDisambiguatorJ disambiguator = Server.getDisambiguators().get(disambiguatorPolicy);
+    public List<DBpediaResourceOccurrence> process(String text, Spotter spotter, ParagraphDisambiguatorJ disambiguator) throws SearchException, InputException, SpottingException {
+
+        List<SurfaceFormOccurrence> spots = spotter.extract(new Text(text));
+
         List<DBpediaResourceOccurrence> resources = new ArrayList<DBpediaResourceOccurrence>();
         try {
             resources = disambiguator.disambiguate(Factory.paragraph().fromJ(spots));
@@ -72,8 +78,8 @@ public class SpotlightInterface  {
                                                           String policy,
                                                           boolean coreferenceResolution,
                                                           String clientIp,
-                                                          SpotterConfiguration.SpotterPolicy spotter ,
-                                                          SpotlightConfiguration.DisambiguationPolicy disambiguator
+                                                          String spotterName,
+                                                          String disambiguatorName
                                                           ) throws SearchException, InputException, SpottingException {
 
         LOG.info("******************************** Parameters ********************************");
@@ -95,8 +101,8 @@ public class SpotlightInterface  {
         LOG.info("sparqlQuery: "+ sparqlQuery);
         LOG.info("policy: "+policy);
         LOG.info("coreferenceResolution: "+String.valueOf(coreferenceResolution));
-        LOG.info("spotter: "+String.valueOf(spotter));
-        LOG.info("disambiguator: "+String.valueOf(disambiguator));
+        LOG.info("spotter: "+spotterName);
+        LOG.info("disambiguator: "+disambiguatorName);
 
         if (text.trim().equals("")) {
             throw new InputException("No text was specified in the &text parameter.");
@@ -108,12 +114,16 @@ public class SpotlightInterface  {
             if (!t.trim().equals("")) ontologyTypes.add(Factory.ontologyType().fromQName(t.trim()));
         }
 
-        int maxLengthForOccurrenceCentric = 1200;
-        if (disambiguator==SpotlightConfiguration.DisambiguationPolicy.Default
+        int maxLengthForOccurrenceCentric = 1200; //TODO configuration
+        if (disambiguatorName==SpotlightConfiguration.DisambiguationPolicy.Default.name()
                 && text.length() > maxLengthForOccurrenceCentric) {
-            disambiguator = SpotlightConfiguration.DisambiguationPolicy.Document;
-            LOG.info(String.format("Text length > %d. Using %s to disambiguate.",maxLengthForOccurrenceCentric,disambiguator));
+            disambiguatorName = SpotlightConfiguration.DisambiguationPolicy.Document.name();
+            LOG.info(String.format("Text length > %d. Using %s to disambiguate.",maxLengthForOccurrenceCentric,disambiguatorName));
         }
+
+        Spotter spotter = Server.getSpotter(spotterName);
+
+        ParagraphDisambiguatorJ disambiguator = Server.getDisambiguator(disambiguatorName);
 
         // Call annotation or disambiguation
         List<DBpediaResourceOccurrence> occList = process(text, spotter, disambiguator);
@@ -144,12 +154,12 @@ public class SpotlightInterface  {
                           String policy,
                           boolean coreferenceResolution,
                           String clientIp,
-                          SpotterConfiguration.SpotterPolicy spotter,
-                          SpotlightConfiguration.DisambiguationPolicy disambiguator
+                          String spotter,
+                          String disambiguator
     ) throws Exception {
         String result;
         try {
-            List<DBpediaResourceOccurrence> occs = getOccurrences(text, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter,disambiguator);
+            List<DBpediaResourceOccurrence> occs = getOccurrences(text, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter, disambiguator);
             result = outputManager.makeHTML(text, occs);
         }
         catch (InputException e) { //TODO throw exception up to Annotate for WebApplicationException to handle.
@@ -169,12 +179,12 @@ public class SpotlightInterface  {
                           String policy,
                           boolean coreferenceResolution,
                           String clientIp,
-                          SpotterConfiguration.SpotterPolicy spotter,
-                          SpotlightConfiguration.DisambiguationPolicy disambiguator
+                          String spotter,
+                          String disambiguator
     ) throws Exception {
         String result;
         try {
-            List<DBpediaResourceOccurrence> occs = getOccurrences(text, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter,disambiguator);
+            List<DBpediaResourceOccurrence> occs = getOccurrences(text, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter, disambiguator);
             result = outputManager.makeRDFa(text, occs);
         }
         catch (InputException e) { //TODO throw exception up to Annotate for WebApplicationException to handle.
@@ -194,8 +204,8 @@ public class SpotlightInterface  {
                          String policy,
                          boolean coreferenceResolution,
                          String clientIp,
-                         SpotterConfiguration.SpotterPolicy spotter,
-                         SpotlightConfiguration.DisambiguationPolicy disambiguator
+                         String spotter,
+                         String disambiguator
    ) throws Exception {
         String result;
 //        try {
@@ -221,8 +231,8 @@ public class SpotlightInterface  {
                          String policy,
                          boolean coreferenceResolution,
                          String clientIp,
-                         SpotterConfiguration.SpotterPolicy spotter,
-                         SpotlightConfiguration.DisambiguationPolicy disambiguator
+                         String spotter,
+                         String disambiguator
    ) throws Exception {
         String result;
         List<DBpediaResourceOccurrence> occs = getOccurrences(text, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter,disambiguator);
@@ -240,11 +250,11 @@ public class SpotlightInterface  {
                           String policy,
                           boolean coreferenceResolution,
                           String clientIp,
-                          SpotterConfiguration.SpotterPolicy spotter,
-                          SpotlightConfiguration.DisambiguationPolicy disambiguator
+                          String spotterName,
+                          String disambiguator
     ) throws Exception {
         String result;
-        String xml = getXML(text, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter,disambiguator);
+        String xml = getXML(text, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName,disambiguator);
         result = outputManager.xml2json(xml);
         LOG.info("JSON format");
         LOG.debug("****************************************************************");

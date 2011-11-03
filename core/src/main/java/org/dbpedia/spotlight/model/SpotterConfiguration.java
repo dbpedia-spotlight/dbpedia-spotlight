@@ -1,5 +1,25 @@
+/*
+ * Copyright 2011 DBpedia Spotlight Development Team
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  Check our project website for information on how to acknowledge the authors and how to contribute to the project: http://spotlight.dbpedia.org
+ */
+
 package org.dbpedia.spotlight.model;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.spot.CoOccurrenceBasedSelector;
 import org.dbpedia.spotlight.spot.NESpotter;
@@ -19,6 +39,8 @@ import java.util.Properties;
  * @author pablomendes - added spotter policies
  */
 public class SpotterConfiguration {
+
+    private static Log LOG = LogFactory.getLog(SpotterConfiguration.class);
 
     public final String PREFIX_COOCCURRENCE_SELECTOR = "org.dbpedia.spotlight.spot.cooccurrence.";
 
@@ -46,6 +68,7 @@ public class SpotterConfiguration {
 
         // Validate spotters
         List<SpotterPolicy> spotters = getSpotterPolicies();
+        LOG.info(String.format("Will load spotters: %s.",spotters));
 
         // Validate LingPipeSpotter
         if (spotters.contains(SpotterPolicy.LingPipeSpotter)) {
@@ -60,12 +83,12 @@ public class SpotterConfiguration {
         if (spotters.contains(SpotterPolicy.CoOccurrenceBasedSelector)) {
 
             //Check if all required parameters are there, trim whitespace
-            String[] paramters = {"database.jdbcdriver", "database.connector", "database.user", "database.password",
+            String[] parameters = {"database.jdbcdriver", "database.connector", "database.user", "database.password",
                     "classifier.unigram", "classifier.ngram", "datasource"};
 
-            for(String parameter : paramters) {
+            for(String parameter : parameters) {
                 try{
-                    //Trim whitepsace from the paramter
+                    //Trim whitepsace from the parameter
                     config.setProperty(PREFIX_COOCCURRENCE_SELECTOR + parameter, config.getProperty(PREFIX_COOCCURRENCE_SELECTOR + parameter).trim());
                 }catch(NullPointerException e){
                     //One of the configuration property required for this Spot selector was not there.
@@ -73,13 +96,12 @@ public class SpotterConfiguration {
                 }
             }
 
-
             //Check if all the required files are there:
-            String[] paramterFiles = {"classifier.unigram", "classifier.ngram"};
-            for(String fileParamter : paramterFiles) {
-                String file = config.getProperty(PREFIX_COOCCURRENCE_SELECTOR + fileParamter);
+            String[] parameterFiles = {"classifier.unigram", "classifier.ngram"};
+            for(String fileparameter : parameterFiles) {
+                String file = config.getProperty(PREFIX_COOCCURRENCE_SELECTOR + fileparameter);
                 if(!new File(file).isFile()) {
-                    throw new ConfigurationException("Cannot find required file '"+file+"' for configuration paramter "+PREFIX_COOCCURRENCE_SELECTOR + fileParamter);
+                    throw new ConfigurationException("Cannot find required file '"+file+"' for configuration parameter "+PREFIX_COOCCURRENCE_SELECTOR + fileparameter);
                 }
             }
 
@@ -87,6 +109,19 @@ public class SpotterConfiguration {
                !config.getProperty(PREFIX_COOCCURRENCE_SELECTOR + "datasource").equalsIgnoreCase("google")) {
                 throw new ConfigurationException(PREFIX_COOCCURRENCE_SELECTOR + "datasource must be one of 'ukwac' or 'google'.");
             }
+
+            //check if database exists (if it's file)
+            //jdbc:hsqldb:file:/data/spotlight/3.7/spotsel/ukwac_candidate;shutdown=true&readonly=true
+            String configConnectorParam = PREFIX_COOCCURRENCE_SELECTOR + "database.connector";
+            String connector = config.getProperty(configConnectorParam,"");
+            try {
+                if (connector.contains(":file:")) {
+                    String[] parts = connector.split(":");
+                    String path = parts[parts.length-1].split(";")[0];
+                    if (!new File(path).exists())
+                        throw new ConfigurationException(String.format("The file path %s specified for %s does not exist. Either remove CoOccurrenceBasedSelector from the list of spotters or set the correct path.",path,configConnectorParam));
+                }
+            } catch (Exception ignored) { LOG.debug("Unable to check database.connector string. "); }
 
         }
 
@@ -136,8 +171,9 @@ public class SpotterConfiguration {
 
     public List<SpotterPolicy> getSpotterPolicies() throws ConfigurationException {
         List<SpotterPolicy> policies = new ArrayList<SpotterPolicy>();
-        List<String> spotterNames = Arrays.asList(config.getProperty("org.dbpedia.spotlight.spot.spotters", "").trim().split(","));
-        if (spotterNames.size()==0) throw new ConfigurationException("Could not find 'org.dbpedia.spotlight.spot.spotters'. Please specify a comma-separated list of spotters to be loaded.");
+        String requestedSpotters = config.getProperty("org.dbpedia.spotlight.spot.spotters", "").trim();
+        List<String> spotterNames = Arrays.asList(requestedSpotters.split(","));
+        if (requestedSpotters=="" || spotterNames.size()==0) throw new ConfigurationException("Could not find 'org.dbpedia.spotlight.spot.spotters'. Please specify a comma-separated list of spotters to be loaded.");
         for (String s: spotterNames) {
             try {
                 policies.add(SpotterPolicy.valueOf(s.trim()));

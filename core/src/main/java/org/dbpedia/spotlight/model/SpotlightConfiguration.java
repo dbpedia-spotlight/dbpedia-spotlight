@@ -1,17 +1,19 @@
-/**
- * Copyright 2011 Pablo Mendes, Max Jakob, Joachim Daiber
+/*
+ * Copyright 2011 DBpedia Spotlight Development Team
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  Check our project website for information on how to acknowledge the authors and how to contribute to the project: http://spotlight.dbpedia.org
  */
 
 package org.dbpedia.spotlight.model;
@@ -30,7 +32,9 @@ import java.util.*;
 /**
  * Holds all configuration parameters needed to run the DBpedia Spotlight Server
  * Reads values from a config file
- * (TODO) and should make tests to validate if the inputs are acceptable, failing gracefully and early.
+ *
+ * (TODO) and should validate if the inputs are acceptable, failing gracefully and early.
+ * (TODO) break down configuration into smaller pieces
  *
  * @author pablomendes
  */
@@ -72,7 +76,7 @@ public class SpotlightConfiguration {
 	}
 
 	public String getContextIndexDirectory() {
-		return contextIndexDirectory;
+		return disambiguatorConfiguration.getContextIndexDirectory();
 	}
 
     public String getCandidateIndexDirectory() {
@@ -121,10 +125,16 @@ public class SpotlightConfiguration {
 	 */
 	protected SpotterConfiguration spotterConfiguration;
 
+
 	public SpotterConfiguration getSpotterConfiguration() {
 		return spotterConfiguration;
 	}
 
+    protected DisambiguatorConfiguration disambiguatorConfiguration;
+
+    public DisambiguatorConfiguration getDisambiguatorConfiguration() {
+        return disambiguatorConfiguration;
+    }
 
     public Analyzer getAnalyzer() {
         return analyzer;
@@ -143,11 +153,10 @@ public class SpotlightConfiguration {
 		//Read the spotter configuration from the properties file
 		spotterConfiguration = new SpotterConfiguration(fileName);
 
+        disambiguatorConfiguration = new DisambiguatorConfiguration(fileName);
+
 		//set spotterFile, indexDir...
-		contextIndexDirectory = config.getProperty("org.dbpedia.spotlight.index.dir","").trim();
-		if(contextIndexDirectory==null || !new File(contextIndexDirectory).isDirectory()) {
-			throw new ConfigurationException("Cannot find index directory "+ contextIndexDirectory);
-		}
+		contextIndexDirectory = disambiguatorConfiguration.contextIndexDirectory;
 
 		//TODO use separate candidate map
 		candidateMapDirectory = config.getProperty("org.dbpedia.spotlight.candidateMap.dir","").trim();
