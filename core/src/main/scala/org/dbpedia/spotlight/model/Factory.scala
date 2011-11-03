@@ -168,6 +168,7 @@ object Factory {
             from(occs.asScala.toList)
         }
         def from(occs: List[SurfaceFormOccurrence]) = {
+            if (occs.size==0) throw new IllegalArgumentException("Cannot create paragraph out of empty occurrence list.")
             val first = occs.head
             new Paragraph("",first.context,occs.sortBy(o => o.textOffset))
         }

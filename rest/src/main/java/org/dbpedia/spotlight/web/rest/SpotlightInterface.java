@@ -55,8 +55,8 @@ public class SpotlightInterface  {
     public List<DBpediaResourceOccurrence> process(String text, Spotter spotter, ParagraphDisambiguatorJ disambiguator) throws SearchException, InputException, SpottingException {
 
         List<SurfaceFormOccurrence> spots = spotter.extract(new Text(text));
-
         List<DBpediaResourceOccurrence> resources = new ArrayList<DBpediaResourceOccurrence>();
+        if (spots.size()==0) return resources; // nothing to disambiguate
         try {
             resources = disambiguator.disambiguate(Factory.paragraph().fromJ(spots));
         } catch (UnsupportedOperationException e) {

@@ -78,6 +78,7 @@ public class Candidates {
         List<Spot> spots = new LinkedList<Spot>();
 
         List<SurfaceFormOccurrence> entityMentions = spotter.extract(new Text(text));
+        if (entityMentions.size()==0) return annotation; //nothing to disambiguate
         Paragraph paragraph = Factory.paragraph().fromJ(entityMentions);
         LOG.info(String.format("Spotted %d entity mentions.",entityMentions.size()));
 
