@@ -152,11 +152,15 @@ public class Server {
         try {
             policy = SpotterPolicy.valueOf(name);
         } catch (IllegalArgumentException e) {
-            throw new InputException(String.format("Specified parameter spotter=%s is invalid. Use one of %s.",policy,SpotterPolicy.values()));
+            throw new InputException(String.format("Specified parameter spotter=%s is invalid. Use one of %s.",name,SpotterPolicy.values()));
         }
+
+        if (spotters.size() == 0)
+            throw new InputException(String.format("No spotters were loaded. Please add one of %s.",spotters.keySet()));
+
         Spotter spotter = spotters.get(policy);
-        if (spotters.size()==0 || spotter==null) {
-            throw new InputException(String.format("Specified spotter=%s has not been loaded. Use one of %s.",policy,spotters.keySet()));
+        if (spotter==null) {
+            throw new InputException(String.format("Specified spotter=%s has not been loaded. Use one of %s.",name,spotters.keySet()));
         }
         return spotter;
     }
@@ -166,11 +170,15 @@ public class Server {
         try {
             policy = DisambiguationPolicy.valueOf(name);
         } catch (IllegalArgumentException e) {
-            throw new InputException(String.format("Specified parameter disambiguator=%s is invalid. Use one of %s.",policy,DisambiguationPolicy.values()));
+            throw new InputException(String.format("Specified parameter disambiguator=%s is invalid. Use one of %s.",name,DisambiguationPolicy.values()));
         }
+
+        if (disambiguators.size() == 0)
+            throw new InputException(String.format("No disambiguators were loaded. Please add one of %s.",disambiguators.keySet()));
+
         ParagraphDisambiguatorJ disambiguator = disambiguators.get(policy);
-        if (disambiguators.size() == 0 || disambiguators == null)
-            throw new InputException(String.format("Specified disambiguator=%s has not been loaded. Use one of %s.",policy,disambiguators.keySet()));
+        if (disambiguator == null)
+            throw new InputException(String.format("Specified disambiguator=%s has not been loaded. Use one of %s.",name,disambiguators.keySet()));
         return disambiguator;
 
     }

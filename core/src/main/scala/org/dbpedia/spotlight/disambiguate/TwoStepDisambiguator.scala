@@ -172,8 +172,9 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
         val r = occs.keys.foldLeft(Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]())( (acc,aSfOcc) => {
             val candOccs = occs.getOrElse(aSfOcc,List[DBpediaResource]())
                 .map( resource => Factory.DBpediaResourceOccurrence.from(aSfOcc,
-                resource, //TODO this resource may contain the c(s,r) that can be used for conditional prob.
-                scores.getOrElse(resource.uri,(0,0.0))) )
+                                            resource, //TODO this resource may contain the c(s,r) that can be used for conditional prob.
+                                            scores.getOrElse(resource.uri,(0,0.0)))
+                    )
                 .sortBy(o => o.contextualScore) //TODO should be final score
                 .reverse
                 .take(k)
