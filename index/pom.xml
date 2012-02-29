@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright 2011 Pablo Mendes, Max Jakob
+  ~ Copyright 2012 DBpedia Spotlight Development Team
   ~
   ~  Licensed under the Apache License, Version 2.0 (the "License");
   ~  you may not use this file except in compliance with the License.
@@ -13,6 +13,8 @@
   ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   ~  See the License for the specific language governing permissions and
   ~  limitations under the License.
+  ~
+  ~  Check our project website for information on how to acknowledge the authors and how to contribute to the project: http://spotlight.dbpedia.org
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -24,7 +26,7 @@
     <parent>
         <artifactId>spotlight</artifactId>
         <groupId>org.dbpedia.spotlight</groupId>
-        <version>${dbpedia.spotlight.version}</version>
+        <version>0.6</version>
     </parent>
 
     <artifactId>index</artifactId>
@@ -49,6 +51,49 @@
                             <mainClass>org.dbpedia.spotlight.lucene.index.IndexMergedOccurrences</mainClass>
                             <jvmArgs>
                                 <jvmArg>-Xmx14G</jvmArg>
+                            </jvmArgs>
+                        </launcher>
+                    </launchers>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.scala-tools</groupId>
+                <artifactId>maven-scala-plugin</artifactId>
+
+                <configuration>
+                    <launchers>
+                        <launcher>
+                            <id>topicsignatures</id>
+                            <mainClass>org.dbpedia.spotlight.util.GetWebPriors</mainClass>
+			    <args>
+				<arg>../conf/indexing-3.7.properties</arg>
+				<arg>../conf/dev.properties</arg>
+				<arg>/data/spotlight/3.7/conceptURIs.list</arg>
+			    </args>
+                            <jvmArgs>
+                                <jvmArg>-Xmx14G</jvmArg>
+                            </jvmArgs>
+                        </launcher>
+                    </launchers>
+                </configuration>
+	    </plugin>
+
+            <plugin>
+                <groupId>org.scala-tools</groupId>
+                <artifactId>maven-scala-plugin</artifactId>
+
+                <configuration>
+                    <launchers>
+                        <launcher>
+                            <id>topicaltext</id>
+                            <mainClass>org.dbpedia.spotlight.util.ExtractTopicalText</mainClass>
+			    <!--args>
+				<arg>/data/spotlight/enwiki-20101011-resolved-concepts.uriSorted.tsv</arg>
+				<arg>/home/pablo/Projects/DBpediaSpotlight/IavorJelev/uri_pairs/Politics2_uri_pairs.txt</arg>
+			    </args-->
+                            <jvmArgs>
+                                <jvmArg>-Xmx3G</jvmArg>
                             </jvmArgs>
                         </launcher>
                     </launchers>

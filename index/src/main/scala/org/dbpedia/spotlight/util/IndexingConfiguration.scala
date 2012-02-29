@@ -1,3 +1,21 @@
+/*
+ * Copyright 2012 DBpedia Spotlight Development Team
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  Check our project website for information on how to acknowledge the authors and how to contribute to the project: http://spotlight.dbpedia.org
+ */
+
 package org.dbpedia.spotlight.util
 
 /**
@@ -74,24 +92,7 @@ class IndexingConfiguration(val configFile: File) {
         value
     }
 
-    def set(key : String, value : String) {
-        properties.setProperty(key, value)
-        //properties.store(new FileOutputStream(configFileName), "changed "+key+" to "+value+" in "+configFileName)
 
-        val sb = new StringBuilder
-        for(line <- Source.fromFile(configFile, "UTF-8").getLines) {
-            if(line startsWith key+" ") {
-                sb.append(key+"  "+value+"\n")
-            }
-            else {
-                sb.append(line+"\n")
-            }
-        }
-
-        val out = new PrintStream(configFile, "UTF-8")
-        out.print(sb.toString)
-        out.close
-    }
 
     def getStopWords(language: String) : Set[String] = {
         val f = new File(get("org.dbpedia.spotlight.data.stopWords."+language.toLowerCase, ""))
@@ -113,31 +114,6 @@ class IndexingConfiguration(val configFile: File) {
     }
 
     private def validate { //TODO move validation to finer grained factory classes that have specific purposes (e.g. candidate mapping, lucene indexing, etc.)
-
-        val dumpFile = new File(get("org.dbpedia.spotlight.data.wikipediaDump"))
-        if(!dumpFile.isFile) {
-            throw new ConfigurationException("specified Wikipedia dump not found: "+dumpFile)
-        }
-
-        val labelsFile = new File(get("org.dbpedia.spotlight.data.labels"))
-        if(!labelsFile.isFile) {
-            throw new ConfigurationException("specified labels dataset not found: "+labelsFile)
-        }
-
-        val redirectsFile = new File(get("org.dbpedia.spotlight.data.redirects"))
-        if(!redirectsFile.isFile) {
-            throw new ConfigurationException("specified redirects dataset not found: "+redirectsFile)
-        }
-
-        val disambigFile = new File(get("org.dbpedia.spotlight.data.disambiguations"))
-        if(!disambigFile.isFile) {
-            throw new ConfigurationException("specified disambiguations dataset not found: "+disambigFile)
-        }
-
-        val instFile = new File(get("org.dbpedia.spotlight.data.instanceTypes"))
-        if(!instFile.isFile) {
-            throw new ConfigurationException("specified instance types dataset not found: "+instFile)
-        }
 
         val language = get("org.dbpedia.spotlight.language")
         if(language==null || language.size==0) {
