@@ -5,7 +5,7 @@
 #
 # @author maxjakob, pablomendes
 
-here = `pwd`
+here=`pwd`
 
 INDEX_CONFIG_FILE=../conf/indexing.properties
 
@@ -26,7 +26,7 @@ mvn scala:run -DmainClass=org.dbpedia.spotlight.util.ExtractCandidateMap "-DaddA
 mvn scala:run -DmainClass=org.dbpedia.spotlight.lucene.index.ExtractOccsFromWikipedia "-DaddArgs=$INDEX_CONFIG_FILE|output/occs.tsv"
 
 # (recommended) sorting the occurrences by URI will speed up context merging during indexing
-sort -t'   ' -k2 output/occs.tsv >output/occs.uriSorted.tsv
+sort -t $'\t' -k2 output/occs.tsv >output/occs.uriSorted.tsv
 
 # create a lucene index out of the occurrences
 mvn scala:run -DmainClass=org.dbpedia.spotlight.lucene.index.IndexMergedOccurrences "-DaddArgs=$INDEX_CONFIG_FILE|output/occs.uriSorted.tsv"
