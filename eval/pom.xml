@@ -23,7 +23,7 @@
     <parent>
         <artifactId>spotlight</artifactId>
         <groupId>org.dbpedia.spotlight</groupId>
-        <version>${dbpedia.spotlight.version}</version>
+        <version>0.5</version>
     </parent>
 
 
@@ -40,7 +40,7 @@
         <dependency>
             <groupId>org.dbpedia.spotlight</groupId>
             <artifactId>index</artifactId>
-            <version>${dbpedia.spotlight.version}</version>
+            <version>0.5</version>
         </dependency>
 
         <dependency>

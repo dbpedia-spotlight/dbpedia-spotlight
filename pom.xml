@@ -36,7 +36,7 @@
 
     <groupId>org.dbpedia.spotlight</groupId>
     <artifactId>spotlight</artifactId>
-    <version>${dbpedia.spotlight.version}</version>
+    <version>0.5</version>
     <packaging>pom</packaging>
     <name>DBpedia Spotlight annotation framework (parent POM)</name>
 
@@ -117,19 +117,19 @@
             <dependency>
                 <groupId>org.dbpedia.spotlight</groupId>
                 <artifactId>core</artifactId>
-                <version>${dbpedia.spotlight.version}</version>
+                <version>0.5</version>
             </dependency>
 
             <dependency>
                 <groupId>org.dbpedia.spotlight</groupId>
                 <artifactId>rest</artifactId>
-                <version>${dbpedia.spotlight.version}</version>
+                <version>0.5</version>
             </dependency>
 
             <dependency>
                 <groupId>org.dbpedia.spotlight</groupId>
                 <artifactId>demo</artifactId>
-                <version>${dbpedia.spotlight.version}</version>
+                <version>0.5</version>
             </dependency>
 
             <dependency>

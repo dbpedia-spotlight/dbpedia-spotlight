@@ -23,7 +23,7 @@
     <parent>
         <artifactId>spotlight</artifactId>
         <groupId>org.dbpedia.spotlight</groupId>
-        <version>${dbpedia.spotlight.version}</version>
+        <version>0.5</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -40,7 +40,7 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>${maven.assembly.plugin.version}</version>
                 <configuration>
-                    <finalName>dbpedia-spotlight-${dbpedia.spotlight.version}</finalName>
+                    <finalName>dbpedia-spotlight-0.5</finalName>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
@@ -72,13 +72,13 @@
                             <goal>jdeb</goal>
                         </goals>
                         <configuration>
-                            <deb>dbpedia-spotlight-${dbpedia.spotlight.version}.deb</deb>
+                            <deb>dbpedia-spotlight-0.5.deb</deb>
                             <changesIn>CHANGES.txt</changesIn>
-                            <changesOut>dbpedia-spotlight-${dbpedia.spotlight.version}.changes</changesOut>
+                            <changesOut>dbpedia-spotlight-0.5.changes</changesOut>
                             <dataSet>
                                 <data>
                                     <!--TODO CREATE SYMBOLIC LINK -->
-                                    <src>${project.build.directory}/dbpedia-spotlight-${dbpedia.spotlight.version}-jar-with-dependencies.jar</src>
+                                    <src>${project.build.directory}/dbpedia-spotlight-0.5-jar-with-dependencies.jar</src>
                                     <type>file</type>
                                     <mapper>
                                         <type>perm</type>
