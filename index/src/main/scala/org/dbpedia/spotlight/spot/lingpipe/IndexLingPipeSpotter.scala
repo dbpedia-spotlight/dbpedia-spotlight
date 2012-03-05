@@ -1,3 +1,21 @@
+/*
+ * Copyright 2012 DBpedia Spotlight Development Team
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  Check our project website for information on how to acknowledge the authors and how to contribute to the project: http://spotlight.dbpedia.org
+ */
+
 package org.dbpedia.spotlight.spot.lingpipe
 
 /**
@@ -23,7 +41,6 @@ import org.semanticweb.yars.nx.parser.NxParser
 import com.aliasi.dict.{DictionaryEntry, MapDictionary}
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
 import org.dbpedia.spotlight.io.IndexedOccurrencesSource
-import java.util.ArrayList
 import org.dbpedia.spotlight.util.IndexingConfiguration
 import io.Source
 
@@ -32,10 +49,13 @@ import io.Source
  * - from TSV: surface forms must be in the first column.
  * - from NT: surface forms must be literals of URIs.
  * - from list
+ * - from index
  *
  * Command line usage:
  *
- *   mvn scala:run org.dbpedia.spotlight.spot.lingpipe.IndexLingPipeSpotter
+ *   mvn scala:run org.dbpedia.spotlight.spot.lingpipe.IndexLingPipeSpotter \
+ *                 conf/indexing.properties lowercase [index|tsv]
+ *
  * @author maxjakob
  */
 object IndexLingPipeSpotter

@@ -428,8 +428,13 @@ object ExtractCandidateMap
         // get redirects
         saveRedirectsTransitiveClosure
 
-        // get surface forms 
+        // get "clean" surface forms, i.e. the ones obtained from TRDs
         saveSurfaceForms(stopWords)
+
+        // TODO get "extra" surface forms from wikipedia occurrences. (see:
+        //      should allow user to specify a minimum count threshold
+        //      should perform redirectsTransitiveClosure for target URIs
+        //saveExtraSurfaceForms
 
         //TODO create another class called CreateLexicalizationsDataset
         // export to NT format (DBpedia and Lexvo.org)
