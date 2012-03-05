@@ -34,8 +34,11 @@ mvn scala:run -DmainClass=org.dbpedia.spotlight.lucene.index.IndexMergedOccurren
 # (optional) make a backup copy of the index before you lose all the time you've put into this
 cp -R output/index output/index-backup
 
-# (optional) preprocess surface forms: produce acronyms, abbreviations, alternative spellings, etc.
-#
+# (optional) preprocess surface forms however you want: produce acronyms, abbreviations, alternative spellings, etc.
+#            in the example below we scan paragraphs for uri->sf mappings that occurred together more than 3 times.
+../bin/getSurfaceFormMapFromOccs.sh
+cp output/surfaceForms.tsv output/surfaceForms-fromTitRedDis.tsv
+cat output/surfaceForms-fromTitRedDis.tsv output/surfaceForms-fromOccs.tsv > output/surfaceForms.tsv
 
 # add surface forms to index
 mvn scala:run -DmainClass=org.dbpedia.spotlight.lucene.index.AddSurfaceFormsToIndex "-DaddArgs=$INDEX_CONFIG_FILE"
