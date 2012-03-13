@@ -40,9 +40,9 @@ import java.io.{FileInputStream, File}
 import org.semanticweb.yars.nx.parser.NxParser
 import com.aliasi.dict.{DictionaryEntry, MapDictionary}
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
-import org.dbpedia.spotlight.io.IndexedOccurrencesSource
 import org.dbpedia.spotlight.util.IndexingConfiguration
 import io.Source
+import org.dbpedia.spotlight.io.{OccurrenceSource, IndexedOccurrencesSource}
 
 /**
  * Index surface forms to a spotter dictionary.
@@ -63,14 +63,14 @@ object IndexLingPipeSpotter
     private val LOG = LogFactory.getLog(this.getClass)
 
 
-    def getDictionary(occs : List[DBpediaResourceOccurrence], lowerCased: Boolean, uriCountThreshold: Int = 0) : MapDictionary[String] = {
+    def getDictionary(occs : Traversable[DBpediaResourceOccurrence], lowerCased: Boolean, uriCountThreshold: Int = 0) : MapDictionary[String] = {
         if (lowerCased) LOG.warn("Lowercasing all surface forms in this dictionary!")
         val dictionary = new MapDictionary[String]()
-        for (occ <- occs) {
+        occs.foreach( occ => {
             val sf = if (lowerCased) occ.surfaceForm.name.toLowerCase else occ.surfaceForm.name
             if (occ.resource.support>uriCountThreshold)
-            dictionary.addEntry(new DictionaryEntry[String](sf, ""))  // chunk type undefined
-        }
+                dictionary.addEntry(new DictionaryEntry[String](sf, ""))  // chunk type undefined
+        })
         dictionary
     }
 
@@ -141,7 +141,7 @@ object IndexLingPipeSpotter
         val dictFile = new File(candidateMapFile.getAbsoluteFile+".spotterDictionary")
 
         val dictionary = if (source=="index")
-                                getDictionary(IndexedOccurrencesSource.fromFile(indexDir).foldLeft(List[DBpediaResourceOccurrence]())( (a,b) => b :: a ), lowerCased, uriCountThreshold );
+                                getDictionary(IndexedOccurrencesSource.fromFile(indexDir), lowerCased, uriCountThreshold );
                             else
                                 getDictionary(candidateMapFile, uriCountThreshold)
         writeDictionaryFile(dictionary, dictFile)
