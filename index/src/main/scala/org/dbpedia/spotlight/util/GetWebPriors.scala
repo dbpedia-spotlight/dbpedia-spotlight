@@ -1,3 +1,21 @@
+/*
+ * Copyright 2012 DBpedia Spotlight Development Team
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  Check our project website for information on how to acknowledge the authors and how to contribute to the project: http://spotlight.dbpedia.org
+ */
+
 package org.dbpedia.spotlight.util
 
 /*
@@ -27,6 +45,9 @@ import org.apache.commons.logging.LogFactory
  * Queries the Web to obtain prior probability counts for each resource
  * The idea is that "huge" will appear much more commonly than "huge TV series" on the Web, even though in Wikipedia that is not the case.
  * This is, thus, an attempt to deal with sparsity in Wikipedia.
+ *
+ * Keywords are created by @link{ExtractTopicSignatures}
+ *
  * @author pablomendes
  */
 object GetWebPriors {
@@ -40,32 +61,29 @@ object GetWebPriors {
     def main(args: Array[String]) {
 
         val indexingConfigFileName = args(0)
-        val spotlightConfigFileName = args(1)
-        val uriSetFile = args(2)
+        val uriSetFile = args(1)
 
-        val sConfig = new SpotlightConfiguration(spotlightConfigFileName);
         val wConfig = new WebSearchConfiguration(indexingConfigFileName);
         val prior = new YahooBossSearcher(wConfig)
-        val extractor = new KeywordExtractor(sConfig)
         val counts = new PrintWriter(uriSetFile+".counts")
-        val queries = new PrintWriter(uriSetFile+".queries")
-        val uriSet = Source.fromFile(uriSetFile).getLines
+        val queries = Source.fromFile(uriSetFile+".topicsig").getLines // this file is created by ExtractTopicSignatures
         var i = 0;
-        uriSet.foreach( uri => {
+        queries.foreach( line => {
             i = i + 1
-            LOG.info(String.format("URI %s : %s", i.toString, uri));
+
             try {
-                val keywords = extractor.getAllKeywords(new DBpediaResource(uri));
-                queries.print(String.format("%s\t%s\n", uri, keywords))
+                val fields = line.split("\t")
+                val uri = fields(0)
+                val keywords = fields(1)
+                LOG.info(String.format("URI %s : %s", i.toString, uri));
                 LOG.info("Searching for :"+keywords)
                 val results = prior.getYahooAnswer(keywords)
                 counts.print(String.format("%s\t%s\t%s\n", uri, results._1.toString, results._2.toString))
 
                 if (i % 100 == 0) {
                     counts.flush
-                    queries.flush
                 } else {
-                    //Thread.sleep(700)
+                    Thread.sleep(700)
                 }
             } catch {
                 case e: java.net.ConnectException => {
@@ -78,7 +96,6 @@ object GetWebPriors {
         });
 
         counts.close
-        queries.close
     }
 
 }
