@@ -63,19 +63,20 @@ object IndexLingPipeSpotter
     private val LOG = LogFactory.getLog(this.getClass)
 
 
-    def getDictionary(occs : List[DBpediaResourceOccurrence], lowerCased: Boolean) : MapDictionary[String] = {
+    def getDictionary(occs : List[DBpediaResourceOccurrence], lowerCased: Boolean, uriCountThreshold: Int = 0) : MapDictionary[String] = {
         if (lowerCased) LOG.warn("Lowercasing all surface forms in this dictionary!")
         val dictionary = new MapDictionary[String]()
         for (occ <- occs) {
             val sf = if (lowerCased) occ.surfaceForm.name.toLowerCase else occ.surfaceForm.name
+            if (occ.resource.support>uriCountThreshold)
             dictionary.addEntry(new DictionaryEntry[String](sf, ""))  // chunk type undefined
         }
         dictionary
     }
 
-    def getDictionary(surrogatesFile : File) : MapDictionary[String] = {
+    def getDictionary(surrogatesFile : File, uriCountThreshold: Int) : MapDictionary[String] = {
         LOG.info("Reading surface forms from "+surrogatesFile+"...")
-        if (surrogatesFile.getName.toLowerCase.endsWith(".tsv")) getDictionaryFromTSVSurrogates(surrogatesFile)
+        if (surrogatesFile.getName.toLowerCase.endsWith(".tsv")) getDictionaryFromTSVSurrogates(surrogatesFile, uriCountThreshold)
         else if (surrogatesFile.getName.toLowerCase.endsWith(".nt")) getDictionaryFromNTSurrogates(surrogatesFile)
         else getDictionaryFromList(surrogatesFile)
     }
@@ -86,10 +87,11 @@ object IndexLingPipeSpotter
         LOG.info(dictionary.size+" entries saved.")
     }
 
+    //TODO enable filtering by count
     private def getDictionaryFromNTSurrogates(surrogatesNTFile : File) : MapDictionary[String] = {
         val dictionary = new MapDictionary[String]()
         val nxParser = new NxParser(new FileInputStream(surrogatesNTFile), false)
-        while (nxParser.hasNext) {
+        while (nxParser.hasNext) { //TODO this needs more work. should filter by property name
             val triple = nxParser.next
             val surfaceForm = triple(2).toString
             dictionary.addEntry(new DictionaryEntry[String](surfaceForm, ""))  // chunk type undefined
@@ -97,15 +99,23 @@ object IndexLingPipeSpotter
         dictionary
     }
 
-    private def getDictionaryFromTSVSurrogates(surrogatesTSVFile : File) : MapDictionary[String] = {
+    private def getDictionaryFromTSVSurrogates(surrogatesTSVFile : File, uriCountThreshold: Int) : MapDictionary[String] = {
         val dictionary = new MapDictionary[String]()
         for (line <- Source.fromFile(surrogatesTSVFile, "UTF-8").getLines) {
-            val surfaceForm = line.split("\t")(0)
+            val fields = line.split("\t")
+            var uriCount = 0
+            try {
+                uriCount = fields(2).toInt
+            } catch {
+                case e: Exception => LOG.error("Expected input is a TSV file with <surfaceForm, uri, count>")
+            }
+            val surfaceForm = fields(0)
             dictionary.addEntry(new DictionaryEntry[String](surfaceForm, ""))  // chunk type undefined
         }
         dictionary
     }
 
+    //TODO how to deal with uriCountThreshold?
     private def getDictionaryFromList(surrogatesListFile : File) : MapDictionary[String] = {
         val dictionary = new MapDictionary[String]()
         for (line <- Source.fromFile(surrogatesListFile, "UTF-8").getLines) {
@@ -119,17 +129,21 @@ object IndexLingPipeSpotter
         val indexingConfigFileName = args(0)
         var lowerCased = if (args.size>1) args(1).toLowerCase().contains("lowercase") else false
         val source = if (args.size>2) args(2).toLowerCase() else "tsv" // index or tsv
+        val uriCountThreshold = if (args.size>3) args(3).toInt else 0
 
         val config = new IndexingConfiguration(indexingConfigFileName)
         val candidateMapFile = new File(config.get("org.dbpedia.spotlight.data.surfaceForms"))
         val indexDir = new File(config.get("org.dbpedia.spotlight.index.dir"))
 
+        if (indexDir.getName.contains("compact"))
+            LOG.warn("Beware, this class cannot operate on compact indexes. Based on the file name, we believe that your index has been run through CompactIndex, therefore removing surface forms from the stored fields.")
+
         val dictFile = new File(candidateMapFile.getAbsoluteFile+".spotterDictionary")
 
         val dictionary = if (source=="index")
-                                getDictionary(IndexedOccurrencesSource.fromFile(indexDir).foldLeft(List[DBpediaResourceOccurrence]())( (a,b) => b :: a ), lowerCased );
+                                getDictionary(IndexedOccurrencesSource.fromFile(indexDir).foldLeft(List[DBpediaResourceOccurrence]())( (a,b) => b :: a ), lowerCased, uriCountThreshold );
                             else
-                                getDictionary(candidateMapFile)
+                                getDictionary(candidateMapFile, uriCountThreshold)
         writeDictionaryFile(dictionary, dictFile)
     }
 }
