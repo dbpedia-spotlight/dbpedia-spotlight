@@ -2,7 +2,7 @@ package org.dbpedia.spotlight.spot.opennlp
 
 import java.io.File
 import collection.mutable.HashSet
-import com.skjegstad.utils.BloomFilter
+import org.dbpedia.spotlight.util.bloomfilter.LongFastBloomFilter
 
 /**
  * @author Joachim Daiber
@@ -36,17 +36,18 @@ class ExactSurfaceFormDictionary(caseSensitive: Boolean = true) extends SurfaceF
 /**
  * This is a SurfaceForm dictionary using a Bloom filter. The properties of Bloom filters are very helpful
  * here. There will never be false negatives, but false positives may occur with a probability
- * that can be specified when creating the {@link BloomFilter}.
+ * that can be specified when creating the BloomFilter.
  */
 class ProbabilisticSurfaceFormDictionary(expectedSize: Int, caseSensitive: Boolean = true, falsePositiveProbability: Double = 0.01)
   extends SurfaceFormDictionary(caseSensitive) {
 
-  val bloomFilter: BloomFilter[String] = new BloomFilter[String](falsePositiveProbability, expectedSize)
+  val bloomFilter: LongFastBloomFilter =
+    LongFastBloomFilter.getFilter(expectedSize, falsePositiveProbability)
 
   def add(surfaceForm: String) {
-    bloomFilter.add(normalizeEntry(surfaceForm))
+    bloomFilter.add(normalizeEntry(surfaceForm).getBytes)
   }
-  def contains(surfaceForm: String) = bloomFilter.contains(normalizeEntry(surfaceForm))
+  def contains(surfaceForm: String) = bloomFilter.contains(normalizeEntry(surfaceForm).getBytes)
 }
 
 
