@@ -1,9 +1,38 @@
 
 org.dbpedia.spotlight.web.rest.uri = http://localhost:2222/rest
-org.dbpedia.spotlight.index.dir = data/index
-org.dbpedia.spotlight.spot.dictionary = data/default.dict
+org.dbpedia.spotlight.index.dir = ../dist/src/deb/control/data/usr/share/dbpedia-spotlight/index 
+org.dbpedia.spotlight.spot.dictionary = ../dist/src/deb/control/data/usr/share/dbpedia-spotlight/spotter.dict 
 jcs.default.cacheattributes.MaxObjects = 5000
+org.dbpedia.spotlight.tagging.hmm = ../dist/src/deb/control/data/usr/share/dbpedia-spotlight/pos-en-general-brown.HiddenMarkovModel
 
 org.dbpedia.spotlight.sparql.endpoint = http://dbpedia.org/sparql
 org.dbpedia.spotlight.sparql.graph = http://dbpedia.org
 
+# Configurations for the CoOccurrenceBasedSelector
+# From: http://spotlight.dbpedia.org/download/release-0.5/spot_selector.tgz
+org.dbpedia.spotlight.spot.cooccurrence.datasource = ukwac
+org.dbpedia.spotlight.spot.cooccurrence.database.jdbcdriver = org.hsqldb.jdbcDriver
+org.dbpedia.spotlight.spot.cooccurrence.database.connector = jdbc:hsqldb:file:/fastdata/spotlight/3.7/spotsel/ukwac_candidate;shutdown=true&readonly=true
+org.dbpedia.spotlight.spot.cooccurrence.database.user = sa
+org.dbpedia.spotlight.spot.cooccurrence.database.password =
+org.dbpedia.spotlight.spot.cooccurrence.classifier.unigram = /fastdata/spotlight/3.7/spotsel/ukwac_unigram.model
+org.dbpedia.spotlight.spot.cooccurrence.classifier.ngram = /fastdata/spotlight/3.7/spotsel/ukwac_ngram.model
+
+# Other possible values: AtLeastOneNounSelector,CoOccurrenceBasedSelector,NESpotter
+org.dbpedia.spotlight.spot.spotters = LingPipeSpotter
+
+org.dbpedia.spotlight.spot.opennlp.dir = /fastdata/spotlight/3.7/opennlp
+
+# Info for context searcher
+org.dbpedia.spotlight.language = English
+org.dbpedia.spotlight.lucene.analyzer = SnowballAnalyzer
+
+# Choose between jdbc or lucene for DBpedia Resource creation. Also, if the jdbc throws an error, lucene will be used.
+org.dbpedia.spotlight.core.database = jdbc
+org.dbpedia.spotlight.core.database.jdbcdriver = org.hsqldb.jdbcDriver
+org.dbpedia.spotlight.core.database.connector = jdbc:hsqldb:file:/data/spotlight/3.7/database/spotlight-db;shutdown=true&readonly=true
+org.dbpedia.spotlight.core.database.user = sa
+org.dbpedia.spotlight.core.database.password =
+
+# From http://spotlight.dbpedia.org/download/release-0.5/candidate-index-full.tgz
+org.dbpedia.spotlight.candidateMap.dir = /fastdata/spotlight/3.7/candidateIndexTitRedDis 
