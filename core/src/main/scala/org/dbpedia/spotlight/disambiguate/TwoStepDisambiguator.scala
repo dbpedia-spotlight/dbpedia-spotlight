@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 DBpedia Spotlight Development Team
+ * Copyright 2012 DBpedia Spotlight Development Team
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -130,8 +130,12 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
             .foldLeft( Map[SurfaceFormOccurrence,List[DBpediaResource]]())(
             (acc,sfOcc) => {
                 LOG.debug("searching...")
-                val candidates = candidateSearcher.getCandidates(sfOcc.surfaceForm).asScala //.map(r => r.uri)
-
+                var candidates = new java.util.HashSet[DBpediaResource]().asScala
+                try {
+                    candidates = candidateSearcher.getCandidates(sfOcc.surfaceForm).asScala //.map(r => r.uri)
+                } catch {
+                    case e: ItemNotFoundException => LOG.debug(e);
+                }
                 //ATTENTION there is no r.support at this point
                 //TODO if support comes from candidate index, it means c(sf,r).
 

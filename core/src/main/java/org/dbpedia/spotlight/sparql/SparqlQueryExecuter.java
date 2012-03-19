@@ -1,17 +1,19 @@
-/**
- * Copyright 2011 Pablo Mendes, Max Jakob
+/*
+ * Copyright 2012 DBpedia Spotlight Development Team
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  Check our project website for information on how to acknowledge the authors and how to contribute to the project: http://spotlight.dbpedia.org
  */
 
 package org.dbpedia.spotlight.sparql;
@@ -56,18 +58,19 @@ public class SparqlQueryExecuter {
         this.sparqlUrl = sparqlUrl;
     }
 
-	public Set<DBpediaResource> query(String query) throws IOException, OutputException, SparqlExecutionException {
-        if (query==null) return new HashSet<DBpediaResource>();
-		LOG.info("--SPARQL QUERY: "+query.replace("\n", " "));
+	public List<DBpediaResource> query(String query) throws IOException, OutputException, SparqlExecutionException {
+        if (query==null) return new ArrayList<DBpediaResource>();
+		LOG.debug("--SPARQL QUERY: " + query.replace("\n", " "));
 
 		String graphEncoded = URLEncoder.encode(mainGraph, "UTF-8");
 		String formatEncoded = URLEncoder.encode("application/sparql-results+json", "UTF-8");
         String queryEncoded = URLEncoder.encode(query, "UTF-8");
 
         String url = "default-graph-uri="+graphEncoded+"&query="+queryEncoded+"&format="+formatEncoded+"&debug=on&timeout=";
-		LOG.debug(url);
+		//LOG.trace(url);
+
 		//FIXME Do some test with the returned results to see if there actually are results.
-        Set<DBpediaResource> uris = null;
+        List<DBpediaResource> uris = null;
         String response = null;
         try {
 //            uris = parse(readOutput(get(url)));
@@ -76,7 +79,7 @@ public class SparqlQueryExecuter {
         } catch (JSONException e) {
             throw new OutputException(e+response);
         }
-        LOG.info(String.format("-- %s found.",uris.size()));
+        LOG.debug(String.format("-- %s found.", uris.size()));
         return uris;
 	}
 
@@ -130,8 +133,8 @@ public class SparqlQueryExecuter {
      * @return list of URIs as Strings contained in any variables in this result.
      * @throws org.json.JSONException
      */
-    private static Set<DBpediaResource> parse(String jsonString) throws JSONException {
-        Set<DBpediaResource> results = new HashSet<DBpediaResource>();
+    private static List<DBpediaResource> parse(String jsonString) throws JSONException {
+        List<DBpediaResource> results = new ArrayList<DBpediaResource>();
         JSONObject root = new JSONObject(jsonString);
         JSONArray vars = root.getJSONObject("head").getJSONArray("vars");
         JSONArray bindings = root.getJSONObject("results").getJSONArray("bindings");
@@ -165,7 +168,7 @@ public class SparqlQueryExecuter {
         String url = "http://dbpedia.org/sparql?default-graph-uri=http://dbpedia.org&query=select+distinct+%3Fpol+where+{%3Fpol+a+%3Chttp://dbpedia.org/ontology/Politician%3E+}&debug=on&timeout=&format=text/html&save=display&fname=";
         SparqlQueryExecuter e = new SparqlQueryExecuter("http://dbpedia.org", "http://dbpedia.org/sparql");
 
-        Set<DBpediaResource> uris = e.query(example2);
+        List<DBpediaResource> uris = e.query(example2);
         System.out.println(uris);
     }
 

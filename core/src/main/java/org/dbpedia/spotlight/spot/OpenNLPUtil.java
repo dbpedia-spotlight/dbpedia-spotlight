@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 DBpedia Spotlight Development Team
+ * Copyright 2012 DBpedia Spotlight Development Team
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -93,7 +93,7 @@ public class OpenNLPUtil {
                 in = loader.getResourceAsStream(resourcePath);
                 LOG.debug("**OpenNLP is Loading OpenNLP 1.5 " + modelType + " model by Regular class loading: " + in.getClass().getCanonicalName());
                 if (in == null) {
-                    throw new IOException("coult not find resource: " + resourcePath);
+                    throw new IOException("could not find resource: " + resourcePath);
                 }
             }
             return loadOpenNlpModel(modelType, in);
