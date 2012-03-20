@@ -3,6 +3,9 @@ package org.dbpedia.spotlight.spot.opennlp
 import java.io.File
 import collection.mutable.HashSet
 import org.dbpedia.spotlight.util.bloomfilter.LongFastBloomFilter
+import com.aliasi.util.AbstractExternalizable
+import com.aliasi.dict.Dictionary
+import scala.collection.JavaConversions._
 
 /**
  * @author Joachim Daiber
@@ -62,6 +65,13 @@ object SurfaceFormDictionary {
     entries.foreach(line => surfaceformDictionary.add(line))
     surfaceformDictionary
   }
+  def fromLingPipeDictionary(dictionary: Dictionary[String],
+                             surfaceformDictionary: SurfaceFormDictionary = new ExactSurfaceFormDictionary()) = {
+
+    dictionary.entryList().foreach(entry => surfaceformDictionary.add(entry.phrase()))
+    surfaceformDictionary
+  }
+
 }
 
 object ProbabilisticSurfaceFormDictionary {
@@ -69,11 +79,20 @@ object ProbabilisticSurfaceFormDictionary {
     SurfaceFormDictionary.fromIterator(io.Source.fromFile(dictionaryFile).getLines(),
       new ProbabilisticSurfaceFormDictionary(io.Source.fromFile(dictionaryFile).size, caseSensitive))
   }
+  def fromLingPipeDictionary(dictionaryFile: File, caseSensitive: Boolean = true): SurfaceFormDictionary = {
+    val lingpipeDictionary: Dictionary[String] = AbstractExternalizable.readObject(dictionaryFile).asInstanceOf[Dictionary[String]]
+    SurfaceFormDictionary.fromLingPipeDictionary(lingpipeDictionary,
+      new ProbabilisticSurfaceFormDictionary(lingpipeDictionary.size(), caseSensitive))
+  }
 }
 
 object ExactSurfaceFormDictionary {
   def fromFile(dictionaryFile: File, caseSensitive: Boolean = true) : SurfaceFormDictionary = {
     SurfaceFormDictionary.fromIterator(io.Source.fromFile(dictionaryFile).getLines(),
+      new ExactSurfaceFormDictionary(caseSensitive))
+  }
+  def fromLingPipeDictionary(dictionaryFile: File, caseSensitive: Boolean = true) : SurfaceFormDictionary = {
+    SurfaceFormDictionary.fromLingPipeDictionary(AbstractExternalizable.readObject(dictionaryFile).asInstanceOf[Dictionary[String]],
       new ExactSurfaceFormDictionary(caseSensitive))
   }
 }
