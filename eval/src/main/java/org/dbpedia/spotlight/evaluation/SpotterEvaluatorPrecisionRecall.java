@@ -103,6 +103,11 @@ public class SpotterEvaluatorPrecisionRecall {
 		/**
 		 * No selection:
          */
+        File lexSpotterGoldFile = new File("/home/pablo/eval/csaw/gold/surfaceForms.set.spotterDictionary");
+        Spotter lexSpotterGold = new LingPipeSpotter(lexSpotterGoldFile);
+        lexSpotterGold.setName("\\lexspot{gold}        ");
+        latexTable.append(getLatexTableRow(lexSpotterGold, documents, goldSurfaceFormOccurrences,baseResult));
+
         File lexSpotterT3File = new File("/home/pablo/web/dbpedia36data/2.9.3/surface_forms-Wikipedia-TitRedDis.thresh3.spotterDictionary");
         Spotter lexSpotterT3 = new LingPipeSpotter(lexSpotterT3File);
         lexSpotterT3.setName("\\lexspot{>3}        ");
@@ -133,6 +138,19 @@ public class SpotterEvaluatorPrecisionRecall {
          * OpenNLP Chunker
          */
         String openNLPDir = "/data/spotlight/3.7/opennlp/english/";
+        File stopwords = new File("data/stopwords/stopwords_en.txt");
+
+
+
+        SurfaceFormDictionary sfDictProbThreshGold = ProbabilisticSurfaceFormDictionary.fromLingPipeDictionary(lexSpotterGoldFile,false);
+        Spotter onlpChunksSpotterGold = new OpenNLPChunkerSpotter(new File(openNLPDir,OpenNLPUtil.OpenNlpModels.SentenceModel.filename()+".bin"),
+                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.TokenizerModel.filename()+".bin"),
+                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.POSModel.filename()+".bin"),
+                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.ChunkModel.filename()+".bin"),
+                sfDictProbThreshGold,
+                stopwords);
+        onlpChunksSpotterGold.setName("\\joNPL{gold}                  ");
+        latexTable.append(getLatexTableRow(onlpChunksSpotterGold, documents, goldSurfaceFormOccurrences,baseResult));
 
         //File sfDictThresh3 = new File("/home/pablo/workspace/spotlight/index/output/surfaceForms-fromOccs-thresh3-TRD.set");
         //SurfaceFormDictionary sfDictProbThresh3 = ProbabilisticSurfaceFormDictionary.fromFile(sfDictThresh3, false);
@@ -141,7 +159,8 @@ public class SpotterEvaluatorPrecisionRecall {
                 new File(openNLPDir,OpenNLPUtil.OpenNlpModels.TokenizerModel.filename()+".bin"),
                 new File(openNLPDir,OpenNLPUtil.OpenNlpModels.POSModel.filename()+".bin"),
                 new File(openNLPDir,OpenNLPUtil.OpenNlpModels.ChunkModel.filename()+".bin"),
-                sfDictProbThresh3);
+                sfDictProbThresh3,
+                stopwords);
         onlpChunksSpotter3.setName("\\joNPL{>3}                  ");
         latexTable.append(getLatexTableRow(onlpChunksSpotter3, documents, goldSurfaceFormOccurrences,baseResult));
 
@@ -152,7 +171,8 @@ public class SpotterEvaluatorPrecisionRecall {
                 new File(openNLPDir,OpenNLPUtil.OpenNlpModels.TokenizerModel.filename()+".bin"),
                 new File(openNLPDir,OpenNLPUtil.OpenNlpModels.POSModel.filename()+".bin"),
                 new File(openNLPDir,OpenNLPUtil.OpenNlpModels.ChunkModel.filename()+".bin"),
-                sfDictProbThresh10);
+                sfDictProbThresh10,
+                stopwords);
         onlpChunksSpotter10.setName("\\joNPL{>10}                 ");
         latexTable.append(getLatexTableRow(onlpChunksSpotter10, documents, goldSurfaceFormOccurrences,baseResult));
 
@@ -163,8 +183,9 @@ public class SpotterEvaluatorPrecisionRecall {
                 new File(openNLPDir,OpenNLPUtil.OpenNlpModels.TokenizerModel.filename()+".bin"),
                 new File(openNLPDir,OpenNLPUtil.OpenNlpModels.POSModel.filename()+".bin"),
                 new File(openNLPDir,OpenNLPUtil.OpenNlpModels.ChunkModel.filename()+".bin"),
-                sfDictProbThresh75);
-        onlpChunksSpotter75.setName("NP+$LexBF_{>75}$                 ");
+                sfDictProbThresh75,
+                stopwords);
+        onlpChunksSpotter75.setName("\\joNPL{>75}                 ");
         latexTable.append(getLatexTableRow(onlpChunksSpotter75, documents, goldSurfaceFormOccurrences,baseResult));
 
         /**
