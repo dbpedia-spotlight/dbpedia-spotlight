@@ -20,6 +20,7 @@ abstract class SurfaceFormDictionary(caseSensitive: Boolean = true) {
   def contains(surfaceForm: String): Boolean
   def add(surfaceForm: String)
   def normalizeEntry(entry: String) = if(caseSensitive) entry else entry.toLowerCase
+  def size: Int
 }
 
 /**
@@ -33,7 +34,7 @@ class ExactSurfaceFormDictionary(caseSensitive: Boolean = true) extends SurfaceF
     surfaceFormDictionary += normalizeEntry(surfaceForm)
   }
   def contains(surfaceForm: String): Boolean = surfaceFormDictionary.contains(normalizeEntry(surfaceForm))
-
+  def size = surfaceFormDictionary.size
 }
 
 /**
@@ -51,6 +52,7 @@ class ProbabilisticSurfaceFormDictionary(expectedSize: Int, caseSensitive: Boole
     bloomFilter.add(normalizeEntry(surfaceForm).getBytes)
   }
   def contains(surfaceForm: String) = bloomFilter.contains(normalizeEntry(surfaceForm).getBytes)
+  def size = bloomFilter.getCurrentNumberOfElements.toInt
 }
 
 

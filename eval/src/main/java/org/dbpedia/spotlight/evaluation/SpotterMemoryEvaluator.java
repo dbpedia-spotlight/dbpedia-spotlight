@@ -53,12 +53,14 @@ public class SpotterMemoryEvaluator {
 
         Spotter spotter = null;
 
-        int spotterNr = 1;
+        int spotterNr = 0;
 
         switch(spotterNr) {
             case 0: {
                 String openNLPDir = "/Users/jodaiber/Desktop/DBpedia/";
                 SurfaceFormDictionary sfDictProbThresh3 = ExactSurfaceFormDictionary.fromLingPipeDictionary(dictionary, false);
+                System.out.println("Dictionary size: " + sfDictProbThresh3.size());
+
                 spotter = new OpenNLPChunkerSpotter(new File(openNLPDir,OpenNLPUtil.OpenNlpModels.SentenceModel.filename()+".bin"),
                         new File(openNLPDir,OpenNLPUtil.OpenNlpModels.TokenizerModel.filename()+".bin"),
                         new File(openNLPDir,OpenNLPUtil.OpenNlpModels.POSModel.filename()+".bin"),
@@ -71,6 +73,7 @@ public class SpotterMemoryEvaluator {
                 break;
             }
         }
+
 
         System.out.println("Using Spotter " + spotter.getName());
 
