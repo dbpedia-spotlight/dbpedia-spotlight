@@ -84,6 +84,7 @@ public class SpotterEvaluatorPrecisionRecall {
         }
         List<Text> documents = evaluationCorpus.getTexts();
 
+
         evaluate(documents, goldSurfaceFormOccurrences, baseResult, lingPipeFactory, configuration);
 
         LOG.info("Done.");
@@ -98,66 +99,24 @@ public class SpotterEvaluatorPrecisionRecall {
 
         StringBuffer latexTable = new StringBuffer();
 
-        /**
-         * OpenNLP Chunker
-         */
-        String openNLPDir = "/data/spotlight/3.7/opennlp/english/";
-
-        File sfDictThresh3 = new File("/home/pablo/workspace/spotlight/index/output/surfaceForms-fromOccs-thresh3-TRD.set");
-        SurfaceFormDictionary sfDictProbThresh3 = ProbabilisticSurfaceFormDictionary.fromFile(sfDictThresh3, false);
-        Spotter onlpChunksSpotter3 = new OpenNLPChunkerSpotter(new File(openNLPDir,OpenNLPUtil.OpenNlpModels.SentenceModel.filename()+".bin"),
-                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.TokenizerModel.filename()+".bin"),
-                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.POSModel.filename()+".bin"),
-                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.ChunkModel.filename()+".bin"),
-                sfDictProbThresh3);
-        onlpChunksSpotter3.setName("NP+$LexBF_{>3}$                  ");
-        latexTable.append(getLatexTableRow(onlpChunksSpotter3, documents, goldSurfaceFormOccurrences,baseResult));
-
-        File sfDictThresh10 = new File("/home/pablo/workspace/spotlight/index/output/surfaceForms-fromOccs-thresh10-TRD.set");
-        SurfaceFormDictionary sfDictProbThresh10 = ProbabilisticSurfaceFormDictionary.fromFile(sfDictThresh10, false);
-        Spotter onlpChunksSpotter10 = new OpenNLPChunkerSpotter(new File(openNLPDir,OpenNLPUtil.OpenNlpModels.SentenceModel.filename()+".bin"),
-                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.TokenizerModel.filename()+".bin"),
-                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.POSModel.filename()+".bin"),
-                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.ChunkModel.filename()+".bin"),
-                sfDictProbThresh10);
-        onlpChunksSpotter10.setName("NP+$LexBF_{>10}$                 ");
-        latexTable.append(getLatexTableRow(onlpChunksSpotter10, documents, goldSurfaceFormOccurrences,baseResult));
-
-//        File sfDictThresh75 = new File("/home/pablo/workspace/spotlight/index/output/surfaceForms-fromOccs-thresh75.tsv");
-//        SurfaceFormDictionary sfDictProbThresh75 = ProbabilisticSurfaceFormDictionary.fromFile(sfDictThresh75, false);
-//        Spotter onlpChunksSpotter75 = new OpenNLPChunkerSpotter(new File(openNLPDir,OpenNLPUtil.OpenNlpModels.SentenceModel.filename()+".bin"),
-//                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.TokenizerModel.filename()+".bin"),
-//                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.POSModel.filename()+".bin"),
-//                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.ChunkModel.filename()+".bin"),
-//                sfDictProbThresh75);
-//        onlpChunksSpotter75.setName("NP+$LexBF_{>75}$                 ");
-//        latexTable.append(getLatexTableRow(onlpChunksSpotter75, documents, goldSurfaceFormOccurrences,baseResult));
 
 		/**
 		 * No selection:
          */
-        Spotter lexSpotterT3 = new LingPipeSpotter(new File("/home/pablo/web/dbpedia36data/2.9.3/surface_forms-Wikipedia-TitRedDis.thresh3.spotterDictionary"));
-        lexSpotterT3.setName("Lexicon-based $L_{>3}$*        ");
+        File lexSpotterT3File = new File("/home/pablo/web/dbpedia36data/2.9.3/surface_forms-Wikipedia-TitRedDis.thresh3.spotterDictionary");
+        Spotter lexSpotterT3 = new LingPipeSpotter(lexSpotterT3File);
+        lexSpotterT3.setName("\\lexspot{>3}        ");
         latexTable.append(getLatexTableRow(lexSpotterT3, documents, goldSurfaceFormOccurrences,baseResult));
 
-		Spotter lexSpotterT10 = new LingPipeSpotter(new File("/home/pablo/web/dbpedia36data/2.9.3/surface_forms-Wikipedia-TitRedDis.uriThresh10.tsv.spotterDictionary"));
-        lexSpotterT10.setName("Lexicon-based $L_{>10}$*        ");
+		File lexSpotterT10File = new File("/home/pablo/web/dbpedia36data/2.9.3/surface_forms-Wikipedia-TitRedDis.uriThresh10.tsv.spotterDictionary");
+        Spotter lexSpotterT10 = new LingPipeSpotter(lexSpotterT10File);
+        lexSpotterT10.setName("\\lexspot{>10}        ");
         latexTable.append(getLatexTableRow(lexSpotterT10, documents, goldSurfaceFormOccurrences,baseResult));
 
-        Spotter lexSpotterT75 = new LingPipeSpotter(new File("/home/pablo/web/dbpedia36data/2.9.3/surface_forms-Wikipedia-TitRedDis.uriThresh75.tsv.spotterDictionary"));
-        lexSpotterT75.setName("Lexicon-based $L_{>75}$*        ");
+        File lexSpotterT75File = new File("/home/pablo/web/dbpedia36data/2.9.3/surface_forms-Wikipedia-TitRedDis.uriThresh75.tsv.spotterDictionary");
+        Spotter lexSpotterT75 = new LingPipeSpotter(lexSpotterT75File);
+        lexSpotterT75.setName("\\lexspot{>75}        ");
         latexTable.append(getLatexTableRow(lexSpotterT75, documents, goldSurfaceFormOccurrences,baseResult));
-		/**
-		 * Advanced Spotter:
-		 */
-        Spotter noCommonSpotter = SpotterWithSelector.getInstance(
-                lexSpotterT3,
-                new CoOccurrenceBasedSelector(configuration.getSpotterConfiguration()),
-                new LingPipeTaggedTokenProvider(lingPipeFactory)
-        );
-        noCommonSpotter.setName("No common words $L$-CW*       ");
-		latexTable.append(getLatexTableRow(noCommonSpotter, documents, goldSurfaceFormOccurrences,baseResult));
-
 
 		/**
 		 * At least one noun:
@@ -167,25 +126,97 @@ public class SpotterEvaluatorPrecisionRecall {
 				new AtLeastOneNounSelector(),
 				new LingPipeTaggedTokenProvider(lingPipeFactory)
 		);
-        npSpotter.setName("At least one noun $L \\cap$ NP*");
+        npSpotter.setName("\\atLeastOneNoun");
 		latexTable.append(getLatexTableRow(npSpotter, documents, goldSurfaceFormOccurrences,baseResult));
+
+        /**
+         * OpenNLP Chunker
+         */
+        String openNLPDir = "/data/spotlight/3.7/opennlp/english/";
+
+        //File sfDictThresh3 = new File("/home/pablo/workspace/spotlight/index/output/surfaceForms-fromOccs-thresh3-TRD.set");
+        //SurfaceFormDictionary sfDictProbThresh3 = ProbabilisticSurfaceFormDictionary.fromFile(sfDictThresh3, false);
+        SurfaceFormDictionary sfDictProbThresh3 = ProbabilisticSurfaceFormDictionary.fromLingPipeDictionary(lexSpotterT3File,false);
+        Spotter onlpChunksSpotter3 = new OpenNLPChunkerSpotter(new File(openNLPDir,OpenNLPUtil.OpenNlpModels.SentenceModel.filename()+".bin"),
+                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.TokenizerModel.filename()+".bin"),
+                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.POSModel.filename()+".bin"),
+                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.ChunkModel.filename()+".bin"),
+                sfDictProbThresh3);
+        onlpChunksSpotter3.setName("\\joNPL{>3}                  ");
+        latexTable.append(getLatexTableRow(onlpChunksSpotter3, documents, goldSurfaceFormOccurrences,baseResult));
+
+        //File sfDictThresh10 = new File("/home/pablo/workspace/spotlight/index/output/surfaceForms-fromOccs-thresh10-TRD.set");
+        //SurfaceFormDictionary sfDictProbThresh10 = ProbabilisticSurfaceFormDictionary.fromFile(sfDictThresh10, false);
+        SurfaceFormDictionary sfDictProbThresh10 = ProbabilisticSurfaceFormDictionary.fromLingPipeDictionary(lexSpotterT10File,false);
+        Spotter onlpChunksSpotter10 = new OpenNLPChunkerSpotter(new File(openNLPDir,OpenNLPUtil.OpenNlpModels.SentenceModel.filename()+".bin"),
+                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.TokenizerModel.filename()+".bin"),
+                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.POSModel.filename()+".bin"),
+                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.ChunkModel.filename()+".bin"),
+                sfDictProbThresh10);
+        onlpChunksSpotter10.setName("\\joNPL{>10}                 ");
+        latexTable.append(getLatexTableRow(onlpChunksSpotter10, documents, goldSurfaceFormOccurrences,baseResult));
+
+        //File sfDictThresh75 = new File("/home/pablo/workspace/spotlight/index/output/surfaceForms-fromOccs-thresh75.tsv");
+        //SurfaceFormDictionary sfDictProbThresh75 = ProbabilisticSurfaceFormDictionary.fromFile(sfDictThresh75, false);
+        SurfaceFormDictionary sfDictProbThresh75 = ProbabilisticSurfaceFormDictionary.fromLingPipeDictionary(lexSpotterT75File,false);
+        Spotter onlpChunksSpotter75 = new OpenNLPChunkerSpotter(new File(openNLPDir,OpenNLPUtil.OpenNlpModels.SentenceModel.filename()+".bin"),
+                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.TokenizerModel.filename()+".bin"),
+                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.POSModel.filename()+".bin"),
+                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.ChunkModel.filename()+".bin"),
+                sfDictProbThresh75);
+        onlpChunksSpotter75.setName("NP+$LexBF_{>75}$                 ");
+        latexTable.append(getLatexTableRow(onlpChunksSpotter75, documents, goldSurfaceFormOccurrences,baseResult));
+
+        /**
+         * No common words.
+         */
+        Spotter noCommonSpotter = SpotterWithSelector.getInstance(
+                lexSpotterT3,
+                new CoOccurrenceBasedSelector(configuration.getSpotterConfiguration()),
+                new LingPipeTaggedTokenProvider(lingPipeFactory)
+        );
+        noCommonSpotter.setName("\\cw       ");
+        latexTable.append(getLatexTableRow(noCommonSpotter, documents, goldSurfaceFormOccurrences,baseResult));
+
+        /**
+         * Kea
+         */
+        Spotter keaSpotter1 = new KeaSpotter("/data/spotlight/3.7/kea/keaModel-1-3-1", 1000, -1);
+        keaSpotter1.setName("$Kea_{>0}$                      ");
+        latexTable.append(getLatexTableRow(keaSpotter1, documents, goldSurfaceFormOccurrences,baseResult));
+
+//        Spotter keaSpotter2 = new KeaSpotter("/data/spotlight/3.7/kea/keaModel-1-3-1", 1000, 0.015);
+//        keaSpotter2.setName("$Kea_{>0.015}$                  ");
+//        latexTable.append(getLatexTableRow(keaSpotter2, documents, goldSurfaceFormOccurrences,baseResult));
+//
+//        Spotter keaSpotter3 = new KeaSpotter("/data/spotlight/3.7/kea/keaModel-1-3-1", 1000, 0.075);
+//        keaSpotter3.setName("$Kea_{>0.075}$                  ");
+//        latexTable.append(getLatexTableRow(keaSpotter3, documents, goldSurfaceFormOccurrences,baseResult));
+//
+//        Spotter keaSpotter4 = new KeaSpotter("/data/spotlight/3.7/kea/keaModel-1-3-1", 1000, 0.15);
+//        keaSpotter4.setName("$Kea_{>0.15}$                  ");
+//        latexTable.append(getLatexTableRow(keaSpotter4, documents, goldSurfaceFormOccurrences,baseResult));
+//
+//        Spotter keaSpotter5 = new KeaSpotter("/data/spotlight/3.7/kea/keaModel-1-3-1", 1000, 0.3);
+//        keaSpotter5.setName("$Kea_{>0.3}$                  ");
+//        latexTable.append(getLatexTableRow(keaSpotter5,documents,goldSurfaceFormOccurrences,baseResult));
 
         /**
          * NER
          */
         Spotter neSpotter = new NESpotter(configuration.getSpotterConfiguration().getOpenNLPModelDir());
-        neSpotter.setName("NER                           ");
+        neSpotter.setName("\\ner                           ");
         latexTable.append(getLatexTableRow(neSpotter, documents, goldSurfaceFormOccurrences,baseResult));
 
         /**
-         * OpenNLP
+         * NER+NP
          */
         Spotter onlpSpotter = new OpenNLPNGramSpotter(configuration.getSpotterConfiguration().getOpenNLPModelDir());
-        onlpSpotter.setName("NER+NP+NG                     ");
+        onlpSpotter.setName("\\nerNP                     ");
         latexTable.append(getLatexTableRow(onlpSpotter, documents, goldSurfaceFormOccurrences,baseResult));
 
         /**
-         * OpenNLP
+         * NER+NP+NG-CW
          */
         Spotter onlpNoCommonSpotter = SpotterWithSelector.getInstance(
                 onlpSpotter,
@@ -195,29 +226,6 @@ public class SpotterEvaluatorPrecisionRecall {
         onlpNoCommonSpotter.setName("NER+NP+NG-CW                  ");
         latexTable.append(getLatexTableRow(onlpNoCommonSpotter, documents, goldSurfaceFormOccurrences,baseResult));
 
-        /**
-         * Kea
-         */
-        Spotter keaSpotter1 = new KeaSpotter("/data/spotlight/3.7/kea/keaModel-1-3-1", 1000, -1);
-        keaSpotter1.setName("$Kea_{>0}$                      ");
-        latexTable.append(getLatexTableRow(keaSpotter1, documents, goldSurfaceFormOccurrences,baseResult));
-
-        Spotter keaSpotter2 = new KeaSpotter("/data/spotlight/3.7/kea/keaModel-1-3-1", 1000, 0.015);
-        keaSpotter2.setName("$Kea_{>0.015}$                  ");
-        latexTable.append(getLatexTableRow(keaSpotter2, documents, goldSurfaceFormOccurrences,baseResult));
-
-        Spotter keaSpotter3 = new KeaSpotter("/data/spotlight/3.7/kea/keaModel-1-3-1", 1000, 0.075);
-        keaSpotter3.setName("$Kea_{>0.075}$                  ");
-        latexTable.append(getLatexTableRow(keaSpotter3, documents, goldSurfaceFormOccurrences,baseResult));
-
-        Spotter keaSpotter4 = new KeaSpotter("/data/spotlight/3.7/kea/keaModel-1-3-1", 1000, 0.15);
-        keaSpotter4.setName("$Kea_{>0.15}$                  ");
-        latexTable.append(getLatexTableRow(keaSpotter4, documents, goldSurfaceFormOccurrences,baseResult));
-
-        Spotter keaSpotter5 = new KeaSpotter("/data/spotlight/3.7/kea/keaModel-1-3-1", 1000, 0.3);
-        keaSpotter5.setName("$Kea_{>0.3}$                  ");
-        latexTable.append(getLatexTableRow(keaSpotter5,documents,goldSurfaceFormOccurrences,baseResult));
-
         System.out.println(latexTable);
     }
 
@@ -225,8 +233,8 @@ public class SpotterEvaluatorPrecisionRecall {
                                            List<Text> documents,
                                            Map<SurfaceFormOccurrence, AnnotatedSurfaceFormOccurrence> goldSurfaceFormOccurrences,
                                            SelectorResult baseResult) {
-		//SelectorResult spotterBaseResult = evaluatePrecisionRecall(spotter, documents, goldSurfaceFormOccurrences);
-		SelectorResult spotterBaseResult = evaluatePrecisionRecallWithNameVariation(spotter, documents, goldSurfaceFormOccurrences);
+		SelectorResult spotterBaseResult = evaluatePrecisionRecall(spotter, documents, goldSurfaceFormOccurrences);
+		//SelectorResult spotterBaseResult = evaluatePrecisionRecallWithNameVariation(spotter, documents, goldSurfaceFormOccurrences);
 		spotterBaseResult.printResult(baseResult);
         return spotterBaseResult.getLatexResult(baseResult);
     }
@@ -275,13 +283,14 @@ public class SpotterEvaluatorPrecisionRecall {
 	private static SelectorResult evaluatePrecisionRecall(Spotter spotter, List<Text> documents, Map<SurfaceFormOccurrence, AnnotatedSurfaceFormOccurrence> goldSurfaceFormOccurrences) {
 		SelectorResult selectorResult = new SelectorResult(spotter.getName());
 
-        PrintStream sfNotFoundWriter = System.err;
+        PrintStream incorrectSpotsWriter = System.err;
         try {
-            sfNotFoundWriter = new PrintStream(new File("data",spotter.getName().trim().replaceAll("[^A-Za-z]","").concat(".sfNotFound")));
+            incorrectSpotsWriter = new PrintStream(new File("data",spotter.getName().trim().replaceAll("[^A-Za-z]","").concat(".incorrectSpots")));
         } catch (FileNotFoundException e) {
-            LOG.error("Cannot write to sfNotFoundFile.");
+            LOG.error("Cannot write to incorrectSpots.");
         }
 
+        Set<SurfaceFormOccurrence> found = new HashSet<SurfaceFormOccurrence>();
         long start = System.currentTimeMillis();
         for(Text text : documents) {
             List<SurfaceFormOccurrence> extractedSurfaceFormOccurrences = null;
@@ -292,6 +301,7 @@ public class SpotterEvaluatorPrecisionRecall {
             }
             for (SurfaceFormOccurrence sfo: extractedSurfaceFormOccurrences) {
                 if(goldSurfaceFormOccurrences.containsKey(sfo)) {
+                    found.add(sfo);
                     SpotClass c = goldSurfaceFormOccurrences.get(sfo).getSpotClass();
                     if (c.equals(SpotClass.common))
                         selectorResult.addCommon();
@@ -305,13 +315,30 @@ public class SpotterEvaluatorPrecisionRecall {
                 } else {
                     //Annotation not found
                     selectorResult.addBlank();
-                    sfNotFoundWriter.println(sfo.surfaceForm().name());
+                    incorrectSpotsWriter.println(sfo.surfaceForm().name());
                 }
                 selectorResult.addTotal();
             }
         }
         long end = System.currentTimeMillis();
         selectorResult.setTime(end - start);
+
+        incorrectSpotsWriter.close();
+
+        PrintStream notFoundWriter = System.err;
+        try {
+            notFoundWriter = new PrintStream(new File("data",spotter.getName().trim().replaceAll("[^A-Za-z]","").concat(".correctSpotNotFound")));
+        } catch (FileNotFoundException e) {
+            LOG.error("Cannot write to notFoundWriter.");
+        }
+
+        for (SurfaceFormOccurrence correctSfo: goldSurfaceFormOccurrences.keySet()) {
+            if (!found.contains(correctSfo)) {
+                notFoundWriter.println(String.format("%s \t %s", correctSfo.surfaceForm().name(), correctSfo.textOffset()));
+            }
+        }
+
+        notFoundWriter.close();
 
 		return selectorResult;
 	}
@@ -326,6 +353,13 @@ public class SpotterEvaluatorPrecisionRecall {
                                                                            Map<SurfaceFormOccurrence, AnnotatedSurfaceFormOccurrence> goldSurfaceFormOccurrences) {
         SelectorResult selectorResult = new SelectorResult(spotter.getName());
 
+        PrintStream spotsWriter = System.err;
+        try {
+            spotsWriter = new PrintStream(new File("data",spotter.getName().trim().replaceAll("[^A-Za-z]","").concat(".spots.tsv")));
+        } catch (FileNotFoundException e) {
+            LOG.error("Cannot write to spotsWriter.");
+        }
+
         for(Text text : documents) {
             List<SurfaceFormOccurrence> extractedSurfaceFormOccurrences = null;
             try {
@@ -333,6 +367,7 @@ public class SpotterEvaluatorPrecisionRecall {
             } catch (SpottingException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
+            printSpots(spotsWriter,text,extractedSurfaceFormOccurrences);
             for (SurfaceFormOccurrence sfo: extractedSurfaceFormOccurrences) {
                 if(goldSurfaceFormOccurrences.containsKey(sfo)) {
                     updateCount(goldSurfaceFormOccurrences.get(sfo), selectorResult);
@@ -346,7 +381,22 @@ public class SpotterEvaluatorPrecisionRecall {
                 selectorResult.addTotal();
             }
         }
+        spotsWriter.close();
         return selectorResult;
+    }
+
+    private static void printSpots(PrintStream writer, Text text, List<SurfaceFormOccurrence> extractedSurfaceFormOccurrences) {
+        StringBuffer line = new StringBuffer();
+        line.append(text.text().hashCode());
+        line.append("\t");
+        for (SurfaceFormOccurrence sfo: extractedSurfaceFormOccurrences) {
+            line.append(sfo.surfaceForm());
+            line.append(":");
+            line.append(sfo.textOffset());
+            line.append(",");
+        }
+        line.append("\n");
+        writer.print(line.toString());
     }
 
     private static void updateCount(AnnotatedSurfaceFormOccurrence asfo, SelectorResult selectorResult) {
