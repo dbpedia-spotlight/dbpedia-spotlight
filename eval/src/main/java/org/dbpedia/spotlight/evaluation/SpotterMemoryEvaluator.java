@@ -24,23 +24,23 @@ import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.InitializationException;
 import org.dbpedia.spotlight.exceptions.SpottingException;
-import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.Text;
 import org.dbpedia.spotlight.spot.OpenNLPUtil;
 import org.dbpedia.spotlight.spot.Spotter;
 import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter;
+import org.dbpedia.spotlight.spot.opennlp.ExactSurfaceFormDictionary;
 import org.dbpedia.spotlight.spot.opennlp.OpenNLPChunkerSpotter;
-import org.dbpedia.spotlight.spot.opennlp.ProbabilisticSurfaceFormDictionary;
 import org.dbpedia.spotlight.spot.opennlp.SurfaceFormDictionary;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.Scanner;
 
 
 /**
- * Evaluator for {@link org.dbpedia.spotlight.spot.Spotter}s (and spot selectors).
+ * Evaluator for memory consumption of {@link org.dbpedia.spotlight.spot.Spotter}s (and spot selectors).
  *
- * @author pablomendes (based on Spotter Evaluator from Joachim Daiber, modified for precision/recall calculations)
  * @author Joachim Daiber
  */
 public class SpotterMemoryEvaluator {
@@ -49,18 +49,16 @@ public class SpotterMemoryEvaluator {
 
     public static void main(String[] args) throws IOException, JSONException, ConfigurationException, InitializationException, org.json.JSONException, SpottingException {
 
-        SpotlightConfiguration configuration = new SpotlightConfiguration("conf/server.properties");
-
         File dictionary = new File("/Users/jodaiber/Desktop/lrec_2012_spotting/surface_forms-Wikipedia-TitRedDis.thresh3.spotterDictionary");
 
         Spotter spotter = null;
 
-        int spotterNr = 0;
+        int spotterNr = 1;
 
         switch(spotterNr) {
             case 0: {
                 String openNLPDir = "/Users/jodaiber/Desktop/DBpedia/";
-                SurfaceFormDictionary sfDictProbThresh3 = ProbabilisticSurfaceFormDictionary.fromLingPipeDictionary(dictionary, false);
+                SurfaceFormDictionary sfDictProbThresh3 = ExactSurfaceFormDictionary.fromLingPipeDictionary(dictionary, false);
                 spotter = new OpenNLPChunkerSpotter(new File(openNLPDir,OpenNLPUtil.OpenNlpModels.SentenceModel.filename()+".bin"),
                         new File(openNLPDir,OpenNLPUtil.OpenNlpModels.TokenizerModel.filename()+".bin"),
                         new File(openNLPDir,OpenNLPUtil.OpenNlpModels.POSModel.filename()+".bin"),
@@ -79,9 +77,35 @@ public class SpotterMemoryEvaluator {
         System.out.println("Running GC.");
         System.gc(); System.gc(); System.gc(); System.gc();
 
-        System.out.println("Memory consumption: " +
-                (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / (1024*1024));
+        int i = 0;
 
-        System.out.println(spotter.extract(new Text("New York is a city.")));
+        LinkedList<Long> consumption = new LinkedList<Long>();
+
+        for (File textFile : new File("/data/spotlight/csaw/original/crawledDocs").listFiles()) {
+
+            if (!textFile.getName().endsWith(".txt"))
+                continue;
+
+            i++;
+            if (i == 100)
+                break;
+
+            spotter.extract(
+                    new Text(
+                            new Scanner(textFile).useDelimiter("\\A").next()
+                    )
+            );
+
+            consumption.addLast((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / (1024 * 1024));
+            System.out.println("Memory consumption: " + consumption.getLast());
+        }
+
+        long total = 0;
+        for (long step : consumption) {
+            total += step;
+        }
+        
+        System.out.println("Mean consumption: " + (total / consumption.size()));
+
     }
 }
