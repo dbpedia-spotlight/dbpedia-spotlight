@@ -1,4 +1,4 @@
-official
+main
 ========
 
 Official DBpedia Spotlight repository.
