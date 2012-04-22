@@ -1,17 +1,19 @@
-/**
- * Copyright 2011 Pablo Mendes, Max Jakob
+/*
+ * Copyright 2012 DBpedia Spotlight Development Team
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  Check our project website for information on how to acknowledge the authors and how to contribute to the project: http://spotlight.dbpedia.org
  */
 
 package org.dbpedia.spotlight.lucene.index;
@@ -19,6 +21,8 @@ package org.dbpedia.spotlight.lucene.index;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.util.Version;
 import org.dbpedia.spotlight.exceptions.IndexException;
 import org.dbpedia.spotlight.model.vsm.FeatureVectorBuilder;
 import org.dbpedia.spotlight.lucene.LuceneManager;
@@ -48,25 +52,28 @@ public abstract class BaseIndexer<T> implements FeatureVectorBuilder, Closeable 
      */
     public BaseIndexer(LuceneManager lucene, boolean create) throws IOException {
         this.mLucene = lucene;
-        //TODO PABLO we can make the LuceneManager construct this guy, and all classes use the manager to obtain it. This renders BaseIndexer moot
-        this.mWriter = new IndexWriter(lucene.directory(),
-                                       lucene.defaultAnalyzer(),
-                                       create,
-                                       new IndexWriter.MaxFieldLength(25000)); //TODO is 25000 enough?
+
+        //TODO this config is new in 3.6, does basically what LuceneManager does for us.
+        IndexWriterConfig iwConfig = new IndexWriterConfig(Version.LUCENE_36,lucene.defaultAnalyzer());
+        iwConfig.setOpenMode(create ? IndexWriterConfig.OpenMode.CREATE : IndexWriterConfig.OpenMode.APPEND);
 
         /* Determines ... buffering added documents and deletions before they are flushed to the Directory.
         NOTE: because IndexWriter uses ints when managing its internal storage,
         (...) it's best to set this value comfortably under 2048.
         http://lucene.apache.org/java/3_0_2/api/all/org/apache/lucene/index/IndexWriter.html#setRAMBufferSizeMB%28double%29
          */
-        this.mWriter.setRAMBufferSizeMB(lucene.RAMBufferSizeMB());
+        iwConfig.setRAMBufferSizeMB(lucene.RAMBufferSizeMB());
+
         /*
           Generally for faster indexing performance it's best to flush by RAM usage instead of document count and use as large a RAM buffer as you can.
           http://lucene.apache.org/java/3_0_2/api/all/org/apache/lucene/index/IndexWriter.html#setRAMBufferSizeMB%28double%29
 
-          But if setting by doc count, the sweet spot suggested is 48 http://issues.apache.org/jira/browse/LUCENE-843  
+          But if setting by doc count, the sweet spot suggested is 48 http://issues.apache.org/jira/browse/LUCENE-843
          */
         //this.mWriter.setMaxBufferedDocs(lucene.RAMBufferSizeMB());
+
+        this.mWriter = new IndexWriter(lucene.directory(), iwConfig);
+
     }
 
     /**

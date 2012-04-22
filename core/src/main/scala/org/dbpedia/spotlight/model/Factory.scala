@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 DBpedia Spotlight Development Team
+ * Copyright 2012 DBpedia Spotlight Development Team
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ import org.apache.lucene.search.{DefaultSimilarity, ScoreDoc, Similarity}
 import org.dbpedia.spotlight.disambiguate._
 import org.dbpedia.spotlight.annotate.{DefaultParagraphAnnotator, DefaultAnnotator}
 import scalaj.collection.Imports._
+import org.dbpedia.spotlight.lucene.analysis.PhoneticAnalyzer
 
 /**
  * Class containing methods to create model objects in many different ways
@@ -177,10 +178,11 @@ object Factory {
     def analyzer() = this.Analyzer //TODO for compatibility with java
     object Analyzer {
         def from(analyzerName : String, language: String, stopWords: java.util.Set[String]) : Analyzer = {
-            (new StandardAnalyzer(Version.LUCENE_29, stopWords) ::
-                new SnowballAnalyzer(Version.LUCENE_29, language, stopWords) ::
-                Nil)
-                .map(a => (a.getClass.getSimpleName, a))
+            (new StandardAnalyzer(Version.LUCENE_36, stopWords) ::
+             new SnowballAnalyzer(Version.LUCENE_36, language, stopWords) ::
+             new PhoneticAnalyzer(Version.LUCENE_36, stopWords) ::
+             Nil
+             ).map(a => (a.getClass.getSimpleName, a))
                 .toMap
                 .get(analyzerName)
                 .getOrElse(throw new ConfigurationException("Unknown Analyzer: "+analyzerName))

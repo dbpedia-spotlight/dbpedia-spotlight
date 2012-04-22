@@ -1,35 +1,40 @@
-/**
- * Copyright 2011 Pablo Mendes, Max Jakob
+/*
+ * Copyright 2012 DBpedia Spotlight Development Team
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  Check our project website for information on how to acknowledge the authors and how to contribute to the project: http://spotlight.dbpedia.org
  */
 
 package org.dbpedia.spotlight.lucene.index;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.document.MapFieldSelector;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
+import org.apache.lucene.search.Similarity;
 import org.dbpedia.spotlight.exceptions.IndexException;
 
 import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.lucene.LuceneManager;
 import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher;
 import org.dbpedia.spotlight.model.*;
+import org.dbpedia.spotlight.util.IndexingConfiguration;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,31 +54,39 @@ public class IndexEnricher extends BaseIndexer<Object> {
 
     MergedOccurrencesContextSearcher searcher;
 
+    Analyzer mAnalyzer;
+
     /**
      * See {@link BaseIndexer}
      * @param sourceIndexManager
      * @throws java.io.IOException
      */
-    private IndexEnricher(LuceneManager sourceIndexManager, LuceneManager targetIndexManager) throws IOException {
+    private IndexEnricher(LuceneManager sourceIndexManager, LuceneManager targetIndexManager, IndexingConfiguration config) throws IOException {
         super(targetIndexManager, true); //ATTENTION: if this is set to true, it will override the existing index!
         searcher = new MergedOccurrencesContextSearcher(sourceIndexManager);
+        mAnalyzer = config.getAnalyzer();
+        LOG.info("Analyzer class: "+mAnalyzer.getClass());
     }
 
-    public IndexEnricher(String sourceIndexFileName, String targetIndexFileName) throws IOException{
-        this(getSourceManager(sourceIndexFileName), getTargetManager(targetIndexFileName));
+    public IndexEnricher(String sourceIndexFileName, String targetIndexFileName, IndexingConfiguration config) throws IOException{
+        this(getSourceManager(sourceIndexFileName, config), getTargetManager(targetIndexFileName, config), config);
     }
 
-    public static LuceneManager getSourceManager(String fileName) throws IOException {
+    public static LuceneManager getSourceManager(String fileName, IndexingConfiguration config) throws IOException {
         File indexFile = new File(fileName);
         if (!indexFile.exists())
             throw new IOException("source index dir "+indexFile+" does not exist; ");
-        return new LuceneManager.BufferedMerging(LuceneManager.pickDirectory(indexFile));
+        LuceneManager lucene = new LuceneManager.BufferedMerging(LuceneManager.pickDirectory(indexFile));
+        lucene.setDefaultAnalyzer(config.getAnalyzer());
+        return lucene;
     }
-    public static LuceneManager getTargetManager(String fileName) throws IOException {
+    public static LuceneManager getTargetManager(String fileName, IndexingConfiguration config) throws IOException {
         File indexFile = new File(fileName);
         if (indexFile.exists())
             throw new IOException("target index dir "+indexFile+" exists; I am afraid of overwriting. ");
-        return new LuceneManager.BufferedMerging(LuceneManager.pickDirectory(indexFile));
+        LuceneManager lucene = new LuceneManager.BufferedMerging(LuceneManager.pickDirectory(indexFile));
+        lucene.setDefaultAnalyzer(config.getAnalyzer());
+        return lucene;
     }
 
 

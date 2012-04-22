@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 Pablo Mendes, Max Jakob
+ * Copyright 2012 DBpedia Spotlight Development Team
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ object PatchIndex {
         if (!new File(surfaceFormsFileName).exists)
             throw new ConfigurationException("surface forms file "+surfaceFormsFileName+" does not exist")
 
-        val sfIndexer = new IndexEnricher(sourceIndexFileName,targetIndexFileName)
+        val sfIndexer = new IndexEnricher(sourceIndexFileName, targetIndexFileName, config)
 
         val typesMap = AddTypesToIndex.loadTypes(instanceTypesFileName);
         val countsMap = AddCountsToIndex.loadCounts(countsFileName)

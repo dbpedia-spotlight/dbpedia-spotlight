@@ -1,24 +1,25 @@
-/**
- * Copyright 2011 Pablo Mendes, Max Jakob
+/*
+ * Copyright 2012 DBpedia Spotlight Development Team
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  Check our project website for information on how to acknowledge the authors and how to contribute to the project: http://spotlight.dbpedia.org
  */
 
 package org.dbpedia.spotlight.lucene;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
-import org.apache.lucene.analysis.SimpleAnalyzer;
 import org.apache.lucene.analysis.StopAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -35,6 +36,7 @@ import org.apache.lucene.store.MMapDirectory;
 import org.apache.lucene.store.NIOFSDirectory;
 import org.apache.lucene.util.Version;
 import org.dbpedia.spotlight.exceptions.SearchException;
+import org.dbpedia.spotlight.lucene.analysis.NGramAnalyzer;
 import org.dbpedia.spotlight.lucene.search.CandidateResourceQuery;
 import org.dbpedia.spotlight.util.MemUtil;
 import org.dbpedia.spotlight.model.*;
@@ -69,7 +71,7 @@ public class LuceneManager {
 
     // How to break down the input text (used in BaseIndexer when creating the IndexWriter and at query time inside getQuery)
     protected Map<String,Analyzer> mPerFieldAnalyzers = new HashMap<String,Analyzer>();
-    protected Analyzer mDefaultAnalyzer = new StandardAnalyzer(Version.LUCENE_29);
+    protected Analyzer mDefaultAnalyzer = new StandardAnalyzer(Version.LUCENE_36);
 
 
     // How to compare contexts
@@ -96,9 +98,9 @@ public class LuceneManager {
 
     public LuceneManager(Directory directory) throws IOException {
         this.mContextIndexDir = directory;
-        this.mPerFieldAnalyzers.put(DBpediaResourceField.SURFACE_FORM.toString(), new StopAnalyzer(Version.LUCENE_29));
-        this.mPerFieldAnalyzers.put(DBpediaResourceField.CONTEXT.toString(), new StandardAnalyzer(Version.LUCENE_29));
-        this.mDefaultAnalyzer = new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_29), mPerFieldAnalyzers);
+        this.mPerFieldAnalyzers.put(DBpediaResourceField.SURFACE_FORM.toString(), new StopAnalyzer(Version.LUCENE_36));
+        this.mPerFieldAnalyzers.put(DBpediaResourceField.CONTEXT.toString(), new StandardAnalyzer(Version.LUCENE_36));
+        this.mDefaultAnalyzer = new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_36), mPerFieldAnalyzers);
     }
 
     public LuceneManager(Directory directory, DBpediaResourceFactory factory) throws IOException {
@@ -307,7 +309,7 @@ public class LuceneManager {
     /*---------- Basic methods for querying the index correctly ----------*/
 
 //    public Query getAutoStopwordedQuery() {
-//        QueryParser parser = new QueryParser(Version.LUCENE_29, DBpediaResourceField.CONTEXT.toString(), autoStopWordAnalyzer);
+//        QueryParser parser = new QueryParser(Version.LUCENE_36, DBpediaResourceField.CONTEXT.toString(), autoStopWordAnalyzer);
 //    }
 
     public Query getMustQuery(Text context) throws SearchException {
@@ -337,7 +339,7 @@ public class LuceneManager {
      * @return
      */
     public Analyzer getQueryTimeContextAnalyzer() {
-        //Analyzer queryTimeAnalyzer = new QueryAutoStopWordAnalyzer(Version.LUCENE_29, analyzer); // should be done at class loading time
+        //Analyzer queryTimeAnalyzer = new QueryAutoStopWordAnalyzer(Version.LUCENE_36, analyzer); // should be done at class loading time
         //timed(printTime("Adding auto stopwords took ")) {
         //  queryTimeAnalyzer.addStopWords(contextSearcher.getIndexReader, DBpediaResourceField.CONTEXT.toString, 0.5f);
         //}
@@ -348,7 +350,7 @@ public class LuceneManager {
 
     public Query getQuery(Text context) throws SearchException {
 
-        QueryParser parser = new QueryParser(Version.LUCENE_29, DBpediaResourceField.CONTEXT.toString(), getQueryTimeContextAnalyzer());
+        QueryParser parser = new QueryParser(Version.LUCENE_36, DBpediaResourceField.CONTEXT.toString(), getQueryTimeContextAnalyzer());
         Query ctxQuery = null;
 
         //escape special characters in Text before querying
@@ -610,8 +612,8 @@ public class LuceneManager {
 
         public CaseInsensitiveSurfaceForms(Directory dir) throws IOException {
             super(dir);
-            this.mPerFieldAnalyzers.put(DBpediaResourceField.SURFACE_FORM.toString(), new StopAnalyzer(Version.LUCENE_29));
-            setDefaultAnalyzer(new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_29), mPerFieldAnalyzers));
+            this.mPerFieldAnalyzers.put(DBpediaResourceField.SURFACE_FORM.toString(), new StopAnalyzer(Version.LUCENE_36));
+            setDefaultAnalyzer(new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_36), mPerFieldAnalyzers));
         }
 
         // Make getField case insensitive
@@ -638,8 +640,8 @@ public class LuceneManager {
 
         public CaseSensitiveSurfaceForms(Directory dir) throws IOException {
             super(dir);
-            this.mPerFieldAnalyzers.put(DBpediaResourceField.SURFACE_FORM.toString(), new StopAnalyzer(Version.LUCENE_29));
-            setDefaultAnalyzer(new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_29), mPerFieldAnalyzers));
+            this.mPerFieldAnalyzers.put(DBpediaResourceField.SURFACE_FORM.toString(), new StopAnalyzer(Version.LUCENE_36));
+            setDefaultAnalyzer(new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_36), mPerFieldAnalyzers));
         }
 
         // Make getField case insensitive
@@ -674,7 +676,7 @@ public class LuceneManager {
         public NGramSurfaceForms(Directory dir) throws IOException {
             super(dir);
             mPerFieldAnalyzers.put(LuceneManager.DBpediaResourceField.SURFACE_FORM.toString(), mSurfaceFormAnalyzer);
-            setDefaultAnalyzer(new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_29), mPerFieldAnalyzers));
+            setDefaultAnalyzer(new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_36), mPerFieldAnalyzers));
         }
 
         @Override
@@ -687,7 +689,7 @@ public class LuceneManager {
 
         @Override
         public Query getQuery(SurfaceForm sf) throws SearchException {
-            QueryParser parser = new QueryParser(Version.LUCENE_29, DBpediaResourceField.SURFACE_FORM.toString(), mSurfaceFormAnalyzer);
+            QueryParser parser = new QueryParser(Version.LUCENE_36, DBpediaResourceField.SURFACE_FORM.toString(), mSurfaceFormAnalyzer);
             Query sfQuery = null;
             //TODO escape (instead of remove) special characters in Text before querying
             // + - && || ! ( ) { } [ ] ^ " ~ * ? : \

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 Pablo Mendes, Max Jakob
+ * Copyright 2012 DBpedia Spotlight Development Team
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -94,7 +94,7 @@ object AddCountsToIndex {
         if (!new File(countsFileName).exists)
             throw new ConfigurationException("counts file "+countsFileName+" does not exist; can't add counts")
 
-        val sfIndexer = new IndexEnricher(sourceIndexFileName,targetIndexFileName)
+        val sfIndexer = new IndexEnricher(sourceIndexFileName,targetIndexFileName,config)
 
         val counts = loadCounts(countsFileName)
         LOG.info("Adding to index.")

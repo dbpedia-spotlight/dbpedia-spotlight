@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 DBpedia Spotlight Development Team
+ * Copyright 2012 DBpedia Spotlight Development Team
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.StopAnalyzer;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
+import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SurfaceForm;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 import org.dbpedia.spotlight.model.Text;
@@ -75,8 +76,7 @@ public class OpenNLPNGramSpotter implements Spotter {
 	protected static BaseModel chunkModel = null;
 	protected static BaseModel tokenModel = null;
 	protected static BaseModel posModel = null;
-	protected Set<String> stopWords = StopAnalyzer.ENGLISH_STOP_WORDS_SET;
-
+	protected Set<String> stopWords = SpotlightConfiguration.DEFAULT_STOPWORDS;
 
 	//String directoryPath = "C:/software/appservers/dbp-spotlight-trunk3/data/models/opennlp/";  	//now reading from configuration properties
 

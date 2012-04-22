@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 DBpedia Spotlight Development Team
+ * Copyright 2012 DBpedia Spotlight Development Team
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -70,6 +70,14 @@ public class SpotlightConfiguration {
 	protected String sparqlEndpoint  = "http://dbpedia.org";
 
     protected long maxCacheSize = Long.MAX_VALUE;
+
+    public static final Set<String> DEFAULT_STOPWORDS = new HashSet(Arrays.asList(
+      "a", "an", "and", "are", "as", "at", "be", "but", "by",
+      "for", "if", "in", "into", "is", "it",
+      "no", "not", "of", "on", "or", "such",
+      "that", "the", "their", "then", "there", "these",
+      "they", "this", "to", "was", "will", "with"
+    )); // copied from StopAnalyzer
 
 	public String getServerURI() {
 		return serverURI;
@@ -190,7 +198,7 @@ public class SpotlightConfiguration {
         stopWordsFile = config.getProperty("org.dbpedia.spotlight.data.stopWords."+language.toLowerCase(),"").trim();
         if( (stopWordsFile==null) || !new File(stopWordsFile.trim()).isFile()) {
             LOG.warn("Cannot find stopwords file '"+stopWordsFile+"'. Using default Lucene English StopWords.");
-            stopWords = StopAnalyzer.ENGLISH_STOP_WORDS_SET;
+            stopWords = DEFAULT_STOPWORDS;
         } else {
             try {
                 BufferedReader bufferedReader = new BufferedReader(new FileReader(stopWordsFile.trim()));
@@ -201,7 +209,7 @@ public class SpotlightConfiguration {
                 bufferedReader.close();
             } catch (Exception e1) {
                 LOG.error("Could not read stopwords file.");
-                stopWords = StopAnalyzer.ENGLISH_STOP_WORDS_SET;
+                stopWords = DEFAULT_STOPWORDS;
             }
         }
 

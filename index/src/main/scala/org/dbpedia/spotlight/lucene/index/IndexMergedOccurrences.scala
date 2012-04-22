@@ -113,6 +113,7 @@ object IndexMergedOccurrences
         // I chose command line instead of configuration file to force the user to look at it before running the command.
         if (!new File(indexOutputDir).exists()) {
             lucene.shouldOverwrite = true
+            new File(indexOutputDir).mkdir()
         } else {
             lucene.shouldOverwrite = shouldOverwrite
         }

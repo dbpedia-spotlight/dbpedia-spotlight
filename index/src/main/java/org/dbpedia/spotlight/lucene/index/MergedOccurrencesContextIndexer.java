@@ -1,17 +1,19 @@
-/**
- * Copyright 2011 Pablo Mendes, Max Jakob
+/*
+ * Copyright 2012 DBpedia Spotlight Development Team
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  Check our project website for information on how to acknowledge the authors and how to contribute to the project: http://spotlight.dbpedia.org
  */
 
 package org.dbpedia.spotlight.lucene.index;
@@ -206,7 +208,7 @@ public class MergedOccurrencesContextIndexer extends OccurrenceContextIndexer {
             if (numUpdatedDocs * bufferSize > 0) // Account for when either of these numbers is zero. 
                 percent = new Double(numUpdatedDocs)/bufferSize;
 
-            LOG.info("Merge done ("+percent+" resources merged).");
+            LOG.info(String.format("Merge done (%s) resources merged).",percent));
             numMerges++;
 
             searcher.close();
@@ -217,11 +219,33 @@ public class MergedOccurrencesContextIndexer extends OccurrenceContextIndexer {
         }
     }
 
+    public void dump() throws IndexException {
+        int numSavedDocs = 0;
+        try {
+            for(String uri: uriToDocumentMap.keySet()) {
+                // Get document from buffer
+                Document docForResource = uriToDocumentMap.get(uri);
+                mWriter.addDocument(docForResource);
+                numSavedDocs++;
+            }
+        } catch (IOException e) {
+            throw new IndexException(e);
+        }
+        LOG.info(String.format("Saved %s resources to lucene index.",numSavedDocs));
+    }
+
     @Override
     public void close() throws IOException {
         //flush the remaining documents because if the last chunk didn't reach minNumDocsBeforeFlush they won't be indexed
         try {
-            merge();
+            if (uriToDocumentMap.size() >= 0) {//leftover docs
+                if (numMerges==0)
+                    dump();
+                else
+                    merge();
+            }
+
+
             if (lastOptimize) {
                 LOG.info("Last optimization of index before closing...");
                 mWriter.optimize(numberOfSegmentsForOptimize);

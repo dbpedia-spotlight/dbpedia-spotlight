@@ -1,17 +1,19 @@
-/**
- * Copyright 2011 Pablo Mendes, Max Jakob
+/*
+ * Copyright 2012 DBpedia Spotlight Development Team
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  Check our project website for information on how to acknowledge the authors and how to contribute to the project: http://spotlight.dbpedia.org
  */
 
 package org.dbpedia.spotlight.lucene.search;
@@ -98,59 +100,59 @@ public class CandidateResourceQuery extends TermQuery {
                 throws IOException {
 
             ComplexExplanation result = new ComplexExplanation();
-            result.setDescription("weight("+getQuery()+" in "+doc+"), product of:");
-
-            Explanation expl = new Explanation(idf, idfExp.explain());
-
-            // explain query weight
-            Explanation queryExpl = new Explanation();
-            queryExpl.setDescription("queryWeight(" + getQuery() + "), product of:");
-
-            Explanation boostExpl = new Explanation(getBoost(), "boost");
-            if (getBoost() != 1.0f)
-                queryExpl.addDetail(boostExpl);
-            queryExpl.addDetail(expl);
-
-            Explanation queryNormExpl = new Explanation(queryNorm,"queryNorm");
-            queryExpl.addDetail(queryNormExpl);
-
-            queryExpl.setValue(boostExpl.getValue() *
-                    expl.getValue() *
-                    queryNormExpl.getValue());
-
-            result.addDetail(queryExpl);
-
-            // explain field weight
-            String field = contextTerm.field();
-            ComplexExplanation fieldExpl = new ComplexExplanation();
-            fieldExpl.setDescription("fieldWeight("+ contextTerm +" in "+doc+
-                    "), product of:");
-
-            Explanation tfExpl = scorer(reader, true, false).explain(doc);
-            fieldExpl.addDetail(tfExpl);
-            fieldExpl.addDetail(expl);
-
-            Explanation fieldNormExpl = new Explanation();
-            byte[] fieldNorms = reader.norms(field);
-            float fieldNorm =
-                    fieldNorms!=null ? Similarity.decodeNorm(fieldNorms[doc]) : 1.0f;
-            fieldNormExpl.setValue(fieldNorm);
-            fieldNormExpl.setDescription("fieldNorm(field="+field+", doc="+doc+")");
-            fieldExpl.addDetail(fieldNormExpl);
-
-            fieldExpl.setMatch(Boolean.valueOf(tfExpl.isMatch()));
-            fieldExpl.setValue(tfExpl.getValue() *
-                    expl.getValue() *
-                    fieldNormExpl.getValue());
-
-            result.addDetail(fieldExpl);
-            result.setMatch(fieldExpl.getMatch());
-
-            // combine them
-            result.setValue(queryExpl.getValue() * fieldExpl.getValue());
-
-            if (queryExpl.getValue() == 1.0f)
-                return fieldExpl;
+//            result.setDescription("weight("+getQuery()+" in "+doc+"), product of:");
+//
+//            Explanation expl = new Explanation(idf, idfExp.explain());
+//
+//            // explain query weight
+//            Explanation queryExpl = new Explanation();
+//            queryExpl.setDescription("queryWeight(" + getQuery() + "), product of:");
+//
+//            Explanation boostExpl = new Explanation(getBoost(), "boost");
+//            if (getBoost() != 1.0f)
+//                queryExpl.addDetail(boostExpl);
+//            queryExpl.addDetail(expl);
+//
+//            Explanation queryNormExpl = new Explanation(queryNorm,"queryNorm");
+//            queryExpl.addDetail(queryNormExpl);
+//
+//            queryExpl.setValue(boostExpl.getValue() *
+//                    expl.getValue() *
+//                    queryNormExpl.getValue());
+//
+//            result.addDetail(queryExpl);
+//
+//            // explain field weight
+//            String field = contextTerm.field();
+//            ComplexExplanation fieldExpl = new ComplexExplanation();
+//            fieldExpl.setDescription("fieldWeight("+ contextTerm +" in "+doc+
+//                    "), product of:");
+//
+//            Explanation tfExpl = scorer(reader, true, false).explain(doc);
+//            fieldExpl.addDetail(tfExpl);
+//            fieldExpl.addDetail(expl);
+//
+//            Explanation fieldNormExpl = new Explanation();
+//            byte[] fieldNorms = reader.norms(field);
+//            float fieldNorm =
+//                    fieldNorms!=null ? Similarity.decodeNorm(fieldNorms[doc]) : 1.0f;
+//            fieldNormExpl.setValue(fieldNorm);
+//            fieldNormExpl.setDescription("fieldNorm(field="+field+", doc="+doc+")");
+//            fieldExpl.addDetail(fieldNormExpl);
+//
+//            fieldExpl.setMatch(Boolean.valueOf(tfExpl.isMatch()));
+//            fieldExpl.setValue(tfExpl.getValue() *
+//                    expl.getValue() *
+//                    fieldNormExpl.getValue());
+//
+//            result.addDetail(fieldExpl);
+//            result.setMatch(fieldExpl.getMatch());
+//
+//            // combine them
+//            result.setValue(queryExpl.getValue() * fieldExpl.getValue());
+//
+//            if (queryExpl.getValue() == 1.0f)
+//                return fieldExpl;
 
             return result;
         }

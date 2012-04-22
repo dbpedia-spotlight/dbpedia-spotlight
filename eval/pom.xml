@@ -55,8 +55,27 @@
                 </configuration>
             </plugin>
 
+
+            <plugin>
+                <groupId>org.scala-tools</groupId>
+                <artifactId>maven-scala-plugin</artifactId>
+
+                <configuration>
+                    <launchers>
+                        <launcher>
+                            <id>Server</id>
+                            <mainClass>org.dbpedia.spotlight.evaluation.SpotterEvaluatorPrecisionRecall</mainClass>
+                            <jvmArgs>
+                                <jvmArg>${heapspace.Xmx.server}</jvmArg>
+                            </jvmArgs>
+                        </launcher>
+                    </launchers>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
+        
 
 
 
@@ -64,25 +83,25 @@
         <dependency>
             <groupId>org.dbpedia.spotlight</groupId>
             <artifactId>core</artifactId>
-            <version>${dbpedia.spotlight.version}</version>
+            <version>0.6</version>
         </dependency>
 
         <dependency>
             <groupId>org.dbpedia.spotlight</groupId>
             <artifactId>index</artifactId>
-            <version>${dbpedia.spotlight.version}</version>
+            <version>0.6</version>
         </dependency>
 
         <dependency>
             <groupId>org.dbpedia.spotlight</groupId>
             <artifactId>jung</artifactId>
-            <version>${dbpedia.spotlight.version}</version>
+            <version>0.6</version>
         </dependency>
 
         <dependency>
             <groupId>org.dbpedia.spotlight</groupId>
             <artifactId>webgraph</artifactId>
-            <version>${dbpedia.spotlight.version}</version>
+            <version>0.6</version>
         </dependency>
 
         <dependency>
