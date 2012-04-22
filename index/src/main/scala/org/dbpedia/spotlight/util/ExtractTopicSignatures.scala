@@ -33,23 +33,28 @@ object ExtractTopicSignatures {
 
     def main(args: Array[String]) {
 
-        val spotlightConfigFileName = args(0)
-        val uriSetFile = args(1)
+        if (args.size!=4)
+            println("Usage: java -jar dbpedia-spotlight.jar org.dbpedia.spotlight.util.ExtractTopicSignatures server.properties uri.set stopwords.set nKeywords ")
+
+        val spotlightConfigFileName = args(0) // configuration for spotlight conf/server.properties
+        val uriSetFile = args(1)              // set of URIs for which you'd like to extract topic signatures
+        val stopwordsFile = args(2)           // set of words to exclude from the topic signature
+        val nKeywords = args(3).toInt         // number of keywords to include in the topic signature
 
         val sConfig = new SpotlightConfiguration(spotlightConfigFileName);
-        val extractor = new KeywordExtractor(sConfig)
+        val extractor = new KeywordExtractor(sConfig, nKeywords)
         val signatures = new PrintWriter(uriSetFile+".topicsig")
         val uriSet = Source.fromFile(uriSetFile).getLines
+        val stopwords = Source.fromFile(stopwordsFile).getLines.toSet
         var i = 0;
         uriSet.foreach( uri => {
             i = i + 1
             LOG.info(String.format("URI %s : %s", i.toString, uri));
             try {
-                val keywords = extractor.getAllKeywords(new DBpediaResource(uri));
+                val keywords = extractor.getKeywords(new DBpediaResource(uri))
+                val filteredKeywords = keywords.filterNot(stopwords.contains(_)).mkString(" ");
                 //TODO allow another stopwording here?
-                signatures.print(String.format("%s\t%s\n", uri, keywords))
-                LOG.info("Searching for :"+keywords)
-
+                signatures.print(String.format("%s\t%s\n", uri, filteredKeywords))
                 if (i % 100 == 0) {
                     signatures.flush
                 }

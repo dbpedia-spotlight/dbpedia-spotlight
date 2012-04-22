@@ -1,3 +1,21 @@
+/*
+ * Copyright 2012 DBpedia Spotlight Development Team
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  Check our project website for information on how to acknowledge the authors and how to contribute to the project: http://spotlight.dbpedia.org
+ */
+
 package org.dbpedia.spotlight.util
 
 import org.dbpedia.spotlight.string.ModifiedWikiUtil
@@ -16,14 +34,12 @@ import java.io._
  * @author pablomendes
  */
 
-class KeywordExtractor(val configuration: SpotlightConfiguration) {
+class KeywordExtractor(val configuration: SpotlightConfiguration, val nKeywords : Int = 3) {
 
     private val LOG = LogFactory.getLog(this.getClass)
 
     val factory = new SpotlightFactory(configuration)
     val searcher = factory.searcher
-
-    val nKeywords = 3;
 
     /**
      * Builds a surface form a decoded version of the URI (underscores to spaces, percent codes to chars, etc.)
@@ -37,7 +53,7 @@ class KeywordExtractor(val configuration: SpotlightConfiguration) {
      * Extracts top representative terms for this URI to be added to the surface form built from the URI
      * TODO currently based on TF only. Best would be TF*ICF
      */
-    def augmentKeywords(resource: DBpediaResource) = {
+    def getKeywords(resource: DBpediaResource) = {
         val extraWords = searcher.getContextWords(resource).toList
         LOG.debug(String.format("Ranked keywords: %s", extraWords.mkString(",")))
         extraWords.map( entry => entry.getKey() ).take(nKeywords*2) // get a few extra just in case they overlap with the keywords from the URI
@@ -46,9 +62,9 @@ class KeywordExtractor(val configuration: SpotlightConfiguration) {
     /**
      * Builds a set of 4 to 10 keywords with which to query the Web
      */
-    def getAllKeywords(resource:DBpediaResource) = {
+    def getKeywordsWithMust(resource:DBpediaResource) = {
         val keywords = createKeywordsFromDBpediaResourceURI(resource)
-        val extraKeywords = augmentKeywords(resource).filter( w => !keywords.toLowerCase.contains(w.toLowerCase()) ).take(nKeywords).mkString(" ") // remove redundant keywords (those already contained in must clauses)
+        val extraKeywords = getKeywords(resource).filter( w => !keywords.toLowerCase.contains(w.toLowerCase()) ).take(nKeywords).mkString(" ") // remove redundant keywords (those already contained in must clauses)
 
         keywords+" "+extraKeywords
     }
