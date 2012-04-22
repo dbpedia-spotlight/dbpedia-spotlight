@@ -46,10 +46,10 @@
         <module>core</module>
         <module>demo</module>
         <module>rest</module>
-        <module>eval</module>
+        <!--module>eval</module>
         <module>index</module>
         <module>webgraph</module>
-        <module>jung</module>
+        <module>jung</module-->
     </modules>
 
     <build>
