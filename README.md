@@ -10,9 +10,10 @@ Take a look at our [Known Uses] (http://dbpedia.org/spotlight/knownuses) page fo
 ## Quick Start
 You can try out DBpedia Spotlight through our Web Application or Web Service endpoints. The Web Application is a user interface that allows you to enter text in a form and generates an HTML annotated version of the text with links to DBpedia. The Web Service endpoints provide programmatic access to the demo, allowing you to retrieve data also in XML or JSON. Example calls are displayed below.
 
-  * [Web Application](http://spotlight.dbpedia.org/demo/)
-  * [[Web Service]]
-  * [[Java/Scala API]]
+  * [Web Application](http://spotlight.dbpedia.org/demo/): play with DBpedia Spotlight online.
+  * [Web Service](http://github.com/dbpedia-spotlight/main/wiki/Web_Service): use our demonstration server in your application.
+  * [InHouse-Server](http://github.com/dbpedia-spotlight/main/wiki/InHouse_Server): run DBpedia Spotlight in your own server.
+  * [Java/Scala API](http://github.com/dbpedia-spotlight/main/wiki/Java%2FScala%20API): use our code in your application.
 
 ## Documentation
 
@@ -26,26 +27,6 @@ We split the documentation according to the depth at which we give explanations.
 
 If you are interested in running DBpedia Spotlight in your own server, or join our development effort, we please check our [download](http://dbpedia.org/spotlight/downloads) and [installation](http://dbpedia.org/spotlight/installation) instructions. DBpedia Spotlight is downloadable from its [project page on Sourceforge](http://sourceforge.net/projects/dbp-spotlight/). The latest Java/Scala source code is available from the project's [Subversion repository](https://sourceforge.net/scm/?type=svn&group_id=399595) and can be [browsed online](http://dbp-spotlight.svn.sourceforge.net/viewvc/dbp-spotlight/). The latest stable build is [0.5](http://dbp-spotlight.svn.sourceforge.net/viewvc/dbp-spotlight/tags/release-0.5/), but if you feel adventurous, you feel free to try [trunk](http://dbp-spotlight.svn.sourceforge.net/viewvc/dbp-spotlight/trunk). Since DBpedia Spotlight uses the entire Wikipedia in order to learn how to annotate DBpedia Resources, the entire dataset cannot be distributed alongside the code, and can be downloaded in varied sizes from the [download page](http://dbpedia.org/spotlight/downloads). A tiny dataset is included in the distribution for demonstration purposes only.
 
-### Quickstart
-
-Download DBpedia Spotlight jar:
-  wget http://sourceforge.net/projects/dbp-spotlight/files/DBpedia%20Spotlight/dbpedia-spotlight-0.5-jar-with-dependencies.jar/download --output-document=dbpedia-spotlight-0.5.jar
-
-Download a default configuration file:
-  wget http://dbp-spotlight.svn.sourceforge.net/viewvc/dbp-spotlight/tags/release-0.5/conf/server.properties.default --output-document=server.properties
-
-Download necessary data files:
-  # Download tiny spotter dictionary
-  wget http://dbp-spotlight.svn.sourceforge.net/viewvc/dbp-spotlight/tags/release-0.5/dist/src/deb/control/data/usr/share/dbpedia-spotlight/spotter.dict --output-document=spotter.dict
-  # Download tiny idnex
-  wget http://dbp-spotlight.svn.sourceforge.net/viewvc/dbp-spotlight/tags/release-0.5/dist/src/deb/control/data/usr/share/dbpedia-spotlight/index.tgz --output-document=index.tgz
-  tar zxvf index.tgz
-  # Download pos tagger model
-  wget http://dbp-spotlight.svn.sourceforge.net/viewvc/dbp-spotlight/tags/release-0.5/dist/src/deb/control/data/usr/share/dbpedia-spotlight/pos-en-general-brown.HiddenMarkovModel --output-document=pos-en-general-brown.HiddenMarkovModel
-  # Run the Server class in the jar
-  java -cp dbpedia-spotlight-0.5.jar org.dbpedia.spotlight.web.rest.Server server.properties
-
-The files you've downloaded above contain only a very small subset of the DBpedia resources. They are used to demonstrate DBpedia Spotlight in a lightweight environment. Please see our [downloads page](http://dbpedia.org/spotlight/downloads) for more information on other alternatives that are more useful in real world scenarios.
 
 ## Licenses
 
