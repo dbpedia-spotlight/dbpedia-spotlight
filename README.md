@@ -7,43 +7,12 @@ Text annotation has the potential of enhancing a wide range of applications, inc
 
 Take a look at our [Known Uses] (http://dbpedia.org/spotlight/knownuses) page for other examples of how DBpedia Spotlight can be used. If you use DBpedia Spotlight in your project, please add a link to http://spotlight.dbpedia.org. If you use it in a paper, please use the citation available in the end of this page.
 
-## Online Access
+## Quick Start
 You can try out DBpedia Spotlight through our Web Application or Web Service endpoints. The Web Application is a user interface that allows you to enter text in a form and generates an HTML annotated version of the text with links to DBpedia. The Web Service endpoints provide programmatic access to the demo, allowing you to retrieve data also in XML or JSON. Example calls are displayed below.
 
-### Web Application
-  * http://spotlight.dbpedia.org/demo/
-
-### Web Service
-
-The available service endpoints are listed below and described in more details in the [User's Manual](http://dbpedia.org/spotlight/usersmanual).
-  * http://spotlight.dbpedia.org/rest/annotate
-  * http://spotlight.dbpedia.org/rest/disambiguate
-  * http://spotlight.dbpedia.org/rest/candidates
-
-The WADL (Web Application Description Language) file describing our endpoint is available at: http://spotlight.dbpedia.org/rest/application.wadl
-
-**Example 1: Simple request**
-
-  * **text**= "President Obama called Wednesday on Congress to extend a tax break for students included in last year's economic stimulus package, arguing that the policy provides more generous assistance."
-  * **confidence** = 0.2; **support**=20
-  * whitelist all types.
-
-http://spotlight.dbpedia.org/rest/annotate?text=President%20Obama%20called%20Wednesday%20on%20Congress%20to%20extend%20a%20tax%20break%20for%20students%20included%20in%20last%20year%27s%20economic%20stimulus%20package,%20arguing%20that%20the%20policy%20provides%20more%20generous%20assistance.&confidence=0.2&support=20
-
-**Example 2: Using SPARQL for filtering**
-
-This example demonstrates how to keep the annotations constrained to only politicians related to Chicago.
-
-  * **text**= "President Obama called Wednesday on Congress to extend a tax break for students included in last year's economic stimulus package, arguing that the policy provides more generous assistance."
-  * **confidence** = 0.2; **support**=20
-  * whitelist **sparql** = SELECT DISTINCT ?politician WHERE { ?politician a <http://dbpedia.org/ontology/OfficeHolder> . ?politician ?related <http://dbpedia.org/resource/Chicago> }
-
-http://spotlight.dbpedia.org/rest/annotate?text=President%20Obama%20called%20Wednesday%20on%20Congress%20to%20extend%20a%20tax%20break%20for%20students%20included%20in%20last%20year%27s%20economic%20stimulus%20package,%20arguing%20that%20the%20policy%20provides%20more%20generous%20assistance.&confidence=0.2&support=20&sparql=SELECT+DISTINCT+%3Fx%0D%0AWHERE+%7B%0D%0A%3Fx+a+%3Chttp%3A%2F%2Fdbpedia.org%2Fontology%2FOfficeHolder%3E+.%0D%0A%3Fx+%3Frelated+%3Chttp%3A%2F%2Fdbpedia.org%2Fresource%2FChicago%3E+.%0D%0A%7D
-
-**Notice**: Due to system resources restrictions, for this demo we only use the first 2000 results returned for each query (default for the public DBpedia SPARQL endpoint). However you are welcome to download the software+data and install in your server for real world use cases.
-
-**Attention**: Make sure to encode your SPARQL query before adding it as the value of the //&sparql// parameter - see [java.net.URLEncoder.encode()](http://download.oracle.com/javase/6/docs/api/java/net/URLEncoder.html).
-
+  * [Web Application](http://spotlight.dbpedia.org/demo/)
+  * [Web Service]
+  * [Java/Scala API] 
 
 ## Documentation
 
