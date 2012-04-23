@@ -11,8 +11,8 @@ Take a look at our [Known Uses] (http://dbpedia.org/spotlight/knownuses) page fo
 You can try out DBpedia Spotlight through our Web Application or Web Service endpoints. The Web Application is a user interface that allows you to enter text in a form and generates an HTML annotated version of the text with links to DBpedia. The Web Service endpoints provide programmatic access to the demo, allowing you to retrieve data also in XML or JSON. Example calls are displayed below.
 
   * [Web Application](http://spotlight.dbpedia.org/demo/)
-  * [Web Service]
-  * [Java/Scala API] 
+  * [[Web Service]]
+  * [[Java/Scala API]]
 
 ## Documentation
 
