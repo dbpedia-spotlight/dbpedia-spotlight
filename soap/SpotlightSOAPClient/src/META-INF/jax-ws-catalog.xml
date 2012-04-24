@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" prefer="system">
-    <system systemId="http://160.45.137.72/SpotlightSOAPWebService/Disambiguation?wsdl" uri="wsdl/160.45.137.72/SpotlightSOAPWebService/Disambiguation.wsdl"/>
-    <system systemId="http://160.45.137.72:80/SpotlightSOAPWebService/Disambiguation?xsd=1" uri="wsdl/160.45.137.72_80/SpotlightSOAPWebService/Disambiguation.xsd_1.xsd"/>
-    <system systemId="http://160.45.137.72/SpotlightSOAPWebService/Annotation?wsdl" uri="wsdl/160.45.137.72/SpotlightSOAPWebService/Annotation.wsdl"/>
-    <system systemId="http://160.45.137.72:80/SpotlightSOAPWebService/Annotation?xsd=1" uri="wsdl/160.45.137.72_80/SpotlightSOAPWebService/Annotation.xsd_1.xsd"/>
-</catalog>
