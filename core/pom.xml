@@ -83,20 +83,6 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>install-lucene-queries-jar</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <groupId>org.apache.lucene</groupId>
-                            <artifactId>lucene-queries</artifactId>
-                            <version>3.6.0</version>
-                            <packaging>jar</packaging>
-                            <file>/home/pablo/workspace/lucene-3.6.0/build/contrib/queries/lucene-queries-3.6-SNAPSHOT.jar</file>
-                        </configuration>
-                    </execution>
-                    <execution>
                         <id>install-kea-jar</id>
                         <phase>generate-resources</phase>
                         <goals>
