@@ -38,7 +38,7 @@
 
     <groupId>org.dbpedia.spotlight</groupId>
     <artifactId>spotlight</artifactId>
-    <version>${dbpedia.spotlight.version}</version>
+    <version>0.6</version>
     <packaging>pom</packaging>
     <name>DBpedia Spotlight annotation framework (parent POM)</name>
 

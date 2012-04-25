@@ -24,7 +24,7 @@
     <parent>
         <artifactId>spotlight</artifactId>
         <groupId>org.dbpedia.spotlight</groupId>
-        <version>${dbpedia.spotlight.version}</version>
+        <version>0.6</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
