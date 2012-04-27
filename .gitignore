@@ -1,2 +1,7 @@
 *.iml
 .idea
+*/*.class
+*/.DS_Store
+.DS_Store
+*/target/*
+target/*
