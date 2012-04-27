@@ -29,7 +29,7 @@ import org.dbpedia.spotlight.model._
  * @author pablomendes
  * @author Joachim Daiber (removed tagging, changed to TaggedSpotSelector)
  */
-class AtLeastOneNounSelector extends SpotSelector with RequiresAnalysis {
+class AtLeastOneNounSelector extends SpotSelector with RequiresAnalyzedText {
 
     private val LOG = LogFactory.getLog(this.getClass)
 

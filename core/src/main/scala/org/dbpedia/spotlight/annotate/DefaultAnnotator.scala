@@ -29,15 +29,23 @@ import org.dbpedia.spotlight.disambiguate.{ParagraphDisambiguatorJ, ParagraphDis
  *
  * @author maxjakob, pablomendes
  */
-class DefaultAnnotator(val spotter : Spotter, val disambiguator: Disambiguator) extends Annotator {
+class DefaultAnnotator(val spotter : Spotter, val disambiguator: Disambiguator, val textAnalyzer: Option[TextAnalyzer] = None) extends Annotator {
 
     private val LOG = LogFactory.getLog(this.getClass)
 
     @throws(classOf[InputException])
     def annotate(text : String) : java.util.List[DBpediaResourceOccurrence] = {
 
+        val textObject = analyzer match {
+          case Some(analyzer) => {
+            LOG.info("Analyzing text... ("+ textAnalyzer.getName() +")")
+            textAnalyzer.analyze(new Text(text))
+          }
+          case None => new Text(text)
+        }
+
         LOG.info("Spotting... ("+spotter.getName()+")")
-        val spottedSurfaceForms : java.util.List[SurfaceFormOccurrence] = spotter.extract(new Text(text))
+        val spottedSurfaceForms : java.util.List[SurfaceFormOccurrence] = spotter.extract(textObject)
 
         LOG.info("Disambiguating... ("+disambiguator.name+")")
         val disambiguatedOccurrences : java.util.List[DBpediaResourceOccurrence] = disambiguator.disambiguate(spottedSurfaceForms)

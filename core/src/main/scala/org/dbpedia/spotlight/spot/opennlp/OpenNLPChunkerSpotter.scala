@@ -12,7 +12,7 @@ import java.util.LinkedList
 import scala.util.control.Breaks._
 import collection.mutable.HashSet
 import io.Source
-import org.dbpedia.spotlight.model.{RequiresAnalysis, SurfaceForm, SurfaceFormOccurrence, Text}
+import org.dbpedia.spotlight.model.{RequiresAnalyzedText, SurfaceForm, SurfaceFormOccurrence, Text}
 
 
 /**
@@ -28,7 +28,7 @@ class OpenNLPChunkerSpotter(
   chunkerModel: File,
   surfaceFormDictionary: SurfaceFormDictionary,
   stopwordsFile: File
-) extends Spotter with RequiresAnalysis {
+) extends Spotter with RequiresAnalyzedText {
 
   val chunker: Chunker =
     new ChunkerME(new ChunkerModel(new FileInputStream(chunkerModel)))

@@ -22,12 +22,10 @@ package org.dbpedia.spotlight.model
  * Our pipeline operates on objects of this class by adding annotations.
  */
 
-class Text(var text : String)
+class Text(var text : String, var analysis: TextAnalysis = None)
 {
     // do some clean up on the text
     text = text.replace("’", "'")
-
-    var analysis: TextAnalysis = None
 
     override def equals(that : Any) = {
         that match {

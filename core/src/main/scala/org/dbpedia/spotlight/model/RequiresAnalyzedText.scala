@@ -7,6 +7,6 @@ package org.dbpedia.spotlight.model
  *
  */
 
-trait RequiresAnalysis {
+trait RequiresAnalyzedText {
 
 }
