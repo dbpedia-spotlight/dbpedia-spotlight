@@ -41,7 +41,9 @@ cp output/surfaceForms.tsv output/surfaceForms-fromTitRedDis.tsv
 cat output/surfaceForms-fromTitRedDis.tsv output/surfaceForms-fromOccs.tsv > output/surfaceForms.tsv
 
 # add surface forms to index
-mvn scala:run -DmainClass=org.dbpedia.spotlight.lucene.index.AddSurfaceFormsToIndex "-DaddArgs=$INDEX_CONFIG_FILE"
+ mvn scala:run -DmainClass=org.dbpedia.spotlight.lucene.index.AddSurfaceFormsToIndex "-DaddArgs=$INDEX_CONFIG_FILE"
+# or
+ mvn scala:run -DmainClass=org.dbpedia.spotlight.lucene.index.CandidateIndexer "-DaddArgs=output/surfaceForms.tsv|output/candidateIndex|3|case-insensitive|overwrite"
 
 # add entity types to index
 mvn scala:run -DmainClass=org.dbpedia.spotlight.lucene.index.AddTypesToIndex "-DaddArgs=$INDEX_CONFIG_FILE"
