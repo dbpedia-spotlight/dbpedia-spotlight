@@ -22,14 +22,14 @@
     </text_analyzer>
 
     <!--
-    - Spotters
+      All the Spotters listed here will be initialized.
     -->
     <spotters>
 
         <spotter id="LingPipeSpotter">
             <file name="dictionary">/fastdata/spotlight/3.6/surface_forms-Wikipedia-TitRedDis.thresh3.spotterDictionary</file>
         </spotter>
-twit
+
         <spotter id="LexicalizedNPSpotter">
             <file name="chunker_model">a</file>
             <file name="dictionary">/fastdata/spotlight/3.6/surface_forms-Wikipedia-TitRedDis.thresh3.spotterDictionary</file>
@@ -45,7 +45,7 @@ twit
 
 
     <!--
-    - Selectors
+      All the Selectors listed here will be initialized.
     -->
     <spot_selectors>
 
@@ -71,11 +71,13 @@ twit
     </spot_selectors>
 
     <!--
-    - Spotting policies
+      A Spotting policy consists of a Spotter and one or multiple selectors.
+      The Spotters and Selectors must be referenced by their ID and must have
+      been initialized above. The first policy will be the default policy.
     -->
     <spotting_policies>
 
-        <spotting_policy name="XYZ" default="1">
+        <spotting_policy name="XYZ">
             <spotter       ref="NESpotter" />
             <spot_selector ref="NP*Selector" />
             <spot_selector ref="WhiteListSelector" />
