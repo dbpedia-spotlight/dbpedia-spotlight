@@ -234,31 +234,31 @@
             <dependency>
                 <groupId>com.sun.jersey</groupId>
                 <artifactId>jersey-server</artifactId>
-                <version>1.8</version>
+                <version>1.12</version>
             </dependency>
 
             <dependency>
                 <groupId>com.sun.jersey</groupId>
                 <artifactId>jersey-client</artifactId>
-                <version>1.8</version>
+                <version>1.12</version>
             </dependency>
 
             <dependency>
                 <groupId>com.sun.jersey</groupId>
                 <artifactId>jersey-grizzly</artifactId>
-                <version>1.8</version>
+                <version>1.12</version>
             </dependency>
 
             <dependency>
                 <groupId>com.sun.jersey</groupId>
                 <artifactId>jersey-bundle</artifactId>
-                <version>1.8</version>
+                <version>1.12</version>
             </dependency>
 
             <dependency>
                 <groupId>com.sun.grizzly</groupId>
                 <artifactId>grizzly-servlet-webserver</artifactId>
-                <version>1.9.9</version>
+                <version>1.9.48</version>
             </dependency>
 
             <dependency>
@@ -305,6 +305,13 @@
             <url>http://download.java.net/maven/2/</url>
             <layout>default</layout>
         </repository>
+
+    <repository>
+        <id>java.net-Public</id>
+        <name>Maven Java Net Snapshots and Releases</name>
+        <url>https://maven.java.net/content/groups/public/</url>
+    </repository>
+
 
         <repository>
             <id>scala-tools.org</id>
