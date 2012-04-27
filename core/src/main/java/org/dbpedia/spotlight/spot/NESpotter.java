@@ -34,10 +34,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.SpottingException;
-import org.dbpedia.spotlight.model.SpotlightConfiguration;
-import org.dbpedia.spotlight.model.SurfaceForm;
-import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
-import org.dbpedia.spotlight.model.Text;
+import org.dbpedia.spotlight.model.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -52,7 +49,7 @@ import java.util.*;
  * @author Rohana Rajapakse (GOSS Interactive Limited) - implemented the class
  * @author pablomendes  adjustments to logging, class rename, integrated with the rest of architecture
  */
-public class NESpotter implements Spotter {
+public class NESpotter implements Spotter, RequiresAnalysis {
     private final Log LOG = LogFactory.getLog(this.getClass());
     protected static BaseModel sentenceModel = null;
     protected static Map<String, Object[]> entityTypes = new HashMap<String, Object[]>() {

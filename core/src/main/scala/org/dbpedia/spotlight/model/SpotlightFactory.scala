@@ -148,10 +148,4 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
     def textUtil() = {
        new LingPipeTextUtil(lingPipeFactory);
     }
-
-    object DBpediaResource {
-        def from(dbpediaID : String) : DBpediaResource = dbpediaResourceFactory.from(dbpediaID)
-        def from(dbpediaResource : DBpediaResource) = dbpediaResourceFactory.from(dbpediaResource.uri)
-    }
-
 }

@@ -19,7 +19,7 @@ import org.dbpedia.spotlight.io.WortschatzParser
  *
  * @author pablomendes
  */
-class NonCommonWordSelector(val filename: String, val load: Boolean = true) extends UntaggedSpotSelector {
+class NonCommonWordSelector(val filename: String, val load: Boolean = true) extends SpotSelector {
 
     val LOG = Logger.getLogger(this.getClass);
 

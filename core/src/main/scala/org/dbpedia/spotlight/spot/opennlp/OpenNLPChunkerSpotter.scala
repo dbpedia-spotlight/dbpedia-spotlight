@@ -10,9 +10,9 @@ import opennlp.tools.tokenize.{TokenizerModel, TokenizerME, Tokenizer}
 import opennlp.tools.sentdetect.{SentenceModel, SentenceDetectorME, SentenceDetector}
 import java.util.LinkedList
 import scala.util.control.Breaks._
-import org.dbpedia.spotlight.model.{SurfaceForm, SurfaceFormOccurrence, Text}
 import collection.mutable.HashSet
 import io.Source
+import org.dbpedia.spotlight.model.{RequiresAnalysis, SurfaceForm, SurfaceFormOccurrence, Text}
 
 
 /**
@@ -25,22 +25,10 @@ import io.Source
  */
 
 class OpenNLPChunkerSpotter(
-  sentenceModel: File,
-  tokenizerModel: File,
-  posModel: File,
   chunkerModel: File,
   surfaceFormDictionary: SurfaceFormDictionary,
   stopwordsFile: File
-) extends Spotter {
-
-  val posTagger: POSTagger =
-    new POSTaggerME(new POSModel(new FileInputStream(posModel)))
-
-  val sentenceDetector: SentenceDetector =
-    new SentenceDetectorME(new SentenceModel(new FileInputStream(sentenceModel)))
-
-  val tokenizer: Tokenizer =
-    new TokenizerME(new TokenizerModel(new FileInputStream(tokenizerModel)))
+) extends Spotter with RequiresAnalysis {
 
   val chunker: Chunker =
     new ChunkerME(new ChunkerModel(new FileInputStream(chunkerModel)))

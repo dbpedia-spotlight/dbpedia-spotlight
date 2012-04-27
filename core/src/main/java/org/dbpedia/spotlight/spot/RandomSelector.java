@@ -12,7 +12,7 @@ import java.util.List;
  * @author Joachim Daiber
  */
 
-public class RandomSelector implements UntaggedSpotSelector {
+public class RandomSelector implements SpotSelector {
 
 	int valid;
 	int common;

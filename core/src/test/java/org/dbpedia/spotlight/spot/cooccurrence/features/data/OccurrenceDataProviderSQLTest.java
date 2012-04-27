@@ -27,7 +27,7 @@ public class OccurrenceDataProviderSQLTest extends TestCase {
 		SpotlightFactory luceneFactory = new SpotlightFactory(config);
 
 
-		OccurrenceDataProviderSQL.initialize(config.getSpotterConfiguration());
+		OccurrenceDataProviderSQL.getInstance(config.getSpotterConfiguration());
 		occurrenceDataProviderUnigram = OccurrenceDataProviderSQL.getInstance();
 		String text = "PLEASANT GROVE, Ala. — The death toll in five Southern states rose sharply Thursday morning " +
 				"to nearly 200 after devastating storms ripped through the region, spawning a deadly tornado in " +

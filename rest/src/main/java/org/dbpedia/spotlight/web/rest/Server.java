@@ -22,19 +22,18 @@ import com.sun.grizzly.http.SelectorThread;
 import com.sun.jersey.api.container.grizzly.GrizzlyWebContainerFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dbpedia.spotlight.annotate.Annotator;
-import org.dbpedia.spotlight.disambiguate.Disambiguator;
+import org.dbpedia.spotlight.SpotlightController;
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ;
-import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.InitializationException;
 import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
+import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy;
 import org.dbpedia.spotlight.model.SpotlightFactory;
 import org.dbpedia.spotlight.model.SpotterConfiguration;
-import org.dbpedia.spotlight.spot.Spotter;
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy;
-import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy;
+import org.dbpedia.spotlight.spot.Spotter;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -66,13 +65,19 @@ public class Server {
 
     static String usage = "usage: java -jar dbpedia-spotlight.jar org.dbpedia.spotlight.web.rest.Server [config file]"
                         + "   or: mvn scala:run \"-DaddArgs=[config file]\"";
+    private static SpotlightController controller;
 
     public static void main(String[] args) throws IOException, InterruptedException, URISyntaxException, ClassNotFoundException, InitializationException {
 
         //Initialization, check values
         try {
-            String configFileName = args[0];
-            configuration = new SpotlightConfiguration(configFileName);
+            if (args.length == 0) {
+                ClassLoader resourcesloader = Server.class.getClassLoader();
+                controller = new SpotlightController();
+            } else {
+                controller = new SpotlightController(new File(args[0]));
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("\n"+usage);

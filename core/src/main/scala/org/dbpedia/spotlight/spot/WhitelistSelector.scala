@@ -38,22 +38,21 @@ package org.dbpedia.spotlight.spot
  */
 
 import scalaj.collection.Imports._
-import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.model._
-import scala.io.Source._
-import scala.collection.mutable.HashSet
+import scala.collection.immutable.HashSet
+import io.Source
+import java.io.File
 
 
 /**
  * @author <a href="mailto:scott@onespot.com">scott white</a>
  */
 
-class SurfaceFormWhitelistFilter(filename : String) extends SpotSelector {
+class WhitelistSelector(dictionaryFile: File) extends SpotSelector {
 
-    private val LOG = LogFactory.getLog(this.getClass)
-    val lines = fromFile(filename).getLines
-    private val mentionDictionary = new HashSet[String]
-    lines.foreach(line => mentionDictionary += line)
+    private val mentionDictionary = new HashSet[String](
+      Source.fromFile(dictionaryFile).getLines()
+    )
 
     def select(occurrences: java.util.List[SurfaceFormOccurrence]) : java.util.List[SurfaceFormOccurrence] = {
         val occs = occurrences.asScala

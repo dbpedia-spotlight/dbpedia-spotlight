@@ -24,14 +24,14 @@ public class OccurrenceDataProviderSQL implements OccurrenceDataProvider {
 
 	private static OccurrenceDataProviderSQL INSTANCE;
 
-	public OccurrenceDataProviderSQL(SpotterConfiguration spotterConfiguration) throws InitializationException {
+	public OccurrenceDataProviderSQL(String databaseDriver, String databaseConnector, String databaseUser, String databasePassword) throws InitializationException {
 
 		try {
-			Class.forName(spotterConfiguration.getCoOcSelectorDatabaseDriver()).newInstance();
+			Class.forName(databaseDriver).newInstance();
 
-			this.sqlConnection = DriverManager.getConnection(spotterConfiguration.getCoOcSelectorDatabaseConnector(),
-					spotterConfiguration.getCoOcSelectorDatabaseUser(),
-					spotterConfiguration.getCoOcSelectorDatabasePassword()
+			this.sqlConnection = DriverManager.getConnection(databaseConnector,
+					databaseUser,
+					databasePassword
 			);
 
 		} catch (SQLException e) {
@@ -64,10 +64,8 @@ public class OccurrenceDataProviderSQL implements OccurrenceDataProvider {
 	 * @throws org.dbpedia.spotlight.exceptions.InitializationException there was in error in the configuration
 	 */
 
-	public static void initialize(SpotterConfiguration spotterConfiguration) throws InitializationException {
-
-		INSTANCE = new OccurrenceDataProviderSQL(spotterConfiguration);
-
+	public static void initialize(String databaseDriver, String databaseConnector, String databaseUser, String databasePassword) throws InitializationException {
+		INSTANCE = new OccurrenceDataProviderSQL(databaseDriver, databaseConnector, databaseUser, databasePassword);
 	}
 
 	@Override

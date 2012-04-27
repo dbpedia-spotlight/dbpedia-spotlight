@@ -246,6 +246,11 @@ object Factory {
         }
     }
 
+  object DBpediaResource {
+      def from(dbpediaID: String) : DBpediaResource = dbpediaResourceFactory.from(dbpediaID)
+      def from(dbpediaResource: DBpediaResource) = dbpediaResourceFactory.from(dbpediaResource.uri)
+  }
+
 
 }
 

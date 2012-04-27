@@ -27,6 +27,8 @@ class Text(var text : String)
     // do some clean up on the text
     text = text.replace("’", "'")
 
+    var analysis: TextAnalysis = None
+
     override def equals(that : Any) = {
         that match {
             case t: Text => this.text.equals(t.text)

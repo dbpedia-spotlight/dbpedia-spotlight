@@ -21,7 +21,9 @@ package org.dbpedia.spotlight.spot;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.exceptions.InitializationException;
-import org.dbpedia.spotlight.model.*;
+import org.dbpedia.spotlight.model.RequiresAnalysis;
+import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
+import org.dbpedia.spotlight.model.TaggedText;
 import org.dbpedia.spotlight.spot.cooccurrence.ClassifierFactory;
 import org.dbpedia.spotlight.spot.cooccurrence.classification.SpotClass;
 import org.dbpedia.spotlight.spot.cooccurrence.classification.SpotClassification;
@@ -31,7 +33,6 @@ import org.dbpedia.spotlight.spot.cooccurrence.filter.FilterPOS;
 import org.dbpedia.spotlight.spot.cooccurrence.filter.FilterPattern;
 import org.dbpedia.spotlight.spot.cooccurrence.filter.FilterTermsize;
 import org.dbpedia.spotlight.tagging.TaggedToken;
-import org.dbpedia.spotlight.tagging.TaggedTokenProvider;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -42,7 +43,7 @@ import java.util.List;
  *
  * @author Joachim Daiber
  */
-public class CoOccurrenceBasedSelector implements TaggedSpotSelector {
+public class CoOccurrenceBasedSelector implements SpotSelector, RequiresAnalysis {
 
 	private final Log LOG = LogFactory.getLog(this.getClass());
 
@@ -55,71 +56,44 @@ public class CoOccurrenceBasedSelector implements TaggedSpotSelector {
 	 * @see org.dbpedia.spotlight.spot.cooccurrence.features.data.OccurrenceDataProvider
 	 * @see ClassifierFactory
 	 *
-	 * @param spotterConfiguration SpotterConfiguration object with classifier paths and JDBC
-	 * 			description of occurrence data provider.
      * @throws InitializationException Either the OccurrenceDataProvider or the ClassifierFactory
 	 * 			could not be initialized.
 	 */
-	public CoOccurrenceBasedSelector(SpotterConfiguration spotterConfiguration) throws InitializationException {
+	public CoOccurrenceBasedSelector(String databaseDriver, String databaseConnector, String databaseUser, String databasePassword, String classifierUnigram, String classifierNgram, String datasource) throws InitializationException {
 		
 		LOG.info("Initializing spot occurrence data provider.");
-		OccurrenceDataProviderSQL.initialize(spotterConfiguration);
+		OccurrenceDataProviderSQL.initialize(databaseDriver, databaseConnector, databaseUser, databasePassword);
 		LOG.info("Done.");
 
 		LOG.info("Initializing spot candidate classifiers.");
-		new ClassifierFactory(spotterConfiguration.getCoOcSelectorClassifierUnigram(),
-				spotterConfiguration.getCoOcSelectorClassifierNGram(),
-				spotterConfiguration.getCoOcSelectorDatasource(),
+		new ClassifierFactory(classifierUnigram,
+				classifierNgram,
+				datasource,
 				OccurrenceDataProviderSQL.getInstance()
 			);
         LOG.info("Done.");
     }
+
     
-
-    /**
-	 * Creates a spot selector based on n-gram co-occurrence. A SpotterConfiguration object must be
-	 * passed as a parameter since the selector must use and initialize an occurrence
-	 * data provider and a factory for classifiers.
-	 *
-	 * @see org.dbpedia.spotlight.spot.cooccurrence.features.data.OccurrenceDataProvider
-	 * @see ClassifierFactory
-	 *
-	 * @param spotterConfiguration SpotterConfiguration object with classifier paths and JDBC
-	 * 			description of occurrence data provider.
-     * @param taggedTokenProvider TaggedTokenProvider used to create a tagged text to test the
-     *          classifiers.
-     * @throws InitializationException Either the OccurrenceDataProvider or the ClassifierFactory
-	 * 			could not be initialized.
-	 */
-
-    public CoOccurrenceBasedSelector(SpotterConfiguration spotterConfiguration, TaggedTokenProvider taggedTokenProvider) throws InitializationException {
-
-        this(spotterConfiguration);
-
-        //TODO Instead of doing a test classification here, we should properly check if the serialized model suits the WEKA instances that are produced from SurfaceFormOccurrences.
-        LOG.info("Testing classifiers for co-occurrence based spot selector.");
-		SpotClassifier unigramClassifier = ClassifierFactory.getClassifierInstanceUnigram();
-		SpotClassifier ngramClassifier = ClassifierFactory.getClassifierInstanceNGram();
-
-        Text taggedText = new TaggedText("Bill Gates is a software developer from Berlin.", taggedTokenProvider);
-
-        SurfaceFormOccurrence ngramOccurrence = new SurfaceFormOccurrence(new SurfaceForm("Bill Gates"),
-                        taggedText, 0, Provenance.Undefined(), -1);
-
-        SurfaceFormOccurrence unigramOccurrence = new SurfaceFormOccurrence(new SurfaceForm("Berlin"),
-                        taggedText, 41, Provenance.Undefined(), -1);
-
-        try {
-            unigramClassifier.classify(unigramOccurrence);
-            ngramClassifier.classify(ngramOccurrence);
-        } catch (Exception e) {
-            throw new InitializationException("An error occurred while classifying a test spot using the co-occurrence " +
-                    "based spot selector. This is most probably caused by an outdated spot selector model. Please " +
-                    "check the spot selector models defined 'org.dbpedia.spotlight.spot.cooccurrence.classifier.*'.", e);
-        }
-        LOG.info("Done.");
-
-	}
+    private void test() {
+       // Text taggedText = new TaggedText("Bill Gates is a software developer from Berlin.", taggedTokenProvider);
+//
+       // SurfaceFormOccurrence ngramOccurrence = new SurfaceFormOccurrence(new SurfaceForm("Bill Gates"),
+       //                 taggedText, 0, Provenance.Undefined(), -1);
+//
+       // SurfaceFormOccurrence unigramOccurrence = new SurfaceFormOccurrence(new SurfaceForm("Berlin"),
+       //                 taggedText, 41, Provenance.Undefined(), -1);
+//
+       // try {
+       //     unigramClassifier.classify(unigramOccurrence);
+       //     ngramClassifier.classify(ngramOccurrence);
+       // } catch (Exception e) {
+       //     throw new InitializationException("An error occurred while classifying a test spot using the co-occurrence " +
+       //             "based spot selector. This is most probably caused by an outdated spot selector model. Please " +
+       //             "check the spot selector models defined 'org.dbpedia.spotlight.spot.cooccurrence.classifier.*'.", e);
+       // }
+       // LOG.info("Done.");
+    }
 	
 
 	/**
