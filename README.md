@@ -7,8 +7,8 @@ Text annotation has the potential of enhancing a wide range of applications, inc
 
 Take a look at our [Known Uses] (http://dbpedia.org/spotlight/knownuses) page for other examples of how DBpedia Spotlight can be used. If you use DBpedia Spotlight in your project, please add a link to http://spotlight.dbpedia.org. If you use it in a paper, please use the citation available in the end of this page.
 
-## Quick Start
-You can try out DBpedia Spotlight through our Web Application or Web Service endpoints. The Web Application is a user interface that allows you to enter text in a form and generates an HTML annotated version of the text with links to DBpedia. The Web Service endpoints provide programmatic access to the demo, allowing you to retrieve data also in XML or JSON. Example calls are displayed below.
+## How to use
+You can try out DBpedia Spotlight through our Web Application or Web Service endpoints. The Web Application is a user interface that allows you to enter text in a form and generates an HTML annotated version of the text with links to DBpedia. The Web Service endpoints provide programmatic access to the demo, allowing you to retrieve data also in other formats such as XML or JSON. 
 
   * [Web Application](http://spotlight.dbpedia.org/demo/): play with DBpedia Spotlight online.
   * [Web Service](https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Web_Service): use our demonstration server in your application.
