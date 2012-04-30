@@ -11,9 +11,9 @@ Take a look at our [Known Uses] (http://dbpedia.org/spotlight/knownuses) page fo
 You can try out DBpedia Spotlight through our Web Application or Web Service endpoints. The Web Application is a user interface that allows you to enter text in a form and generates an HTML annotated version of the text with links to DBpedia. The Web Service endpoints provide programmatic access to the demo, allowing you to retrieve data also in XML or JSON. Example calls are displayed below.
 
   * [Web Application](http://spotlight.dbpedia.org/demo/): play with DBpedia Spotlight online.
-  * [Web Service](Web_Service): use our demonstration server in your application.
-  * [InHouse-Server](InHouse_Server): run DBpedia Spotlight in your own server from a [JAR](Run-from-a-JAR) or [build from our source with Maven](Build-from-Source-with-Maven).
-  * [Java/Scala API](Java%2FScala%20API): use our code in your application.
+  * [Web Service](https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Web_Service): use our demonstration server in your application.
+  * [InHouse-Server](https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/InHouse_Server): run DBpedia Spotlight in your own server from a [JAR](Run-from-a-JAR) or [build](Build-from-Source-with-Maven) from our source with Maven.
+  * [Java/Scala API](https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Java%2FScala%20API): use our code in your application.
 
 ## Documentation
 
