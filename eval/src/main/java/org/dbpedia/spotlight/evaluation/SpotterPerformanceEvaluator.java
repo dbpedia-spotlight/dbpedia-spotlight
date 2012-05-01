@@ -10,7 +10,7 @@ import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 import org.dbpedia.spotlight.model.Text;
 import org.dbpedia.spotlight.spot.Spotter;
 import org.dbpedia.spotlight.spot.SpotterWithSelector;
-import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter;
+import org.dbpedia.spotlight.util.lingpipe.LingPipeSpotter;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

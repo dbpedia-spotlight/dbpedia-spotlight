@@ -6,4 +6,4 @@ import opennlp.tools.util.Span
  * @author Joachim Daiber
  */
 
-class TextAnalysis(sentences: List[Span], tokens: List[Span], posTags: List[String])
+class TextAnalysis(val sentences: Array[Span], val tokens: Array[Array[String]], val tokenPositons: Array[Array[Span]], val posTags: Array[Array[String]])

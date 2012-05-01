@@ -28,6 +28,7 @@ import org.apache.lucene.search.Similarity
 import org.dbpedia.spotlight.lucene.similarity.{JCSTermCache, CachedInvCandFreqSimilarity}
 import com.aliasi.sentences.IndoEuropeanSentenceModel
 import org.dbpedia.spotlight.disambiguate._
+import spotters.LingPipeSpotter
 import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter
 import java.io.File
 import org.dbpedia.spotlight.spot._
@@ -39,6 +40,8 @@ import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
 import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy
 import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy
+import selectors.{CoOccurrenceBasedSelector, AtLeastOneNounSelector}
+import spotters.{WikiMarkupSpotter, NESpotter, LingPipeSpotter}
 
 /**
  * This class contains many of the "defaults" for DBpedia Spotlight.

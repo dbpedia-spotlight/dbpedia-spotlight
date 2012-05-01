@@ -27,9 +27,9 @@ import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 import org.dbpedia.spotlight.model.Text;
 import org.dbpedia.spotlight.spot.*;
-import org.dbpedia.spotlight.spot.cooccurrence.training.AnnotatedDataset;
-import org.dbpedia.spotlight.spot.cooccurrence.training.AnnotatedSurfaceFormOccurrence;
-import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter;
+import org.dbpedia.spotlight.spot.selectors.cooccurrence.training.AnnotatedDataset;
+import org.dbpedia.spotlight.spot.selectors.cooccurrence.training.AnnotatedSurfaceFormOccurrence;
+import org.dbpedia.spotlight.util.lingpipe.LingPipeSpotter;
 import org.dbpedia.spotlight.tagging.lingpipe.LingPipeFactory;
 import org.dbpedia.spotlight.tagging.lingpipe.LingPipeTaggedTokenProvider;
 

@@ -33,12 +33,25 @@
         <spotter id="LexicalizedNPSpotter">
             <file name="chunker_model">a</file>
             <file name="dictionary">/fastdata/spotlight/3.6/surface_forms-Wikipedia-TitRedDis.thresh3.spotterDictionary</file>
+            <parameter name="np_tag">NP</parameter>
+            <parameter name="nn_tag">NN</parameter>
         </spotter>
 
         <spotter id="NESpotter">
-            <file type="ne_model">a</file>
-            <file type="ne_model">a</file>
-            <file type="ne_model">a</file>
+            <ne_model>
+                <file name="model_file">a</file>
+                <parameter name="model_type">DBpedia:Person</parameter>
+            </ne_model>
+
+            <ne_model>
+                <file name="model_file">a</file>
+                <parameter name="model_type">DBpedia:Person</parameter>
+            </ne_model>
+
+            <ne_model>
+                <file name="model_file">a</file>
+                <parameter name="model_type">DBpedia:Person</parameter>
+            </ne_model>
         </spotter>
 
     </spotters>
@@ -59,13 +72,15 @@
 
         <spot_selector id="CoOccurrenceBasedSelector">
             <database>
-                <jdbc_driver>org.hsqldb.jdbcDriver</jdbc_driver>
-                <connector>jdbc:hsqldb:file:/data/spotlight/3.7/database/spotlight-db;shutdown=true&amp;readonly=true</connector>
-                <user>sa</user>
-                <password>sa</password>
+                <paramter name="jdbc_driver">org.hsqldb.jdbcDriver</paramter>
+                <paramter name="connector">jdbc:hsqldb:file:/data/spotlight/3.7/database/spotlight-db;shutdown=true&amp;readonly=true</paramter>
+                <paramter name="user">sa</paramter>
+                <paramter name="password">sa</paramter>
             </database>
-            <file name="model_unigram"> </file>
-            <file name="model_ngram"> </file>
+
+            <file name="model_unigram">/fastdata/spotlight/3.7/spotsel/ukwac_unigram.model</file>
+            <file name="model_ngram">/fastdata/spotlight/3.7/spotsel/ukwac_ngram.model</file>
+            <parameter name="datasource">ukwac</parameter>
         </spot_selector>
 
     </spot_selectors>

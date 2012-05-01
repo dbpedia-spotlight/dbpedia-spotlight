@@ -22,7 +22,7 @@ package org.dbpedia.spotlight.model
  * Our pipeline operates on objects of this class by adding annotations.
  */
 
-class Text(var text : String, var analysis: TextAnalysis = None)
+class Text(var text : String, var analysis: Option[TextAnalysis] = None)
 {
     // do some clean up on the text
     text = text.replace("’", "'")

@@ -23,9 +23,8 @@ import collection.mutable.HashMap
 
 import org.dbpedia.spotlight.lucene.search.BaseSearcher
 import org.dbpedia.spotlight.lucene.LuceneManager
-import java.sql.{SQLException, ResultSet, PreparedStatement, DriverManager}
+import java.sql.{ResultSet, PreparedStatement, DriverManager}
 
-import java.util.logging.Logger
 import org.apache.commons.logging.LogFactory
 import java.lang.String
 import org.dbpedia.spotlight.exceptions.{ItemNotFoundException, SearchException}

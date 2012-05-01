@@ -17,11 +17,11 @@
 package org.dbpedia.spotlight.annotate
 
 import org.apache.commons.logging.LogFactory
-import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.spot.Spotter
 import org.dbpedia.spotlight.exceptions.InputException
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.disambiguate.{ParagraphDisambiguatorJ, ParagraphDisambiguator, Disambiguator}
+import org.dbpedia.spotlight.model._
 
 /**
  * Annotates a text with DBpedia Resources.
@@ -36,15 +36,15 @@ class DefaultAnnotator(val spotter : Spotter, val disambiguator: Disambiguator, 
     @throws(classOf[InputException])
     def annotate(text : String) : java.util.List[DBpediaResourceOccurrence] = {
 
-        val textObject = analyzer match {
+        val textObject = textAnalyzer match {
           case Some(analyzer) => {
-            LOG.info("Analyzing text... ("+ textAnalyzer.getName() +")")
-            textAnalyzer.analyze(new Text(text))
+            LOG.info("Analyzing text... ("+ analyzer.getName() +")")
+            analyzer.analyze(new Text(text))
           }
           case None => new Text(text)
         }
 
-        LOG.info("Spotting... ("+spotter.getName()+")")
+        LOG.info("Spotting... ("+spotter.getName+")")
         val spottedSurfaceForms : java.util.List[SurfaceFormOccurrence] = spotter.extract(textObject)
 
         LOG.info("Disambiguating... ("+disambiguator.name+")")

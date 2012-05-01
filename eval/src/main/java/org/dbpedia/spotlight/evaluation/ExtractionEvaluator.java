@@ -24,7 +24,7 @@ import org.dbpedia.spotlight.annotate.DefaultAnnotator;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.model.*;
-import org.dbpedia.spotlight.spot.cooccurrence.training.AnnotatedDataset;
+import org.dbpedia.spotlight.spot.selectors.cooccurrence.training.AnnotatedDataset;
 import org.json.JSONException;
 
 import java.io.*;
