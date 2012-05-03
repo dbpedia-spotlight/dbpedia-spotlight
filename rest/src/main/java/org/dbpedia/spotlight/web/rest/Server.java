@@ -202,4 +202,17 @@ public class Server {
         return configuration;
     }
 
+    public static String print(Exception exception) {  //TODO need a nicer way to send error messages to client
+        String eMessage = exception.getMessage();
+        StackTraceElement[] elements = exception.getStackTrace();
+        StringBuilder msg = new StringBuilder();
+        msg.append(exception);
+        msg.append(eMessage);
+        for (StackTraceElement e: elements) {
+            msg.append(e.toString());
+            msg.append("\n");
+        }
+        return msg.toString();
+    }
+
 }

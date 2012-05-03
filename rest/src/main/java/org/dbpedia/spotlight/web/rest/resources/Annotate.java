@@ -60,19 +60,6 @@ public class Annotate {
         return Response.ok().entity(response).header("Access-Control-Allow-Origin","*").build();
     }
     
-    private String print(Exception exception) {
-        String eMessage = exception.getMessage();
-        StackTraceElement[] elements = exception.getStackTrace();
-        StringBuilder msg = new StringBuilder();
-        msg.append(exception);
-        msg.append(eMessage);
-        for (StackTraceElement e: elements) {
-            msg.append(e.toString());
-            msg.append("\n");
-        }
-        return msg.toString();
-    }
-
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response getHTML(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
@@ -93,7 +80,7 @@ public class Annotate {
             return ok(response);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(print(e)).type(MediaType.TEXT_HTML).build());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(Server.print(e)).type(MediaType.TEXT_HTML).build());
         }
     }
 
@@ -115,7 +102,7 @@ public class Annotate {
         try {
             return ok(annotationInterface.getRDFa(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName, disambiguatorName));
         } catch (Exception e) {
-            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(print(e)).type(MediaType.APPLICATION_XHTML_XML).build());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(Server.print(e)).type(MediaType.APPLICATION_XHTML_XML).build());
         }
     }
 
@@ -136,7 +123,7 @@ public class Annotate {
         try {
            return ok(annotationInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName, disambiguatorName));
        } catch (Exception e) {
-            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(print(e)).type(MediaType.TEXT_XML).build());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(Server.print(e)).type(MediaType.TEXT_XML).build());
         }
     }
 
@@ -157,7 +144,7 @@ public class Annotate {
         try {
             return ok(annotationInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName, disambiguatorName));
        } catch (Exception e) {
-            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(print(e)).type(MediaType.APPLICATION_JSON).build());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(Server.print(e)).type(MediaType.APPLICATION_JSON).build());
         }
     }
 

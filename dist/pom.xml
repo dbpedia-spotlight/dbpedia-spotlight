@@ -112,6 +112,11 @@
             <groupId>org.dbpedia.spotlight</groupId>
             <artifactId>rest</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.dbpedia.spotlight</groupId>
+            <artifactId>index</artifactId>
+            <version>0.6</version>
+        </dependency>
 
     </dependencies>
 </project>
