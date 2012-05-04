@@ -18,10 +18,7 @@
 
 package org.dbpedia.spotlight.model
 
-import org.apache.lucene.util.Version
-import org.apache.lucene.analysis.{StopAnalyzer, Analyzer}
 import org.apache.commons.logging.LogFactory
-import org.dbpedia.spotlight.exceptions.ConfigurationException
 import org.apache.lucene.store.Directory
 import org.dbpedia.spotlight.lucene.LuceneManager
 import org.apache.lucene.search.Similarity
@@ -35,7 +32,7 @@ import org.dbpedia.spotlight.spot._
 import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters
 import org.dbpedia.spotlight.tagging.lingpipe.{LingPipeTextUtil, LingPipeTaggedTokenProvider, LingPipeFactory}
 import collection.JavaConversions._
-import org.dbpedia.spotlight.annotate.{DefaultAnnotator, DefaultParagraphAnnotator}
+import org.dbpedia.spotlight.annotate.DefaultAnnotator
 import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
 import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy

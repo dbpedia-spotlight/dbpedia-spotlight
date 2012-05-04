@@ -6,15 +6,27 @@ import java.util.List
 import scala.collection.JavaConversions._
 
 /**
+ * Applies the Spotter and filters the resulting spots using the spot selectors.
+ *
  * @author Joachim Daiber
  *
  * TODO add selector policies (union, intersection, etc.)
  *
  */
 
-class SpotterWithSelectors(val spotter: Spotter, val spotSelectors: List[SpotSelector]) extends Spotter {
+class SpotterWithSelectors(val spotter: Spotter, val spotSelectors: List[SpotSelector], val selectorPolicy: SelectorPolicy) extends Spotter {
 
   private val LOG = LogFactory.getLog(this.getClass)
+
+  /**
+   * Use the default selector policy (intersection).
+   *
+   * @param spotter
+   * @param spotSelectors
+   */
+  def this(spotter: Spotter, spotSelectors: List[SpotSelector]) {
+    this(spotter, spotSelectors, SelectorPolicy.intersection)
+  }
 
   /**
    * Applies the base spotter specified, then applies the selectors on the generated spots.
@@ -26,20 +38,14 @@ class SpotterWithSelectors(val spotter: Spotter, val spotSelectors: List[SpotSel
   override def extract(text: Text): List[SurfaceFormOccurrence] = {
 
     LOG.debug(String.format("Spotting with spotter %s and selectors %s.", spotter.getName, spotSelectors))
-
-    var spottedSurfaceForms: List[SurfaceFormOccurrence] = spotter.extract(text)
-
-    spotSelectors.foreach { selector: SpotSelector =>
-      spottedSurfaceForms = select(selector, spottedSurfaceForms)
-    }
-
-    spottedSurfaceForms
+    var spots: List[SurfaceFormOccurrence] = spotter.extract(text)
+    selectorPolicy.combine(spots, spotSelectors.map( select(_, spots) ) )
   }
+
 
   private def select(spotSelector: SpotSelector, spottedSurfaceForms: List[SurfaceFormOccurrence]): List[SurfaceFormOccurrence] = {
 
     val selectedSpots = spotSelector.select(spottedSurfaceForms)
-
     LOG.info("Selecting candidates...")
     val count: Int = spottedSurfaceForms.size - selectedSpots.size
     val percent: String = if ((count == 0)) "0" else "%1.0f".format((count / spottedSurfaceForms.size) * 100)

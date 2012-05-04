@@ -170,8 +170,9 @@ class SpotlightController(xmlConfiguration: Node) {
     }
   }
 
+
   /*******************************************************************
-   * Utils for reading the conf.                                     *
+   * Utils for reading the configuration                             *
    *******************************************************************/
 
   def globalParameter[T](path: List[String]): T =
