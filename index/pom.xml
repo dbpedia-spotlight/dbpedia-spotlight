@@ -138,7 +138,10 @@
             <groupId>org.dbpedia.extraction</groupId>
             <artifactId>core</artifactId>
             <version>2.0-SNAPSHOT</version>
+                <scope>system</scope>
+                <systemPath>${basedir}/../lib/dbpedia-core-2.0-SNAPSHOT.jar</systemPath>
         </dependency>
+
         <dependency>
             <groupId>org.dbpedia.spotlight</groupId>
             <artifactId>core</artifactId>
