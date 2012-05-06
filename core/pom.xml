@@ -243,6 +243,14 @@
             <version>1.8.0.1</version>
         </dependency>
 
+        <!-- this dependency can be removed when experiments with mongodb are
+             indeed finished-->
+        <!--dependency>
+            <groupId>com.mongodb</groupId>
+            <artifactId>mongo</artifactId>
+            <version>1.0</version>
+        </dependency-->
+
         <dependency>
             <groupId>it.unimi.dsi</groupId>
             <artifactId>fastutil</artifactId>
