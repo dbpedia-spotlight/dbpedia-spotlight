@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.StopAnalyzer;
+import org.apache.lucene.search.BooleanQuery;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 
 import java.io.*;
@@ -166,7 +167,7 @@ public class SpotlightConfiguration {
 		//set spotterFile, indexDir...
 		contextIndexDirectory = disambiguatorConfiguration.contextIndexDirectory;
 
-		//TODO use separate candidate map
+		//optionally use separate candidate map
 		candidateMapDirectory = config.getProperty("org.dbpedia.spotlight.candidateMap.dir","").trim();
 		if(candidateMapDirectory==null || !new File(candidateMapDirectory).isDirectory()) {
 			LOG.info("Could not use candidateMap.dir, using index.dir both for context and candidate searching.");
@@ -224,6 +225,9 @@ public class SpotlightConfiguration {
 		} catch (URISyntaxException e) {
 			throw new ConfigurationException("Server URI not valid.",e);
 		}
+
+        // Configure lucene to accept a larger number of or queries
+        BooleanQuery.setMaxClauseCount(3072);
 
 		sparqlEndpoint = config.getProperty("org.dbpedia.spotlight.sparql.endpoint","").trim(); //TODO how to fail gracefully for endpoint?
 		sparqlMainGraph = config.getProperty("org.dbpedia.spotlight.sparql.graph","").trim();;
