@@ -194,7 +194,7 @@ public class SpotlightConfiguration {
             throw new ConfigurationException("Cannot find POS tagger model file "+taggerFile);
         }
 
-        language = config.getProperty("org.dbpedia.spotlight.data.stopWords", "English");
+        language = config.getProperty("org.dbpedia.spotlight.language", "English");
 
         stopWordsFile = config.getProperty("org.dbpedia.spotlight.data.stopWords."+language.toLowerCase(),"").trim();
         if( (stopWordsFile==null) || !new File(stopWordsFile.trim()).isFile()) {
