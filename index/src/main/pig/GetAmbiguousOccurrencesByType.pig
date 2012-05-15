@@ -7,7 +7,7 @@
 SET job.name AmbiguousSurfaceFormOccurrencesByTypeSortedByURI;
 
 ------ LOADING AND CLEANING ------
-occurrences = LOAD '$dir/part*' USING PigStorage('\t') AS (uri, surfaceForm, context, offset);
+occurrences = LOAD '$dir/part*' USING PigStorage('\t') AS (id, uri, surfaceForm, context, offset);
 types = LOAD '/user/pablo/dbpa/ontology/instance_types_en.tsv.gz' AS (uri, type);
 cleaned = FILTER occurrences BY (surfaceForm is not null) AND (uri is not null);
 withtype = JOIN cleaned BY uri, types BY uri;
