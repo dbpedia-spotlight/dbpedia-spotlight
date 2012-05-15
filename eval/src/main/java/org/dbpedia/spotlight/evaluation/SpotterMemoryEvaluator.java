@@ -27,7 +27,7 @@ import org.dbpedia.spotlight.exceptions.SpottingException;
 import org.dbpedia.spotlight.model.Text;
 import org.dbpedia.spotlight.spot.OpenNLPUtil;
 import org.dbpedia.spotlight.spot.Spotter;
-import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter;
+import org.dbpedia.spotlight.util.lingpipe.LingPipeSpotter;
 import org.dbpedia.spotlight.spot.opennlp.ExactSurfaceFormDictionary;
 import org.dbpedia.spotlight.spot.opennlp.OpenNLPChunkerSpotter;
 import org.dbpedia.spotlight.spot.opennlp.SurfaceFormDictionary;

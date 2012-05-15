@@ -24,6 +24,7 @@ import org.apache.lucene.util.Version
 import org.apache.lucene.analysis.{StopAnalyzer, Analyzer}
 import java.io.File
 import org.apache.lucene.store.Directory
+import spotters.LingPipeSpotter
 import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter
 import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters
 import org.apache.lucene.document.Document
@@ -245,6 +246,11 @@ object Factory {
             case _ =>
         }
     }
+
+  object DBpediaResource {
+      def from(dbpediaID: String) : DBpediaResource = dbpediaResourceFactory.from(dbpediaID)
+      def from(dbpediaResource: DBpediaResource) = dbpediaResourceFactory.from(dbpediaResource.uri)
+  }
 
 
 }

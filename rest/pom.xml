@@ -55,6 +55,15 @@
             </plugin>
 
         </plugins>
+
+        <resources>
+            <resource>
+                <directory>../dist/src</directory>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+            </resource>
+        </resources>
     </build>
 
 

@@ -1,0 +1,112 @@
+<configuration>
+
+    <settings>
+        <parameter name="rest_uri">http://localhost:2222/rest</parameter>
+        <parameter name="language">English</parameter>
+        <file name="stopwords">/data/spotlight/3.7/stopwords.en.list</file>
+    </settings>
+
+    <!--
+        Some Spotters/Disambiguators require the input text to be analyzed.
+        If you are using any of them, the models must be specified here.
+
+        In our case, analysis means:
+        - sentence detection
+        - tokenization
+        - part-of-speech tagging
+    -->
+    <text_analyzer id="opennlp">
+        <file name="opennlp_sent"> </file>
+        <file name="opennlp_token"> </file>
+        <file name="opennlp_pos"> </file>
+    </text_analyzer>
+
+    <!--
+      All the Spotters listed here will be initialized.
+    -->
+    <spotters>
+
+        <spotter id="LingPipeSpotter">
+            <file name="dictionary">/fastdata/spotlight/3.6/surface_forms-Wikipedia-TitRedDis.thresh3.spotterDictionary</file>
+        </spotter>
+
+        <spotter id="LexicalizedNPSpotter">
+            <file name="chunker_model">a</file>
+            <file name="dictionary">/fastdata/spotlight/3.6/surface_forms-Wikipedia-TitRedDis.thresh3.spotterDictionary</file>
+            <parameter name="np_tag">NP</parameter>
+            <parameter name="nn_tag">NN</parameter>
+            <parameter name="nn_tag">NN</parameter>
+        </spotter>
+
+        <spotter id="NESpotter">
+            <ne_model>
+                <file name="model_file">a</file>
+                <parameter name="model_type">DBpedia:Person</parameter>
+            </ne_model>
+
+            <ne_model>
+                <file name="model_file">a</file>
+                <parameter name="model_type">DBpedia:Person</parameter>
+            </ne_model>
+
+            <ne_model>
+                <file name="model_file">a</file>
+                <parameter name="model_type">DBpedia:Person</parameter>
+            </ne_model>
+        </spotter>
+
+    </spotters>
+
+
+    <!--
+      All the Selectors listed here will be initialized.
+    -->
+    <spot_selectors>
+
+        <spot_selector id="NP*Selector" />
+
+        <spot_selector id="CapitalizedSelector" />
+
+        <spot_selector id="WhiteListSelector">
+            <file name="dictionary">/fastdata/spotlight/3.6/surface_forms-Wikipedia-TitRedDis.thresh3.spotterDictionary</file>
+        </spot_selector>
+
+        <spot_selector id="CoOccurrenceBasedSelector">
+            <database>
+                <paramter name="jdbc_driver">org.hsqldb.jdbcDriver</paramter>
+                <paramter name="connector">jdbc:hsqldb:file:/data/spotlight/3.7/database/spotlight-db;shutdown=true&amp;readonly=true</paramter>
+                <paramter name="user">sa</paramter>
+                <paramter name="password">sa</paramter>
+            </database>
+
+            <file name="model_unigram">/fastdata/spotlight/3.7/spotsel/ukwac_unigram.model</file>
+            <file name="model_ngram">/fastdata/spotlight/3.7/spotsel/ukwac_ngram.model</file>
+            <parameter name="datasource">ukwac</parameter>
+        </spot_selector>
+
+    </spot_selectors>
+
+    <!--
+      A Spotting policy consists of a Spotter and one or multiple selectors.
+      The Spotters and Selectors must be referenced by their ID and must have
+      been initialized above. The first policy will be the default policy.
+    -->
+    <spotting_policies>
+
+        <spotting_policy name="XYZ">
+            <spotter       ref="NESpotter" />
+            <spot_selector ref="NP*Selector" />
+            <spot_selector ref="WhiteListSelector" />
+        </spotting_policy>
+
+    </spotting_policies>
+
+
+    <disambiguators>
+        <disambiguator id="lucene">
+
+        </disambiguator>
+    </disambiguators>
+
+
+</configuration>

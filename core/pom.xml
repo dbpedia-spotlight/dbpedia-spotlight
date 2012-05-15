@@ -212,7 +212,6 @@
             <version>3.7.3</version>
         </dependency>
 
-
         <dependency>
             <groupId>net.debasishg</groupId>
             <artifactId>sjson_2.9.1</artifactId>
@@ -243,6 +242,7 @@
             <version>1.8.0.1</version>
         </dependency>
 
+<<<<<<< HEAD
         <!-- this dependency can be removed when experiments with mongodb are
              indeed finished-->
         <!--dependency>
@@ -251,6 +251,8 @@
             <version>1.0</version>
         </dependency-->
 
+=======
+>>>>>>> Remove MongoDB from core.
         <dependency>
             <groupId>it.unimi.dsi</groupId>
             <artifactId>fastutil</artifactId>

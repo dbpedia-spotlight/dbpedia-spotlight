@@ -7,7 +7,7 @@ import com.aliasi.tokenizer.Tokenizer;
 import com.aliasi.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dbpedia.spotlight.spot.cooccurrence.filter.FilterPOS;
+import org.dbpedia.spotlight.spot.selectors.cooccurrence.filter.FilterPOS;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
 import org.dbpedia.spotlight.model.SurfaceForm;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;

@@ -1,11 +1,11 @@
-package org.dbpedia.spotlight.spot.cooccurrence.training;
+package org.dbpedia.spotlight.spot.selectors.cooccurrence.training;
 
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dbpedia.spotlight.spot.cooccurrence.weka.InstanceBuilder;
-import org.dbpedia.spotlight.spot.cooccurrence.features.data.OccurrenceDataProvider;
-import org.dbpedia.spotlight.spot.cooccurrence.filter.Filter;
+import org.dbpedia.spotlight.spot.selectors.cooccurrence.weka.InstanceBuilder;
+import org.dbpedia.spotlight.spot.selectors.cooccurrence.features.data.OccurrenceDataProvider;
+import org.dbpedia.spotlight.spot.selectors.cooccurrence.filter.Filter;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.model.SpotlightFactory;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;

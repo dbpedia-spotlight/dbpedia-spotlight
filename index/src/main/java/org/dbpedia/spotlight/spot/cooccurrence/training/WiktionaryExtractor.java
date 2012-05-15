@@ -1,4 +1,4 @@
-package org.dbpedia.spotlight.spot.cooccurrence.training;
+package org.dbpedia.spotlight.spot.selectors.cooccurrence.training;
 
 import au.com.bytecode.opencsv.CSVWriter;
 import org.apache.commons.lang.StringUtils;

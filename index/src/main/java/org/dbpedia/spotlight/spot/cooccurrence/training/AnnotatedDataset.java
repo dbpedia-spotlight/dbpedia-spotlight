@@ -1,4 +1,4 @@
-package org.dbpedia.spotlight.spot.cooccurrence.training;
+package org.dbpedia.spotlight.spot.selectors.cooccurrence.training;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
@@ -6,8 +6,8 @@ import com.aliasi.sentences.IndoEuropeanSentenceModel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.exceptions.InputException;
-import org.dbpedia.spotlight.spot.cooccurrence.classification.SpotClass;
-import org.dbpedia.spotlight.spot.cooccurrence.filter.Filter;
+import org.dbpedia.spotlight.spot.selectors.cooccurrence.classification.SpotClass;
+import org.dbpedia.spotlight.spot.selectors.cooccurrence.filter.Filter;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.model.*;
 import org.dbpedia.spotlight.tagging.lingpipe.LingPipeFactory;

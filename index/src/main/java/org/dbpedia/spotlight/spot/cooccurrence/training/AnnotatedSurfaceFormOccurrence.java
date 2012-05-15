@@ -1,9 +1,9 @@
-package org.dbpedia.spotlight.spot.cooccurrence.training;
+package org.dbpedia.spotlight.spot.selectors.cooccurrence.training;
 
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
 import org.dbpedia.spotlight.model.*;
-import org.dbpedia.spotlight.spot.cooccurrence.classification.SpotClass;
-import org.dbpedia.spotlight.spot.cooccurrence.classification.SpotClass;
+import org.dbpedia.spotlight.spot.selectors.cooccurrence.classification.SpotClass;
+import org.dbpedia.spotlight.spot.selectors.cooccurrence.classification.SpotClass;
 import org.dbpedia.spotlight.tagging.TaggedToken;
 
 import java.util.List;
