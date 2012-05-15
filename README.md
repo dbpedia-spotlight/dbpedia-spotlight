@@ -11,9 +11,9 @@ Take a look at our [Known Uses] (http://dbpedia.org/spotlight/knownuses) page fo
 You can try out DBpedia Spotlight through our Web Application or Web Service endpoints. The Web Application is a user interface that allows you to enter text in a form and generates an HTML annotated version of the text with links to DBpedia. The Web Service endpoints provide programmatic access to the demo, allowing you to retrieve data also in XML or JSON. Example calls are displayed below.
 
   * [Web Application](http://spotlight.dbpedia.org/demo/): play with DBpedia Spotlight online.
-  * [Web Service](http://github.com/dbpedia-spotlight/main/wiki/Web_Service): use our demonstration server in your application.
-  * [InHouse-Server](http://github.com/dbpedia-spotlight/main/wiki/InHouse_Server): run DBpedia Spotlight in your own server.
-  * [Java/Scala API](http://github.com/dbpedia-spotlight/main/wiki/Java%2FScala%20API): use our code in your application.
+  * [Web Service](http://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Web-service): use our demonstration server in your application.
+  * [InHouse-Server](http://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/InHouse_Server): run DBpedia Spotlight in your own server.
+  * [Java/Scala API](http://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Java%2FScala%20API): use our code in your application.
 
 ## Documentation
 
@@ -25,7 +25,7 @@ We split the documentation according to the depth at which we give explanations.
 
 ## Downloads
 
-If you are interested in running DBpedia Spotlight in your own server, or join our development effort, we please check our [download](http://dbpedia.org/spotlight/downloads) and [installation](http://dbpedia.org/spotlight/installation) instructions. DBpedia Spotlight is downloadable from its [project page on Github](https://github.com/dbpedia-spotlight/main/downloads), the latest stable build is 0.5. The latest Java/Scala source code is available from the project's [Github repository](https://github.com/dbpedia-spotlight/main) where it can also be browsed online. Since DBpedia Spotlight uses the entire Wikipedia in order to learn how to annotate DBpedia Resources, the entire dataset cannot be distributed alongside the code, and can be downloaded in varied sizes from the [download page](http://dbpedia.org/spotlight/downloads). A tiny dataset is included in the distribution for demonstration purposes only.
+If you are interested in running DBpedia Spotlight in your own server, or join our development effort, we please check our [download](http://dbpedia.org/spotlight/downloads) and [installation](http://dbpedia.org/spotlight/installation) instructions. DBpedia Spotlight is downloadable from its [project page on Github](https://github.com/dbpedia-spotlight/dbpedia-spotlight/downloads), the latest stable build is 0.5. The latest Java/Scala source code is available from the project's [Github repository](https://github.com/dbpedia-spotlight/main) where it can also be browsed online. Since DBpedia Spotlight uses the entire Wikipedia in order to learn how to annotate DBpedia Resources, the entire dataset cannot be distributed alongside the code, and can be downloaded in varied sizes from the [download page](http://dbpedia.org/spotlight/downloads). A tiny dataset is included in the distribution for demonstration purposes only.
 
 
 ## Licenses
