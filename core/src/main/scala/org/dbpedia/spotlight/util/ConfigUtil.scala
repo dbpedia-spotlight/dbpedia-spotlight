@@ -13,14 +13,14 @@ object ConfigUtil {
 
   val RESOURCE_IDENTIFIER = "in_jar"
 
-  def parameter[T](path: List[String], base: Node, default: Node): T = nodeAtPath(path, base) match {
+  def parameter[T](path: Seq[String], base: Node, default: Node): T = nodeAtPath(path, base) match {
     case Some(node) => node.asInstanceOf[T]
     case None => nodeAtPath(path, default).getOrElse({
       throw new ConfigurationException("Required parameter not specified in configuration file.")
     }).asInstanceOf[T]
   }
 
-  private def nodeAtPath(path: List[String], base: Node): Option[Node] = {
+  private def nodeAtPath(path: Seq[String], base: Node): Option[Node] = {
     var node: Node = base
     path.dropRight(1).foreach( pathSegment => {
       node = (node \ pathSegment).head

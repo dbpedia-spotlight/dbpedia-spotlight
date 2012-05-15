@@ -46,7 +46,7 @@ class OpenNLPChunkerSpotter(
 
       val sentence = text.text.substring(sentencePosition.getStart, sentencePosition.getEnd)
       val tokens = text.analysis.get.tokens(i)
-      val tokensPositions = text.analysis.get.tokenPositons(i)
+      val tokensPositions = text.analysis.get.tokenPositions(i)
       val tags = text.analysis.get.posTags(i)
 
       //Go through all chunks

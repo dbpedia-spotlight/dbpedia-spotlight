@@ -35,6 +35,7 @@
             <file name="dictionary">/fastdata/spotlight/3.6/surface_forms-Wikipedia-TitRedDis.thresh3.spotterDictionary</file>
             <parameter name="np_tag">NP</parameter>
             <parameter name="nn_tag">NN</parameter>
+            <parameter name="nn_tag">NN</parameter>
         </spotter>
 
         <spotter id="NESpotter">

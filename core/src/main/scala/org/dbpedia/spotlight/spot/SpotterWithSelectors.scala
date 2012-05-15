@@ -14,7 +14,7 @@ import scala.collection.JavaConversions._
  *
  */
 
-class SpotterWithSelectors(val spotter: Spotter, val spotSelectors: List[SpotSelector], val selectorPolicy: SelectorPolicy) extends Spotter {
+class SpotterWithSelectors(val spotter: Spotter, val spotSelectors: List[SpotSelector], val selectorPolicy: SpotCombination) extends Spotter {
 
   private val LOG = LogFactory.getLog(this.getClass)
 
@@ -25,7 +25,7 @@ class SpotterWithSelectors(val spotter: Spotter, val spotSelectors: List[SpotSel
    * @param spotSelectors
    */
   def this(spotter: Spotter, spotSelectors: List[SpotSelector]) {
-    this(spotter, spotSelectors, SelectorPolicy.intersection)
+    this(spotter, spotSelectors, SpotSelectorCombination.intersection)
   }
 
   /**

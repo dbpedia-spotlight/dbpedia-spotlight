@@ -2,7 +2,9 @@ package org.dbpedia.spotlight
 
 import annotate.DefaultAnnotator
 import lucene.disambiguate.MergedOccurrencesDisambiguator
+import lucene.LuceneManager
 import lucene.search.MergedOccurrencesContextSearcher
+import model.Factory
 import spot._
 import dictionary.ExactSurfaceFormDictionary
 import selectors._
@@ -10,16 +12,18 @@ import scala.xml.{Node, XML}
 
 import java.io._
 import org.apache.commons.logging.LogFactory
-import scala._
-import spotters.{NESpotter, LingPipeSpotter, OpenNLPChunkerSpotter}
+import spotters.{OpenNLPNESpotter, OpenNLPChunkerSpotter, NESpotter, LingPipeSpotter}
 import util.ConfigUtil._
 import scala.collection.JavaConversions._
+import org.apache.lucene.store.Directory
 
 /**
  * @author Joachim Daiber
  */
 
 class SpotlightController(xmlConfiguration: Node) {
+
+  private val log = LogFactory.getLog(this.getClass)
 
   /**
    * Load the configuration from the specified file.
@@ -39,65 +43,60 @@ class SpotlightController(xmlConfiguration: Node) {
   }
 
 
-  private val log = LogFactory.getLog(this.getClass)
-
   //Load the default values for any configuration:
   private val defaultConf = XML.load(
     this.getClass.getClassLoader.getResourceAsStream("conf/server.default.xml")
   )
 
-  //Real configuration:
+  //Load and check the real configuration:
   private val conf = (xmlConfiguration \ "configuration").head
   sanityCheck(conf)
-
 
 
   /*******************************************************************
    * General settings                                                *
    *******************************************************************/
 
-  val serverURI     = globalParameter[String](List("settings", "rest_uri"))
-  val language      = globalParameter[String](List("settings", "language"))
-  val stopwordsFile = globalParameter[InputStream](List("settings", "stopword_file"))
+  val serverURI     = globalParameter[String]("settings/rest_uri")
+  val language      = globalParameter[String]("settings/language")
+  val stopwordsFile = globalParameter[InputStream]("settings/stopword_file")
 
 
   /*******************************************************************
-   * Components                                                      *
+   * Initialize the components                                       *
    *******************************************************************/
 
-  private val spotters = ((conf \ "spotters") map( spotter =>
-    ((spotter \ "@id").text, buildSpotter(spotter))
-    )).toMap
+  private val spotters = ((conf \ "spotters") map( sp =>
+    Pair((sp \ "@id").text, buildSpotter(sp)))).toMap
+
+  private val spotSelectors = (conf \ "spot_selectors" map( spsl =>
+    Pair((spsl \ "@id").text, buildSpotSelector(spsl)))).toMap
+
+  private val spotterByPolicy = (conf \ "spotting_policies" map( sp =>
+    Pair((sp \ "@id").text, buildSpottingPolicy(sp)))).toMap
+
+  private val defaultSpottingPolicy = (((conf \ "spotting_policies").head) \ "@id").text
 
 
-  private val spotSelectors = (conf \ "spot_selectors" map( spotSelector =>
-    ((spotSelector \ "@id").text, buildSpotSelector(spotSelector))
-    )).toMap
+  /*******************************************************************
+   * Component access methods                                        *
+   *******************************************************************/
 
-
-  private val spotterByPolicy = (conf \ "spotting_policies" map( spottingPolicy =>
-    ((spottingPolicy \ "@id").text, buildSpottingPolicy(spottingPolicy))
-    )).toMap
-  private val defaultSpottingPolicy: String = (((conf \ "spotting_policies").head) \ "@id").text
-
-  /**
-   * Access to the spotters:
-   */
-  def spotter(spotterPolicy: String = "<default>"): Spotter = {
+  //Spotting:
+  def spotter(spotterPolicy: String): Spotter = {
     spotterByPolicy.getOrElse(spotterPolicy, spotterByPolicy.get(defaultSpottingPolicy).get)
   }
+  def spotter(): Spotter = spotter(defaultSpottingPolicy)
 
-  /**
-   * Set searcher:
-   */
+  //Disambiguation:
+  val directory: Directory = LuceneManager.pickDirectory(new File(configuration.getContextIndexDirectory))
+  val luceneManager: LuceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(directory)
   val searcher = new MergedOccurrencesContextSearcher(luceneManager);
 
-
-  /**
-   * Annotator
-   */
+  //Annotation:
   def annotator() ={
-    new DefaultAnnotator(spotter(), new MergedOccurrencesDisambiguator(searcher))
+    //new MergedOccurrencesDisambiguator(searcher)
+    new DefaultAnnotator(spotter(), disambiguator())
   }
 
 
@@ -111,24 +110,24 @@ class SpotlightController(xmlConfiguration: Node) {
     (spotter \ "@id").text match {
 
       case "LingPipeSpotter" => new LingPipeSpotter(
-        localParameter[InputStream](List("dictionary"), spotter)
+        localParameter[InputStream]("dictionary", spotter)
       )
 
       case "LexicalizedNPSpotter" => new OpenNLPChunkerSpotter(
-        localParameter[InputStream](List("chunker_model"), spotter),
-        ExactSurfaceFormDictionary.fromInputStream( localParameter[InputStream](List("dictionary"), spotter) ),
+        localParameter[InputStream]("chunker_model", spotter),
+        ExactSurfaceFormDictionary.fromInputStream( localParameter[InputStream]("dictionary", spotter) ),
         stopwordsFile,
-        localParameter[String](List("np_tag"), spotter),
-        localParameter[String](List("nn_tag"), spotter)
+        localParameter[String]("np_tag", spotter),
+        localParameter[String]("nn_tag", spotter)
       )
 
-      case "NESpotter" => new NESpotter(
-        localParameter[InputStream](List("chunker_model"), spotter),
-        ExactSurfaceFormDictionary.fromInputStream( localParameter[InputStream](List("dictionary"), spotter) ),
-        stopwordsFile,
-        localParameter[String](List("np_tag"), spotter),
-        localParameter[String](List("nn_tag"), spotter)
-      )
+      case "NESpotter" =>
+        new OpenNLPNESpotter(
+          (spotter \ "no_model").map( ne_model =>
+            Pair(localParameter[InputStream]("model_file", ne_model),
+              Factory.OntologyType.fromQName(localParameter[String]("model_type", ne_model)))
+          ).toList
+        )
 
     }
   }
@@ -142,17 +141,17 @@ class SpotlightController(xmlConfiguration: Node) {
       case "CapitalizedSelector" => new CapitalizedSelector()
 
       case "WhitelistSelector" => new WhitelistSelector(
-        localParameter[InputStream](List("dictionary"), spotSelector)
+        localParameter[InputStream]("dictionary", spotSelector)
       )
 
       case "CoOccurrenceBasedSelector" => new CoOccurrenceBasedSelector(
-        localParameter[String](List("database", "jdbc_driver"), spotSelector),
-        localParameter[String](List("database", "connector"), spotSelector),
-        localParameter[String](List("database", "user"), spotSelector),
-        localParameter[String](List("database", "password"), spotSelector),
-        localParameter[InputStream](List("model_unigram"), spotSelector),
-        localParameter[InputStream](List("ngram"), spotSelector),
-        localParameter[String](List("datasource"), spotSelector)
+        localParameter[String]("database/jdbc_driver", spotSelector),
+        localParameter[String]("database/connector", spotSelector),
+        localParameter[String]("database/user", spotSelector),
+        localParameter[String]("database/password", spotSelector),
+        localParameter[InputStream]("model_unigram", spotSelector),
+        localParameter[InputStream]("ngram", spotSelector),
+        localParameter[String]("datasource", spotSelector)
       )
     }
   }
@@ -175,10 +174,10 @@ class SpotlightController(xmlConfiguration: Node) {
    * Utils for reading the configuration                             *
    *******************************************************************/
 
-  def globalParameter[T](path: List[String]): T =
-    parameter[T](path, conf, defaultConf)
+  def globalParameter[T](path: String): T =
+    parameter[T](path.split("/"), conf, defaultConf)
 
-  def localParameter[T](path: List[String], base: Node): T =
-    parameter[T](path, base, defaultNode(base, defaultConf))
+  def localParameter[T](path: String, base: Node): T =
+    parameter[T](path.split("/"), base, defaultNode(base, defaultConf))
 
 }

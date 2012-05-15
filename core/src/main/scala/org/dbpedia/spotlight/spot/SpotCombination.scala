@@ -9,7 +9,7 @@ import scala.collection.JavaConversions._
  *
  */
 
-abstract class SelectorPolicy {
+abstract class SpotCombination {
 
   /**
    * Combine the spots from a Spotter with the selections of one or more spot
@@ -19,16 +19,18 @@ abstract class SelectorPolicy {
    * @param selections the selections from the SpotSelector
    * @return
    */
-  def combine(spots: List[SurfaceFormOccurrence], selections: List[List[SurfaceFormOccurrence]]): List[SurfaceFormOccurrence]
+  def combineSpotterAndSelectors(spots: List[SurfaceFormOccurrence], selections: List[List[SurfaceFormOccurrence]]): List[SurfaceFormOccurrence]
+  def combineSpotters(selections: List[List[SurfaceFormOccurrence]]): List[SurfaceFormOccurrence]
 }
 
-object SelectorPolicy {
+object SpotSelectorCombination {
 
-  val intersection = new SelectorPolicy {
+  val intersection = new SpotCombination {
 
     /**
      * The resulting spots will be the intersection of the Spotter and all
-     * SpotSelectors.
+     * SpotSelectors, i.e. a spot will be chosen if it was accpted by _all_
+     * spot selectors.
      *
      * @param spots the spots from the Spotter
      * @param selections the selections from the SpotSelector
@@ -43,11 +45,12 @@ object SelectorPolicy {
     }
   }
 
-  val union = new SelectorPolicy {
+  val union = new SpotCombination {
 
     /**
      * The resulting spots will be the union of the Spotter and all
-     * SpotSelectors.
+     * SpotSelectors, i.e. a spot will be chosen if it was accepted by _any_
+     * spot selector.
      *
      * @param spots the spots from the Spotter
      * @param selections the selections from the SpotSelector
