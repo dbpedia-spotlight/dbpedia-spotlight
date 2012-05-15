@@ -27,12 +27,12 @@ import java.io.{PrintStream, File}
 import org.dbpedia.spotlight.model.{SpotlightFactory, SpotlightConfiguration, DBpediaResource, DBpediaResourceOccurrence}
 import org.dbpedia.spotlight.annotate.DefaultParagraphAnnotator
 import org.dbpedia.spotlight.disambiguate.{ParagraphDisambiguatorJ, TwoStepDisambiguator}
+import org.dbpedia.spotlight.extract.TagExtractorFromAnnotator
 
 /**
- * Reads in manually annotated paragraphs, computes the inter-annotator agreement, then compares
- * our system against the union or intersection of the manual annotators.
- *
- * TODO Create client for Spotlight in the same style created for Alchemy, Ontos, OpenCalais, WikiMachine and Zemanta. i.e. using the Web Service.
+ * Reads in text from evaluation corpus, for each text item produces a list of ranked tags
+ * Uses spotters and disambiguators to find the tags. This is an adaptation of the annotation task to extract tags.
+ * For optimal results in tag extraction, we should implement customized classes for that task.
  *
  * @author pablomendes
  */
@@ -44,7 +44,7 @@ object EvaluateTagExtraction
 //    val confidence = 0.0;
 //    val support = 0;
     val factory = new SpotlightFactory(configuration)
-    val disambiguator = new ParagraphDisambiguatorJ(new TwoStepDisambiguator(factory))
+    val disambiguator = new ParagraphDisambiguatorJ(new TwoStepDisambiguator(factory.candidateSearcher, factory.contextSearcher))
 
     val spotter = factory.spotter()
 
@@ -64,8 +64,6 @@ object EvaluateTagExtraction
 //    val factory = new LuceneFactory(configuration)
 //    val annotator = factory.annotator()
 //    val filter = factory.filter()
-
-
 
     def main(args : Array[String])
     {
@@ -94,7 +92,6 @@ object EvaluateTagExtraction
         val inputFile: File = new File(baseDir+"gold/transcripts.txt");
 
         val prefix = "spotlight/Spotlight";
-        val setOutputFile: File = new File(baseDir+prefix+"NoFilter.set");
 
         if (!new File(baseDir).exists) {
             System.err.println("Base directory does not exist. "+baseDir);
@@ -106,6 +103,8 @@ object EvaluateTagExtraction
         val plainText = Source.fromFile(inputFile).mkString // Either get from file
         //val plainText = AnnotatedTextParser.eraseMarkup(text)     //   or erase markup
 
+
+        val setOutputFile: File = new File(baseDir+prefix+"NoFilter.set");
 
         // Cleanup last run.
         for (confidence <- EvalParams.confidenceInterval) {
@@ -135,33 +134,35 @@ object EvaluateTagExtraction
             i = i + 1
             var occs = List[DBpediaResourceOccurrence]()
             try {
-                LOG.info("Paragraph "+i)
+                LOG.info("Doc "+i)
+                LOG.info("Doc length: %s tokens".format(cleanText.split(" ").size))
                 occs = annotator.annotate(cleanText).toList;
             } catch {
                 case e: Exception =>
                     LOG.error("Exception: "+e);
             }
 
-            allOut.append("\n"+EvalUtils.rank(occs,_.similarityScore).map(_._1).mkString("\n")+"\n")
+            val allEntities = TagExtractorFromAnnotator.bySimilarity(annotator).rank(occs)
+            append(allOut, allEntities)
 
             val sixPercent = (cleanText.split("\\s+").size * 0.06).round.toInt;
             //val sixPercent = 20;
             val k = Math.min(occs.size, sixPercent)
 
-            val entitiesByScore = EvalUtils.rank(occs, _.similarityScore).map(_._1);
-            top10Score.append("\n"+entitiesByScore.slice(0,k).mkString("\n")+"\n")
+            val entitiesByScore = TagExtractorFromAnnotator.bySimilarity(annotator).rank(occs)
+            append(top10Score, entitiesByScore.slice(0,k))
 
-            val entitiesByConfusion = EvalUtils.rank(occs, _.percentageOfSecondRank).reverse.map(_._1); //should not be reversed. small percentage is large gap.
-            top10Confusion.append("\n"+entitiesByConfusion.slice(0,k).mkString("\n")+"\n")
+            val entitiesByConfusion = TagExtractorFromAnnotator.byConfusion(annotator).rank(occs); //should not be reversed. small percentage is large gap.
+            append(top10Confusion,entitiesByConfusion.slice(0,k))
 
-            val entitiesByPrior = EvalUtils.rank(occs, _.resource.prior).map(_._1)
-            top10Prior.append("\n"+entitiesByPrior.slice(0,k).mkString("\n")+"\n")
+            val entitiesByPrior = TagExtractorFromAnnotator.byPrior(annotator).rank(occs)
+            append(top10Prior,entitiesByPrior.slice(0,k))
 
-            val entitiesByConfidence =EvalUtils.rank(occs, o=> (o.similarityScore * (1-o.percentageOfSecondRank)) ).map(_._1);
-            top10Confidence.append("\n"+entitiesByConfidence.slice(0,k).mkString("\n")+"\n")
+            val entitiesByConfidence = TagExtractorFromAnnotator.byConfidence(annotator).rank(occs)
+            append(top10Confidence,entitiesByConfidence.slice(0,k))
 
-            val entitiesByContext =EvalUtils.rank(occs, _.contextualScore ).map(_._1);
-            top10Context.append("\n"+entitiesByContext.slice(0,k).mkString("\n")+"\n")
+            val entitiesByContext = TagExtractorFromAnnotator.byContext(annotator).rank(occs)
+            append(top10Context,entitiesByContext.slice(0,k))
 
             EvalUtils.writeResultsForIntervals(baseDir, prefix, occs, "doc"+i, configuration.getSimilarityThresholds.map(_.doubleValue).toList)
 
@@ -181,5 +182,9 @@ object EvaluateTagExtraction
 
     }
 
+
+    def append(stream: PrintStream, tags: List[(DBpediaResource,Double)]) {
+        stream.append("\n"+tags.map(_._1).mkString("\n")+"\n")
+    }
 
 }
