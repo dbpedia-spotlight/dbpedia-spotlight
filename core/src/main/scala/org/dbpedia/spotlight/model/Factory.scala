@@ -21,30 +21,18 @@ package org.dbpedia.spotlight.model
 import org.dbpedia.spotlight.string.ModifiedWikiUtil
 import org.dbpedia.spotlight.lucene.LuceneManager
 import org.apache.lucene.util.Version
-import org.apache.lucene.analysis.{StopAnalyzer, Analyzer}
-import java.io.File
-import org.apache.lucene.store.Directory
-import spotters.LingPipeSpotter
-import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter
-import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters
+import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.document.Document
 import org.dbpedia.spotlight.lucene.LuceneManager.DBpediaResourceField
 import collection.JavaConversions._
-import org.dbpedia.spotlight.lucene.search.{BaseSearcher, MergedOccurrencesContextSearcher}
-import org.dbpedia.spotlight.spot._
-import com.aliasi.sentences.IndoEuropeanSentenceModel
-import org.dbpedia.spotlight.tagging.lingpipe.{LingPipeTextUtil, LingPipeTaggedTokenProvider, LingPipeFactory}
+import org.dbpedia.spotlight.lucene.search.BaseSearcher
 import org.dbpedia.spotlight.exceptions.{ItemNotFoundException, ConfigurationException}
-import java.util.HashMap
-import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
 import org.apache.commons.logging.LogFactory
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.analysis.snowball.SnowballAnalyzer
-import org.dbpedia.spotlight.lucene.similarity.{InvCandFreqSimilarity, CachedInvCandFreqSimilarity, JCSTermCache}
+import org.dbpedia.spotlight.lucene.similarity.InvCandFreqSimilarity
 import org.apache.lucene.misc.SweetSpotSimilarity
 import org.apache.lucene.search.{DefaultSimilarity, ScoreDoc, Similarity}
-import org.dbpedia.spotlight.disambiguate._
-import org.dbpedia.spotlight.annotate.{DefaultParagraphAnnotator, DefaultAnnotator}
 import scalaj.collection.Imports._
 import org.dbpedia.spotlight.lucene.analysis.PhoneticAnalyzer
 

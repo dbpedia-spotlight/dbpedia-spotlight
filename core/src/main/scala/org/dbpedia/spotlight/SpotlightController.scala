@@ -1,10 +1,13 @@
 package org.dbpedia.spotlight
 
 import annotate.DefaultAnnotator
+import disambiguate.Disambiguator
+import filter.annotations.CombineAllAnnotationFilters
 import lucene.disambiguate.MergedOccurrencesDisambiguator
 import lucene.LuceneManager
 import lucene.search.MergedOccurrencesContextSearcher
 import model.Factory
+import sparql.SparqlQueryExecuter
 import spot._
 import dictionary.ExactSurfaceFormDictionary
 import selectors._
@@ -12,7 +15,7 @@ import scala.xml.{Node, XML}
 
 import java.io._
 import org.apache.commons.logging.LogFactory
-import spotters.{OpenNLPNESpotter, OpenNLPChunkerSpotter, NESpotter, LingPipeSpotter}
+import spotters.{OpenNLPChunkerSpotter, LingPipeSpotter}
 import util.ConfigUtil._
 import scala.collection.JavaConversions._
 import org.apache.lucene.store.Directory
@@ -74,8 +77,11 @@ class SpotlightController(xmlConfiguration: Node) {
 
   private val spotterByPolicy = (conf \ "spotting_policies" map( sp =>
     Pair((sp \ "@id").text, buildSpottingPolicy(sp)))).toMap
-
   private val defaultSpottingPolicy = (((conf \ "spotting_policies").head) \ "@id").text
+
+  private val disambiguators = ((conf \ "disambiguators") map( dis =>
+    Pair((dis \ "@id").text, buildDisambiguator(dis)))).toMap
+  private val defaultDisambiguator = (((conf \ "disambiguators").head) \ "@id").text
 
 
   /*******************************************************************
@@ -89,9 +95,14 @@ class SpotlightController(xmlConfiguration: Node) {
   def spotter(): Spotter = spotter(defaultSpottingPolicy)
 
   //Disambiguation:
-  val directory: Directory = LuceneManager.pickDirectory(new File(configuration.getContextIndexDirectory))
-  val luceneManager: LuceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(directory)
-  val searcher = new MergedOccurrencesContextSearcher(luceneManager);
+  def disambiguator(): Disambiguator = disambiguators(defaultDisambiguator)
+
+  def filter() ={
+      new CombineAllAnnotationFilters(
+        globalParameter[String]("filter/similarity_threshholds").split(" ").map(_.toDouble).toList,
+        new SparqlQueryExecuter(globalParameter[String]("filter/sparql_graph"), globalParameter[String]("filter/sparql_endpoint"))
+      )
+  }
 
   //Annotation:
   def annotator() ={
@@ -121,13 +132,13 @@ class SpotlightController(xmlConfiguration: Node) {
         localParameter[String]("nn_tag", spotter)
       )
 
-      case "NESpotter" =>
-        new OpenNLPNESpotter(
-          (spotter \ "no_model").map( ne_model =>
-            Pair(localParameter[InputStream]("model_file", ne_model),
-              Factory.OntologyType.fromQName(localParameter[String]("model_type", ne_model)))
-          ).toList
-        )
+      //case "NESpotter" =>
+      //  new OpenNLPNESpotter(
+      //    (spotter \ "no_model").map( ne_model =>
+      //      Pair(localParameter[InputStream]("model_file", ne_model),
+      //        Factory.OntologyType.fromQName(localParameter[String]("model_type", ne_model)))
+      //    ).toList
+      //  )
 
     }
   }
@@ -136,7 +147,7 @@ class SpotlightController(xmlConfiguration: Node) {
     log.info( "Building spott selector %s".format(spotSelector \ "@id") )
     (spotSelector \ "@id").text match {
 
-      case "NP*Selector" =>  new AtLeastOneNounSelector()
+      //case "NP*Selector" =>  new AtLeastOneNounSelector()
 
       case "CapitalizedSelector" => new CapitalizedSelector()
 
@@ -150,7 +161,7 @@ class SpotlightController(xmlConfiguration: Node) {
         localParameter[String]("database/user", spotSelector),
         localParameter[String]("database/password", spotSelector),
         localParameter[InputStream]("model_unigram", spotSelector),
-        localParameter[InputStream]("ngram", spotSelector),
+        localParameter[InputStream]("model_ngram", spotSelector),
         localParameter[String]("datasource", spotSelector)
       )
     }
@@ -168,6 +179,24 @@ class SpotlightController(xmlConfiguration: Node) {
       new SpotterWithSelectors(pSpotter, pSelectors)
     }
   }
+
+
+  private def buildDisambiguator(disambiguator: Node): Disambiguator = {
+    log.info( "Building disambiguator %s".format(disambiguator \ "@id") )
+    (disambiguator \ "@id").text match {
+
+      case "Lucene" => {
+        val searcherDir: Directory = LuceneManager.pickDirectory( localParameter[File]("search_index", disambiguator) )
+        var luceneManager: LuceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(searcherDir)
+        val searcher = new MergedOccurrencesContextSearcher(luceneManager);
+
+        new MergedOccurrencesDisambiguator(searcher)
+      }
+
+    }
+  }
+  //map(_.doubleValue).toList
+
 
 
   /*******************************************************************

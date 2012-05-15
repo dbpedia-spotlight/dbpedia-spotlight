@@ -10,7 +10,7 @@ import opennlp.tools.namefind.{TokenNameFinderModel, NameFinderME, TokenNameFind
  */
 
 class OpenNLPNESpotter(
-  val models: List[Pair[TokenNameFinder, OntologyType]]
+  val neFinder: List[Pair[TokenNameFinder, OntologyType]]
 ) extends Spotter with RequiresAnalyzedText {
 
   def this(models: List[Pair[InputStream, OntologyType]]) {
@@ -24,6 +24,10 @@ class OpenNLPNESpotter(
 
 
   def extract(text: Text): java.util.List[SurfaceFormOccurrence] = {
+
+    neFinder.foreach( neFinder: TokenNameFinder =>
+      neFinder.find(text.analysis.get.tokens)
+    )
 
   }
 

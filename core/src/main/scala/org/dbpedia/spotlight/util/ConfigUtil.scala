@@ -2,7 +2,12 @@ package org.dbpedia.spotlight.util
 
 import java.io._
 import org.dbpedia.spotlight.exceptions.{ConfigurationException, InputException}
-import xml.{NodeSeq, Node}
+import scala.xml.{NodeSeq, Node}
+import org.apache.commons.logging.LogFactory
+import scala._
+import scala.Predef._
+import org.dbpedia.spotlight.SpotlightController
+import org.apache.commons.io.FileUtils
 
 /**
  * @author Joachim Daiber
@@ -11,13 +16,22 @@ import xml.{NodeSeq, Node}
 
 object ConfigUtil {
 
-  val RESOURCE_IDENTIFIER = "in_jar"
+  private val log = LogFactory.getLog(classOf[SpotlightController])
+
+  val INJAR_IDENTIFIER = "in_jar"
 
   def parameter[T](path: Seq[String], base: Node, default: Node): T = nodeAtPath(path, base) match {
-    case Some(node) => node.asInstanceOf[T]
-    case None => nodeAtPath(path, default).getOrElse({
-      throw new ConfigurationException("Required parameter not specified in configuration file.")
-    }).asInstanceOf[T]
+    case Some(node) => {
+      log.info("Using %s: %s".format(path.mkString("/"), node.toString()))
+      node.asInstanceOf[T]
+    }
+    case None => nodeAtPath(path, default) match {
+      case Some(node) => {
+        log.info("Using default for %s: %s".format(path.mkString("/"), node.toString()))
+        node.asInstanceOf[T]
+      }
+      case None => throw new ConfigurationException("Parameter %s not specified in either configuration or default configuration.")
+    }
   }
 
   private def nodeAtPath(path: Seq[String], base: Node): Option[Node] = {
@@ -53,20 +67,16 @@ object ConfigUtil {
 
   implicit def fileFromNode(fileNode: Node): File =
 
-    if((fileNode \ "type").text equals RESOURCE_IDENTIFIER ) {
-      val tempFile: File = File.createTempFile("a", "b")
-      val in: InputStream = this.getClass.getResourceAsStream(fileNode.text)
-
-      val dest = new FileOutputStream(tempFile).getChannel
-      dest.transferFrom(in, 0, in.size());
-
-      tempFile
+    if((fileNode \ "type").text equals INJAR_IDENTIFIER ) {
+      //Not supported at the moment, but here, we could copy the file
+      //to a temporary folder if necessary.
+      new File(fileNode.text)
     } else {
       new File(fileNode.text)
     }
 
   implicit def inputStreamFromNode(fileNode: Node): InputStream =
-    if((fileNode \ "type").text equals RESOURCE_IDENTIFIER ) {
+    if((fileNode \ "type").text equals INJAR_IDENTIFIER ) {
       this.getClass.getResourceAsStream(fileNode.text)
     } else {
       new FileInputStream(new File(fileNode.text))

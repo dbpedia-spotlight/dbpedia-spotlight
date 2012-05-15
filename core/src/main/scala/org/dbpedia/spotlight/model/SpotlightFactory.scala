@@ -25,7 +25,7 @@ import org.apache.lucene.search.Similarity
 import org.dbpedia.spotlight.lucene.similarity.{JCSTermCache, CachedInvCandFreqSimilarity}
 import com.aliasi.sentences.IndoEuropeanSentenceModel
 import org.dbpedia.spotlight.disambiguate._
-import spotters.LingPipeSpotter
+import potters.LingPipeSpotter
 import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter
 import java.io.File
 import org.dbpedia.spotlight.spot._

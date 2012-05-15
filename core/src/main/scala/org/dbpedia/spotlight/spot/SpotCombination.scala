@@ -1,6 +1,5 @@
 package org.dbpedia.spotlight.spot
 
-import java.util.List
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence
 import scala.collection.JavaConversions._
 
@@ -36,12 +35,12 @@ object SpotSelectorCombination {
      * @param selections the selections from the SpotSelector
      * @return
      */
-    def combine(spots: List[SurfaceFormOccurrence], selections: List[List[SurfaceFormOccurrence]]): List[SurfaceFormOccurrence] = {
+    def combineSpotterAndSelectors(spots: List[SurfaceFormOccurrence], selections: List[List[SurfaceFormOccurrence]]): List[SurfaceFormOccurrence] = {
       var spotSet = spots.toSet
       selections.foreach { selection =>
-        spotSet = spotSet.intersect(selection)
+        spotSet = spotSet.intersect(selection.toSet)
       }
-      spotSet
+      spotSet.toList
     }
   }
 
@@ -56,12 +55,12 @@ object SpotSelectorCombination {
      * @param selections the selections from the SpotSelector
      * @return
      */
-    def combine(spots: List[SurfaceFormOccurrence], selections: List[List[SurfaceFormOccurrence]]): List[SurfaceFormOccurrence] = {
+    def combineSpotterAndSelectors(spots: List[SurfaceFormOccurrence], selections: List[List[SurfaceFormOccurrence]]): List[SurfaceFormOccurrence] = {
       var allSelections = Set[SurfaceFormOccurrence]()
       selections.foreach { selection =>
-        allSelections = selection.union(selection)
+        allSelections = allSelections.union(selection.toSet)
       }
-      spots.toSet.intersection(allSelections)
+      spots.toSet.intersect(allSelections).toList
     }
   }
 

@@ -20,7 +20,6 @@ package org.dbpedia.spotlight.spot.selectors
 
 import scalaj.collection.Imports._
 
-import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.spot.SpotSelector
 
@@ -31,10 +30,6 @@ import org.dbpedia.spotlight.spot.SpotSelector
  * @author Joachim Daiber (removed tagging, changed to TaggedSpotSelector)
  */
 class AtLeastOneNounSelector extends SpotSelector with RequiresAnalyzedText {
-
-  private val LOG = LogFactory.getLog(this.getClass)
-
-  var lastText = ""
 
 
   def select(occurrences: java.util.List[SurfaceFormOccurrence]): java.util.List[SurfaceFormOccurrence] = {

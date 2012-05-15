@@ -14,7 +14,7 @@ import scala.collection.JavaConversions._
  *
  */
 
-class SpotterWithSelectors(val spotter: Spotter, val spotSelectors: List[SpotSelector], val selectorPolicy: SpotCombination) extends Spotter {
+class SpotterWithSelectors(val spotter: Spotter, val spotSelectors: List[SpotSelector], val spotCombination: SpotCombination) extends Spotter {
 
   private val LOG = LogFactory.getLog(this.getClass)
 
@@ -39,7 +39,7 @@ class SpotterWithSelectors(val spotter: Spotter, val spotSelectors: List[SpotSel
 
     LOG.debug(String.format("Spotting with spotter %s and selectors %s.", spotter.getName, spotSelectors))
     var spots: List[SurfaceFormOccurrence] = spotter.extract(text)
-    selectorPolicy.combine(spots, spotSelectors.map( select(_, spots) ) )
+    spotCombination.combineSpotterAndSelectors(spots, spotSelectors.map( select(_, spots) ).toList )
   }
 
 
