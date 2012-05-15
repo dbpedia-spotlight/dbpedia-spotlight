@@ -4,7 +4,7 @@
 -- @param dir	the directory where we find the part* files outputted by hadoop
 -- @author pablomendes
 
-SET job.name AmbiguousSurfaceFormOccurrencesByTypeSortedByURI;
+SET job.name OccurrencesByTypeSortedByURI;
 
 ------ LOADING AND CLEANING ------
 occurrences = LOAD '$dir/part*' USING PigStorage('\t') AS (id, uri, surfaceForm, context, offset);
