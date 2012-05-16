@@ -24,6 +24,7 @@ import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy;
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy;
 
 import org.dbpedia.spotlight.web.rest.Server;
+import org.dbpedia.spotlight.web.rest.ServerUtils;
 import org.dbpedia.spotlight.web.rest.SpotlightInterface;
 
 import javax.servlet.http.HttpServletRequest;
@@ -48,11 +49,6 @@ public class Disambiguate {
     // Disambiguation interface
     private static SpotlightInterface disambigInterface = new SpotlightInterface("/disambiguate");
 
-    // Sets the necessary headers in order to enable CORS
-    private Response ok(String response) {
-        return Response.ok().entity(response).header("Access-Control-Allow-Origin","*").build();
-    }
-
     @GET
     @Produces("text/html")
     public Response getHTML(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
@@ -67,10 +63,10 @@ public class Disambiguate {
     ) {
         String clientIp = request.getRemoteAddr();
         try {
-            return ok(disambigInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name(),disambiguatorName));
+            return ServerUtils.ok(disambigInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name(),disambiguatorName));
         } catch (Exception e) {
             e.printStackTrace();
-            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(Server.print(e)).type(MediaType.TEXT_HTML).build());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.TEXT_HTML).build());
         }
     }
 
@@ -88,10 +84,10 @@ public class Disambiguate {
     ) {
         String clientIp = request.getRemoteAddr();
         try {
-            return ok(disambigInterface.getRDFa(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name() , disambiguatorName));
+            return ServerUtils.ok(disambigInterface.getRDFa(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name() , disambiguatorName));
         } catch (Exception e) {
             e.printStackTrace();
-            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(Server.print(e)).type(MediaType.APPLICATION_XHTML_XML).build());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.APPLICATION_XHTML_XML).build());
         }
     }
 
@@ -110,10 +106,10 @@ public class Disambiguate {
         String clientIp = request.getRemoteAddr();
 
         try {
-            return ok(disambigInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name(), disambiguatorName));
+            return ServerUtils.ok(disambigInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name(), disambiguatorName));
         } catch (Exception e) {
             e.printStackTrace();
-            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(Server.print(e)).type(MediaType.TEXT_XML).build());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.TEXT_XML).build());
         }
     }
 
@@ -132,10 +128,10 @@ public class Disambiguate {
         String clientIp = request.getRemoteAddr();
 
         try {
-            return ok(disambigInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name(), disambiguatorName));
+            return ServerUtils.ok(disambigInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name(), disambiguatorName));
         } catch (Exception e) {
             e.printStackTrace();
-            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(Server.print(e)).type(MediaType.APPLICATION_JSON).build());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.APPLICATION_JSON).build());
         }
     }
 
@@ -157,10 +153,10 @@ public class Disambiguate {
       ) {
         String clientIp = request.getRemoteAddr();
         try {
-            return ok(disambigInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name(), disambiguatorName));
+            return ServerUtils.ok(disambigInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name(), disambiguatorName));
         } catch (Exception e) {
             e.printStackTrace();
-            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(Server.print(e)).type(MediaType.TEXT_HTML).build());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.TEXT_HTML).build());
         }
 
     }
@@ -181,10 +177,10 @@ public class Disambiguate {
       ) {
         try {
             String clientIp = request.getRemoteAddr();
-            return ok(disambigInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name(), disambiguatorName));
+            return ServerUtils.ok(disambigInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name(), disambiguatorName));
         } catch (Exception e) {
             e.printStackTrace();
-            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(Server.print(e)).type(MediaType.TEXT_HTML).build());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.TEXT_HTML).build());
         }
 
     }
@@ -205,10 +201,10 @@ public class Disambiguate {
       ) {
         try {
             String clientIp = request.getRemoteAddr();
-            return ok(disambigInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name(), disambiguatorName));
+            return ServerUtils.ok(disambigInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name(), disambiguatorName));
         } catch (Exception e) {
             e.printStackTrace();
-            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(Server.print(e)).type(MediaType.TEXT_XML).build());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.TEXT_XML).build());
         }
 
     }
@@ -229,10 +225,10 @@ public class Disambiguate {
       ) {
         String clientIp = request.getRemoteAddr();
         try {
-            return ok(disambigInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name(), disambiguatorName));
+            return ServerUtils.ok(disambigInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name(), disambiguatorName));
         } catch (Exception e) {
             e.printStackTrace();
-            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(Server.print(e)).type(MediaType.APPLICATION_JSON).build());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.APPLICATION_JSON).build());
         }
       }
 }

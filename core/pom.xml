@@ -216,7 +216,7 @@
         <dependency>
             <groupId>net.debasishg</groupId>
             <artifactId>sjson_2.9.1</artifactId>
-            <version>0.15</version>
+            <version>0.17</version>
         </dependency>
 
         <dependency>

@@ -28,6 +28,7 @@ import org.dbpedia.spotlight.exceptions.SpottingException;
 import org.dbpedia.spotlight.model.*;
 import org.dbpedia.spotlight.spot.Spotter;
 import org.dbpedia.spotlight.web.rest.Server;
+import org.dbpedia.spotlight.web.rest.ServerUtils;
 import org.dbpedia.spotlight.web.rest.output.Annotation;
 import org.dbpedia.spotlight.web.rest.output.OutputSerializer;
 import org.dbpedia.spotlight.web.rest.output.Resource;
@@ -64,7 +65,7 @@ public class Candidates {
     @Context
     private UriInfo context;
 
-     Log LOG = LogFactory.getLog(this.getClass());
+    Log LOG = LogFactory.getLog(this.getClass());
 
     // Annotation interface
     /**
@@ -99,11 +100,6 @@ public class Candidates {
         return annotation;
     }
 
-    // Sets the necessary headers in order to enable CORS
-    private Response ok(String response) {
-        return Response.ok().entity(response).header("Access-Control-Allow-Origin","*").build();
-    }
-
     //TODO think if there is a way to output HTML / RDFa for candidates API
 //    @GET
 //    @Produces(MediaType.TEXT_HTML)
@@ -119,7 +115,7 @@ public class Candidates {
 //
 //        try {
 //            String response = candidatesInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp);
-//            return ok(response);
+//            return ServerUtils.ok(response);
 //        } catch (Exception e) {
 //            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(e.getMessage()).type(MediaType.TEXT_HTML).build());
 //        }
@@ -139,7 +135,7 @@ public class Candidates {
 //        String clientIp = request.getRemoteAddr();
 //
 //        try {
-//            return ok(candidatesInterface.getRDFa(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp));
+//            return ServerUtils.ok(candidatesInterface.getRDFa(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp));
 //        } catch (Exception e) {
 //            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(e.getMessage()).type(MediaType.APPLICATION_XHTML_XML).build());
 //        }
@@ -162,8 +158,8 @@ public class Candidates {
         try {
             Annotation a = getAnnotation(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, spotter, disambiguatorName, clientIp);
             LOG.info("XML format");
-            String content = output.toXML(a);
-            return ok(content);
+            String content = a.toXML();
+            return ServerUtils.ok(content);
         } catch (Exception e) {
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(e.getMessage()).type(MediaType.TEXT_XML).build());
         }
@@ -186,8 +182,8 @@ public class Candidates {
         try {
             Annotation a = getAnnotation(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, spotter, disambiguatorName, clientIp);
             LOG.info("JSON format");
-            String content = output.toJSON(a);
-            return ok(content);
+            String content = a.toJSON();
+            return ServerUtils.ok(content);
         } catch (Exception e) {
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(e.getMessage()).type(MediaType.APPLICATION_JSON).build());
         }
@@ -261,8 +257,6 @@ public class Candidates {
     ) {
         return getJSON(text,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,spotter,disambiguatorName,request);
     }
-
-    private OutputSerializer output = new OutputSerializer();
 
     public Annotation getAnnotation(String text,
                                     double confidence,

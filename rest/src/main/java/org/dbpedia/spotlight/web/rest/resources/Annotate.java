@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.web.rest.Server;
+import org.dbpedia.spotlight.web.rest.ServerUtils;
 import org.dbpedia.spotlight.web.rest.SpotlightInterface;
 
 import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy;
@@ -53,11 +54,6 @@ public class Annotate {
 
     // Annotation interface
     private static SpotlightInterface annotationInterface =  new SpotlightInterface("/annotate");
-
-    // Sets the necessary headers in order to enable CORS
-    private Response ok(String response) {
-        return Response.ok().entity(response).header("Access-Control-Allow-Origin","*").build();
-    }
     
     @GET
     @Produces(MediaType.TEXT_HTML)
@@ -76,10 +72,10 @@ public class Annotate {
 
         try {
             String response = annotationInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName,  disambiguatorName);
-            return ok(response);
+            return ServerUtils.ok(response);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(Server.print(e)).type(MediaType.TEXT_HTML).build());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.TEXT_HTML).build());
         }
     }
 
@@ -99,9 +95,9 @@ public class Annotate {
         String clientIp = request.getRemoteAddr();
 
         try {
-            return ok(annotationInterface.getRDFa(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName, disambiguatorName));
+            return ServerUtils.ok(annotationInterface.getRDFa(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName, disambiguatorName));
         } catch (Exception e) {
-            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(Server.print(e)).type(MediaType.APPLICATION_XHTML_XML).build());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.APPLICATION_XHTML_XML).build());
         }
     }
 
@@ -120,9 +116,9 @@ public class Annotate {
         String clientIp = request.getRemoteAddr();
 
         try {
-           return ok(annotationInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName, disambiguatorName));
+           return ServerUtils.ok(annotationInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName, disambiguatorName));
        } catch (Exception e) {
-            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(Server.print(e)).type(MediaType.TEXT_XML).build());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.TEXT_XML).build());
         }
     }
 
@@ -141,9 +137,9 @@ public class Annotate {
         String clientIp = request.getRemoteAddr();
 
         try {
-            return ok(annotationInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName, disambiguatorName));
+            return ServerUtils.ok(annotationInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName, disambiguatorName));
        } catch (Exception e) {
-            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(Server.print(e)).type(MediaType.APPLICATION_JSON).build());
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.APPLICATION_JSON).build());
         }
     }
 
