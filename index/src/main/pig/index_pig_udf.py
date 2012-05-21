@@ -1,18 +1,50 @@
 #!/usr/bin/python
+import sys
+
+sys.path.append('/opt/jython/Lib/site-packages')
+sys.path.append('/opt/jython/Lib')
+
+import re
 
 ####################
-# Test the udf     #
+#   Get doc id     #
 ####################
-@outputSchema("word:chararray")
-def helloworld():  
-	  return 'Hello, World'
+@outputSchema("docId:chararray")
+def getDocId(fullId):
+	return fullId.split("-")[0] #the portion before - is the page name
+
+def searchDocParaPair(str):
+	pattern = "(.*?p[0-9]+)l[0-9]+"
+	return re.search(pattern,str) #use regex to get the doc and para
+
+
+############################
+# Check doc para id format #
+############################
+#@outputSchema("isDocParaPair:int")
+#def checkDocParaFormat(str):
+#	if searchDocParaPair(str):
+#		return 1
+#	else:
+#		return 0
+
+####################
+# Get doc para id  #
+####################
+@outputSchema("docParaId:chararray")
+def getDocParaId(fullId):
+	result = searchDocParaPair(fullId)
+	if result:
+		return result.group(1)
+	else:
+		return ''
 
 ####################
 # Get Combinations #
 ####################
 @outputSchema("y:bag{t:tuple(ent1:chararray,ent2:chararray)}")
 def getCombination(bag):
-	outBag = []	
+	outBag = []
 	for i in range(len(bag)):
 		for j in range(i+1,len(bag)):
 			if bag[i] < bag[j]:
