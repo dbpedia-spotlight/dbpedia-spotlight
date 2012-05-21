@@ -15,12 +15,13 @@ occs = LOAD '$dir/occs.tsv' USING PigStorage('\t') AS (id:chararray,uri:chararra
 -- Get doc id and entity id
 -- URI is used as entity id
 docEntPairs = FOREACH occs GENERATE  (($useDocLevel == 0) ? funcs.getDocParaId(id) : funcs.getDocId(id) ) , uri;
+describe docEntPairs
 
 -- Clean up for empty doc id
-cleanedDocEntPairs = FILTER docEntPairs BY ($0 != '') AND ($0 is not null);
+cleanedDocEntPairs = FILTER docEntPairs BY (reducedId != '') AND (reducedId is not null);
 
 -- Group by doc id
-coOccs = GROUP cleanedDocEntPairs BY $0;
+coOccs = GROUP cleanedDocEntPairs BY reducedId;
 
 -- Generate combination of entity id to get all co-occured pairs using udf
 entityPairs = FOREACH coOccs GENERATE FLATTEN(funcs.getCombination(cleanedDocEntPairs.uri));
@@ -30,6 +31,6 @@ groupedPairs = GROUP entityPairs BY (ent1,ent2);
 
 -- Count the entity pairs
 cnt = FOREACH groupedPairs GENERATE group, COUNT(entityPairs);
-
+dump cnt;
 -- Format and write out
-STORE cnt INTO '$dir/co-occs-count.tsv' USING PigStorage();
+-- STORE cnt INTO '$dir/co-occs-count.tsv' USING PigStorage();

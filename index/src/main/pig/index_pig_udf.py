@@ -9,7 +9,7 @@ import re
 ####################
 #   Get doc id     #
 ####################
-@outputSchema("docId:chararray")
+@outputSchema("reducedId:chararray")
 def getDocId(fullId):
 	return fullId.split("-")[0] #the portion before - is the page name
 
@@ -31,7 +31,7 @@ def searchDocParaPair(str):
 ####################
 # Get doc para id  #
 ####################
-@outputSchema("docParaId:chararray")
+@outputSchema("reducedId:chararray")
 def getDocParaId(fullId):
 	result = searchDocParaPair(fullId)
 	if result:
