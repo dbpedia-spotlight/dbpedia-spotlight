@@ -31,7 +31,7 @@
     <name>DBpedia Spotlight RESTful API</name>
 
     <properties>
-        <heapspace.Xmx.server>-Xmx16g</heapspace.Xmx.server>
+        <heapspace.Xmx.server>-Xmx5g</heapspace.Xmx.server>
     </properties>
 
     <build>
