@@ -117,7 +117,7 @@ public class SpotlightInterface  {
         }
 
         int maxLengthForOccurrenceCentric = 1200; //TODO configuration
-        if (disambiguatorName==SpotlightConfiguration.DisambiguationPolicy.Default.name()
+        if (disambiguatorName.equals(SpotlightConfiguration.DisambiguationPolicy.Default.name())
                 && text.length() > maxLengthForOccurrenceCentric) {
             disambiguatorName = SpotlightConfiguration.DisambiguationPolicy.Document.name();
             LOG.info(String.format("Text length > %d. Using %s to disambiguate.",maxLengthForOccurrenceCentric,disambiguatorName));
