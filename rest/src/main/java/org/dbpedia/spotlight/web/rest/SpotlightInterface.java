@@ -54,7 +54,9 @@ public class SpotlightInterface  {
         this.apiName = apiName;
     }
 
-    public List<DBpediaResourceOccurrence> disambiguate(List<SurfaceFormOccurrence> spots, ParagraphDisambiguatorJ disambiguator) throws SearchException, InputException, SpottingException {
+    public List<DBpediaResourceOccurrence> process(String text, Spotter spotter, ParagraphDisambiguatorJ disambiguator) throws SearchException, InputException, SpottingException {
+
+        List<SurfaceFormOccurrence> spots = spotter.extract(new Text(text));
         List<DBpediaResourceOccurrence> resources = new ArrayList<DBpediaResourceOccurrence>();
         if (spots.size()==0) return resources; // nothing to disambiguate
         try {
@@ -65,56 +67,12 @@ public class SpotlightInterface  {
         return resources;
     }
 
-    public boolean policyIsBlacklist(String policy) {
-        boolean blacklist = false;
-        if(policy.trim().equalsIgnoreCase("blacklist")) {
-            blacklist = true;
-            policy = "blacklist";
-        }
-        else {
-            policy = "whitelist";
-        }
-        return blacklist;
-    }
-
-    public void announce(String textString,
-                         double confidence,
-                         int support,
-                         String ontologyTypesString,
-                         String sparqlQuery,
-                         String policy,
-                         boolean coreferenceResolution,
-                         String clientIp,
-                         String spotterName,
-                         String disambiguatorName
-    ) {
-        LOG.info("******************************** Parameters ********************************");
-        LOG.info("API: " + getApiName());
-        LOG.info("client ip: " + clientIp);
-        LOG.info("text: " + textString);
-        LOG.info("text length in chars: " +textString.length());
-        LOG.info("confidence: "+String.valueOf(confidence));
-        LOG.info("support: "+String.valueOf(support));
-        LOG.info("types: "+ontologyTypesString);
-        LOG.info("sparqlQuery: "+ sparqlQuery);
-        LOG.info("policy: "+policyIsBlacklist(policy));
-        LOG.info("coreferenceResolution: "+String.valueOf(coreferenceResolution));
-        LOG.info("spotter: "+spotterName);
-        LOG.info("disambiguator: "+disambiguatorName);
-
-    }
-
-    public List<SurfaceFormOccurrence> spot(String spotterName, Text context) throws InputException, SpottingException {
-        Spotter spotter = Server.getSpotter(spotterName);
-        List<SurfaceFormOccurrence> spots = spotter.extract(context);
-        return spots;
-    }
 
     /**
      * Retrieves representation of an instance of org.dbpedia.spotlight.web.Annotation
      * @return an instance of java.lang.String
      */
-    public List<DBpediaResourceOccurrence> getOccurrences(String textString,
+    public List<DBpediaResourceOccurrence> getOccurrences(String text,
                                                           double confidence,
                                                           int support,
                                                           String ontologyTypesString,
@@ -126,35 +84,51 @@ public class SpotlightInterface  {
                                                           String disambiguatorName
                                                           ) throws SearchException, InputException, SpottingException {
 
-        boolean blacklist = policyIsBlacklist(policy);
+        LOG.info("******************************** Parameters ********************************");
+        LOG.info("API: " + getApiName());
+        boolean blacklist = false;
+        if(policy.trim().equalsIgnoreCase("blacklist")) {
+            blacklist = true;
+            policy = "blacklist";
+        }
+        else {
+            policy = "whitelist";
+        }
+        LOG.info("client ip: " + clientIp);
+        LOG.info("text: " + text);
+        LOG.info("text length in chars: "+text.length());
+        LOG.info("confidence: "+String.valueOf(confidence));
+        LOG.info("support: "+String.valueOf(support));
+        LOG.info("types: "+ontologyTypesString);
+        LOG.info("sparqlQuery: "+ sparqlQuery);
+        LOG.info("policy: "+policy);
+        LOG.info("coreferenceResolution: "+String.valueOf(coreferenceResolution));
+        LOG.info("spotter: "+spotterName);
+        LOG.info("disambiguator: "+disambiguatorName);
 
-        announce(textString,confidence,support,ontologyTypesString,sparqlQuery,policy,coreferenceResolution,clientIp,spotterName,disambiguatorName);
-
-        // Get input text
-        if (textString.trim().equals("")) {
+        if (text.trim().equals("")) {
             throw new InputException("No text was specified in the &text parameter.");
         }
-        Text context = new Text(textString);
 
-        // Find spots to annotate/disambiguate
-        List<SurfaceFormOccurrence> spots = spot(spotterName,context);
-
-        // Call annotation or disambiguation
-        int maxLengthForOccurrenceCentric = 1200; //TODO configuration
-        if (disambiguatorName==SpotlightConfiguration.DisambiguationPolicy.Default.name()
-                && textString.length() > maxLengthForOccurrenceCentric) {
-            disambiguatorName = SpotlightConfiguration.DisambiguationPolicy.Document.name();
-            LOG.info(String.format("Text length > %d. Using %s to disambiguate.",maxLengthForOccurrenceCentric,disambiguatorName));
-        }
-        ParagraphDisambiguatorJ disambiguator = Server.getDisambiguator(disambiguatorName);
-        List<DBpediaResourceOccurrence> occList = disambiguate(spots, disambiguator);
-
-        // Linking / filtering
         List<OntologyType> ontologyTypes = new ArrayList<OntologyType>();
         String types[] = ontologyTypesString.trim().split(",");
         for (String t : types){
             if (!t.trim().equals("")) ontologyTypes.add(Factory.ontologyType().fromQName(t.trim()));
         }
+
+        int maxLengthForOccurrenceCentric = 1200; //TODO configuration
+        if (disambiguatorName.equals(SpotlightConfiguration.DisambiguationPolicy.Default.name())
+                && text.length() > maxLengthForOccurrenceCentric) {
+            disambiguatorName = SpotlightConfiguration.DisambiguationPolicy.Document.name();
+            LOG.info(String.format("Text length > %d. Using %s to disambiguate.",maxLengthForOccurrenceCentric,disambiguatorName));
+        }
+
+        Spotter spotter = Server.getSpotter(spotterName);
+
+        ParagraphDisambiguatorJ disambiguator = Server.getDisambiguator(disambiguatorName);
+
+        // Call annotation or disambiguation
+        List<DBpediaResourceOccurrence> occList = process(text, spotter, disambiguator);
 
         // Filter: Old monolithic way
         CombineAllAnnotationFilters annotationFilter = new CombineAllAnnotationFilters(Server.getConfiguration());
