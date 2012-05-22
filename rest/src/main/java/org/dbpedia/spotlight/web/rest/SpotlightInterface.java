@@ -18,6 +18,7 @@
 
 package org.dbpedia.spotlight.web.rest;
 
+import de.l3s.boilerpipe.extractors.ArticleExtractor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ;
@@ -30,6 +31,7 @@ import org.dbpedia.spotlight.spot.Spotter;
 import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy;
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -194,6 +196,31 @@ public class SpotlightInterface  {
         }
         LOG.info("HTML format");
         LOG.debug("****************************************************************");
+        return result;
+    }
+
+    public String getHTMLFromURL(String inUrl,
+                                 double confidence,
+                                 int support,
+                                 String dbpediaTypesString,
+                                 String sparqlQuery,
+                                 String policy,
+                                 boolean coreferenceResolution,
+                                 String clientIp,
+                                 String spotter,
+                                 String disambiguator
+    ) throws Exception {
+        String result;
+        String text;
+
+        LOG.info("Getting webpage content from URL");
+        LOG.debug("****************************************************************");
+
+        URL url = new URL(inUrl);
+        text = ArticleExtractor.INSTANCE.getText(url);
+
+        result = getHTML(text,confidence,support,dbpediaTypesString,sparqlQuery,policy,coreferenceResolution,clientIp,spotter,disambiguator);
+
         return result;
     }
 
