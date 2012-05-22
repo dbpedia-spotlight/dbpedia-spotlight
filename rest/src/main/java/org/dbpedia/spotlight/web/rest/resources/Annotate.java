@@ -20,6 +20,7 @@ package org.dbpedia.spotlight.web.rest.resources;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.web.rest.Server;
 import org.dbpedia.spotlight.web.rest.SpotlightInterface;
@@ -58,10 +59,11 @@ public class Annotate {
     private Response ok(String response) {
         return Response.ok().entity(response).header("Access-Control-Allow-Origin","*").build();
     }
-    
+
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response getHTML(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
+                            @DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("url") String inUrl,
                             @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
                             @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
                             @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
@@ -75,14 +77,20 @@ public class Annotate {
         String clientIp = request.getRemoteAddr();
 
         try {
-            String response = annotationInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName,  disambiguatorName);
+            String response;
+            if (!text.trim().equals("")){
+                response = annotationInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName,  disambiguatorName);
+            }else if (!inUrl.trim().equals("")){
+                response = annotationInterface.getHTMLFromURL(inUrl, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName,  disambiguatorName);
+            }else{
+                throw new InputException("No text was specified in the &text or &url parameter.");
+            }
             return ok(response);
         } catch (Exception e) {
             e.printStackTrace();
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(Server.print(e)).type(MediaType.TEXT_HTML).build());
         }
     }
-
 
     @GET
     @Produces(MediaType.APPLICATION_XHTML_XML)
@@ -154,6 +162,7 @@ public class Annotate {
     @Produces(MediaType.TEXT_HTML)
     public Response postHTML(
       @DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("url") String inUrl,
       @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @FormParam("confidence") Double confidence,
       @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @FormParam("support") int support,
       @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @FormParam("types") String dbpediaTypes,
@@ -164,7 +173,7 @@ public class Annotate {
       @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
       @Context HttpServletRequest request              
       ) {
-        return getHTML(text,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,spotterName,disambiguatorName,request);
+        return getHTML(text,inUrl,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,spotterName,disambiguatorName,request);
     }
     
     @POST
