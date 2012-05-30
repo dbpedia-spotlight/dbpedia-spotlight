@@ -1,13 +1,9 @@
 package org.dbpedia.spotlight.disambiguate
 
-import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy
-import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy
 import scala.collection.JavaConversions._
-import org.junit.Test
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy
 import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy
 import org.dbpedia.spotlight.spot.Spotter
-import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.exceptions.SearchException
 
