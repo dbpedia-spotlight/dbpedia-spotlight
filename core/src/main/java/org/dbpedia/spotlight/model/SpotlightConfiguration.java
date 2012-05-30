@@ -52,6 +52,7 @@ public class SpotlightConfiguration {
 	public final static String DEFAULT_POLICY = "whitelist";
 	public final static String DEFAULT_COREFERENCE_RESOLUTION = "true";
 
+    // This policy does not reside in DisambiguatorConfiguration, but SpotlighPolicy resides in SpotlighConfiguration, looks strange
     public enum DisambiguationPolicy { Document,Occurrences,CuttingEdge,Default }
 
     public String language;
