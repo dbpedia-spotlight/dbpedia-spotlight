@@ -280,23 +280,6 @@
             <artifactId>json</artifactId>
         </dependency>
 
-        <!-- Add dependencies for Spark and Bagel -->
-        <dependency>
-            <groupId>org.spark-project</groupId>
-            <artifactId>spark-core</artifactId>
-            <version>0.4-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/../lib/spark-core-assembly-0.4-SNAPSHOT.jar</systemPath>
-        </dependency>
-
-        <dependency>
-            <groupId>org.spark-project</groupId>
-            <artifactId>bagel-core</artifactId>
-            <version>0.4-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/../lib/spark-bagel-assembly-0.4-SNAPSHOT.jar</systemPath>
-        </dependency>
-
     </dependencies>
 
 </project>
