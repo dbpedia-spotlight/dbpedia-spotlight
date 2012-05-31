@@ -20,36 +20,80 @@ package org.dbpedia.spotlight.spot;
 
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.SpottingException;
-import org.dbpedia.spotlight.model.SpotlightConfiguration;
-import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
-import org.dbpedia.spotlight.model.Text;
+import org.dbpedia.spotlight.model.*;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
+import static org.junit.Assert.assertTrue;
+
 /**
- * Current test just tries to run it.
- * TODO Need to provide examples that test each of the NERs
+ * Sees if spotters run.
+ * Tests if offsets are correct.
+ * TODO Need to provide tough examples that test each of the spotters
  *
  * @author pablomendes
  */
 public class OpenNLPSpottersTest {
 
-     @Test
-     public void assureNESpotterRuns() throws ConfigurationException, SpottingException {
-        SpotlightConfiguration config = new SpotlightConfiguration("conf/dev.properties");
-        Spotter spotter = new NESpotter(config.getSpotterConfiguration().getOpenNLPModelDir());
-        Text t = new Text("The financial crunch threatens to undermine a foreign policy described as “smart power” in Texas by President Obama and Secretary of State Hillary Rodham Clinton, one that emphasizes diplomacy and development as a complement to American military power. It also would begin to reverse the increase in foreign aid that President George W. Bush supported after the attacks of Sept. 11, 2001, as part of an effort to combat the roots of extremism and anti-American sentiment, especially in the most troubled countries. ");
-        List<SurfaceFormOccurrence> spots = spotter.extract(t);
-        System.out.println(spots);
+/*
+The financial crunch in the U.S. threatens to undermine a foreign policy described as “smart power” in Texas by President Obama and Secretary of State Hillary Rodham Clinton, one that emphasizes diplomacy and development as a complement to American military power. It also would begin to reverse the increase in foreign aid that President George W. Bush supported after the attacks of Sept. 11, 2001, as part of an effort to combat the roots of extremism and anti-American sentiment, especially in the most troubled countries.
+*/
+    Text t = new Text("The financial crunch in the U.S. threatens to undermine a foreign policy described as “smart power” in Texas by President Obama and Secretary of State Hillary Rodham Clinton, one that emphasizes diplomacy and development as a complement to American military power. It also would begin to reverse the increase in foreign aid that President George W. Bush supported after the attacks of Sept. 11, 2001, as part of an effort to combat the roots of extremism and anti-American sentiment, especially in the most troubled countries. ");
+    SurfaceFormOccurrence financialCrunch = new SurfaceFormOccurrence(new SurfaceForm("financial crunch"), t, 4);
+    SurfaceFormOccurrence smartPower = new SurfaceFormOccurrence(new SurfaceForm("smart power"), t, 87);
+    SurfaceFormOccurrence quotedSmartPower = new SurfaceFormOccurrence(new SurfaceForm("“smart power”"), t, 86);
+    SurfaceFormOccurrence us = new SurfaceFormOccurrence(new SurfaceForm("U.S."), t, 28);
+    List<SurfaceFormOccurrence> occs = Arrays.asList(financialCrunch, smartPower, quotedSmartPower, us);
+
+    private void print(List<SurfaceFormOccurrence> spots) {
+        for (SurfaceFormOccurrence spot: spots) {
+            System.err.println(String.format("%s at %s",spot.surfaceForm(), spot.textOffset()));
+        }
     }
 
-         @Test
-     public void assureOpenNLPNGramSpotterRuns() throws ConfigurationException, SpottingException {
+    private void testOffsets(List<SurfaceFormOccurrence> spots) {
+        for (SurfaceFormOccurrence spot: spots) {
+            assertTrue(testOffset(spot));
+        }
+    }
+
+    private boolean testOffset(SurfaceFormOccurrence occ) {
+        String name = occ.surfaceForm().name();
+        int offset = occ.textOffset();
+        int length = name.length();
+        String text = occ.context().text();
+        String extracted = text.substring(offset, offset+length);
+        System.err.println(String.format("(%s) -> (%s)", name, extracted).replaceAll(" ","_")); //make spaces more visible
+        return name.equals(extracted);
+    }
+
+    @Test
+    public void assureOccsAreCorrectlyCreated() throws ConfigurationException, SpottingException {
+        for (SurfaceFormOccurrence spot: occs) {
+            assertTrue(testOffset(spot));
+        }
+    }
+
+    @Test
+    public void assureNESpotterRuns() throws ConfigurationException, SpottingException {
+        SpotlightConfiguration config = new SpotlightConfiguration("conf/dev.properties");
+        Spotter spotter = new NESpotter(config.getSpotterConfiguration().getOpenNLPModelDir());
+        List<SurfaceFormOccurrence> spots = spotter.extract(t);
+        testOffsets(spots);
+        print(spots);
+    }
+
+    @Test
+    public void assureOpenNLPNGramSpotterRuns() throws ConfigurationException, SpottingException {
         SpotlightConfiguration config = new SpotlightConfiguration("conf/dev.properties");
         Spotter spotter = new OpenNLPNGramSpotter(config.getSpotterConfiguration().getOpenNLPModelDir());
-        Text t = new Text("The financial crunch threatens to undermine a foreign policy described as “smart power” in Texas by President Obama and Secretary of State Hillary Rodham Clinton, one that emphasizes diplomacy and development as a complement to American military power. It also would begin to reverse the increase in foreign aid that President George W. Bush supported after the attacks of Sept. 11, 2001, as part of an effort to combat the roots of extremism and anti-American sentiment, especially in the most troubled countries. ");
         List<SurfaceFormOccurrence> spots = spotter.extract(t);
-        System.out.println(spots);
+        print(spots);
+        assertTrue(spots.contains(financialCrunch));
+        assertTrue(spots.contains(new SurfaceFormOccurrence(new SurfaceForm("smart power"), t, 75)));
+        assertTrue(!spots.contains(new SurfaceFormOccurrence(new SurfaceForm("“smart power”"),t,75)));
+
     }
 }
