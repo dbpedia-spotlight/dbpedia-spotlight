@@ -31,7 +31,8 @@ class LuceneTagExtractor(val contextLuceneManager: LuceneManager, val contextSea
     def getRelatedResources(text: Text, nHits: Int = 100) = {
         LOG.debug("Setting up query.")
 
-        val context = if (text.text.size<250) text.text.concat(" "+text.text) else text.text //HACK for text that is too short
+        var context = if (text.text.size<250) text.text.concat(" "+text.text) else text.text //HACK for text that is too short
+        context = context.replaceAll("_"," ") //HACK for Andreas' class names
 
         val filter = null
 

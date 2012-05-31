@@ -65,6 +65,10 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
         mSearcher.setSimilarity(lucene.contextSimilarity());
     }
 
+    public LuceneManager getLuceneManager() {
+        return mLucene;
+    }
+
     public Similarity getSimilarity() {
         return mLucene.contextSimilarity();
     }

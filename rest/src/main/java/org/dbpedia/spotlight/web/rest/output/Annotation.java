@@ -20,7 +20,10 @@ package org.dbpedia.spotlight.web.rest.output;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 import com.thoughtworks.xstream.annotations.XStreamImplicit;
+import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
+import org.dbpedia.spotlight.model.Text;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @XStreamAlias("annotation")
@@ -36,6 +39,14 @@ public class Annotation {
         this.setText(text);
     }
 
+    public Annotation(Text context, List<SurfaceFormOccurrence> sfOccs) {
+        setText(context.text());
+        spots = new ArrayList<Spot>();
+        for (SurfaceFormOccurrence sfo: sfOccs) {
+            spots.add(Spot.getInstance(sfo));
+        }
+    }
+
     public void setText(String text) {
         this.text = text;
     }
@@ -48,6 +59,9 @@ public class Annotation {
     private static OutputSerializer serializer = new OutputSerializer();
     public String toXML() {
         return serializer.toXML(this);
+    }
+    public String toJSON() {
+        return serializer.toJSON(this);
     }
     @Override
     public String toString() {
