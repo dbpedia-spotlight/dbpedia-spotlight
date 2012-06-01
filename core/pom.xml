@@ -120,6 +120,15 @@
     <dependencies>
 
         <dependency>
+              <groupId>jdbm</groupId>
+              <artifactId>jdbm</artifactId>
+              <version>3.0-SNAPSHOT</version>
+              <scope>system</scope>
+              <systemPath>${basedir}/../lib/JDBM-3.0-alpha3.jar</systemPath>
+        </dependency>
+
+
+        <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
         </dependency>

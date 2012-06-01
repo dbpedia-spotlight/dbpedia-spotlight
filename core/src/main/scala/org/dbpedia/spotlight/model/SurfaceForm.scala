@@ -19,7 +19,7 @@ package org.dbpedia.spotlight.model
 import org.dbpedia.spotlight.string.ModifiedWikiUtil
 
 
-class SurfaceForm(var name : String)
+class SurfaceForm(var name : String) extends Serializable
 {
   name = name.replace("’", "'")
 
@@ -44,4 +44,7 @@ class SurfaceForm(var name : String)
   }
 
   override def toString = "SurfaceForm["+name+"]"
+
+  var p: Float = 0.0.toFloat
+  var id: Int = 0
 }
