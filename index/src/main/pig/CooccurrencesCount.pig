@@ -31,19 +31,23 @@ entityPairs = FOREACH coOccsById {
 };
 
 -- Self co-occurrences are not desired
-cleanedPairs = FILTER entityPairs by ent1!= ent2;
+cleanedPairs = FILTER entityPairs BY ent1!= ent2;
 
 --Group by entity co-occured pair
 groupedPairs = GROUP cleanedPairs BY (ent1,ent2);
 
 -- Count the entity pairs
 cnt = FOREACH groupedPairs GENERATE group.ent1,group.ent2, COUNT(cleanedPairs) AS count;
-describe cnt;
+
+-- Cooccurrence less than 3 seems noisy and are removed
+reducedCnt = FILTER cnt BY count>2;
+
 -- Group into a ajancency list
-adjLists = GROUP cnt BY ent1;
+adjLists = GROUP reducedCnt BY ent1;
 
 -- Format to a JSON like format 
-reducedAdjLists = FOREACH adjLists GENERATE group,cnt.(ent2,count);
+JSONAdjLists = FOREACH adjLists GENERATE group,reducedCnt.(ent2,count);
+
 -- Write out
 -- Consider use JSONStorage
-STORE reducedAdjLists INTO '$dir/co-occs-count.out' USING PigStorage();
+STORE JSONAdjLists INTO '$dir/co-occs-count.out' USING PigStorage();
