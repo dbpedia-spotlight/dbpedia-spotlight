@@ -26,7 +26,8 @@ coOccsById = GROUP cleanedDocEntPairs BY reducedId;
 -- Flatten to cross product the list of uri
 entityPairs = FOREACH coOccsById {
 	uri = cleanedDocEntPairs.uri;
-	generate flatten(uri) AS (ent1) ,flatten(uri) AS (ent2); 
+	sortedUri = order uri by uri;
+	generate flatten(sortedUri) AS (ent1) ,flatten(sortedUri) AS (ent2); 
 };
 
 -- Self co-occurrences are not desired
@@ -43,7 +44,6 @@ adjLists = GROUP cnt BY ent1;
 
 -- Format to a JSON like format 
 reducedAdjLists = FOREACH adjLists GENERATE group,cnt.(ent2,count);
-
 -- Write out
 -- Consider use JSONStorage
 STORE reducedAdjLists INTO '$dir/co-occs-count.out' USING PigStorage();
