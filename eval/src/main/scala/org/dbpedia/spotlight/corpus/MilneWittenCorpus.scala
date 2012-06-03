@@ -58,8 +58,11 @@ class MilneWittenCorpus(val documents: Traversable[NodeSeq]) extends AnnotatedTe
         val cleanText = new StringBuilder()
         var accumulatedLengthDifference = 0
         var lastDirtyOffset = 0
-        var tail = ""
-        val spots = (wikiLinkMatcher findAllIn p).matchData map { m => {  // println(m.start, m.end, m.before, m.after, m.source)
+        val matches = (wikiLinkMatcher findAllIn p).matchData.toTraversable
+        val nMatches = matches.size
+        var i = 0
+        val spots = matches.map( m => {  // println(m.start, m.end, m.before, m.after, m.source)
+            i = i + 1
             val wikiLinkString = m.toString //Example: [[The Guardian (Nigeria)|Guardian newspaper|0.4]])
             val wikiLinkArray = wikiLinkString.replaceAll("""\[\[|\]\]""","").split("\\|")
             val uri = wikiLinkArray(0)
@@ -76,13 +79,16 @@ class MilneWittenCorpus(val documents: Traversable[NodeSeq]) extends AnnotatedTe
             cleanText.append(cleanSurfaceForm)
 
             lastDirtyOffset = m.end
-            tail = m.after.toString
-            println(tail)
-            accumulatedLengthDifference = accumulatedLengthDifference + lengthDifference
 
+            //last chunk
+            //if (!m.after.toString.contains("""\[\[|\]\]"""))
+            if (i==nMatches)
+		cleanText.append(m.after.toString)
+
+            accumulatedLengthDifference = accumulatedLengthDifference + lengthDifference
+            
             (new DBpediaResource(uri),new SurfaceForm(cleanSurfaceForm),offset,confidence.toDouble)
-        }}
-        cleanText.append(tail)
+        })
 
         (spots.toList, cleanText.toString)
     }
@@ -137,7 +143,7 @@ object MilneWittenCorpus {
 
                 (uri,cleanSurfaceForm,offset,confidence)
             }}
-            println(cleanText)
+            //println(cleanText)
         });
 
     }
