@@ -48,7 +48,7 @@ class DefaultAnnotator(val spotter : Spotter, val disambiguator: Disambiguator) 
 
 }
 
-class DefaultParagraphAnnotator(val spotter : Spotter, val disambiguator: ParagraphDisambiguatorJ) {
+class DefaultParagraphAnnotator(val spotter : Spotter, val disambiguator: ParagraphDisambiguatorJ) extends ParagraphAnnotator {
 
     private val LOG = LogFactory.getLog(this.getClass)
 

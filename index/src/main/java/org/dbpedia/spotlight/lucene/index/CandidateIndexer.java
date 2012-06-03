@@ -189,8 +189,8 @@ public class CandidateIndexer extends BaseIndexer<Candidate> {
         String inputFileName = args[0];  // DBpedia surface forms mapping
 		String outputDirName = args[1];  // target Lucene mContextIndexDir
         int minCount = 3;
-        boolean shouldOverwrite = false;
         String luceneManagerType = "case-insensitive"; //case-insensitive
+        boolean shouldOverwrite = false;
 
         try { minCount = Integer.valueOf(args[2]); } catch(ArrayIndexOutOfBoundsException ignored) {}
         try { luceneManagerType = args[3]; } catch(ArrayIndexOutOfBoundsException ignored) {}
@@ -201,10 +201,13 @@ public class CandidateIndexer extends BaseIndexer<Candidate> {
             mLucene = new LuceneManager.CaseSensitiveSurfaceForms(FSDirectory.open(new File(outputDirName)));
         } else if (luceneManagerType.contains("buffered")){
             mLucene = new LuceneManager.BufferedMerging(FSDirectory.open(new File(outputDirName)));
+        } else if (luceneManagerType.contains("phonetic")){
+            mLucene = new LuceneManager.PhoneticSurfaceForms(FSDirectory.open(new File(outputDirName)));
         } else {
             mLucene = new LuceneManager.CaseInsensitiveSurfaceForms(FSDirectory.open(new File(outputDirName)));
         }
         mLucene.shouldOverwrite = shouldOverwrite;
+
 
         CandidateIndexer si = new CandidateIndexer(mLucene);
 

@@ -53,6 +53,8 @@ public class SpotterConfiguration {
         AtLeastOneNounSelector,
         CoOccurrenceBasedSelector,
         NESpotter,
+        KeyphraseSpotter,
+       // OpenNLPChunkerSpotter
         WikiMarkupSpotter
     }
 

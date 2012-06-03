@@ -24,6 +24,7 @@ import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy;
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy;
 
 import org.dbpedia.spotlight.web.rest.Server;
+import org.dbpedia.spotlight.web.rest.ServerUtils;
 import org.dbpedia.spotlight.web.rest.SpotlightInterface;
 
 import javax.servlet.http.HttpServletRequest;
@@ -48,11 +49,6 @@ public class Disambiguate {
     // Disambiguation interface
     private static SpotlightInterface disambigInterface = new SpotlightInterface("/disambiguate");
 
-    // Sets the necessary headers in order to enable CORS
-    private Response ok(String response) {
-        return Response.ok().entity(response).header("Access-Control-Allow-Origin","*").build();
-    }
-
     @GET
     @Produces("text/html")
     public Response getHTML(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
@@ -64,9 +60,14 @@ public class Disambiguate {
                           @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution,
                           @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
                           @Context HttpServletRequest request
-    ) throws Exception {
+    ) {
         String clientIp = request.getRemoteAddr();
-        return ok(disambigInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name(),disambiguatorName));
+        try {
+            return ServerUtils.ok(disambigInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name(),disambiguatorName));
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.TEXT_HTML).build());
+        }
     }
 
     @GET
@@ -80,9 +81,14 @@ public class Disambiguate {
                           @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution,
                           @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
                           @Context HttpServletRequest request
-    ) throws Exception {
+    ) {
         String clientIp = request.getRemoteAddr();
-        return ok(disambigInterface.getRDFa(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name() , disambiguatorName));
+        try {
+            return ServerUtils.ok(disambigInterface.getRDFa(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name() , disambiguatorName));
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.APPLICATION_XHTML_XML).build());
+        }
     }
 
     @GET
@@ -96,10 +102,15 @@ public class Disambiguate {
                          @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution,
                          @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
                          @Context HttpServletRequest request
-    ) throws Exception {
+    ) {
         String clientIp = request.getRemoteAddr();
 
-        return ok(disambigInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name(), disambiguatorName));
+        try {
+            return ServerUtils.ok(disambigInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name(), disambiguatorName));
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.TEXT_XML).build());
+        }
     }
 
     @GET
@@ -113,10 +124,15 @@ public class Disambiguate {
                           @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution,
                           @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
                           @Context HttpServletRequest request
-    ) throws Exception {
+    ) {
         String clientIp = request.getRemoteAddr();
 
-        return ok(disambigInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name(), disambiguatorName));
+        try {
+            return ServerUtils.ok(disambigInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name(), disambiguatorName));
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.APPLICATION_JSON).build());
+        }
     }
 
     //----------------
@@ -134,8 +150,15 @@ public class Disambiguate {
       @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @FormParam("coreferenceResolution") boolean coreferenceResolution,
       @DefaultValue("Default") @QueryParam("disambiguator") String disambiguatorName,
       @Context HttpServletRequest request
-      ) throws Exception {
-        return getHTML(text,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,disambiguatorName,request);
+      ) {
+        String clientIp = request.getRemoteAddr();
+        try {
+            return ServerUtils.ok(disambigInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name(), disambiguatorName));
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.TEXT_HTML).build());
+        }
+
     }
 
     @POST
@@ -151,8 +174,15 @@ public class Disambiguate {
       @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @FormParam("coreferenceResolution") boolean coreferenceResolution,
       @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
       @Context HttpServletRequest request
-      ) throws Exception {
-        return getRDFa(text,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,disambiguatorName,request);
+      ) {
+        try {
+            String clientIp = request.getRemoteAddr();
+            return ServerUtils.ok(disambigInterface.getHTML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name(), disambiguatorName));
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.TEXT_HTML).build());
+        }
+
     }
 
     @POST
@@ -168,8 +198,15 @@ public class Disambiguate {
       @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @FormParam("coreferenceResolution") boolean coreferenceResolution,
       @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
       @Context HttpServletRequest request
-      ) throws Exception {
-        return getXML(text,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,disambiguatorName,request);
+      ) {
+        try {
+            String clientIp = request.getRemoteAddr();
+            return ServerUtils.ok(disambigInterface.getXML(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name(), disambiguatorName));
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.TEXT_XML).build());
+        }
+
     }
 
     @POST
@@ -185,7 +222,13 @@ public class Disambiguate {
       @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @FormParam("coreferenceResolution") boolean coreferenceResolution,
       @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
       @Context HttpServletRequest request
-      ) throws Exception {
-        return getJSON(text,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,disambiguatorName,request);
+      ) {
+        String clientIp = request.getRemoteAddr();
+        try {
+            return ServerUtils.ok(disambigInterface.getJSON(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.UserProvidedSpots.name(), disambiguatorName));
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.APPLICATION_JSON).build());
+        }
       }
 }

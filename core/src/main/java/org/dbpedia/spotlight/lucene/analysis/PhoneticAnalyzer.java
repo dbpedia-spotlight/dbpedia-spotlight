@@ -28,6 +28,7 @@ import org.apache.lucene.analysis.LowerCaseFilter;
 import org.apache.lucene.analysis.StopFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.phonetic.DoubleMetaphoneFilter;
+import org.apache.lucene.analysis.shingle.ShingleFilter;
 import org.apache.lucene.analysis.standard.StandardFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.util.Version;
@@ -59,9 +60,10 @@ public class PhoneticAnalyzer extends Analyzer {
     public TokenStream tokenStream(String fieldName, Reader reader) {
         TokenStream result = new StandardTokenizer(mMatchVersion, reader);
         result = new StandardFilter(mMatchVersion, result);
-        result = new LowerCaseFilter(mMatchVersion, result);
-        result = new StopFilter(mMatchVersion, result, mStopWordSet);
-        result = new DoubleMetaphoneFilter(result,mMaxCodeLength,true);
+        result = new LowerCaseFilter(mMatchVersion, result);            // lowercased only
+        result = new StopFilter(mMatchVersion, result, mStopWordSet);   // remove stopwords
+        result = new DoubleMetaphoneFilter(result,mMaxCodeLength,true); // store phonetic code
+        result = new ShingleFilter(result, 2, 3);                       // create token n-grams
         return result;
     }
 

@@ -133,7 +133,13 @@ public class MergedOccurrencesContextIndexer extends OccurrenceContextIndexer {
             LOG.info("Processed "+ numEntriesProcessed +" occurrences. Allocated mem can hold an est. max of "+maxDocsBeforeError+" entries.");
             LOG.info("Buffer uriToDocumentMap contains "+uriToDocumentMap.size()+ " entries.");
 
-            merge(); // if writing to disk fails, an exception will be thrown and the buffer won't be emptied below
+            if (numMerges==0) {
+                dump();
+                numMerges++;
+            } else {
+                merge(); // if writing to disk fails, an exception will be thrown and the buffer won't be emptied below
+            }
+
 
             // Clear the buffer, unless the disk operation above failed
             uriToDocumentMap = new HashMap<String,Document>();
