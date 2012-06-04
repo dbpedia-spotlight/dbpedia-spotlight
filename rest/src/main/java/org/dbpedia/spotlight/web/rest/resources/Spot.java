@@ -98,5 +98,47 @@ public class Spot {
         }
     }
 
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces({MediaType.TEXT_XML,MediaType.APPLICATION_XML})
+    public Response postXML(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
+                            //@DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
+                            //@DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
+                            @DefaultValue("Default") @FormParam("spotter") String spotterName,
+                            @Context HttpServletRequest request) {
+
+        String clientIp = request.getRemoteAddr();
+
+        try {
+            List<SurfaceFormOccurrence> spots = annotationInterface.spot(spotterName, new Text(text));
+            String response = new Annotation(new Text(text), spots).toXML();
+            return ServerUtils.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.TEXT_HTML).build());
+        }
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response postJSON(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
+                            //@DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
+                            //@DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
+                            @DefaultValue("Default") @FormParam("spotter") String spotterName,
+                            @Context HttpServletRequest request) {
+
+        String clientIp = request.getRemoteAddr();
+
+        try {
+            List<SurfaceFormOccurrence> spots = annotationInterface.spot(spotterName, new Text(text));
+            String response = new Annotation(new Text(text), spots).toJSON();
+            return ServerUtils.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.TEXT_HTML).build());
+        }
+    }
+
 
 }
