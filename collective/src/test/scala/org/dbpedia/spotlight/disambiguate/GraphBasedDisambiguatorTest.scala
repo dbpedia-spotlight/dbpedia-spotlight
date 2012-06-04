@@ -1,9 +1,8 @@
 package org.dbpedia.spotlight.disambiguate
 
-import junit.framework.TestCase
+import org.dbpedia.spotlight.disambiguate.GraphBasedDisambiguator
 import org.junit.Test
-import junit.framework.Assert.assertEquals
-
+import org.junit.Assert.assertEquals
 
 /**
  * Created with IntelliJ IDEA.
@@ -12,14 +11,13 @@ import junit.framework.Assert.assertEquals
  * Time: 10:41 PM
  */
 
-
-class GraphBasedDisambiguatorTest extends TestCase{
+class GraphBasedDisambiguatorTest{
   val disambiguator = new GraphBasedDisambiguator()
 
-  @Test
+  @Test        // just try out test
   def testDisambiguatorName() {
       val name = "GraphBasedDisambiguatorRunner"
-      assertEquals(disambiguator.name,name)
+      println(disambiguator.name)
+      assertEquals(name,disambiguator.name)
    }
-
 }

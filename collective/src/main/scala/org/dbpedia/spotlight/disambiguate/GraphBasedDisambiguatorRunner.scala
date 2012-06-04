@@ -6,6 +6,7 @@ import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy
 import org.dbpedia.spotlight.spot.Spotter
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.exceptions.SearchException
+import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ
 
 /*
  * Copyright 2012 DBpedia Spotlight Development Team
@@ -35,7 +36,7 @@ import org.dbpedia.spotlight.exceptions.SearchException
 object GraphBasedDisambiguatorRunner {
 
   def main(args: Array[String]) {
-    testGraphBasedDisambiguator("../conf/server.properties", "Default", "Default")
+    testGraphBasedDisambiguator("../conf/server.properties", "Default", "Document")
   }
 
   def testGraphBasedDisambiguator(configFileName: String, spotterName: String, disambiguatorName: String) {
@@ -48,34 +49,38 @@ object GraphBasedDisambiguatorRunner {
     val disambiguationPolicy = DisambiguationPolicy.valueOf(disambiguatorName)
     val disambiguator = factory.disambiguator(disambiguationPolicy)
 
-    val occList = process(passage, spotter, disambiguator)
+    val k = 5
+    val occList = process(passage, spotter, disambiguator, k)
 
     for (occ <- occList) {
       println("--------------------------")
-      println(occ.id, occ.surfaceForm, occ.similarityScore, occ.contextualScore, occ.percentageOfSecondRank)
-
+      val surOcc = occ._1
+      val candidates = occ._2
+      println("Surface form spotted: " + surOcc.surfaceForm)
+      println("Showing the best " + k + "(if any) candidates for each surface form:")
+      candidates.foreach(candidate => println("\t-->" +(candidate.surfaceForm, candidate.resource, candidate.similarityScore, candidate.contextualScore, candidate.percentageOfSecondRank)))
     }
   }
 
-  def process(text: String, spotter: Spotter, disambiguator: ParagraphDisambiguatorJ): List[DBpediaResourceOccurrence] = {
+  def process(text: String, spotter: Spotter, disambiguator: ParagraphDisambiguatorJ, numOfResults: Int): List[(SurfaceFormOccurrence, java.util.List[DBpediaResourceOccurrence])] = {
     val spots: List[SurfaceFormOccurrence] = spotter.extract(new Text(text)).toList
 
 
-    var resources: List[DBpediaResourceOccurrence] = List()
+    var bestKforOccs: List[(SurfaceFormOccurrence, java.util.List[DBpediaResourceOccurrence])] = List()
 
 
-    if (spots.size == 0) return resources
+    if (spots.size == 0) return bestKforOccs
 
 
     try {
-      resources = disambiguator.disambiguate(Factory.paragraph.fromJ(spots)).toList
+      bestKforOccs = disambiguator.bestK(Factory.paragraph.fromJ(spots), numOfResults).toList
     }
     catch {
       case e: UnsupportedOperationException => {
         throw new SearchException(e)
       }
     }
-    resources
+    bestKforOccs
   }
 
   val passage = "Soccer Aid: England glory\n\nEngland regained the Soccer Aid crown" +
@@ -95,5 +100,5 @@ object GraphBasedDisambiguatorRunner {
     "both had a couple of early sighters. A neat passing move ended with Merrygold striking an effort " +
     "straight at Van der Sar, before the Dutch stopper saved well with his feet after an excellent run " +
     "and shot from United fan Murs, coming off the right wing.\n\nPhillips blasted both a shot and a " +
-    "free-kick over the bar soon after, before the Rest of the World";
+    "free-kick over the bar soon after, before the Rest of the World"
 }
