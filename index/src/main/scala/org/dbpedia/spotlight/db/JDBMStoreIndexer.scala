@@ -1,13 +1,12 @@
 package org.dbpedia.spotlight.db
 
 import org.dbpedia.spotlight.db.disk.JDBMStore
-import java.io.{FileInputStream, File}
+import java.io.File
 import java.util.Map
 import org.dbpedia.spotlight.model._
-import scala.Predef.Pair
-import org.dbpedia.spotlight.io.SurfaceFormSource
 import org.apache.commons.lang.NotImplementedException
 import scala.collection.JavaConversions._
+import scala.Predef._
 
 /**
  * @author Joachim Daiber
@@ -16,7 +15,7 @@ import scala.collection.JavaConversions._
  *
  */
 
-class JDBMStoreIndexer
+class JDBMStoreIndexer(val baseDir: File)
   extends SurfaceFormIndexer
   with ResourceIndexer
   with TokenIndexer
@@ -26,7 +25,7 @@ class JDBMStoreIndexer
 
   //SURFACE FORMS
 
-  lazy val sfStore = new JDBMStore[String, Pair[Int, Int]]("resources")
+  lazy val sfStore = new JDBMStore[String, Pair[Int, Int]](new File(baseDir, "sf.disk").getAbsolutePath)
 
   def addSurfaceForm(sf: SurfaceForm, count: Int) {
     sfStore.add(sf.name, Pair(sf.id, sf.support))
@@ -37,10 +36,16 @@ class JDBMStoreIndexer
     sfStore.commit()
   }
 
+  def addSurfaceForms(sfCount: Iterator[Pair[SurfaceForm, Int]]) {
+    sfCount.foreach{ case(sf, count) => addSurfaceForm(sf, count) }
+    sfStore.commit()
+  }
+
+
 
   //DBPEDIA RESOURCES
 
-  lazy val resourceStore = new JDBMStore[Int, DBpediaResource]("resources")
+  lazy val resourceStore = new JDBMStore[Int, DBpediaResource](new File(baseDir, "res.disk").getAbsolutePath)
 
   def addResource(resource: DBpediaResource, count: Int) {
     resourceStore.add(resource.id, resource)
@@ -54,7 +59,7 @@ class JDBMStoreIndexer
 
   //RESOURCE CANDIDATES FOR SURFACE FORMS
 
-  lazy val candidateStore = new JDBMStore[Int, List[Pair[Int, Int]]]("candidates")
+  lazy val candidateStore = new JDBMStore[Int, List[Pair[Int, Int]]](new File(baseDir, "cand.disk").getAbsolutePath)
 
   def addCandidate(cand: Candidate, count: Int) {
     throw new NotImplementedException()
@@ -74,7 +79,7 @@ class JDBMStoreIndexer
 
   //TOKENS
 
-  lazy val tokenStore = new JDBMStore[String, Pair[Int, Int]]("tokens")
+  lazy val tokenStore = new JDBMStore[String, Pair[Int, Int]](new File(baseDir, "tokens.disk").getAbsolutePath)
 
   def addToken(token: Token, count: Int) {
     tokenStore.add(token.name, Pair(token.id, token.count))
@@ -88,7 +93,7 @@ class JDBMStoreIndexer
 
   //TOKEN OCCURRENCES
 
-  lazy val tokenOccurenceStore = new JDBMStore[Int, Map[Int, Int]]("token_occs")
+  lazy val tokenOccurrenceStore = new JDBMStore[Int, Map[Int, Int]](new File(baseDir, "token_occs.disk").getAbsolutePath)
 
   def addTokenOccurrence(resource: DBpediaResource, token: Token, count: Int) {
     throw new NotImplementedException()
@@ -100,22 +105,7 @@ class JDBMStoreIndexer
 
   def addTokenOccurrences(occs: Map[DBpediaResource, Map[Token, Int]]) {
     occs.foreach{ case(res, tokenCounts) => addTokenOccurrence(res, tokenCounts) }
-    tokenOccurenceStore.commit()
-  }
-
-}
-
-object JDBMStoreIndexer {
-
-  def main(args: Array[String]) {
-    val indexer = new JDBMStoreIndexer()
-
-    indexer.addSurfaceForms(
-      SurfaceFormSource.fromTSVFile(
-        new File("/Volumes/Daten/DBpedia/Spotlight/surfaceForms-fromOccs-thresh10-TRD.set")
-      ).map{ sf: SurfaceForm => (sf, sf.support) }.toMap.asInstanceOf[java.util.Map[SurfaceForm, Int]]
-    )
-
+    tokenOccurrenceStore.commit()
   }
 
 }

@@ -22,7 +22,7 @@ object StoreEvaluation {
 
   def main(args: Array[String]) {
 
-    val store: SurfaceFormStore = new DiskBasedSurfaceFormStore("sf")
+    val store: SurfaceFormStore = new DiskBasedSurfaceFormStore("data/sf.disk")
     //val store: MemoryBasedSurfaceFormStore = MemoryBasedStores.load[MemoryBasedSurfaceFormStore](new FileInputStream("sf.mem"))
 
     val t = ListBuffer[Long]()

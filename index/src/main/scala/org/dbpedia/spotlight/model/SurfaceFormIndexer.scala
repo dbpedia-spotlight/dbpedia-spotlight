@@ -12,5 +12,6 @@ trait SurfaceFormIndexer {
 
   def addSurfaceForm(sf: SurfaceForm, count: Int)
   def addSurfaceForms(sfCount: Map[SurfaceForm, Int])
+  def addSurfaceForms(sfCount: Iterator[Pair[SurfaceForm, Int]])
 
 }
