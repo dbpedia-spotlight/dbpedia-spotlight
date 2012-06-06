@@ -8,7 +8,7 @@ import org.dbpedia.spotlight.model.SurfaceForm
 
 trait SurfaceFormStore {
 
-  def get(surfaceform: String): SurfaceForm
+  def getSurfaceForm(surfaceform: String): SurfaceForm
 
 
 }

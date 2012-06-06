@@ -12,6 +12,6 @@ import org.dbpedia.spotlight.model.{Candidate, SurfaceForm}
 
 trait CandidateMapStore {
 
-  def get(surfaceform: SurfaceForm): Set[Candidate]
+  def getCandidates(surfaceform: SurfaceForm): Set[Candidate]
 
 }

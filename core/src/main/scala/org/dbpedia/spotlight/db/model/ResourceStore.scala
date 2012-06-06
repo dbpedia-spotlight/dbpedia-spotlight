@@ -9,6 +9,6 @@ import org.dbpedia.spotlight.model.DBpediaResource
 
 trait ResourceStore {
 
-  def get(id: Int): DBpediaResource
+  def getResource(id: Int): DBpediaResource
 
 }

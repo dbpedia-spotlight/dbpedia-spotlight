@@ -12,6 +12,6 @@ import org.dbpedia.spotlight.model.{Token, DBpediaResource}
 
 trait ContextStore {
 
-  def get(resource: DBpediaResource, token: Token): Int
+  def getContextCount(resource: DBpediaResource, token: Token): Int
 
 }

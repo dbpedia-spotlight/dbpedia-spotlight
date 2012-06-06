@@ -2,12 +2,10 @@ package org.dbpedia.spotlight.db
 
 import disk.DiskBasedStores.DiskBasedSurfaceFormStore
 import io.Source
-import memory.MemoryBasedStores
-import memory.MemoryBasedStores.MemoryBasedSurfaceFormStore
+import memory.MemoryBasedStore.MemoryBasedSurfaceFormStore
 import collection.mutable.ListBuffer
+import memory.MemorySurfaceFormStore
 import model.SurfaceFormStore
-import tools.nsc.io.File
-import java.io.FileInputStream
 import util.Random
 import org.dbpedia.spotlight.model.SurfaceForm
 
@@ -22,8 +20,8 @@ object StoreEvaluation {
 
   def main(args: Array[String]) {
 
-    val store: SurfaceFormStore = new DiskBasedSurfaceFormStore("data/sf.disk")
-    //val store: MemoryBasedSurfaceFormStore = MemoryBasedStores.load[MemoryBasedSurfaceFormStore](new FileInputStream("sf.mem"))
+    val store: SurfaceFormStore = new MemorySurfaceFormStore("data/sf.disk")
+    //val store: MemoryBasedSurfaceFormStore = MemoryStore$.load[MemoryBasedSurfaceFormStore](new FileInputStream("sf.mem"))
 
     val t = ListBuffer[Long]()
 
@@ -34,7 +32,7 @@ object StoreEvaluation {
       line: String => {
         if (rs.contains(i)) {
           val b = System.currentTimeMillis
-          val form: SurfaceForm = store.get(line.trim)
+          val form: SurfaceForm = store.getSurfaceForm(line.trim)
           println(form)
           t.append(System.currentTimeMillis - b)
           println(t.last)

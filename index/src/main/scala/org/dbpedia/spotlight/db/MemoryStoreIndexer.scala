@@ -1,11 +1,11 @@
 package org.dbpedia.spotlight.db
 
 import gnu.trove.TObjectIntHashMap
-import memory.MemoryBasedStores.MemoryBasedSurfaceFormStore
-import memory.MemoryBasedStores
+import memory.MemoryBasedStore.MemoryBasedSurfaceFormStore
 import io.Source
 import java.io.File
 import collection.mutable.ListBuffer
+import memory.{MemoryStore, MemorySurfaceFormStore, MemoryBasedStore}
 import org.dbpedia.spotlight.model.{SurfaceFormIndexer, SurfaceForm}
 import java.util.Map
 import org.apache.commons.lang.NotImplementedException
@@ -23,7 +23,7 @@ class MemoryStoreIndexer(val baseDir: File)
 
   //SURFACE FORMS
 
-  lazy val sfStore = new MemoryBasedSurfaceFormStore()
+  lazy val sfStore = new MemorySurfaceFormStore()
 
   def addSurfaceForm(sf: SurfaceForm, count: Int) {
     throw new NotImplementedException()
@@ -50,7 +50,7 @@ class MemoryStoreIndexer(val baseDir: File)
     }
     sfStore.idForString = idForString
     sfStore.supportForID = supportForID.toArray
-    MemoryBasedStores.dump[MemoryBasedSurfaceFormStore](sfStore, new File(baseDir, "sf.mem"))
+    MemoryStore.dump[MemorySurfaceFormStore](sfStore, new File(baseDir, "sf.mem"))
 
   }
 

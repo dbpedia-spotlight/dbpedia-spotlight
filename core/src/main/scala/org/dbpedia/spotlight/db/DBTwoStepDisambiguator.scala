@@ -18,11 +18,11 @@ class DBTwoStepDisambiguator(
 
   def getContextScores(text: Text, candidates: Set[DBpediaResource]): Map[DBpediaResource, Float] = {
 
-    val tokens = text.text.split(" ").map(tokenStore.get(_)) filter( _ != null)
+    val tokens = text.text.split(" ").map(tokenStore.getToken(_)) filter( _ != null)
 
     candidates.map {
       candidate =>
-        contextStore.get(candidate, token)
+        contextStore.getContextCount(candidate, token)
     }
 
 
