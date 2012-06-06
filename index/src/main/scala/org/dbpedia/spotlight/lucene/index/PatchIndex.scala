@@ -23,7 +23,7 @@ import org.dbpedia.spotlight.lucene.LuceneManager
 import io.Source
 import org.dbpedia.spotlight.model.DBpediaResource
 import org.apache.lucene.store.FSDirectory
-import org.apache.avalon.framework.configuration.ConfigurationException
+
 import org.apache.commons.logging.{LogFactory, Log}
 import java.io.{FileInputStream, File}
 import org.dbpedia.spotlight.util.{ExtractCandidateMap, TypesLoader, IndexingConfiguration}

@@ -174,6 +174,12 @@
             </dependency>
 
             <dependency>
+            	<groupId>commons-logging</groupId>
+            	<artifactId>commons-logging</artifactId>
+            	<version>1.1.1</version>
+            </dependency>
+
+            <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>r07</version>
@@ -291,6 +297,30 @@
                 <version>1.6</version>
             </dependency>
 
+            <dependency>
+                <groupId>trove</groupId>
+                <artifactId>trove</artifactId>
+                <version>1.1-beta-5</version>
+            </dependency>
+
+            <dependency>
+                <groupId>jdbm</groupId>
+                <artifactId>jdbm</artifactId>
+                <version>3.0-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.mahout</groupId>
+                <artifactId>mahout-collections</artifactId>
+                <version>1.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.googlecode</groupId>
+                <artifactId>kryo</artifactId>
+                <version>2.11</version>
+            </dependency>
+
 
         </dependencies>
     </dependencyManagement>
@@ -305,11 +335,11 @@
             <layout>default</layout>
         </repository>
 
-    <repository>
-        <id>java.net-Public</id>
-        <name>Maven Java Net Snapshots and Releases</name>
-        <url>https://maven.java.net/content/groups/public/</url>
-    </repository>
+        <repository>
+            <id>java.net-Public</id>
+            <name>Maven Java Net Snapshots and Releases</name>
+            <url>https://maven.java.net/content/groups/public/</url>
+        </repository>
 
 
         <repository>

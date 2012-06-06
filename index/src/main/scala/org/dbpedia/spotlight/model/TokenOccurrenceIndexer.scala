@@ -11,6 +11,7 @@ import java.util.Map
 trait TokenOccurrenceIndexer {
 
   def addTokenOccurrence(resource: DBpediaResource, token: Token, count: Int)
+  def addTokenOccurrence(resource: DBpediaResource, tokenCounts: Map[Token, Int])
   def addTokenOccurrences(occs: Map[DBpediaResource, Map[Token, Int]])
 
 }

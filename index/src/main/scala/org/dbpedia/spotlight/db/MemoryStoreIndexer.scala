@@ -1,8 +1,8 @@
 package org.dbpedia.spotlight.db
 
-import _root_.gnu.trove.TObjectIntHashMap
+import gnu.trove.TObjectIntHashMap
 import memory.MemoryBasedStores.MemoryBasedSurfaceFormStore
-import memory.{MemoryBasedStores, MemoryBasedStore}
+import memory.MemoryBasedStores
 import io.Source
 import java.io.{FileInputStream, File, InputStream}
 import collection.mutable.ListBuffer

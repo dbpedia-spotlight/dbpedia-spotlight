@@ -12,10 +12,9 @@ import net.kotek.jdbm.DBMaker
 class JDBMStore[A, B](databaseFile: String) {
 
   val db = DBMaker.openFile(databaseFile).enableHardCache().make()
-  var data = db.getHashMap[A, B]("data")
-
-  def create() {
-    data = db.createHashMap[A, B]("data")
+  var data = Option(db.getHashMap[A, B]("data")) match {
+    case None => db.getHashMap[A, B]("data")
+    case Some(map) => map
   }
 
   def add(a: A, b: B) {

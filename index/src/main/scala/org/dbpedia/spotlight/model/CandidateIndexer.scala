@@ -9,7 +9,7 @@ import java.util.Map
 
 trait CandidateIndexer {
 
-  def add(cand: Candidate, count: Int)
-  def add(cands: Map[Candidate, Int])
+  def addCandidate(cand: Candidate, count: Int)
+  def addCandidates(cands: Map[Candidate, Int])
 
 }

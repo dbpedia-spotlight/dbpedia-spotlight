@@ -27,7 +27,7 @@ class DBpediaResource(var uri : String,
                       var prior : Double = 0.0,
                       var types : List[OntologyType] = List[OntologyType]())
 {
-    var id: Int
+    var id: Int = 0
 
     require(uri != null)
 

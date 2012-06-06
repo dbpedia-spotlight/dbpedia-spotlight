@@ -1,6 +1,6 @@
 package org.dbpedia.spotlight.model
 
-import java.util.List
+import java.util.Map
 
 /**
  * @author pablomendes
@@ -11,6 +11,6 @@ import java.util.List
 trait SurfaceFormIndexer {
 
   def addSurfaceForm(sf: SurfaceForm, count: Int)
-  def addSurfaceForms(sfCount: Map[SurfaceForm,Int])
+  def addSurfaceForms(sfCount: Map[SurfaceForm, Int])
 
 }

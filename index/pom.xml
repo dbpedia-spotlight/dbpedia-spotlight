@@ -20,7 +20,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    
+
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -95,10 +95,10 @@
                         <launcher>
                             <id>topicaltext</id>
                             <mainClass>org.dbpedia.spotlight.util.ExtractTopicalText</mainClass>
-			    <!--args>
-				<arg>/data/spotlight/enwiki-20101011-resolved-concepts.uriSorted.tsv</arg>
-				<arg>/home/pablo/Projects/DBpediaSpotlight/IavorJelev/uri_pairs/Politics2_uri_pairs.txt</arg>
-			    </args-->
+                            <!--args>
+                       <arg>/data/spotlight/enwiki-20101011-resolved-concepts.uriSorted.tsv</arg>
+                       <arg>/home/pablo/Projects/DBpediaSpotlight/IavorJelev/uri_pairs/Politics2_uri_pairs.txt</arg>
+                       </args-->
                             <jvmArgs>
                                 <jvmArg>-Xmx3G</jvmArg>
                             </jvmArgs>
@@ -154,7 +154,7 @@
             <artifactId>core</artifactId>
         </dependency>
 
-         <dependency>
+        <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
             <version>3.6.0</version>
@@ -186,6 +186,36 @@
             <artifactId>weka</artifactId>
             <version>3.7.3</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.scalaj</groupId>
+            <artifactId>scalaj-collection_2.9.1</artifactId>
+            <version>1.2</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>trove</groupId>
+            <artifactId>trove</artifactId>
+            <version>1.1-beta-5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>jdbm</groupId>
+            <artifactId>jdbm</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.mahout</groupId>
+            <artifactId>mahout-collections</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.googlecode</groupId>
+            <artifactId>kryo</artifactId>
+        </dependency>
+
+
 
     </dependencies>
 
