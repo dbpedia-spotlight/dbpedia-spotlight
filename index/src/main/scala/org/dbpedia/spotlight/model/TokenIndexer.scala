@@ -1,6 +1,6 @@
 package org.dbpedia.spotlight.model
 
-import java.util.List
+import java.util.Map
 
 /**
  * @author pablomendes
@@ -10,7 +10,7 @@ import java.util.List
 
 trait TokenIndexer {
 
-  def add(token: Token, count: Int)
-  def add(tokenCount: Map[Token, Int])
+  def addToken(token: Token, count: Int)
+  def addTokens(tokenCount: Map[Token, Int])
 
 }

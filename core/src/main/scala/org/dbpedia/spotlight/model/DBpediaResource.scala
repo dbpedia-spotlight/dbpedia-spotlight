@@ -27,6 +27,8 @@ class DBpediaResource(var uri : String,
                       var prior : Double = 0.0,
                       var types : List[OntologyType] = List[OntologyType]())
 {
+    var id: Int
+
     require(uri != null)
 
     uri = uri.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")

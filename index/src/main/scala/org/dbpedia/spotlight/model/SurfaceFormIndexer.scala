@@ -10,7 +10,7 @@ import java.util.List
 
 trait SurfaceFormIndexer {
 
-  def add(sf: SurfaceForm, count: Int)
-  def add(sfCount: Map[SurfaceForm,Int])
+  def addSurfaceForm(sf: SurfaceForm, count: Int)
+  def addSurfaceForms(sfCount: Map[SurfaceForm,Int])
 
 }

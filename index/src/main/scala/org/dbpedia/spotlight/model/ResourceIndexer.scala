@@ -10,7 +10,7 @@ import java.util.Map
 
 trait ResourceIndexer {
 
-  def add(resource: DBpediaResource, count: Int)
-  def add(resourceCount: Map[DBpediaResource, Int])
+  def addResource(resource: DBpediaResource, count: Int)
+  def addResources(resourceCount: Map[DBpediaResource, Int])
 
 }
