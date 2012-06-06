@@ -2,9 +2,14 @@ package org.dbpedia.spotlight.db
 
 import disk.DiskBasedStores.DiskBasedSurfaceFormStore
 import io.Source
-import util.Random
-import org.dbpedia.spotlight.db.model.SurfaceFormStore
+import memory.MemoryBasedStores
+import memory.MemoryBasedStores.MemoryBasedSurfaceFormStore
 import collection.mutable.ListBuffer
+import model.SurfaceFormStore
+import tools.nsc.io.File
+import java.io.FileInputStream
+import util.Random
+import org.dbpedia.spotlight.model.SurfaceForm
 
 /**
  * @author Joachim Daiber
@@ -18,30 +23,23 @@ object StoreEvaluation {
   def main(args: Array[String]) {
 
     val store: SurfaceFormStore = new DiskBasedSurfaceFormStore("sf")
-
-    var lines = Source.fromFile("/Users/jodaiber/Desktop/DBpedia/spots.set").getLines().toList
-    var r = Random.shuffle(lines)
-    val randomSFs = r.take(10000)
-    r = null;
-    lines = null
-
-    System.gc();
-    System.gc();
-    System.gc();
-    System.gc();
-    System.gc();
-    System.gc();
-    System.gc();
-    System.gc();
-
+    //val store: MemoryBasedSurfaceFormStore = MemoryBasedStores.load[MemoryBasedSurfaceFormStore](new FileInputStream("sf.mem"))
 
     val t = ListBuffer[Long]()
-    randomSFs foreach {
+
+    var i = 0
+    val rs = Seq.fill(10000)(Random.nextInt(1000000)).toSet
+
+    Source.fromFile("/Users/jodaiber/Desktop/DBpedia/spots.set").getLines() foreach {
       line: String => {
-        val b = System.currentTimeMillis
-        println(store.get(line.trim))
-        t.append(System.currentTimeMillis - b)
-        println(t.last)
+        if (rs.contains(i)) {
+          val b = System.currentTimeMillis
+          val form: SurfaceForm = store.get(line.trim)
+          println(form)
+          t.append(System.currentTimeMillis - b)
+          println(t.last)
+        }
+        i+=1
       }
     }
 
