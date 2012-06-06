@@ -2,15 +2,9 @@ package org.dbpedia.spotlight.corpus
 
 import org.dbpedia.spotlight.io.AnnotatedTextSource
 import org.dbpedia.spotlight.model._
-import java.io.{File, IOException}
-import collection.JavaConversions._
-import org.xml.sax.InputSource
+import java.io.File
 import io.Source
 import xml.NodeSeq
-import xml.NodeSeq._
-import org.dbpedia.spotlight.spot.WikiMarkupSpotter
-import org.dbpedia.spotlight.string.ParseSurfaceFormText
-
 /**
  * Occurrence source for reading the corpus from the original Milne&Witten paper (Wikify system).
  *
@@ -33,11 +27,7 @@ class MilneWittenCorpus(val documents: Traversable[NodeSeq]) extends AnnotatedTe
                 val paragraphId = docId.concat("-").concat(i.toString)
                 val (wikiLinks,cleanText) = parse(p)
                 val text = new Text(cleanText)
-                val occurrences = wikiLinks.map( w => {
-                    val resource = w._1
-                    val surfaceForm = w._2
-                    val offset = w._3
-                    val confidence = w._4
+                val occurrences = wikiLinks.map{ case (resource, surfaceForm, offset, confidence) => {
                     new DBpediaResourceOccurrence(paragraphId.concat("-").concat(offset.toString),
                         resource,
                         surfaceForm,
@@ -45,7 +35,7 @@ class MilneWittenCorpus(val documents: Traversable[NodeSeq]) extends AnnotatedTe
                         offset,
                         Provenance.Manual,
                         confidence)
-                }).toList
+                }}.toList
                 val annotated = new AnnotatedParagraph(paragraphId, text, occurrences)
                 f(annotated)
             })
@@ -81,7 +71,7 @@ class MilneWittenCorpus(val documents: Traversable[NodeSeq]) extends AnnotatedTe
             lastDirtyOffset = m.end
 
             if (i==nMatches)
-		cleanText.append(m.after.toString)
+                cleanText.append(m.after.toString)
 
             accumulatedLengthDifference = accumulatedLengthDifference + lengthDifference
             
@@ -101,8 +91,8 @@ object MilneWittenCorpus {
     }
 
     def main (args: Array[String]) {
-        val dir = new File("/home/pablo/eval/wikify/original")
-        MilneWittenCorpus.fromDirectory(dir).filter( o => o.id.contains("APW19980603_0791") ).foreach( {
+        val dir = new File(args(0)) // /home/pablo/eval/wikify/original/
+        MilneWittenCorpus.fromDirectory(dir).foreach( {
             println
         })
     }

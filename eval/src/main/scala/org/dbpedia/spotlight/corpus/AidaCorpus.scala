@@ -17,29 +17,34 @@ import org.dbpedia.spotlight.corpus.AidaCorpus.{CoNLLToken, CoNLLDoc}
 
 class AidaCorpus(val documents: List[CoNLLDoc]) extends AnnotatedTextSource {
 
-    val nilUri = "--NME--"
-
     override def foreach[U](f : AnnotatedParagraph => U) {
 
         documents.foreach( doc => {
             val paragraphId = "%s_%s".format(doc.docId,doc.docLabel)
             val cleanText = new StringBuilder()
+            var inside = false
+            var currentEntityName = ""
             val annotations = doc.tokens.flatMap( token => {
                 val annotation = if (token.bioTag equals "B") { //beginning of a tagged entity
+                    inside = true
+                    currentEntityName = token.surfaceForm
                     val offset = cleanText.toString().length
                     Some((paragraphId, new DBpediaResource(token.resourceUri), new SurfaceForm(token.surfaceForm), offset))
+                } else if (token.bioTag equals "I") {
+                    None
                 } else {
+//                    if (inside)
+//                        cleanText.append(currentEntityName).append(" ")
+//                    else
+//                        cleanText.append(token.token).append(" ")
+                    inside = false
                     None
                 }
                 cleanText.append(token.token).append(" ")
                 annotation
             })
-            val occs = annotations.map( annotation => {
-                val paragraphId = annotation._1
-                val resource = annotation._2
-                val surfaceForm = annotation._3
-                val offset = annotation._4
-                val text = new Text(cleanText.toString)
+            val text = new Text(cleanText.toString.trim)
+            val occs = annotations.map{ case (paragraphId,resource,surfaceForm,offset) => {
                 new DBpediaResourceOccurrence(paragraphId,
                     resource,
                     surfaceForm,
@@ -47,9 +52,9 @@ class AidaCorpus(val documents: List[CoNLLDoc]) extends AnnotatedTextSource {
                     offset,
                     Provenance.Manual,
                     1.0)
-            }).toList
+            }}.toList
 
-            val annotated = new AnnotatedParagraph(paragraphId, new Text(cleanText.toString), occs)
+            val annotated = new AnnotatedParagraph(paragraphId, text, occs)
             f(annotated)
 
         })
@@ -59,6 +64,8 @@ class AidaCorpus(val documents: List[CoNLLDoc]) extends AnnotatedTextSource {
 }
 
 object AidaCorpus {
+
+    val nilUri = "--NME--"
 
     class CoNLLDoc(val docId: String, val docLabel: String) {
         val tokens = new ListBuffer[CoNLLToken]()
@@ -108,6 +115,7 @@ object AidaCorpus {
         }).toList ++ List(newDoc)
     }
 
+    implicit def stringToFile(s: String) = new File(s)
 
     def fromFile(file: File) = {
         val lines = Source.fromFile(file).getLines
@@ -120,9 +128,9 @@ object AidaCorpus {
     }
 
     def main (args: Array[String]) {
-        val file = new File("/home/pablo/eval/aida/gold/CoNLL-YAGO.tsv") //args(0))
+        val file = new File(args(0)) //"/home/pablo/eval/aida/gold/CoNLL-YAGO.tsv")
 
-        AidaCorpus.fromFile(file).foreach( {
+        AidaCorpus.fromFile(file).filter(_.id.contains("1393")).foreach( {
             println
         })
     }
