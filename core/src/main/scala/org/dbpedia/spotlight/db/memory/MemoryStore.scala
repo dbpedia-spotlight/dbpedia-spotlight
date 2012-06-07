@@ -8,9 +8,6 @@ import com.esotericsoftware.kryo.serializers.JavaSerializer
 
 /**
  * @author Joachim Daiber
- *
- *
- *
  */
 
 class MemoryStore extends Serializable

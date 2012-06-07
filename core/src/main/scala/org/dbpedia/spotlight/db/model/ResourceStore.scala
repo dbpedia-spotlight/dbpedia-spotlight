@@ -10,5 +10,6 @@ import org.dbpedia.spotlight.model.DBpediaResource
 trait ResourceStore {
 
   def getResource(id: Int): DBpediaResource
+  def getResourceByName(name: String): DBpediaResource
 
 }

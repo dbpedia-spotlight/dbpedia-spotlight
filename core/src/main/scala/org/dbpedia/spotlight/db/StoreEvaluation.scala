@@ -1,9 +1,8 @@
 package org.dbpedia.spotlight.db
 
-import disk.DiskBasedStores.DiskBasedSurfaceFormStore
-import io.Source
-import memory.MemoryBasedStore.MemoryBasedSurfaceFormStore
 import collection.mutable.ListBuffer
+
+import disk.DiskSurfaceFormStore
 import memory.MemorySurfaceFormStore
 import model.SurfaceFormStore
 import util.Random
@@ -20,7 +19,7 @@ object StoreEvaluation {
 
   def main(args: Array[String]) {
 
-    val store: SurfaceFormStore = new MemorySurfaceFormStore("data/sf.disk")
+    val store: SurfaceFormStore = new DiskSurfaceFormStore("data/sf.disk")
     //val store: MemoryBasedSurfaceFormStore = MemoryStore$.load[MemoryBasedSurfaceFormStore](new FileInputStream("sf.mem"))
 
     val t = ListBuffer[Long]()
@@ -28,7 +27,7 @@ object StoreEvaluation {
     var i = 0
     val rs = Seq.fill(10000)(Random.nextInt(1000000)).toSet
 
-    Source.fromFile("/Users/jodaiber/Desktop/DBpedia/spots.set").getLines() foreach {
+    scala.io.Source.fromFile("/Users/jodaiber/Desktop/DBpedia/spots.set").getLines() foreach {
       line: String => {
         if (rs.contains(i)) {
           val b = System.currentTimeMillis
