@@ -11,6 +11,7 @@ import org.dbpedia.spotlight.corpus.AidaCorpus.{CoNLLToken, CoNLLDoc}
 /**
  * Occurrence source for reading the corpus from the AIDA System
  *
+ * TODO can be generalized for reading CoNLL NER format.
  *
  * @author pablomendes
  */
@@ -40,12 +41,19 @@ class AidaCorpus(val documents: List[CoNLLDoc]) extends AnnotatedTextSource {
                     inside = false
                     None
                 }
-                cleanText.append(token.token).append(" ")
+                if (token.token.equals("'s") || //fix tokenization while putting text back together
+                    token.token.equals(":") ||
+                    token.token.equals(",") ||
+                    token.token.equals("!") ||
+                    token.token.equals("."))
+                    cleanText.delete(cleanText.length-1,cleanText.length).append(token.token).append(" ")
+                else
+                    cleanText.append(token.token).append(" ")
                 annotation
             })
             val text = new Text(cleanText.toString.trim)
             val occs = annotations.map{ case (paragraphId,resource,surfaceForm,offset) => {
-                new DBpediaResourceOccurrence(paragraphId,
+                new DBpediaResourceOccurrence(paragraphId+"-"+offset,
                     resource,
                     surfaceForm,
                     text,
@@ -130,9 +138,9 @@ object AidaCorpus {
     def main (args: Array[String]) {
         val file = new File(args(0)) //"/home/pablo/eval/aida/gold/CoNLL-YAGO.tsv")
 
-        AidaCorpus.fromFile(file).filter(_.id.contains("1393")).foreach( {
-            println
-        })
+        AidaCorpus.fromFile(file)
+            //.filter(_.id.contains("1393"))
+            .foreach(println)
     }
 
 }

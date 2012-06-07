@@ -21,7 +21,7 @@ class MilneWittenCorpus(val documents: Traversable[NodeSeq]) extends AnnotatedTe
         documents.foreach( doc => {
             val docId = (doc \\ "title").text
             var i = 0
-            val paragraphs = doc.map( _ \\ "p" ).map( _.text.trim )
+            val paragraphs = doc.map( _ \\ "p" ).map( _.text.trim )  // can change here to have one text item per doc or per paragraph
             paragraphs.foreach( p => {
                 i = i + 1
                 val paragraphId = docId.concat("-").concat(i.toString)
