@@ -1,4 +1,4 @@
-package org.dbpedia.spotlight.io
+package org.dbpedia.spotlight.db.io
 
 import io.Source
 import java.io.{InputStream, FileInputStream, File}
@@ -29,6 +29,7 @@ object SurfaceFormSource {
       }
     }
 
+
   def fromPigFile(file: File): Iterator[SurfaceForm] = fromPigInputStream(new FileInputStream(file))
 
 
@@ -41,6 +42,7 @@ object SurfaceFormSource {
         surfaceform
       }
     }
+
 
   def fromTSVFile(file: File): Iterator[SurfaceForm] = fromTSVInputStream(new FileInputStream(file))
 

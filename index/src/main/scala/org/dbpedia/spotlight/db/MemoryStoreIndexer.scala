@@ -1,11 +1,9 @@
 package org.dbpedia.spotlight.db
 
 import gnu.trove.TObjectIntHashMap
-import memory.MemoryBasedStore.MemoryBasedSurfaceFormStore
-import io.Source
 import java.io.File
 import collection.mutable.ListBuffer
-import memory.{MemoryStore, MemorySurfaceFormStore, MemoryBasedStore}
+import memory.{MemoryStore, MemorySurfaceFormStore}
 import org.dbpedia.spotlight.model.{SurfaceFormIndexer, SurfaceForm}
 import java.util.Map
 import org.apache.commons.lang.NotImplementedException
