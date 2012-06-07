@@ -32,6 +32,7 @@
 
     <properties>
         <heapspace.Xmx.server>-Xmx16g</heapspace.Xmx.server>
+        <spotlight.basedir>${project.basedir}/..</spotlight.basedir>
     </properties>
 
     <build>

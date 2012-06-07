@@ -36,6 +36,7 @@
 
     <properties>
         <heapspace.Xmx.indexer>-Xmx14g</heapspace.Xmx.indexer>
+        <spotlight.basedir>${project.basedir}/..</spotlight.basedir>
     </properties>
 
     <build>
@@ -138,9 +139,6 @@
             <groupId>org.dbpedia.extraction</groupId>
             <artifactId>core</artifactId>
             <version>2.0-SNAPSHOT</version>
-            <!--TODO keep dependency on DEF minimal. Maybe just the core jar. -->
-            <scope>system</scope>
-            <systemPath>${basedir}/../lib/dbpedia-2.0-SNAPSHOT-jar-with-dependencies.jar</systemPath>
         </dependency>
 
         <dependency>
