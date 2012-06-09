@@ -41,8 +41,8 @@ class AnnotatedParagraph(val id : String,
 
     override def toString = {
         val textLen = text.text.length
-        if (!id.isEmpty) id+": " else "" +
-            //"[Text " + text.text.substring(0, scala.math.min(textLen, 50)) + " ..]" +
+        val apId = if (!id.isEmpty) id+": " else ""
+        apId+ //"[Text " + text.text.substring(0, scala.math.min(textLen, 50)) + " ..]" +
             "<text>\n" + text.text + "\n</text>" +
             "\n<occurrences>\n"+occurrences.map(o => "'%s'@%d => [%s].".format(o.surfaceForm.name,o.textOffset,o.resource.uri)).mkString("\n")+
             "\n</occurrences>\n"

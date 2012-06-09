@@ -39,7 +39,7 @@ class KeywordExtractor(val configuration: SpotlightConfiguration, val nKeywords 
     private val LOG = LogFactory.getLog(this.getClass)
 
     val factory = new SpotlightFactory(configuration)
-    val searcher = factory.searcher
+    val searcher = factory.contextSearcher
 
     /**
      * Builds a surface form a decoded version of the URI (underscores to spaces, percent codes to chars, etc.)

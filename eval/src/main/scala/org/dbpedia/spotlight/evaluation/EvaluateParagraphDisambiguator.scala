@@ -18,11 +18,12 @@
 package org.dbpedia.spotlight.evaluation
 
 import org.dbpedia.spotlight.io.AnnotatedTextSource
-import org.dbpedia.spotlight.model._
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.disambiguate.{CuttingEdgeDisambiguator, TwoStepDisambiguator, ParagraphDisambiguator}
 import java.io.{PrintWriter, File}
 import scalaj.collection.Imports._
+import org.dbpedia.spotlight.graph.PageRankDisambiguator
+import org.dbpedia.spotlight.model._
 
 /**
  * Evaluation for disambiguators that take one paragraph at a time, instead of one occurrence at a time.
@@ -57,6 +58,10 @@ object EvaluateParagraphDisambiguator {
         rank
     }
 
+    def filter(bestK: Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]) :  Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]] = {
+        bestK;
+    }
+
     def evaluate(testSource: Traversable[AnnotatedParagraph], disambiguator: ParagraphDisambiguator, output: PrintWriter) {
         val startTime = System.nanoTime()
 
@@ -72,7 +77,7 @@ object EvaluateParagraphDisambiguator {
             LOG.info("Paragraph %d/%d: %s.".format(i, totalParagraphs, a.id))
             val paragraph = Factory.Paragraph.from(a)
 
-            val bestK = disambiguator.bestK(paragraph,100)
+            val bestK = filter(disambiguator.bestK(paragraph,100))
 
             var acc = 0.0
             a.occurrences
@@ -124,8 +129,8 @@ object EvaluateParagraphDisambiguator {
         //val test : Disambiguator = new GraphCentralityDisambiguator(config)
 
         val factory = new SpotlightFactory(config)
-        val disambiguators = Set(new CuttingEdgeDisambiguator(factory),
-                                 new TwoStepDisambiguator(factory)
+        val disambiguators = Set(//new TwoStepDisambiguator(factory),//new CuttingEdgeDisambiguator(factory),
+                                 new PageRankDisambiguator(factory)
                                  )
 
         val paragraphs = AnnotatedTextSource

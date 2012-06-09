@@ -4,11 +4,6 @@ import io.Source
 import collection.mutable.HashMap
 import org.dbpedia.spotlight.model.{Factory, OntologyType, FreebaseType, DBpediaType}
 import java.sql.{PreparedStatement, Statement, DriverManager}
-import collection.LinearSeqLike
-import org.dbpedia.extraction.ontology.io.OntologyReader
-import java.io.File
-import org.dbpedia.extraction.sources.{FileSource, XMLSource}
-import org.openrdf.rio.RDFParser
 import java.lang.String
 
 

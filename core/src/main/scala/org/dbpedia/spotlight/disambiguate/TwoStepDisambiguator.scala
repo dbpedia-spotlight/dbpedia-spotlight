@@ -24,16 +24,17 @@ import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
 import java.lang.UnsupportedOperationException
 import scalaj.collection.Imports._
-import org.dbpedia.spotlight.lucene.LuceneManager.DBpediaResourceField
 import org.apache.lucene.search.similar.MoreLikeThis
 import org.dbpedia.spotlight.exceptions.{ItemNotFoundException, SearchException, InputException}
 import org.apache.lucene.search.{ScoreDoc, FieldCacheTermsFilter, Explanation, TermsFilter}
 import collection.mutable.{HashMap, HashSet}
-import java.io.{ByteArrayInputStream, File}
 import org.dbpedia.spotlight.model._
 import org.apache.lucene.index.Term
 import com.officedepot.cdap2.collection.CompactHashSet
 import org.dbpedia.spotlight.lucene.search.{LuceneCandidateSearcher, MergedOccurrencesContextSearcher}
+import org.dbpedia.spotlight.lucene.LuceneManager.{PhoneticSurfaceForms, DBpediaResourceField}
+import collection.immutable.Map._
+import java.io.{StringReader, ByteArrayInputStream, File}
 
 /**
  * Paragraph disambiguator that queries paragraphs once and uses candidate map to filter results.
@@ -43,38 +44,13 @@ import org.dbpedia.spotlight.lucene.search.{LuceneCandidateSearcher, MergedOccur
  *
  * @author pablomendes
  */
-class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisambiguator  {
-
-    val configuration = factory.configuration
+class TwoStepDisambiguator(val candidateSearcher: CandidateSearcher,
+                           val contextSearcher: MergedOccurrencesContextSearcher) //TODO should be ContextSearcher. Need a generic disambiguator to enable this.
+    extends ParagraphDisambiguator  {
 
     private val LOG = LogFactory.getLog(this.getClass)
 
     LOG.info("Initializing disambiguator object ...")
-
-    val contextIndexDir = LuceneManager.pickDirectory(new File(configuration.getContextIndexDirectory))
-    val contextLuceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(contextIndexDir) // use this if all surface forms in the index are lower-cased
-    val cache = JCSTermCache.getInstance(contextLuceneManager, configuration.getMaxCacheSize);
-    contextLuceneManager.setContextSimilarity(new CachedInvCandFreqSimilarity(cache))        // set most successful Similarity
-    contextLuceneManager.setDBpediaResourceFactory(configuration.getDBpediaResourceFactory)
-    contextLuceneManager.setDefaultAnalyzer(configuration.getAnalyzer)
-    val contextSearcher : MergedOccurrencesContextSearcher = new MergedOccurrencesContextSearcher(contextLuceneManager)
-
-    var candidateSearcher : CandidateSearcher = null //TODO move to factory
-    var candLuceneManager : LuceneManager = contextLuceneManager;
-    if (configuration.getCandidateIndexDirectory!=configuration.getContextIndexDirectory) {
-        val candidateIndexDir = LuceneManager.pickDirectory(new File(configuration.getCandidateIndexDirectory))
-        //candLuceneManager = new LuceneManager.CaseSensitiveSurfaceForms(candidateIndexDir)
-        candLuceneManager = new LuceneManager(candidateIndexDir)
-        candLuceneManager.setDBpediaResourceFactory(configuration.getDBpediaResourceFactory)
-        candidateSearcher = new LuceneCandidateSearcher(candLuceneManager,true) // or we can provide different functionality for surface forms (e.g. n-gram search)
-        LOG.info("CandidateSearcher initialized from %s".format(candidateIndexDir))
-    } else {
-        candidateSearcher = contextSearcher match {
-            case cs: CandidateSearcher => cs
-            case _ => new LuceneCandidateSearcher(contextLuceneManager, false) // should never happen
-        }
-    }
-
 
     val disambiguator : Disambiguator = new MergedOccurrencesDisambiguator(contextSearcher)
 
@@ -95,37 +71,28 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
     //TODO move to subclass of BaseSearcher
     def query(text: Text, allowedUris: Array[DBpediaResource]) = {
         LOG.debug("Setting up query.")
-        //val context = if (text.text.size<250) (1 to 3).foldLeft(text.text)((acc, t) => acc.concat(" "+text.text)) else text.text //HACK for text that is too short
+
         val context = if (text.text.size<250) text.text.concat(" "+text.text) else text.text //HACK for text that is too short
         //LOG.debug(context)
-        //val filter = new FieldCacheTermsFilter(DBpediaResourceField.CONTEXT.toString,allowedUris)
-        val filter = new org.apache.lucene.search.TermsFilter()
+        val nHits = allowedUris.size
+        val filter = new org.apache.lucene.search.TermsFilter() //TODO can use caching? val filter = new FieldCacheTermsFilter(DBpediaResourceField.CONTEXT.toString,allowedUris)
         allowedUris.foreach( u => filter.addTerm(new Term(DBpediaResourceField.URI.toString,u.uri)) )
-        //val filter = null;
+
         val mlt = new MoreLikeThis(contextSearcher.mReader);
         mlt.setFieldNames(Array(DBpediaResourceField.CONTEXT.toString))
-        mlt.setAnalyzer(contextLuceneManager.defaultAnalyzer)
+        mlt.setAnalyzer(contextSearcher.getLuceneManager.defaultAnalyzer)
         //LOG.debug("Analyzer %s".format(contextLuceneManager.defaultAnalyzer))
-        val inputStream = new ByteArrayInputStream(context.getBytes("UTF-8"));
-        val query = mlt.like(inputStream);
+        //val inputStream = new ByteArrayInputStream(context.getBytes("UTF-8"));
+        val query = mlt.like(new StringReader(context), DBpediaResourceField.CONTEXT.toString);
         LOG.debug("Running query.")
-        contextSearcher.getHits(query, allowedUris.size, 50000, filter)
+        contextSearcher.getHits(query, nHits, 50000, filter)
     }
 
-
-    //TODO break down into two steps: candidates and context query
-    def bestK(paragraph:  Paragraph, k: Int): Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]] = {
-
-        LOG.debug("Running bestK for paragraph %s.".format(paragraph.id))
-
-        if (paragraph.occurrences.size==0) return Map[SurfaceFormOccurrence,List[DBpediaResourceOccurrence]]()
-
-        val m1 = if (candLuceneManager.getDBpediaResourceFactory == null) "lucene" else "jdbc"
-        val m2 = if (contextLuceneManager.getDBpediaResourceFactory == null) "lucene" else "jdbc"
-
+    //If you want us to extract allCandidates from occs while we're generating it, you have to pass in the allCandidates parameter
+    //If you don't pass anything down, we will just fill in a dummy hashset and let the garbage collector deal with it
+    def getCandidates(paragraph: Paragraph, allCandidates: CompactHashSet[DBpediaResource] = CompactHashSet[DBpediaResource]()) = {
         val s1 = System.nanoTime()
         // step1: get candidates for all surface forms (TODO here building allCandidates directly, but could extract from occs)
-        var allCandidates = CompactHashSet[DBpediaResource]();
         val occs = paragraph.occurrences
             .foldLeft( Map[SurfaceFormOccurrence,List[DBpediaResource]]())(
             (acc,sfOcc) => {
@@ -146,6 +113,23 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
             });
         val e1 = System.nanoTime()
         //LOG.debug("Time with %s: %f.".format(m1, (e1-s1) / 1000000.0 ))
+        occs
+    }
+
+
+    def bestK(paragraph:  Paragraph, k: Int): Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]] = {
+
+        LOG.debug("Running bestK for paragraph %s.".format(paragraph.id))
+
+        if (paragraph.occurrences.size==0) return Map[SurfaceFormOccurrence,List[DBpediaResourceOccurrence]]()
+
+//        val m1 = if (candLuceneManager.getDBpediaResourceFactory == null) "lucene" else "jdbc"
+//        val m2 = if (contextLuceneManager.getDBpediaResourceFactory == null) "lucene" else "jdbc"
+
+        // step1: get candidates for all surface forms
+        //       (TODO here building allCandidates directly, but could extract from occs)
+        var allCandidates = CompactHashSet[DBpediaResource]();
+        val occs = getCandidates(paragraph,allCandidates)
 
         val s2 = System.nanoTime()
         // step2: query once for the paragraph context, get scores for each candidate resource
@@ -157,9 +141,9 @@ class TwoStepDisambiguator(val factory: SpotlightFactory) extends ParagraphDisam
             case r: RuntimeException => throw new SearchException(r);
             case _ => LOG.error("Unknown really scary error happened. You can cry now.")
         }
+        // LOG.debug("Hits (%d): %s".format(hits.size, hits.map( sd => "%s=%s".format(sd.doc,sd.score) ).mkString(",")))
 
-       // LOG.debug("Hits (%d): %s".format(hits.size, hits.map( sd => "%s=%s".format(sd.doc,sd.score) ).mkString(",")))
-       // LOG.debug("Reading DBpediaResources.")
+        // LOG.debug("Reading DBpediaResources.")
         val scores = hits
             .foldRight(Map[String,Tuple2[Int,Double]]())((hit,acc) => {
             var resource: DBpediaResource = contextSearcher.getDBpediaResource(hit.doc) //this method returns resource.support=c(r)

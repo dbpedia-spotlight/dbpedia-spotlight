@@ -35,10 +35,10 @@ import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters
 import org.dbpedia.spotlight.tagging.lingpipe.{LingPipeTextUtil, LingPipeTaggedTokenProvider, LingPipeFactory}
 import collection.JavaConversions._
 import org.dbpedia.spotlight.annotate.{DefaultAnnotator, DefaultParagraphAnnotator}
-import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
 import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy
 import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy
+import org.dbpedia.spotlight.lucene.search.{LuceneCandidateSearcher, MergedOccurrencesContextSearcher}
 
 /**
  * This class contains many of the "defaults" for DBpedia Spotlight.
@@ -53,22 +53,39 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
     val analyzer = configuration.analyzer
     assert(analyzer!=null)
 
-    val directory : Directory = LuceneManager.pickDirectory(new File(configuration.getContextIndexDirectory))
-    val luceneManager : LuceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(directory)
-    val similarity : Similarity = new CachedInvCandFreqSimilarity(JCSTermCache.getInstance(luceneManager, configuration.getMaxCacheSize))
+       val contextIndexDir = LuceneManager.pickDirectory(new File(configuration.getContextIndexDirectory))
+    val contextLuceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(contextIndexDir) // use this if all surface forms in the index are lower-cased
+    val similarity = new CachedInvCandFreqSimilarity(JCSTermCache.getInstance(contextLuceneManager, configuration.getMaxCacheSize))
+    contextLuceneManager.setContextSimilarity(similarity)        // set most successful Similarity
+    contextLuceneManager.setDBpediaResourceFactory(configuration.getDBpediaResourceFactory)
+    contextLuceneManager.setDefaultAnalyzer(configuration.getAnalyzer)
+    val contextSearcher : MergedOccurrencesContextSearcher = new MergedOccurrencesContextSearcher(contextLuceneManager)
+
+    var candidateSearcher : CandidateSearcher = null //TODO move to factory
+    var candLuceneManager : LuceneManager = contextLuceneManager;
+    if (configuration.getCandidateIndexDirectory!=configuration.getContextIndexDirectory) {
+        val candidateIndexDir = LuceneManager.pickDirectory(new File(configuration.getCandidateIndexDirectory))
+        //candLuceneManager = new LuceneManager.CaseSensitiveSurfaceForms(candidateIndexDir)
+        candLuceneManager = new LuceneManager(candidateIndexDir)
+        candLuceneManager.setDBpediaResourceFactory(configuration.getDBpediaResourceFactory)
+        candidateSearcher = new LuceneCandidateSearcher(candLuceneManager,true) // or we can provide different functionality for surface forms (e.g. n-gram search)
+        LOG.info("CandidateSearcher initialized from %s".format(candidateIndexDir))
+    } else {
+        candidateSearcher = contextSearcher match {
+            case cs: CandidateSearcher => cs
+            case _ => new LuceneCandidateSearcher(contextLuceneManager, false) // should never happen
+        }
+    }
 
     val lingPipeFactory : LingPipeFactory = new LingPipeFactory(new File(configuration.getTaggerFile), new IndoEuropeanSentenceModel())
 
-    luceneManager.setDefaultAnalyzer(analyzer);
-    luceneManager.setContextSimilarity(similarity);
 
     // The dbpedia resource factory is used every time a document is retrieved from the index.
     // We can use the index itself as provider, or we can use a database. whichever is faster.
     // If the factory is left null, BaseSearcher will use Lucene. Otherwise, it will use the factory.
     val dbpediaResourceFactory : DBpediaResourceFactory = configuration.getDBpediaResourceFactory
-    luceneManager.setDBpediaResourceFactory(dbpediaResourceFactory)
+    contextLuceneManager.setDBpediaResourceFactory(dbpediaResourceFactory)
 
-    val searcher = new MergedOccurrencesContextSearcher(luceneManager);
 
     val spotters = new java.util.HashMap[SpotterConfiguration.SpotterPolicy,Spotter]()
     val disambiguators = new java.util.HashMap[SpotlightConfiguration.DisambiguationPolicy,ParagraphDisambiguatorJ]()
@@ -91,6 +108,8 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
             spotters.getOrElse(policy, SpotterWithSelector.getInstance(spotter(SpotterConfiguration.SpotterPolicy.LingPipeSpotter),new CoOccurrenceBasedSelector(configuration.getSpotterConfiguration, taggedTokenProvider()), taggedTokenProvider()))
         } else if (policy == SpotterConfiguration.SpotterPolicy.NESpotter) {
             spotters.getOrElse(policy, new NESpotter(configuration.getSpotterConfiguration.getOpenNLPModelDir))
+        } else if (policy == SpotterConfiguration.SpotterPolicy.KeyphraseSpotter) {
+            spotters.getOrElse(policy, new KeaSpotter("/data/spotlight/3.7/kea/keaModel-1-3-1", 1000, -1)) 
         } else if (policy == SpotterConfiguration.SpotterPolicy.SpotXmlParser) {
           new SpotXmlParser
         } else if (policy == SpotterConfiguration.SpotterPolicy.WikiMarkupSpotter) {
@@ -124,7 +143,7 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
         if (policy == SpotlightConfiguration.DisambiguationPolicy.Default) {
             disambiguator(SpotlightConfiguration.DisambiguationPolicy.Occurrences)
         } else if (policy == SpotlightConfiguration.DisambiguationPolicy.Document) {
-            disambiguators.getOrElse(policy, new ParagraphDisambiguatorJ(new TwoStepDisambiguator(this)))
+            disambiguators.getOrElse(policy, new ParagraphDisambiguatorJ(new TwoStepDisambiguator(candidateSearcher,contextSearcher)))
         } else if (policy == SpotlightConfiguration.DisambiguationPolicy.Occurrences) {
             disambiguators.getOrElse(policy, new ParagraphDisambiguatorJ(new DefaultDisambiguator(this)))
         } else if (policy == SpotlightConfiguration.DisambiguationPolicy.CuttingEdge) {
@@ -135,7 +154,7 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
     }
 
     def annotator() ={
-        new DefaultAnnotator(spotter(), new MergedOccurrencesDisambiguator(searcher))
+        new DefaultAnnotator(spotter(), new MergedOccurrencesDisambiguator(contextSearcher))
         //new DefaultParagraphAnnotator(spotter(), disambiguator())
     }
 

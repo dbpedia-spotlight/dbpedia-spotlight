@@ -35,7 +35,7 @@ class CuttingEdgeDisambiguator(val factory: SpotlightFactory) extends Disambigua
 
     LOG.info("Initializing disambiguator object ...")
 
-    val disambiguator : Disambiguator = new MixedWeightsDisambiguator(factory.searcher, new LinearRegressionMixture())
+    val disambiguator : Disambiguator = new MixedWeightsDisambiguator(factory.contextSearcher, new LinearRegressionMixture())
 
     //TODO fix MultiThreading
     //val disambiguator : Disambiguator = new MultiThreadedDisambiguatorWrapper(new MixedWeightsDisambiguator(contextSearcher, new LinearRegressionMixture()))

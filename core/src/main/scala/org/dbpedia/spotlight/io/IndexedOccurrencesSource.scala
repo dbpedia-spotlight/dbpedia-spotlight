@@ -25,7 +25,7 @@ object IndexedOccurrencesSource {
 
     def fromConfigFile(configFile : File) : OccurrenceSource = {
         val factory = new SpotlightFactory(new SpotlightConfiguration(configFile.getAbsolutePath))
-        new IndexedOccurrencesSource(factory.searcher)
+        new IndexedOccurrencesSource(factory.contextSearcher)
     }
 
     def fromFile(file : File) : OccurrenceSource = {

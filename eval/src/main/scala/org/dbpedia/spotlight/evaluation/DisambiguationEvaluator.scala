@@ -20,11 +20,11 @@ import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.model._
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.util.Profiling._
-import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
 import org.dbpedia.spotlight.disambiguate._
 import org.dbpedia.spotlight.exceptions._
 import java.io.{File, PrintStream}
-import java.util.ArrayList
+import java.text.SimpleDateFormat
+import java.util.Date
 
 /**
  * Evaluation class. 
@@ -43,9 +43,10 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
     var sfNotFoundCounters    = Map[String,Int]()
     var timeCounters          = Map[String,Long]()
 
+    val date = new SimpleDateFormat("yyyyMMdd-HHmm").format(new Date())
     val output = new PrintStream(new File(outputFileName));
     val sfNotFoundOutput = new PrintStream(new File(outputFileName+".sfNotFound"))
-
+    val texOutput = new PrintStream(new File(outputFileName+"."+date+".tex"))
     var ambiguousOnly: Boolean = true
 
     def listToJavaList[T](l: List[T]) = l.foldLeft(new java.util.ArrayList[T](l.size)){(al, e) => al.add(e); al}
@@ -88,23 +89,32 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
 
     def stats()
     {
+        LOG.info("Results:"+outputFileName)
         for (disambiguator <- disambiguatorSet) {
             val total = if (ambiguousOnly) (totalOccurrenceCount.toDouble-unambiguityCounters(disambiguator.name)) else totalOccurrenceCount.toDouble
             val totalText =  if (ambiguousOnly) disambiguationCounters(disambiguator.name)+"/"+totalOccurrenceCount+"-"+unambiguityCounters(disambiguator.name) else disambiguationCounters(disambiguator.name)+"/"+totalOccurrenceCount
             val accuracy = disambiguationCounters(disambiguator.name).toDouble / total
-            LOG.info("Disambiguation accuracy: "+String.format("%3.2f",double2Double(accuracy*100.0))+"% ("+disambiguator.name+") : "+totalText+" = "+accuracy)
+            val msg = "Disambiguation accuracy: "+String.format("%3.2f",double2Double(accuracy*100.0))+"% ("+disambiguator.name+") : "+totalText+" = "+accuracy
+            LOG.info(msg)
+            texOutput.print(msg)
         }
         for (disambiguator <- disambiguatorSet) {
             val unambiguity = unambiguityCounters(disambiguator.name).toDouble/(totalOccurrenceCount.toDouble);
-            LOG.info("Unambiguity: "+String.format("%3.2f",double2Double(unambiguity*100.0))+"% ("+disambiguator.name+ ") : "+unambiguityCounters(disambiguator.name).toDouble +"/"+ totalOccurrenceCount.toDouble);
+            val msg = "Unambiguity: "+String.format("%3.2f",double2Double(unambiguity*100.0))+"% ("+disambiguator.name+ ") : "+unambiguityCounters(disambiguator.name).toDouble +"/"+ totalOccurrenceCount.toDouble
+            LOG.info(msg)
+            texOutput.print(msg)
         }
         for (disambiguator <- disambiguatorSet) {
             val notFound = sfNotFoundCounters(disambiguator.name).toDouble/(totalOccurrenceCount.toDouble);
-            LOG.info("Surface not found: "+String.format("%3.2f",double2Double(notFound*100.0))+"% ("+disambiguator.name+ ") : "+sfNotFoundCounters(disambiguator.name).toDouble +"/"+ totalOccurrenceCount.toDouble);
+            val msg = "Surface not found: "+String.format("%3.2f",double2Double(notFound*100.0))+"% ("+disambiguator.name+ ") : "+sfNotFoundCounters(disambiguator.name).toDouble +"/"+ totalOccurrenceCount.toDouble
+            LOG.info(msg)
+            texOutput.print(msg)
         }
         for (disambiguator <- disambiguatorSet) {
             val avgTime = timeCounters(disambiguator.name).toDouble/(totalOccurrenceCount.toDouble);
-            LOG.info("Avg Disamb. Time: "+ formatTime(avgTime.toLong)+" ("+disambiguator.name+ ") : "+timeCounters(disambiguator.name).toDouble +"/"+ totalOccurrenceCount.toDouble);
+            val msg = "Avg Disamb. Time: "+ formatTime(avgTime.toLong)+" ("+disambiguator.name+ ") : "+timeCounters(disambiguator.name).toDouble +"/"+ totalOccurrenceCount.toDouble
+            LOG.info(msg)
+            texOutput.print(msg)
         }
     }
 
@@ -188,6 +198,7 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
                             disambiguator.bestK(sfOcc,outputTopK) //ATTENTION!!! the order of occurrences returned here will be used to assess if this was a correct or incorrect disambiguation
                         }
 
+
                         //DEBUG
                         //val watch = bestK.map(o => "%s \t %.5f \t %.5f \t %.5f" .format(o.resource.uri, o.resource.prior, o.contextualScore, o.similarityScore) )
 
@@ -198,7 +209,7 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
                         }
 
 
-                        val spotlightDecision = filter(bestK.head.resource)
+                        val spotlightDecision = if (bestK.size<=0) new DBpediaResource("NIL") else filter(bestK.head.resource)
 
                         if(testOcc.resource equals spotlightDecision) {
                             if ( (ambiguity>1) || !ambiguousOnly ) { // count only if ambiguity is higher than one or it's not ambiguous only
@@ -311,6 +322,7 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
 
         output.close();
         sfNotFoundOutput.close();
+        texOutput.close();
     }
 
     def storeTime(disambiguator: Disambiguator) = (delta:Long) => {

@@ -29,7 +29,7 @@ object GetDBpediaResourceCandidates {
         val configuration = new SpotlightConfiguration(spotlightConfigFileName);
 
         val factory = new SpotlightFactory(configuration)
-        val searcher = factory.searcher
+        val searcher = factory.contextSearcher
 
         val out = new PrintWriter(uriSetFile);
 

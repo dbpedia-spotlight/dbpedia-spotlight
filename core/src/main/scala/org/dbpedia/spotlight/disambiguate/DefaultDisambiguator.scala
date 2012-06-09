@@ -43,7 +43,7 @@ class DefaultDisambiguator(val factory: SpotlightFactory) extends Disambiguator 
     private val LOG = LogFactory.getLog(this.getClass)
 
     LOG.info("Initializing disambiguator object ...")
-    val disambiguator : Disambiguator = new MergedOccurrencesDisambiguator(factory.searcher)
+    val disambiguator : Disambiguator = new MergedOccurrencesDisambiguator(factory.contextSearcher)
 
     LOG.info("Done.")
 
