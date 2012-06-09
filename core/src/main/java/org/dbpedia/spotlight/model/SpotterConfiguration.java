@@ -55,7 +55,8 @@ public class SpotterConfiguration {
         NESpotter,
         KeyphraseSpotter,
        // OpenNLPChunkerSpotter
-        WikiMarkupSpotter
+        WikiMarkupSpotter,
+        SpotXmlParser
     }
 
 
