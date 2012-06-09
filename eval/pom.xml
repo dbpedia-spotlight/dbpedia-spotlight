@@ -33,6 +33,9 @@
     <artifactId>eval</artifactId>
     <name>DBpedia Spotlight Evaluation</name>
 
+    <properties>
+        <spotlight.basedir>${project.basedir}/..</spotlight.basedir>
+    </properties>
 
     <build>
         <plugins>
@@ -93,7 +96,7 @@
             <version>0.6</version>
         </dependency>
 
-        <dependency>
+        <!--dependency>
             <groupId>org.dbpedia.spotlight</groupId>
             <artifactId>jung</artifactId>
             <version>0.6</version>
@@ -103,7 +106,7 @@
             <groupId>org.dbpedia.spotlight</groupId>
             <artifactId>webgraph</artifactId>
             <version>0.6</version>
-        </dependency>
+        </dependency-->
 
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>

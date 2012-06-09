@@ -25,8 +25,8 @@
     <properties>
         <dbpedia.spotlight.version>0.6</dbpedia.spotlight.version>
 
-        <heapspace.Xmx.compiler>-Xmx5g</heapspace.Xmx.compiler>
-        <heapspace.Xmx.indexer>-Xmx2g</heapspace.Xmx.indexer>
+        <heapspace.Xmx.compiler>-Xmx1g</heapspace.Xmx.compiler>
+        <heapspace.Xmx.indexer>-Xmx1g</heapspace.Xmx.indexer>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.compiler.version>1.6</java.compiler.version>
@@ -48,9 +48,7 @@
         <module>core</module>
         <module>rest</module>
         <module>index</module>
-        <!--module>eval</module>
-        <module>webgraph</module>
-        <module>jung</module-->
+        <module>eval</module>
     </modules>
 
     <build>
