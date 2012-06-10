@@ -27,3 +27,27 @@ def getDocParaId(fullId):
 		return result.group(1)
 	else:
 		return ''
+
+####################
+# Get short type   #
+####################
+@outputSchema("type:chararray")
+def getShortType(fullType):
+	pattern = "<http://dbpedia.org/ontology/(.*?)>"
+	result = re.search(pattern,fullType)
+	if result:
+		return result.group(1)
+	else:
+		return ''
+
+####################
+# Get short uri    #
+####################
+@outputSchema("uri:chararray")
+def getShortUri(fullUri):
+	pattern = "^<http://dbpedia.org/resource/(.*?)>$"
+	result = re.search(pattern,fullUri)
+	if result:
+		return result.group(1)
+	else:
+		return ''
