@@ -69,7 +69,7 @@ class JDBMStoreIndexer(val baseDir: File)
     candidateStore.add(cands.head._1.surfaceForm.id, cands.map{ case(cand, count) => Pair(cand.resource.id, count) })
   }
 
-  def addCandidates(cands: Map[Candidate, Int]) {
+  def addCandidates(cands: Map[Candidate, Int], numberOfSurfaceForms: Int) {
     cands.toList.groupBy{ case(cand, count) => cand.surfaceForm }.foreach {
       case(sf, candidates) => addCandidates(sf, candidates)
     }

@@ -1,40 +1,112 @@
 package org.dbpedia.spotlight.db.memory
 
-import gnu.trove.TObjectIntHashMap
 import com.esotericsoftware.kryo.Kryo
-import java.io._
+
 import com.esotericsoftware.kryo.io.{Output, Input}
-import com.esotericsoftware.kryo.serializers.JavaSerializer
+import org.dbpedia.spotlight.model.{DBpediaType, FreebaseType, SchemaOrgType, OntologyType}
+import java.io._
+import gnu.trove.TObjectIntHashMap
+import scala.Predef._
+import com.esotericsoftware.kryo.serializers.{FieldSerializer, DefaultArraySerializers, JavaSerializer}
+import org.apache.mahout.math.map.OpenObjectIntHashMap
+import java.lang.{System, Short, String}
+import org.dbpedia.spotlight.db.model.CandidateMapStore
+import collection.mutable.{ListBuffer, HashMap}
+
 
 /**
  * @author Joachim Daiber
  */
 
-class MemoryStore extends Serializable
+abstract class MemoryStore extends Serializable {
+
+  private val serialVersionUID = 101010101
+
+  def loaded() {
+    //Implementations may execute code after the store is loaded
+  }
+
+  def size: Int
+
+}
 
 object MemoryStore {
 
-  val kryo = new Kryo()
-  kryo.register(classOf[TObjectIntHashMap], new JavaSerializer())
+  val kryos = HashMap[String, Kryo]()
 
-  def load[B](in: InputStream): B = {
-    println("Loading store...")
+  kryos.put(classOf[MemoryResourceStore].getSimpleName,
+    {
+      val kryo = new Kryo()
+      kryo.setRegistrationRequired(true)
+
+      kryo.register(classOf[Array[Int]], new DefaultArraySerializers.IntArraySerializer())
+      kryo.register(classOf[Array[String]], new DefaultArraySerializers.StringArraySerializer())
+      kryo.register(classOf[Array[Array[Short]]], new JavaSerializer())
+
+      kryo.register(classOf[OntologyType])
+      kryo.register(classOf[DBpediaType])
+      kryo.register(classOf[FreebaseType])
+      kryo.register(classOf[SchemaOrgType])
+
+      kryo.register(classOf[MemoryResourceStore])
+      kryo.register(classOf[MemoryOntologyTypeStore], new JavaSerializer())
+
+      kryo
+    }
+  )
+
+  kryos.put(classOf[MemorySurfaceFormStore].getSimpleName,
+    {
+      val kryo = new Kryo()
+      kryo.setRegistrationRequired(true)
+
+      kryo.register(classOf[Array[Int]],    new DefaultArraySerializers.IntArraySerializer())
+      kryo.register(classOf[Array[String]], new DefaultArraySerializers.StringArraySerializer())
+      //kryo.register(classOf[TObjectIntHashMap], new JavaSerializer())
+      kryo.register(classOf[MemorySurfaceFormStore])
+
+      kryo
+    }
+  )
+
+  kryos.put(classOf[MemoryCandidateMapStore].getSimpleName,
+    {
+      val kryo = new Kryo()
+      kryo.setRegistrationRequired(true)
+
+      kryo.register(classOf[MemoryCandidateMapStore], new JavaSerializer())
+
+      kryo
+    }
+  )
+
+
+  def load[T](in: InputStream, os: MemoryStore): T = {
+
+    val kryo: Kryo = kryos.get(os.getClass.getSimpleName).get
+
+    System.err.println("Loading %s...".format(os.getClass.getSimpleName))
+    val sStart = System.currentTimeMillis()
     val input = new Input(in)
 
-    val s: B = kryo.readClassAndObject(input).asInstanceOf[B]
+    val s = kryo.readClassAndObject(input).asInstanceOf[T]
+    s.asInstanceOf[MemoryStore].loaded()
 
     input.close()
-    println("Done.")
+    System.err.println("Done (%d ms)".format(System.currentTimeMillis() - sStart))
     s
   }
 
 
-  def dump[A](store: A, out: File) {
-    println("Writing store...")
+  def dump(store: MemoryStore, out: File) {
+    val kryo = kryos.get(store.getClass.getSimpleName).get
+
+    System.err.println("Writing %s...".format(store.getClass.getSimpleName))
     val output = new Output(new FileOutputStream(out))
     kryo.writeClassAndObject(output, store)
+
     output.close()
-    println("Done.")
+    System.err.println("Done.")
   }
 
 

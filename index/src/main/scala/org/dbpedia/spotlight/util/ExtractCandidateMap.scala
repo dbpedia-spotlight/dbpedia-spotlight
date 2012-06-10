@@ -54,7 +54,6 @@ import java.net.URI
  *
  * Contains logic of what to index wrt. URIs and SurfaceForms.
  *
- * //TODO rename to ExtractCandidateMap.
  *
  * @author maxjakob
  * @author pablomendes (created blacklisted URI patterns for language-specific stuff (e.g. List_of, etc.)
@@ -118,6 +117,7 @@ object ExtractCandidateMap
 
     private def looksLikeAGoodURI(uri : String) : Boolean = {
         // cannot contain a slash (/)
+        //TODO This may be a bit too restrictive (e.g.: DPR/MPR_Building, http://dbpedia.org/ontology/Building)
         if (uri contains "/")
             return false
         // cannot contain a hash (#)

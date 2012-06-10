@@ -2,6 +2,7 @@ package org.dbpedia.spotlight.db.memory
 
 import org.dbpedia.spotlight.model.{Candidate, SurfaceForm}
 import org.dbpedia.spotlight.db.model.{ResourceStore, CandidateMapStore}
+import scala.Array
 
 /**
  * @author Joachim Daiber
@@ -10,16 +11,23 @@ import org.dbpedia.spotlight.db.model.{ResourceStore, CandidateMapStore}
  *
  */
 
-class MemoryCandidateMapStore(resourceStore: ResourceStore)
+class MemoryCandidateMapStore
   extends MemoryStore
   with CandidateMapStore {
 
-  var candidates = Array[Array[Pair[Int, Int]]]()
+  private val serialVersionUID = 101010106
+
+  var candidates      = Array[Array[Int]]()
+  var candidateCounts = Array[Array[Int]]()
+
+  def size = candidates.size
+
+  @transient
+  var resourceStore: ResourceStore = null
 
   def getCandidates(surfaceform: SurfaceForm): Set[Candidate] =
-    candidates(surfaceform.id).map {
-      //TODO add count
-      case (resID, count) => new Candidate(surfaceform, resourceStore.getResource(resID))
+    candidates(surfaceform.id).zip(candidateCounts(surfaceform.id)).map {
+      case (resID, count) => new Candidate(surfaceform, resourceStore.getResource(resID), count)
     }.toSet
 
 }

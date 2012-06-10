@@ -16,14 +16,26 @@
 
 package org.dbpedia.spotlight.model
 
-class Candidate(val surfaceForm: SurfaceForm, val resource: DBpediaResource)
+class Candidate(val surfaceForm: SurfaceForm, val resource: DBpediaResource, val support: Int)
 {
-    def equals(that : Candidate) : Boolean =
-    {
-        surfaceForm.equals(that.surfaceForm) && resource.equals(that.resource)
-    }
 
-    override def toString = "Candidate["+surfaceForm.name+","+resource.uri+"]"
+  def this(surfaceForm: SurfaceForm, resource: DBpediaResource) {
+    this(surfaceForm, resource, 0)
+  }
+
+  override def equals(obj : Any) : Boolean = {
+      obj match {
+          case that: Candidate => surfaceForm.equals(that.surfaceForm) && resource.equals(that.resource)
+          case _ => obj.equals(this)
+      }
+  }
+
+  override def hashCode() = {
+      this.surfaceForm.hashCode() * 100012 + this.resource.hashCode()
+  }
+
+
+    override def toString = "Candidate["+surfaceForm.name+", "+resource.uri + { if (support > 0) ", " + support else "" } + "]"
 }
 
 

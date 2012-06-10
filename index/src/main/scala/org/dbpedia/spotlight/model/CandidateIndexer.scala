@@ -10,6 +10,6 @@ import java.util.Map
 trait CandidateIndexer {
 
   def addCandidate(cand: Candidate, count: Int)
-  def addCandidates(cands: Map[Candidate, Int])
+  def addCandidates(cands: Map[Candidate, Int], numberOfSurfaceForms: Int)
 
 }

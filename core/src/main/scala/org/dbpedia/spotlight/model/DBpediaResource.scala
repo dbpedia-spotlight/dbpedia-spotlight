@@ -72,7 +72,7 @@ class DBpediaResource(var uri : String,
         prior = s
     }
 
-    def setTypes(typesList : java.util.List[_<:OntologyType]) {
+    def setTypes(typesList : java.util.List[OntologyType]) {
         types = typesList.toList
     }
 
