@@ -11,11 +11,11 @@ import scala.Array
  *
  */
 
+@SerialVersionUID(1005001)
 class MemoryCandidateMapStore
   extends MemoryStore
   with CandidateMapStore {
 
-  private val serialVersionUID = 101010106
 
   var candidates      = Array[Array[Int]]()
   var candidateCounts = Array[Array[Int]]()

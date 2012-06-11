@@ -19,7 +19,7 @@ class JDBMStoreIndexer(val baseDir: File)
   extends SurfaceFormIndexer
   with ResourceIndexer
   with TokenIndexer
-  with TokenOccurrenceIndexer
+  //with OccurrenceIndexer
   with CandidateIndexer
 {
 
@@ -90,22 +90,26 @@ class JDBMStoreIndexer(val baseDir: File)
     tokenStore.commit()
   }
 
+  //DBPEDIA RESOURCE OCCURRENCES
+  //lazy val contextStore = new JDBMStore[Int, Map[Int, Int]]
+
+
 
   //TOKEN OCCURRENCES
 
-  lazy val tokenOccurrenceStore = new JDBMStore[Int, Map[Int, Int]](new File(baseDir, "token_occs.disk").getAbsolutePath)
+  //lazy val tokenOccurrenceStore = new JDBMStore[Int, Map[Int, Int]](new File(baseDir, "token_occs.disk").getAbsolutePath)
 
-  def addTokenOccurrence(resource: DBpediaResource, token: Token, count: Int) {
-    throw new NotImplementedException()
-  }
-
-  def addTokenOccurrence(resource: DBpediaResource, tokenCounts: Map[Token, Int]) {
-    //tokenOccurenceStore.add(resource.id, tokenCounts)
-  }
-
-  def addTokenOccurrences(occs: Map[DBpediaResource, Map[Token, Int]]) {
-    occs.foreach{ case(res, tokenCounts) => addTokenOccurrence(res, tokenCounts) }
-    tokenOccurrenceStore.commit()
-  }
+ // def addTokenOccurrence(resource: DBpediaResource, token: Token, count: Int) {
+ //   throw new NotImplementedException()
+ // }
+//
+ // def addTokenOccurrence(resource: DBpediaResource, tokenCounts: Map[Token, Int]) {
+ //   tokenOccurrenceStore.add(resource.id, tokenCounts.map{ case(token, count) => (token.id, count) }.toMap)
+ // }
+//
+ // def addTokenOccurrences(occs: Map[DBpediaResource, Map[Token, Int]]) {
+ //   occs.foreach{ case(res, tokenCounts) => addTokenOccurrence(res, tokenCounts) }
+ //   tokenOccurrenceStore.commit()
+ // }
 
 }

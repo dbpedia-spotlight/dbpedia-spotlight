@@ -3,6 +3,7 @@ package org.dbpedia.spotlight.db.memory
 import org.dbpedia.spotlight.db.model.TokenStore
 import org.dbpedia.spotlight.model.Token
 import gnu.trove.TObjectIntHashMap
+import java.lang.String
 
 /**
  * @author Joachim Daiber
@@ -11,21 +12,44 @@ import gnu.trove.TObjectIntHashMap
  *
  */
 
+@SerialVersionUID(1006001)
 class MemoryTokenStore
   extends MemoryStore
   with TokenStore
 {
 
-  var tokenToID: TObjectIntHashMap = null
+  var tokenForId: Array[String] = null
   var counts: Array[Int] = null
+
+  @transient
+  var idFromToken: TObjectIntHashMap = null
+
+  override def loaded() {
+    createReverseLookup()
+  }
+
+  def size = tokenForId.size
+
+  def createReverseLookup() {
+    if (tokenForId != null) {
+      System.err.println("Creating reverse-lookup for Tokens.")
+      idFromToken = new TObjectIntHashMap(tokenForId.size)
+
+      var id = 0
+      tokenForId foreach { token => {
+        idFromToken.put(token, id)
+        id += 1
+       }
+      }
+    }
+  }
 
   def getToken(token: String): Token = {
 
-    val normalizedToken = normalize(token)
-    val id = tokenToID.get(normalizedToken)
+    val id = idFromToken.get(token)
     val count = counts(id)
 
-    new Token(id, normalizedToken, count)
+    new Token(id, token, count)
   }
 
 

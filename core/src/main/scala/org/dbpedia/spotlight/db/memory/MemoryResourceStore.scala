@@ -15,11 +15,10 @@ import org.dbpedia.spotlight.exceptions.{SurfaceFormNotFoundException, DBpediaRe
  *
  */
 
+@SerialVersionUID(1003001)
 class MemoryResourceStore
   extends MemoryStore
   with ResourceStore {
-
-  private val serialVersionUID = 101010102
 
   var ontologyTypeStore: MemoryOntologyTypeStore = null
 

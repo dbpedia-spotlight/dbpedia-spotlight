@@ -18,9 +18,9 @@ import collection.mutable.{ListBuffer, HashMap}
  * @author Joachim Daiber
  */
 
+@SerialVersionUID(1001001)
 abstract class MemoryStore extends Serializable {
 
-  private val serialVersionUID = 101010101
 
   def loaded() {
     //Implementations may execute code after the store is loaded
@@ -75,6 +75,19 @@ object MemoryStore {
       kryo.setRegistrationRequired(true)
 
       kryo.register(classOf[MemoryCandidateMapStore], new JavaSerializer())
+
+      kryo
+    }
+  )
+
+  kryos.put(classOf[MemoryTokenStore].getSimpleName,
+    {
+      val kryo = new Kryo()
+      kryo.setRegistrationRequired(true)
+
+      kryo.register(classOf[Array[Int]],    new DefaultArraySerializers.IntArraySerializer())
+      kryo.register(classOf[Array[String]], new DefaultArraySerializers.StringArraySerializer())
+      kryo.register(classOf[MemoryTokenStore])
 
       kryo
     }

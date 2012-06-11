@@ -4,6 +4,7 @@ import gnu.trove.TObjectIntHashMap
 import org.dbpedia.spotlight.model.SurfaceForm
 import org.dbpedia.spotlight.db.model.SurfaceFormStore
 import org.dbpedia.spotlight.exceptions.{SurfaceFormNotFoundException, ItemNotFoundException}
+import com.esotericsoftware.kryo.Kryo
 
 /**
  * @author Joachim Daiber
@@ -12,11 +13,10 @@ import org.dbpedia.spotlight.exceptions.{SurfaceFormNotFoundException, ItemNotFo
  *
  */
 
+@SerialVersionUID(1002001)
 class MemorySurfaceFormStore
   extends MemoryStore
   with SurfaceFormStore {
-
-  private val serialVersionUID = 101010103
 
   @transient
   var idForString: TObjectIntHashMap = null

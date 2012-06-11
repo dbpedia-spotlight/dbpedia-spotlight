@@ -1,6 +1,5 @@
 package org.dbpedia.spotlight.model
 
-import java.util.List
 
 /**
  * @author pablomendes
@@ -10,7 +9,7 @@ import java.util.List
 
 trait OccurrenceIndexer {
 
-  def add(occ: DBpediaResourceOccurrence)
-  def add(occs: List[DBpediaResourceOccurrence])
+  def addOccurrence(occ: DBpediaResourceOccurrence)
+  def addOccurrences(occs: Traversable[DBpediaResourceOccurrence])
 
 }

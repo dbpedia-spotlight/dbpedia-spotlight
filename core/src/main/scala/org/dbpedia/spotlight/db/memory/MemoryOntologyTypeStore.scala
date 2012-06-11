@@ -10,11 +10,10 @@ import java.lang.{Short, String}
  *
  */
 
+@SerialVersionUID(1004001)
 class MemoryOntologyTypeStore
   extends MemoryStore
   with OntologyTypeStore {
-
-  private val serialVersionUID = 101010109
 
   var idFromName: HashMap[String, Short] = null
   var ontologyTypeFromID: HashMap[Short, OntologyType] = null

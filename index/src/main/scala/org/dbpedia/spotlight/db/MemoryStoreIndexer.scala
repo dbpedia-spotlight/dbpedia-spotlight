@@ -1,9 +1,7 @@
 package org.dbpedia.spotlight.db
 
 import memory._
-import model.OntologyTypeStore
 import org.apache.commons.lang.NotImplementedException
-import gnu.trove.TObjectIntHashMap
 import java.io.File
 import org.dbpedia.spotlight.model._
 import java.lang.{Short, String}
@@ -12,8 +10,8 @@ import java.lang.{Short, String}
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 
-import collection.mutable.{WrappedArray, HashMap, ListBuffer}
-import java.util.{ArrayList, HashMap, Map, Set}
+import collection.mutable.ListBuffer
+import java.util.{Map, Set}
 import scala.Array
 
 /**
@@ -27,10 +25,10 @@ class MemoryStoreIndexer(val baseDir: File)
   extends SurfaceFormIndexer
   with ResourceIndexer
   with CandidateIndexer
+  with TokenIndexer
 {
 
   //SURFACE FORMS
-
 
   def addSurfaceForm(sf: SurfaceForm, count: Int) {
     throw new NotImplementedException()
@@ -132,6 +130,31 @@ class MemoryStoreIndexer(val baseDir: File)
     candmapStore.candidateCounts = (candidateCounts map { l: ListBuffer[Int] => if(l != null) l.toArray else null} ).toArray
 
     MemoryStore.dump(candmapStore, new File(baseDir, "candmap.mem"))
+  }
+
+
+  def addToken(token: Token, count: Int) {
+    throw new NotImplementedException()
+  }
+
+  def addTokens(tokenCount: Map[Token, Int]) {
+
+    val tokenStore = new MemoryTokenStore()
+
+    val tokens = new Array[String](tokenCount.size)
+    val counts = new Array[Int](tokenCount.size)
+
+    tokenCount.foreach {
+      case (token, count) => {
+        tokens(token.id) = token.name
+        counts(token.id) = count
+      }
+    }
+
+    tokenStore.tokenForId = tokens.array
+    tokenStore.counts = counts.array
+
+    MemoryStore.dump(tokenStore, new File(baseDir, "tokens.mem"))
   }
 
 
