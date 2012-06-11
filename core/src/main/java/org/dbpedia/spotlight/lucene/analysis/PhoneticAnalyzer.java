@@ -39,7 +39,7 @@ import org.dbpedia.spotlight.model.SpotlightConfiguration;
  *
  * @author pablomendes
  */
-public class PhoneticAnalyzer extends Analyzer {
+public final class PhoneticAnalyzer extends Analyzer {
 
     private Set<String> mStopWordSet;
     private Version mMatchVersion;
@@ -57,7 +57,7 @@ public class PhoneticAnalyzer extends Analyzer {
     }
 
     @Override
-    public TokenStream tokenStream(String fieldName, Reader reader) {
+    public final TokenStream tokenStream(String fieldName, Reader reader) {
         TokenStream result = new StandardTokenizer(mMatchVersion, reader);
         result = new StandardFilter(mMatchVersion, result);
         result = new LowerCaseFilter(mMatchVersion, result);            // lowercased only
