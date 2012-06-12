@@ -2,11 +2,14 @@ package org.dbpedia.spotlight.db
 
 import org.dbpedia.spotlight.db.disk.JDBMStore
 import java.io.File
-import java.util.Map
-import org.dbpedia.spotlight.model._
 import org.apache.commons.lang.NotImplementedException
 import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
+
 import scala.Predef._
+import scala._
+import org.dbpedia.spotlight.model._
+import java.util.{HashMap, Map}
 
 /**
  * @author Joachim Daiber
@@ -19,7 +22,7 @@ class JDBMStoreIndexer(val baseDir: File)
   extends SurfaceFormIndexer
   with ResourceIndexer
   with TokenIndexer
-  //with OccurrenceIndexer
+  with TokenOccurrenceIndexer
   with CandidateIndexer
 {
 
@@ -91,25 +94,19 @@ class JDBMStoreIndexer(val baseDir: File)
   }
 
   //DBPEDIA RESOURCE OCCURRENCES
-  //lazy val contextStore = new JDBMStore[Int, Map[Int, Int]]
+  lazy val contextStore = new JDBMStore[Int, Array[Int]](new File(baseDir, "context.disk").getAbsolutePath)
 
+  def addTokenOccurrence(resource: DBpediaResource, token: Token, count: Int) {
+    throw new NotImplementedException()
+  }
 
+  def addTokenOccurrence(resource: DBpediaResource, tokenCounts: Map[Int, Int]) {
+    contextStore.add(resource.id, tokenCounts.keys.toArray)
+  }
 
-  //TOKEN OCCURRENCES
-
-  //lazy val tokenOccurrenceStore = new JDBMStore[Int, Map[Int, Int]](new File(baseDir, "token_occs.disk").getAbsolutePath)
-
- // def addTokenOccurrence(resource: DBpediaResource, token: Token, count: Int) {
- //   throw new NotImplementedException()
- // }
-//
- // def addTokenOccurrence(resource: DBpediaResource, tokenCounts: Map[Token, Int]) {
- //   tokenOccurrenceStore.add(resource.id, tokenCounts.map{ case(token, count) => (token.id, count) }.toMap)
- // }
-//
- // def addTokenOccurrences(occs: Map[DBpediaResource, Map[Token, Int]]) {
- //   occs.foreach{ case(res, tokenCounts) => addTokenOccurrence(res, tokenCounts) }
- //   tokenOccurrenceStore.commit()
- // }
+  def addTokenOccurrences(occs: Map[DBpediaResource, Map[Int, Int]]) {
+    occs.foreach{ case(res, tokenCounts) => addTokenOccurrence(res, tokenCounts) }
+    contextStore.commit()
+  }
 
 }

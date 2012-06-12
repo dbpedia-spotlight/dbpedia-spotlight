@@ -5,7 +5,6 @@ import org.dbpedia.spotlight.model.Text
 import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute
 import java.io.{IOException, StringReader}
-import java.util.List
 import collection.mutable.ListBuffer
 import scala.collection.JavaConversions._
 

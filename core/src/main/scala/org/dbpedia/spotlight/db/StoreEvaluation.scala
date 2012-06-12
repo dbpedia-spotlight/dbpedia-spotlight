@@ -3,7 +3,7 @@ package org.dbpedia.spotlight.db
 import collection.mutable.ListBuffer
 
 import disk.DiskSurfaceFormStore
-import memory.{MemoryCandidateMapStore, MemoryResourceStore, MemoryStore, MemorySurfaceFormStore}
+import memory._
 import model.SurfaceFormStore
 import util.Random
 import java.io.FileInputStream
@@ -20,18 +20,36 @@ object StoreEvaluation {
 
   def main(args: Array[String]) {
 
+
+    val consumption = ListBuffer[Long]()
+
+    consumption += (Runtime.getRuntime.totalMemory - Runtime.getRuntime.freeMemory) / (1024 * 1024)
     val sfStore = MemoryStore.load[MemorySurfaceFormStore](new FileInputStream("data/sf.mem"), new MemorySurfaceFormStore())
+
+    consumption += (Runtime.getRuntime.totalMemory - Runtime.getRuntime.freeMemory) / (1024 * 1024)
     val resStore = MemoryStore.load[MemoryResourceStore](new FileInputStream("data/res.mem"), new MemoryResourceStore())
-    val cm = MemoryStore.load[MemoryCandidateMapStore](new FileInputStream("data/candmap.mem"), new MemoryCandidateMapStore())
-    cm.resourceStore = resStore
+
+   // consumption += (Runtime.getRuntime.totalMemory - Runtime.getRuntime.freeMemory) / (1024 * 1024)
+   // val cm = MemoryStore.load[MemoryCandidateMapStore](new FileInputStream("data/candmap.mem"), new MemoryCandidateMapStore())
+   // consumption += (Runtime.getRuntime.totalMemory - Runtime.getRuntime.freeMemory) / (1024 * 1024)
+
+    val tokenStore = MemoryStore.load[MemoryTokenStore](new FileInputStream("data/tokens.mem"), new MemoryTokenStore())
+    consumption += (Runtime.getRuntime.totalMemory - Runtime.getRuntime.freeMemory) / (1024 * 1024)
+
+
+
+    println(consumption)
+
+    //cm.resourceStore = resStore
 
     val name: DBpediaResource = resStore.getResourceByName("Germany")
     println(sfStore.idForString.size())
 
 
-    val candidates = cm.getCandidates(sfStore.getSurfaceForm("Germany")).toList.sortBy(_.support).reverse
-    println(cm.size)
-    println(candidates)
+    //val candidates = cm.getCandidates(sfStore.getSurfaceForm("Germany")).toList.sortBy(_.support).reverse
+    //println(cm.size)
+    //println(candidates)
+
 
     System.gc(); System.gc(); System.gc(); System.gc(); System.gc(); System.gc();
     System.gc(); System.gc(); System.gc(); System.gc(); System.gc(); System.gc();

@@ -13,7 +13,7 @@ class DBCandidateSearcher(candidateMap: CandidateMapStore) extends CandidateSear
 
   @throws(SearchException, ItemNotFoundException)
   def getCandidates(sf: SurfaceForm): Set[DBpediaResource] =
-    Option(candidateMap.getCandidates()) match {
+    Option(candidateMap.getCandidates(sf)) match {
       case None => throw new SearchException("SurfaceForm not found.")
       case Some(candidates) => candidates.map(_.resource)
     }

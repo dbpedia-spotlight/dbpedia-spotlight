@@ -6,14 +6,6 @@ import org.dbpedia.spotlight.model.SurfaceForm
 
 
 /**
- * @author Joachim Daiber
- *
- */
-
-//class SurfaceFormSource extends Iterator[SurfaceForm]
-
-
-/**
  * Represents a source of SurfaceForms
  */
 

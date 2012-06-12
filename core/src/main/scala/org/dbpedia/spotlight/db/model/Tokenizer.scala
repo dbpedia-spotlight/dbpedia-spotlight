@@ -1,7 +1,6 @@
 package org.dbpedia.spotlight.db.model
 
 import org.dbpedia.spotlight.model.Text
-import java.util.List
 
 
 /**
