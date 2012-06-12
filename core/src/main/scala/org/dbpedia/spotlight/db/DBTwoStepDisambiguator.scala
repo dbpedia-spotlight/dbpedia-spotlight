@@ -35,7 +35,7 @@ class DBTwoStepDisambiguator(
     if (nCandidatesWithToken == 0)
       0.0
     else
-      math.log(nCandidates / (nCandidatesWithToken + 1.0)); //TODO Why the +1.0? so there are no 0 logarithms?
+      math.log(nCandidates / (nCandidatesWithToken + 1.0)) //TODO Why the +1.0?
   }
 
   def tficf(token: Token, candidate: Candidate, allCandidates: Set[Candidate]): Float = {
@@ -46,8 +46,8 @@ class DBTwoStepDisambiguator(
   def getContextScores(text: Text, candidates: Set[Candidate]): Map[DBpediaResource, Float] = {
     val tokens = tokenizer.tokenize(text).map{ ts: String => tokenStore.getToken(ts) }
     candidates.map {
-      candidate => tokens.map{ token: Token => tficf(token, candidate, candidates) }.sum
-    }
+      candidate => tokens.map{ token: Token => tficf(token, candidate, candidates) }.sum //TODO add cosine
+     }
   }
 
 

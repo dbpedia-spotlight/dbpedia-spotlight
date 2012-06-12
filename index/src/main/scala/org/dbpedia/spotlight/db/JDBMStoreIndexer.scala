@@ -94,14 +94,14 @@ class JDBMStoreIndexer(val baseDir: File)
   }
 
   //DBPEDIA RESOURCE OCCURRENCES
-  lazy val contextStore = new JDBMStore[Int, Array[Int]](new File(baseDir, "context.disk").getAbsolutePath)
+  lazy val contextStore = new JDBMStore[Int, Map[Int, Int]](new File(baseDir, "context.disk").getAbsolutePath)
 
   def addTokenOccurrence(resource: DBpediaResource, token: Token, count: Int) {
     throw new NotImplementedException()
   }
 
   def addTokenOccurrence(resource: DBpediaResource, tokenCounts: Map[Int, Int]) {
-    contextStore.add(resource.id, tokenCounts.keys.toArray)
+    contextStore.add(resource.id, tokenCounts)
   }
 
   def addTokenOccurrences(occs: Map[DBpediaResource, Map[Int, Int]]) {
