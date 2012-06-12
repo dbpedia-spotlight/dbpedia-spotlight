@@ -145,11 +145,11 @@ class TwoStepDisambiguator(val candidateSearcher: CandidateSearcher,
 
         // LOG.debug("Reading DBpediaResources.")
         val scores = hits
-            .foldRight(Map[String,Tuple2[Int,Double]]())((hit,acc) => {
+            .foldRight(Map[String,Tuple2[DBpediaResource,Double]]())((hit,acc) => {
             var resource: DBpediaResource = contextSearcher.getDBpediaResource(hit.doc) //this method returns resource.support=c(r)
             var score = hit.score
             //TODO can mix here the scores: c(s,r) / c(r)
-            acc + (resource.uri -> (resource.support,score))
+            acc + (resource.uri -> (resource,score))
         });
         val e2 = System.nanoTime()
         //LOG.debug("Scores (%d): %s".format(scores.size, scores))
@@ -159,11 +159,18 @@ class TwoStepDisambiguator(val candidateSearcher: CandidateSearcher,
         // pick the best k for each surface form
         val r = occs.keys.foldLeft(Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]())( (acc,aSfOcc) => {
             val candOccs = occs.getOrElse(aSfOcc,List[DBpediaResource]())
-                .map( resource => Factory.DBpediaResourceOccurrence.from(aSfOcc,
-                                            resource, //TODO this resource may contain the c(s,r) that can be used for conditional prob.
-                                            scores.getOrElse(resource.uri,(0,0.0)))
-                    )
-                .sortBy(o => o.contextualScore) //TODO should be final score
+                    .map( shallowResource => {
+                        val (resource: DBpediaResource, supportConfidence: (Int,Double)) = scores.get(shallowResource.uri) match {
+                            case Some((fullResource,contextualScore)) => {
+                                (fullResource,(fullResource.support,contextualScore))
+                            }
+                            case _ => (shallowResource,(shallowResource.support,0.0))
+                        }
+                        Factory.DBpediaResourceOccurrence.from(aSfOcc,
+                            resource, //TODO this resource may contain the c(s,r) that can be used for conditional prob.
+                            supportConfidence)
+                    })
+                    .sortBy(o => o.contextualScore) //TODO should be final score
                 .reverse
                 .take(k)
             acc + (aSfOcc -> candOccs)

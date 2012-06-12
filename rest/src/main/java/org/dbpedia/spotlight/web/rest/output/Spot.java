@@ -37,7 +37,7 @@ public class Spot {
     private int offset;
 
     @XStreamAsAttribute
-    private String type;
+    private String nerType;
 
     @XStreamImplicit
     private List<Resource> resources;
@@ -66,7 +66,7 @@ public class Spot {
         spot.setOffset(sfOcc.textOffset());
         Feature typeFeature = sfOcc.features().get("type");
         if (typeFeature != null)
-            spot.setType(typeFeature.value().toString());
+            spot.setNerType(typeFeature.value().toString());
         return spot;
     }
 
@@ -75,15 +75,13 @@ public class Spot {
         spot.setName(occ.surfaceForm().name());
         spot.setOffset(occ.textOffset());
         spot.setResource(Resource.getInstance(occ));
-        //spot.setType(occ.);
+//        Feature typeFeature = sfOcc.features().get("type");
+//        if (typeFeature != null)
+//            spot.setNerType(typeFeature.value().toString());
         return spot;
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
+    public void setNerType(String nerType) {
+        this.nerType = nerType;
     }
 }

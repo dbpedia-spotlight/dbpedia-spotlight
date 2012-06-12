@@ -25,6 +25,7 @@ import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.exceptions.SpottingException;
 import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters;
+import org.dbpedia.spotlight.filter.annotations.PercentageOfSecondFilter;
 import org.dbpedia.spotlight.model.*;
 import org.dbpedia.spotlight.spot.Spotter;
 import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy;
@@ -156,8 +157,9 @@ public class SpotlightInterface  {
 
         // Filter: Old monolithic way
         CombineAllAnnotationFilters annotationFilter = new CombineAllAnnotationFilters(Server.getConfiguration());
+        PercentageOfSecondFilter anotherFilter = new PercentageOfSecondFilter(confidence);
         occList = annotationFilter.filter(occList, confidence, support, ontologyTypes, sparqlQuery, blacklist, coreferenceResolution);
-
+        occList = anotherFilter.filterOccs(occList);
         // Filter: TODO run occurrences through a list of annotation filters (which can be passed by parameter)
         // Map<String,AnnotationFilter> annotationFilters = buildFilters(occList, confidence, support, dbpediaTypes, sparqlQuery, blacklist, coreferenceResolution);
         //AnnotationFilter annotationFilter = annotationFilters.get(CombineAllAnnotationFilters.class.getSimpleName());

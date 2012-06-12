@@ -25,6 +25,8 @@ import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
 import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.exceptions.SpottingException;
+import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters;
+import org.dbpedia.spotlight.filter.annotations.FilterPolicy$;
 import org.dbpedia.spotlight.model.*;
 import org.dbpedia.spotlight.spot.Spotter;
 import org.dbpedia.spotlight.web.rest.Server;
@@ -36,6 +38,7 @@ import org.dbpedia.spotlight.web.rest.output.Spot;
 
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy;
 import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy;
+import scala.Enumeration;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -71,7 +74,7 @@ public class Candidates {
     /**
      * TODO Does not do any filtering at the moment!!!
      */
-    public Annotation process(String text, double confidence, int support, List<OntologyType> dbpediaTypes,
+    public Annotation process(String text, double confidence, int support, List<OntologyType> ontologyTypes,
                               String sparqlQuery, boolean blacklist, boolean coreferenceResolution, Spotter spotter, ParagraphDisambiguatorJ disambiguator)
             throws SearchException, ItemNotFoundException, InputException, SpottingException {
 
@@ -79,17 +82,23 @@ public class Candidates {
         List<Spot> spots = new LinkedList<Spot>();
 
         List<SurfaceFormOccurrence> entityMentions = spotter.extract(new Text(text));
-        if (entityMentions.size()==0) return annotation; //nothing to disambiguate
+        if (entityMentions.size()==0) return annotation; //nothing to di
+        // sambiguate
         Paragraph paragraph = Factory.paragraph().fromJ(entityMentions);
         LOG.info(String.format("Spotted %d entity mentions.",entityMentions.size()));
 
         Map<SurfaceFormOccurrence,List<DBpediaResourceOccurrence>> entityCandidates = disambiguator.bestK(paragraph,k);
         LOG.info(String.format("Disambiguated %d candidates with %s.",entityCandidates.size(),disambiguator.name()));
 
-        for(SurfaceFormOccurrence sfOcc : entityCandidates.keySet()) {
+        Enumeration.Value listColor = blacklist ? FilterPolicy$.MODULE$.Blacklist() : FilterPolicy$.MODULE$.Whitelist();
+
+        CombineAllAnnotationFilters filters = new CombineAllAnnotationFilters(Server.getConfiguration());
+        Map<SurfaceFormOccurrence,List<DBpediaResourceOccurrence>> filteredEntityCandidates = filters.filter(entityCandidates, confidence, support, ontologyTypes, sparqlQuery, listColor, coreferenceResolution);
+
+        for(SurfaceFormOccurrence sfOcc : filteredEntityCandidates.keySet()) {
             Spot spot = Spot.getInstance(sfOcc);
             List<Resource> resources = new LinkedList<Resource>();
-            for(DBpediaResourceOccurrence occ : entityCandidates.get(sfOcc)) {
+            for(DBpediaResourceOccurrence occ : filteredEntityCandidates.get(sfOcc)) {
                 Resource resource = Resource.getInstance(occ);
                 resources.add(resource);
             }

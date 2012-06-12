@@ -20,6 +20,7 @@ import org.apache.commons.logging.LogFactory
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.sparql.SparqlQueryExecuter
+import scala.collection.JavaConversions._
 
 class CombineAllAnnotationFilters(val config: SpotlightConfiguration) {
 
@@ -32,6 +33,20 @@ class CombineAllAnnotationFilters(val config: SpotlightConfiguration) {
     // Responsible for sending SPARQL queries to the endpoint (results will be used for filtering)
     private val sparqlExecuter = new SparqlQueryExecuter(config.getSparqlMainGraph(), config.getSparqlEndpoint())
 
+
+    def filter(sfToCandidates: java.util.Map[SurfaceFormOccurrence, java.util.List[DBpediaResourceOccurrence]],
+               confidence : Double,
+               targetSupport : Int,
+               dbpediaTypes : java.util.List[OntologyType],
+               sparqlQuery : String,
+               listColor : FilterPolicy.ListColor,
+               coreferenceResolution : Boolean) : java.util.Map[SurfaceFormOccurrence,java.util.List[DBpediaResourceOccurrence]] = {
+        sfToCandidates.toMap[SurfaceFormOccurrence,java.util.List[DBpediaResourceOccurrence]].map{
+            case (sfOcc, candidateOccs) => {
+                (sfOcc -> filter(candidateOccs,confidence,targetSupport,dbpediaTypes,sparqlQuery,listColor,coreferenceResolution))
+            }
+        }
+    }
 
     def filter(occs : Traversable[DBpediaResourceOccurrence],
                confidence : Double,
