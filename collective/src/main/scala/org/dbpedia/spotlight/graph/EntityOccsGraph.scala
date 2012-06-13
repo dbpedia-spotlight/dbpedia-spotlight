@@ -55,41 +55,16 @@ class EntityOccsGraph() {
         }
       }
     )
+
+    LOG.info("Done.")
     graph
   }
 
   //read occs.tsv or occs.uriSorted.tsv and map to integers
   def parseToMap(srcFile: File, integerListFile: File, mapFile: File): Int = {
-    var uriMap = Map.empty[String, (Int, Array[String])]
-
-    //Go through the file and attach give a index to each URI encountered
-    Source.fromFile(srcFile).getLines().foreach(
-      line => {
-        val fields = line.split("\\t")
-        if (fields.length == 5) {
-          val id = fields(0)
-          val targetUri = fields(1)
-          val srcUri = id.split("-")(0)
-
-
-          if (uriMap.contains(srcUri)) {
-            uriMap(srcUri) = (uriMap(srcUri)._1, uriMap(srcUri)._2 :+ targetUri)
-            //LOG.info(String.format("Creat link from %s to %s",srcUri,targetUri))
-          } else {
-            uriMap += (srcUri ->(uriMap.size, Array(targetUri)))
-            //LOG.info(String.format("Adding Souce uri: %s , given number %s, pointing to Target Uri: %s",srcUri,uriMap.size.toString,targetUri))
-          }
-
-          if (!uriMap.contains(targetUri)) {
-            uriMap += (targetUri ->(uriMap.size, new Array[String](0)))
-            //LOG.info(String.format("Adding Target uri: %s , given number %s, pointing to empty list",targetUri,uriMap.size.toString))
-          }
-
-        } else {
-          LOG.error("Invailid line in file: " + line)
-        }
-        if (uriMap.size % 10000 == 0) LOG.info(String.format("Store %s valid URIs", uriMap.size.toString))
-      })
+    LOG.info("Parsing the occs file to Map")
+    //var uriMap = Map.empty[String, (Int, Array[String])]
+    var uriMap = Map.empty[String,Int]
 
     val ilfo: OutputStream = new FileOutputStream(integerListFile)
     val ilfoStream = new PrintStream(ilfo, true)
@@ -97,7 +72,56 @@ class EntityOccsGraph() {
     val mfo = new FileOutputStream(mapFile)
     val mfoStream = new PrintStream(mfo, true)
 
-    // Output each link by one line
+    //Go through the file and attach give a index to each URI encountered
+    var indexCount = 0
+    var srcIndex = 0
+    var targetIndex = 0
+    Source.fromFile(srcFile).getLines().foreach(
+      line => {
+        var lineNum = 0
+        val fields = line.split("\\t")
+        if (fields.length == 5) {
+          val id = fields(0)
+          val targetUri = fields(1)
+          val srcUri = id.split("-")(0)
+
+          if (uriMap.contains(srcUri)) {
+            uriMap(srcUri) = 1
+           // LOG.info(String.format("Creat link from %s to %s",srcUri,targetUri))
+          } else {
+            uriMap += (srcUri -> 1)
+            srcIndex = indexCount
+            indexCount += 1
+           // LOG.info(String.format("Adding Souce uri: %s , given number %s, pointing to Target Uri: %s",srcUri,srcIndex.toString,targetUri))
+            val mapString = srcIndex + "\t" + srcUri
+            mfoStream.println(mapString)
+          }
+
+          if (!uriMap.contains(targetUri)) {
+            uriMap += (targetUri -> 1)
+            targetIndex = indexCount
+            indexCount += 1
+           // LOG.info(String.format("Adding Target uri: %s , given number %s, pointing to empty list",targetUri,targetIndex.toString))
+            val mapString = targetIndex + "\t" + targetUri
+            mfoStream.println(mapString)
+          }
+
+          val intString = srcIndex + "\t" + targetIndex + "\t" + getWeight(new DBpediaResource(srcUri), new DBpediaResource(targetUri))
+
+
+          ilfoStream.println(intString)
+
+
+        } else {
+          LOG.error("Invailid line in file: " + line)
+        }
+        lineNum += 1
+        if (lineNum % 1000000 == 0) LOG.info(String.format("Store %s valid URIs and %s Links", indexCount.toString, lineNum.toString))
+      })
+
+
+
+/*    // Output each link by one line
     uriMap.foreach {
       case (srcUri, tuple) => {
         val srcIndex = tuple._1
@@ -111,10 +135,10 @@ class EntityOccsGraph() {
             case ioe: NoSuchElementException => LOG.error(String.format("Uri: %s not found", targetUri))
           }
         })
-        val mapString = srcIndex + "\t" + srcUri
-        mfoStream.println(mapString)
+
+
       }
-    }
+    }*/
 
     ilfoStream.close()
     mfoStream.close()
@@ -140,7 +164,7 @@ class EntityOccsGraph() {
 
 object EntityOccsGraph {
   def main(args: Array[String]) {
-    val occSrcFile = new File("/home/hector/Researches/nlp/DBpedia_Spotlight/dbpedia-spotlight/index/output/occs.sample.tsv")
+    val occSrcFile = new File("/home/hector/Researches/nlp/DBpedia_Spotlight/dbpedia-spotlight/index/output/occs.tsv")
     val interListFile = new File("output/occsIntgerList.tsv")
     val occsMapFile = new File("output/occsMap.tsv")
     val graphFile = new File("output/occsGraph")
