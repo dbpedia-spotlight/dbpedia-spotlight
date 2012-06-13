@@ -6,8 +6,6 @@ import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy
 import org.dbpedia.spotlight.spot.Spotter
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.exceptions.SearchException
-import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ
-
 /*
  * Copyright 2012 DBpedia Spotlight Development Team
  *

@@ -24,35 +24,35 @@ import org.dbpedia.spotlight.model.{DBpediaResource, SurfaceFormOccurrence}
  * @param sf2Cands
  */
 class ReferentGraph(sf2Cands: Map[SurfaceFormOccurrence, List[DBpediaResource]]) {
-  val graphTopo = sf2Cands.foldLeft(List[DBpediaResource]()) {
-    case (cands, (sf, drs)) => {
-      cands ++ drs
-    }
-  }
 
-  /**
-   * Get initial evidence for each mention, which may differ from its context
-   */
   def getInitalEvidence(sfOcc: SurfaceFormOccurrence, cand: DBpediaResource) {
 
   }
 
-  /**
-   * Get sementaic weight between entities
-   * Extract from the Wikipedia Link structure
-   */
-  def getEntitySemanticLinks() {
-
-  }
-
-  /**
-   * Get compatibility score between entitty and mention
-   * Current implementation consider TF.ICF
-   */
   def getMentionEntityCompatibility() {
 
 
   }
 
+  def getEntitySemanticLink(){
 
+
+  }
+
+
+  def buildWeightedArcList () {
+
+  }
+
+  def buildWeightedGraph() {
+
+  }
+
+  def runPageRank(){
+
+  }
+
+  def mapSubGraphIntegerToUri(){
+
+  }
 }

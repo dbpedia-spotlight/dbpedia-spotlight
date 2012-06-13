@@ -24,11 +24,11 @@ import org.dbpedia.spotlight.lucene.LuceneManager
 import java.io.File
 import org.dbpedia.spotlight.lucene.similarity.{CachedInvCandFreqSimilarity, JCSTermCache}
 import org.dbpedia.spotlight.lucene.search.{MergedOccurrencesContextSearcher, LuceneCandidateSearcher}
-import scalaj.collection.Imports._
+import scala.collection.JavaConverters._
 import org.dbpedia.spotlight.exceptions.{ItemNotFoundException, SearchException, InputException}
 import org.dbpedia.spotlight.exceptions.SearchException
-import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguator
 import org.dbpedia.spotlight.model._
+import org.dbpedia.spotlight.graph.ReferentGraph
 
 /**
  * Created with IntelliJ IDEA.
@@ -148,16 +148,13 @@ class GraphBasedDisambiguator(val factory: SpotlightFactory) extends ParagraphDi
     null
   }
 
-  def getInitalImportance(sfOcc: SurfaceFormOccurrence, cand: DBpediaResource) {
 
-  }
-
-  //Quite a mess of conversion between Java Hashset, Set and Scala Set
+  //Quite a mess of conversion between Java Hashset, Immutable Set and mutable Set
   def getCandidates(sf: SurfaceForm): Set[DBpediaResource] = {
-    var candidates = new java.util.HashSet[DBpediaResource]().asScala
+    var candidates = new java.util.HashSet[DBpediaResource]().asScala.toSet
 
     try {
-      candidates = candidateSearcher.getCandidates(sf).asScala
+      candidates = candidateSearcher.getCandidates(sf).asScala.toSet
     } catch {
       case se:
         SearchException => LOG.debug(se)
