@@ -1,9 +1,8 @@
 package org.dbpedia.spotlight.db
 
+import disk.JDBMStore
 import memory._
 import org.apache.commons.lang.NotImplementedException
-import java.io.File
-import org.dbpedia.spotlight.model._
 import java.lang.{Short, String}
 
 
@@ -13,6 +12,8 @@ import scala.collection.JavaConverters._
 import collection.mutable.ListBuffer
 import java.util.{Map, Set}
 import scala.Array
+import org.dbpedia.spotlight.model._
+import java.io.File
 
 /**
  * @author Joachim Daiber
@@ -26,6 +27,7 @@ class MemoryStoreIndexer(val baseDir: File)
   with ResourceIndexer
   with CandidateIndexer
   with TokenIndexer
+  with TokenOccurrenceIndexer
 {
 
   //SURFACE FORMS
@@ -155,6 +157,37 @@ class MemoryStoreIndexer(val baseDir: File)
     tokenStore.counts = counts.array
 
     MemoryStore.dump(tokenStore, new File(baseDir, "tokens.mem"))
+  }
+
+
+  //TOKEN OCCURRENCES
+
+  def addTokenOccurrence(resource: DBpediaResource, token: Token, count: Int) {
+    throw new NotImplementedException()
+  }
+
+  def addTokenOccurrence(resource: DBpediaResource, tokenCounts: Map[Int, Int]) {
+    throw new NotImplementedException()
+  }
+
+  lazy val contextStore = new MemoryContextStore()
+
+  def createContextStore(n: Int) {
+    contextStore.tokens = new Array[Array[Int]](n)
+    contextStore.counts = new Array[Array[Int]](n)
+  }
+
+  def addTokenOccurrences(occs: Map[DBpediaResource, Map[Int, Int]]) {
+    occs.foreach{ case(res, tokenCounts) => {
+        val (t, c) = tokenCounts.unzip
+        contextStore.tokens(res.id) = t.toArray
+        contextStore.counts(res.id) = c.toArray
+      }
+    }
+  }
+
+  def writeTokenOccurrences() {
+    MemoryStore.dump(contextStore, new File(baseDir, "context.mem"))
   }
 
 

@@ -69,12 +69,12 @@ object MemoryStore {
     }
   )
 
-  kryos.put(classOf[MemoryCandidateMapStore].getSimpleName,
+  kryos.put(classOf[MemoryContextStore].getSimpleName,
     {
       val kryo = new Kryo()
       kryo.setRegistrationRequired(true)
 
-      kryo.register(classOf[MemoryCandidateMapStore], new JavaSerializer())
+      kryo.register(classOf[MemoryContextStore], new JavaSerializer())
 
       kryo
     }

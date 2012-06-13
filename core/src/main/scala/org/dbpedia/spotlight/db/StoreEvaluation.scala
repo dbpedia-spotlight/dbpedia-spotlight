@@ -2,12 +2,16 @@ package org.dbpedia.spotlight.db
 
 import collection.mutable.ListBuffer
 
-import disk.DiskSurfaceFormStore
+import disk.{DiskContextStore, DiskSurfaceFormStore}
 import memory._
-import model.SurfaceFormStore
+import model._
 import util.Random
 import java.io.FileInputStream
-import org.dbpedia.spotlight.model.{Candidate, DBpediaResource, SurfaceForm}
+import scala.Predef._
+import org.apache.lucene.analysis.standard.StandardAnalyzer
+import org.apache.lucene.util.Version
+import org.dbpedia.spotlight.disambiguate.mixtures.{LinearRegressionMixture, Mixture}
+import org.dbpedia.spotlight.model.{Paragraph, Candidate, DBpediaResource, SurfaceForm}
 
 /**
  * @author Joachim Daiber
@@ -29,9 +33,9 @@ object StoreEvaluation {
     consumption += (Runtime.getRuntime.totalMemory - Runtime.getRuntime.freeMemory) / (1024 * 1024)
     val resStore = MemoryStore.load[MemoryResourceStore](new FileInputStream("data/res.mem"), new MemoryResourceStore())
 
-   // consumption += (Runtime.getRuntime.totalMemory - Runtime.getRuntime.freeMemory) / (1024 * 1024)
-   // val cm = MemoryStore.load[MemoryCandidateMapStore](new FileInputStream("data/candmap.mem"), new MemoryCandidateMapStore())
-   // consumption += (Runtime.getRuntime.totalMemory - Runtime.getRuntime.freeMemory) / (1024 * 1024)
+   consumption += (Runtime.getRuntime.totalMemory - Runtime.getRuntime.freeMemory) / (1024 * 1024)
+   val cm = MemoryStore.load[MemoryContextStore](new FileInputStream("data/candmap.mem"), new MemoryContextStore())
+   consumption += (Runtime.getRuntime.totalMemory - Runtime.getRuntime.freeMemory) / (1024 * 1024)
 
     val tokenStore = MemoryStore.load[MemoryTokenStore](new FileInputStream("data/tokens.mem"), new MemoryTokenStore())
     consumption += (Runtime.getRuntime.totalMemory - Runtime.getRuntime.freeMemory) / (1024 * 1024)
@@ -40,21 +44,48 @@ object StoreEvaluation {
 
     println(consumption)
 
-    //cm.resourceStore = resStore
 
-    val name: DBpediaResource = resStore.getResourceByName("Germany")
-    println(sfStore.idForString.size())
+    val contextStore = new DiskContextStore("data/context.disk")
 
+    var b = System.currentTimeMillis
+    println(contextStore.getContextCounts(resStore.getResourceByName("Berlin")))
+    println("Time:" + (System.currentTimeMillis - b))
+
+    b = System.currentTimeMillis
+    println(contextStore.getContextCounts(resStore.getResourceByName("Germany")))
+    println("Time:" + (System.currentTimeMillis - b))
+
+    b = System.currentTimeMillis
+    println(contextStore.getContextCounts(resStore.getResourceByName("Prague")))
+    println("Time:" + (System.currentTimeMillis - b))
+
+    b = System.currentTimeMillis
+    println(contextStore.getContextCounts(resStore.getResourceByName("Zoolander")))
+    println("Time:" + (System.currentTimeMillis - b))
+
+    b = System.currentTimeMillis
+    println(contextStore.getContextCounts(resStore.getResourceByName("Ben_Stiller")))
+    println("Time:" + (System.currentTimeMillis - b))
+
+    b = System.currentTimeMillis
+    println(contextStore.getContextCounts(resStore.getResourceByName("Larry_Block")).size())
+    println("Time:" + (System.currentTimeMillis - b))
+
+   //val disambiguator = new DBTwoStepDisambiguator(
+   //  tokenStore,
+   //  sfStore,
+   //  resStore,
+   //  cm,
+   //  contextStore,
+   //  new LuceneTokenizer(new StandardAnalyzer(Version.LUCENE_36)),
+   //  new LinearRegressionMixture()
+   //)
 
     //val candidates = cm.getCandidates(sfStore.getSurfaceForm("Germany")).toList.sortBy(_.support).reverse
     //println(cm.size)
     //println(candidates)
 
 
-    System.gc(); System.gc(); System.gc(); System.gc(); System.gc(); System.gc();
-    System.gc(); System.gc(); System.gc(); System.gc(); System.gc(); System.gc();
-
-    println(1)
     //val t = ListBuffer[Long]()
 //
     //var i = 0

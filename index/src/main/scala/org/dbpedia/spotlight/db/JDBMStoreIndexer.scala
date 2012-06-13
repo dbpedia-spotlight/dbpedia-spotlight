@@ -8,8 +8,8 @@ import scala.collection.JavaConverters._
 
 import scala.Predef._
 import scala._
-import org.dbpedia.spotlight.model._
 import java.util.{HashMap, Map}
+import org.dbpedia.spotlight.model._
 
 /**
  * @author Joachim Daiber
@@ -106,6 +106,14 @@ class JDBMStoreIndexer(val baseDir: File)
 
   def addTokenOccurrences(occs: Map[DBpediaResource, Map[Int, Int]]) {
     occs.foreach{ case(res, tokenCounts) => addTokenOccurrence(res, tokenCounts) }
+    writeTokenOccurrences()
+  }
+
+  def createContextStore(n: Int) = {
+    //
+  }
+
+  def writeTokenOccurrences() {
     contextStore.commit()
   }
 

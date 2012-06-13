@@ -26,6 +26,8 @@ object IndexTokenOccurrences {
     flushSize: Int = 1000
   ) {
 
+    indexer.createContextStore(resourceStore.size)
+
     val resMap = new HashMap[DBpediaResource, Map[Int, Int]]()
 
     var lastOcc: DBpediaResourceOccurrence = null
@@ -38,7 +40,6 @@ object IndexTokenOccurrences {
           resMap.put(res, new HashMap[Int, Int]())
         }
         val tokenMap = resMap.get(res)
-
 
         tokenizer.tokenize(occ.context) foreach {
           ts: String => {
@@ -58,5 +59,6 @@ object IndexTokenOccurrences {
         lastOcc = occ
       }
     }
+    indexer.writeTokenOccurrences()
   }
 }

@@ -1,9 +1,9 @@
 package org.dbpedia.spotlight.db
 
 import model._
-import com.officedepot.cdap2.collection.CompactHashSet
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.disambiguate.mixtures.Mixture
+import org.apache.commons.logging.LogFactory
 
 /**
  * @author Joachim Daiber
@@ -13,18 +13,19 @@ class DBTwoStepDisambiguator(
   tokenStore: TokenStore,
   surfaceFormStore: SurfaceFormStore,
   resourceStore: ResourceStore,
-  candidateSearcher: DBCandidateSearcher,
+  candidateMap: CandidateMapStore,
   contextStore: ContextStore,
   tokenizer: Tokenizer,
   mixture: Mixture
 ) {
 
+  private val LOG = LogFactory.getLog(this.getClass)
 
   def tf(token: Token, candidate: Candidate) = {
     contextStore.getContextCount(candidate.resource, token)
   }
 
-  def icf(token: Token, candidate: Candidate, allCandidates: Set[Candidate]): Float = {
+  def icf(token: Token, candidate: Candidate, allCandidates: Set[Candidate]): Double = {
 
     val nCandidatesWithToken = allCandidates.map{ cand: Candidate =>
       contextStore.getContextCount(cand.resource, token)
@@ -38,16 +39,21 @@ class DBTwoStepDisambiguator(
       math.log(nCandidates / (nCandidatesWithToken + 1.0)) //TODO Why the +1.0?
   }
 
-  def tficf(token: Token, candidate: Candidate, allCandidates: Set[Candidate]): Float = {
-    tf(token, candidate) * icf(token, candidate, allCandidates)
+  def tficf(token: Token, candidate: Candidate, allCandidates: Set[Candidate]): Double = {
+    tf(token, candidate).toDouble * icf(token, candidate, allCandidates)
   }
 
 
-  def getContextScores(text: Text, candidates: Set[Candidate]): Map[DBpediaResource, Float] = {
+  def getScores(text: Text, candidates: Set[Candidate]): Map[String, (Int, Double)] = {
     val tokens = tokenizer.tokenize(text).map{ ts: String => tokenStore.getToken(ts) }
+
     candidates.map {
-      candidate => tokens.map{ token: Token => tficf(token, candidate, candidates) }.sum //TODO add cosine
-     }
+      candidate =>
+        (candidate.resource.uri -> (candidate.resource.support,
+          tokens.map{ token: Token => tficf(token, candidate, candidates) }.sum //TODO add cosine
+        ))
+     }.toMap
+
   }
 
 
@@ -59,13 +65,13 @@ class DBTwoStepDisambiguator(
       return Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]()
 
     // step1: get candidates for all surface forms
-    var allCandidates = CompactHashSet[DBpediaResource]();
+    var allCandidates = Set[Candidate]();
     val occs = paragraph.occurrences.foldLeft(
-      Map[SurfaceFormOccurrence, List[DBpediaResource]]())(
+      Map[SurfaceFormOccurrence, List[Candidate]]())(
       (acc, sfOcc) => {
 
         LOG.debug("Searching...")
-        val candidates = candidateSearcher.getCandidates(sfOcc.surfaceForm)
+        val candidates = candidateMap.getCandidates(sfOcc.surfaceForm)
 
         LOG.debug("# candidates for: %s = %s.".format(sfOcc.surfaceForm, candidates.size))
         allCandidates ++= candidates
@@ -75,19 +81,19 @@ class DBTwoStepDisambiguator(
 
 
     // step2: query once for the paragraph context, get scores for each candidate resource
-    val contextScores = getContextScores(paragraph.text, allCandidates)
+    val contextScores = getScores(paragraph.text, allCandidates)
 
     // pick the best k for each surface form
     occs.keys.foldLeft(Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]())( (acc, aSfOcc) => {
-      val candOccs = occs.getOrElse(aSfOcc, List[DBpediaResource]())
-        .map( resource =>
+      val candOccs = occs.getOrElse(aSfOcc, List[Candidate]())
+        .map{ cand: Candidate => {
           Factory.DBpediaResourceOccurrence.from(
             aSfOcc,
-            resource,
-            contextScores.getOrElse(resource.uri, (0,0.0))
-          )
-        )
-        .sortBy(o => mixture.getScore(o))
+            cand.resource,
+            contextScores.getOrElse(cand.resource.uri, (0,0.0))
+          )}
+        }
+        .sortBy( o => mixture.getScore(o) )
         .reverse
         .take(k)
 

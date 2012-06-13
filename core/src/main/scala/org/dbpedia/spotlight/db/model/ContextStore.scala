@@ -1,6 +1,7 @@
 package org.dbpedia.spotlight.db.model
 
 import org.dbpedia.spotlight.model.{Token, DBpediaResource}
+import java.util.Map
 
 
 /**
@@ -13,5 +14,7 @@ import org.dbpedia.spotlight.model.{Token, DBpediaResource}
 trait ContextStore {
 
   def getContextCount(resource: DBpediaResource, token: Token): Int
+  def getContextCounts(resource: DBpediaResource): Map[Int, Int]
+
 
 }
