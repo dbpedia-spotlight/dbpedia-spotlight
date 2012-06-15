@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>spotlight</artifactId>
+        <groupId>org.dbpedia.spotlight</groupId>
+        <version>0.6</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>collective</artifactId>
+    <packaging>jar</packaging>
+    <name>DBpedia Spotlight Collective Disambiguation</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.dbpedia.spotlight</groupId>
+            <artifactId>core</artifactId>
+        </dependency>
+
+        <!-- Add dependencies for Spark and Bagel -->
+        <dependency>
+            <groupId>org.spark-project</groupId>
+            <artifactId>spark-core</artifactId>
+            <version>0.4-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../lib/spark-core-assembly-0.4-SNAPSHOT.jar</systemPath>
+        </dependency>
+
+        <dependency>
+            <groupId>org.spark-project</groupId>
+            <artifactId>bagel-core</artifactId>
+            <version>0.4-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../lib/spark-bagel-assembly-0.4-SNAPSHOT.jar</systemPath>
+        </dependency>
+
+    </dependencies>
+
+
+    <build>
+        <sourceDirectory>src/main/scala</sourceDirectory>
+        <testSourceDirectory>src/test/scala</testSourceDirectory>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>false</skipTests>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

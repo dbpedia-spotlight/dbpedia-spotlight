@@ -26,7 +26,6 @@ import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.Text;
 import org.dbpedia.spotlight.web.rest.ExtractTags;
 import org.dbpedia.spotlight.web.rest.OutputSerializer;
-import org.dbpedia.spotlight.web.rest.RelatedResources;
 import org.dbpedia.spotlight.web.rest.ServerUtils;
 import scala.xml.Elem;
 import scala.xml.Node;

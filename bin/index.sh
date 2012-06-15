@@ -10,9 +10,9 @@ here=`pwd`
 INDEX_CONFIG_FILE=../conf/indexing.properties
 
 # the indexing process merges occurrences in memory to speed up the process. the more memory the better
-export JAVA_OPTS="-Xmx14G"
-export MAVEN_OPTS="-Xmx14G"
-export SCALA_OPTS="-Xmx14G"
+export JAVA_OPTS="-Xmx6G"
+export MAVEN_OPTS="-Xmx6G"
+export SCALA_OPTS="-Xmx6G"
 
 # you have to run maven2 from the module that contains the indexing classes
 cd ../index

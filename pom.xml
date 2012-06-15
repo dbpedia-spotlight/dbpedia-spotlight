@@ -46,6 +46,7 @@
         <module>core</module>
         <module>rest</module>
         <module>index</module>
+        <module>collective</module>
         <!--module>eval</module>
         <module>webgraph</module>
         <module>jung</module-->
@@ -128,11 +129,12 @@
                 <version>${dbpedia.spotlight.version}</version>
             </dependency>
 
-            <dependency>
+            <!-- demo was removed from project -->
+<!--            <dependency>
                 <groupId>org.dbpedia.spotlight</groupId>
                 <artifactId>demo</artifactId>
                 <version>${dbpedia.spotlight.version}</version>
-            </dependency>
+            </dependency>-->
 
             <dependency>
                 <groupId>log4j</groupId>

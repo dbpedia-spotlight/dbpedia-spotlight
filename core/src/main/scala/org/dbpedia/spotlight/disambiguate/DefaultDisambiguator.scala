@@ -70,7 +70,7 @@ class DefaultDisambiguator(val factory: SpotlightFactory) extends Disambiguator 
      * @throws org.dbpedia.spotlight.exceptions.InputException
      */
     def disambiguate(paragraph: Paragraph): List[DBpediaResourceOccurrence] = {
-        asBuffer(disambiguator.disambiguate(paragraph.occurrences.asJava)).toList
+        asScalaBuffer(disambiguator.disambiguate(paragraph.occurrences.asJava)).toList
     }
 
     /**
