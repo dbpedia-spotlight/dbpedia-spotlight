@@ -176,6 +176,18 @@ public class SpotlightInterface  {
         return occList;
     }
 
+    /**
+     *
+     * Read in the content passed by both &url and &text in query, return the text to be further processed
+     * &text got higher priority, it will be returned if not empty
+     * if &text is not empty, the main content of the webpage pointed by the URL will be returned.
+     * @param text text by the &text query
+     * @param inUrl url by the &url query
+     * @return String about the main content extracted from the website linked from the URL
+     * @throws MalformedURLException
+     * @throws BoilerpipeProcessingException
+     * @throws InputException Thrown when both input from &text and &url are empty
+     */
     private String getTextToProcessed(String text,String inUrl) throws MalformedURLException, BoilerpipeProcessingException, InputException {
         String textToProcess = "";
         if (!text.equals("")){
