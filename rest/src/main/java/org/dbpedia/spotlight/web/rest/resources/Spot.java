@@ -41,7 +41,6 @@ import java.util.List;
  * REST Web Service for annotation: spotting, candidate selection, disambiguation, linking
  *
  * @author pablomendes
- * @author Paul Houle (patch for POST)
  */
 
 @ApplicationPath(Server.APPLICATION_PATH)
