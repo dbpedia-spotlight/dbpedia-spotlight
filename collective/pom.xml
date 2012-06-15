@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>spotlight</artifactId>
+        <groupId>org.dbpedia.spotlight</groupId>
+        <version>0.6</version>
+    </parent>
+
+    <artifactId>collective</artifactId>
+    <packaging>jar</packaging>
+    <name>DBpedia Spotlight Collective Disambiguation</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.dbpedia.spotlight</groupId>
+            <artifactId>core</artifactId>
+        </dependency>
+
+        <!-- Dependencies for WebGraph -->
+        <dependency>
+            <groupId>it.unimi.dsi</groupId>
+            <artifactId>webgraph</artifactId>
+            <version>3.0.7</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>it.unimi.dsi</groupId>
+            <artifactId>dsiutils</artifactId>
+            <version>2.0.7</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.martiansoftware</groupId>
+            <artifactId>jsap</artifactId>
+            <version>2.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>it.unimi.dsi</groupId>
+            <artifactId>sux4j</artifactId>
+            <version>3.0.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>colt</groupId>
+            <artifactId>colt</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>it.unimi.dsi</groupId>
+            <artifactId>law</artifactId>
+            <version>2.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>it.unimi.dsi</groupId>
+            <artifactId>weighted-graph</artifactId>
+            <version>1.0</version>
+        </dependency>
+
+        <!-- Add dependencies for Spark and Bagel -->
+<!--        <dependency>
+            <groupId>org.spark-project</groupId>
+            <artifactId>spark-core</artifactId>
+            <version>0.4-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../lib/spark-core-assembly-0.4-SNAPSHOT.jar</systemPath>
+        </dependency>
+
+        <dependency>
+            <groupId>org.spark-project</groupId>
+            <artifactId>bagel-core</artifactId>
+            <version>0.4-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../lib/spark-bagel-assembly-0.4-SNAPSHOT.jar</systemPath>
+        </dependency>-->
+
+    </dependencies>
+
+
+    <build>
+        <sourceDirectory>src/main/scala</sourceDirectory>
+        <testSourceDirectory>src/test/scala</testSourceDirectory>
+        <plugins>
+            <plugin>
+                 <groupId>org.apache.maven.plugins</groupId>
+                 <artifactId>maven-install-plugin</artifactId>
+                 <version>${maven.install.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>install-law-jar</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>it.unimi.dsi</groupId>
+                            <artifactId>law</artifactId>
+                            <version>2.1</version>
+                            <packaging>jar</packaging>
+                            <file>${basedir}/../lib/law-2.1.jar</file>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>install-weighted-graph-jar</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>it.unimi.dsi</groupId>
+                            <artifactId>weighted-graph</artifactId>
+                            <version>1.0</version>
+                            <packaging>jar</packaging>
+                            <file>${basedir}/../lib/graph_weighted-1.0.jar</file>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>false</skipTests>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

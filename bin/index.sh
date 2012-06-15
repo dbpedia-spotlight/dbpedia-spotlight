@@ -10,14 +10,14 @@ here=`pwd`
 INDEX_CONFIG_FILE=../conf/indexing.properties
 
 # the indexing process merges occurrences in memory to speed up the process. the more memory the better
-export JAVA_OPTS="-Xmx14G"
-export MAVEN_OPTS="-Xmx14G"
-export SCALA_OPTS="-Xmx14G"
+export JAVA_OPTS="-Xmx6G"
+export MAVEN_OPTS="-Xmx6G"
+export SCALA_OPTS="-Xmx6G"
 
 # you have to run maven2 from the module that contains the indexing classes
 cd ../index
 # the indexing process will generate files in the directory below
-mkdir output
+# mkdir output
 
 # first step is to extract valid URIs, synonyms and surface forms from DBpedia
 mvn scala:run -DmainClass=org.dbpedia.spotlight.util.ExtractCandidateMap "-DaddArgs=$INDEX_CONFIG_FILE"
@@ -32,7 +32,7 @@ sort -t $'\t' -k2 output/occs.tsv >output/occs.uriSorted.tsv
 mvn scala:run -DmainClass=org.dbpedia.spotlight.lucene.index.IndexMergedOccurrences "-DaddArgs=$INDEX_CONFIG_FILE|output/occs.uriSorted.tsv"
 
 # (optional) make a backup copy of the index before you lose all the time you've put into this
-cp -R output/index output/index-backup
+cp -R output/index /mnt/windows/Extra/Backup/index
 
 # (optional) preprocess surface forms however you want: produce acronyms, abbreviations, alternative spellings, etc.
 #            in the example below we scan paragraphs for uri->sf mappings that occurred together more than 3 times.
@@ -43,7 +43,7 @@ cat output/surfaceForms-fromTitRedDis.tsv output/surfaceForms-fromOccs.tsv > out
 # add surface forms to index
  mvn scala:run -DmainClass=org.dbpedia.spotlight.lucene.index.AddSurfaceFormsToIndex "-DaddArgs=$INDEX_CONFIG_FILE"
 # or
- mvn scala:run -DmainClass=org.dbpedia.spotlight.lucene.index.CandidateIndexer "-DaddArgs=output/surfaceForms.tsv|output/candidateIndex|3|case-insensitive|overwrite"
+# mvn scala:run -DmainClass=org.dbpedia.spotlight.lucene.index.CandidateIndexer "-DaddArgs=output/surfaceForms.tsv|output/candidateIndex|3|case-insensitive|overwrite"
 
 # add entity types to index
 mvn scala:run -DmainClass=org.dbpedia.spotlight.lucene.index.AddTypesToIndex "-DaddArgs=$INDEX_CONFIG_FILE"

@@ -31,8 +31,7 @@
     <name>DBpedia Spotlight RESTful API</name>
 
     <properties>
-        <heapspace.Xmx.server>-Xmx16g</heapspace.Xmx.server>
-        <spotlight.basedir>${project.basedir}/..</spotlight.basedir>
+        <heapspace.Xmx.server>-Xmx5g</heapspace.Xmx.server>
     </properties>
 
     <build>
@@ -126,6 +125,13 @@
             <groupId>stax</groupId>
             <artifactId>stax-api</artifactId>
             <version>1.0.1</version>
+        </dependency>
+
+        <!-- Hector.Liu: To clean boilerpipe from webpage-->
+        <dependency>
+            <groupId>de.l3s.boilerpipe</groupId>
+            <artifactId>boilerpipe</artifactId>
+            <version>1.1.0</version>
         </dependency>
 
     </dependencies>

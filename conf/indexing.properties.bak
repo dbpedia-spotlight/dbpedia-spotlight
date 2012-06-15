@@ -1,0 +1,54 @@
+# Wikipedia Dump
+# --------------
+org.dbpedia.spotlight.data.wikipediaDump = /data/wikipediaDumps/en/20100312/enwiki-20100312-pages-articles.xml
+
+# Location for DBpedia resources index (output
+org.dbpedia.spotlight.index.dir = output/index
+
+# DBpedia Datasets
+# ----------------
+org.dbpedia.spotlight.data.labels = /data/dbpedia/3.6/en/labels_en.nt
+org.dbpedia.spotlight.data.redirects = /data/dbpedia/3.6/en/redirects_en.nt
+org.dbpedia.spotlight.data.disambiguations = /data/dbpedia/3.6/en/disambiguations_en.nt
+org.dbpedia.spotlight.data.instanceTypes = /data/dbpedia/3.6/en/instance_types_en.nt
+
+# Files created from DBpedia Datasets
+# -----------------------
+org.dbpedia.spotlight.data.conceptURIs = output/conceptURIs.list
+org.dbpedia.spotlight.data.redirectsTC = output/redirects_tc.tsv
+org.dbpedia.spotlight.data.surfaceForms = output/surfaceForms.tsv
+
+# Language-specific config
+# --------------
+org.dbpedia.spotlight.language = English
+org.dbpedia.spotlight.lucene.analyzer = SnowballAnalyzer
+
+# Stop word list
+org.dbpedia.spotlight.data.stopWords.english = /data/spotlight/3.6/en/stopwords.en.list
+org.dbpedia.spotlight.data.stopWords.portuguese = /data/spotlight/3.6/pt/stopwords.pt.list
+org.dbpedia.spotlight.data.stopWords.spanish = /data/spotlight/3.6/es/stopwords.es.list
+
+# URI patterns that should not be indexed. e.g. List_of_*
+org.dbpedia.spotlight.data.badURIs.english = /data/spotlight/blacklistedURIPatterns.en.list
+
+# Will discard surface forms that are too long (reduces complexity of spotting and generally size in disk/memory)
+org.dbpedia.spotlight.data.maxSurfaceFormLength = 50
+# Will index only words closest to resource occurrence
+org.dbpedia.spotlight.data.maxContextWindowSize = 200
+org.dbpedia.spotlight.data.minContextWindowSize = 0
+
+# Other files
+org.dbpedia.spotlight.data.priors = /home/pablo/eval/grounder/gold/g1b_spotlight.words.uris.counts
+
+# Yahoo! Boss properties
+# ----------------------
+# application ID
+org.dbpedia.spotlight.yahoo.appID = 
+# number of results returned at for one query (maximum: 50)
+org.dbpedia.spotlight.yahoo.maxResults = 50
+# number of iteration; each iteration returns YahooBossResults results
+org.dbpedia.spotlight.yahoo.maxIterations = 100
+## important for Yahoo! Boss query string: both language and region must be set according to
+## http://developer.yahoo.com/search/boss/boss_guide/supp_regions_lang.html
+org.dbpedia.spotlight.yahoo.language = en
+org.dbpedia.spotlight.yahoo.region = us

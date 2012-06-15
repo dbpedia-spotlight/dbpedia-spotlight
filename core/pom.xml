@@ -122,11 +122,13 @@
             <version>SNAPSHOT</version>
         </dependency>
 
+<!--   Hector: Cannot resolve here
         <dependency>
             <groupId>weka</groupId>
             <artifactId>kea-goss-weka</artifactId>
             <version>5.0</version>
         </dependency>
+-->
 
         <dependency>
             <groupId>weka</groupId>

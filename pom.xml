@@ -48,7 +48,10 @@
         <module>core</module>
         <module>rest</module>
         <module>index</module>
-        <module>eval</module>
+        <module>collective</module>
+        <!--module>eval</module>
+        <module>webgraph</module>
+        <module>jung</module-->
     </modules>
 
     <build>
