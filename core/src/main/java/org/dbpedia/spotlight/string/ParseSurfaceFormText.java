@@ -25,6 +25,9 @@ import java.util.List;
 
 /**
  * Functions to deal with wiki markup.
+ *
+ * See also: MilneWittenSource.parse
+ *
  * @author maxjakob
  */
 public class ParseSurfaceFormText {

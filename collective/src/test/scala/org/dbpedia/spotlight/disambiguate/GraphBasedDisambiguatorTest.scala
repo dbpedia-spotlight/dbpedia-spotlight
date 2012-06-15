@@ -1,9 +1,11 @@
 package org.dbpedia.spotlight.disambiguate
 
-import junit.framework.TestCase
+import org.dbpedia.spotlight.disambiguate.GraphBasedDisambiguator
 import org.junit.Test
-import junit.framework.Assert.assertEquals
-
+import org.junit.Assert.assertEquals
+import org.dbpedia.spotlight.model.{SpotlightFactory, SpotlightConfiguration}
+import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy
+import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy
 
 /**
  * Created with IntelliJ IDEA.
@@ -12,14 +14,24 @@ import junit.framework.Assert.assertEquals
  * Time: 10:41 PM
  */
 
+class GraphBasedDisambiguatorTest{
+  val configFileName = "../conf/server.properties"
+  val spotterName = "Default"
+  val disambiguatorName = "Document"
 
-class GraphBasedDisambiguatorTest extends TestCase{
-  val disambiguator = new GraphBasedDisambiguator()
+  val config = new SpotlightConfiguration(configFileName)
+  val factory = new SpotlightFactory(config)
 
-  @Test
+  val spotterPolicy = SpotterPolicy.valueOf(spotterName)
+  val spotter = factory.spotter(spotterPolicy)
+
+  val disambiguationPolicy = DisambiguationPolicy.valueOf(disambiguatorName)
+  val disambiguator = factory.disambiguator(disambiguationPolicy)
+
+  @Test        // just try out test
   def testDisambiguatorName() {
       val name = "GraphBasedDisambiguatorRunner"
-      assertEquals(disambiguator.name,name)
+      println(disambiguator.name)
+      assertEquals(name,disambiguator.name)
    }
-
 }

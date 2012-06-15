@@ -35,6 +35,7 @@ package org.dbpedia.spotlight.filter
  */
 
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
+import scala.collection.JavaConversions._
 
 /**
  * Base interface for annotation and occurrence filters.
@@ -46,6 +47,10 @@ trait Filter {
     //TODO move to DocumentAnnotationFilter, since it looks at all occurrences at once
     def filterOccs(occs : Traversable[DBpediaResourceOccurrence]) : Traversable[DBpediaResourceOccurrence] = {
         new FilteredOccs(occs)
+    }
+
+    def filterOccs(occs : java.util.List[DBpediaResourceOccurrence]) : java.util.List[DBpediaResourceOccurrence] = {
+        new FilteredOccs(occs.toList).toList
     }
 
     private class FilteredOccs(occs : Traversable[DBpediaResourceOccurrence]) extends Traversable[DBpediaResourceOccurrence] {

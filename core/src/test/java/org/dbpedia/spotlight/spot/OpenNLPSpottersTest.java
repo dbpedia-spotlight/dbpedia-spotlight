@@ -78,7 +78,7 @@ The financial crunch in the U.S. threatens to undermine a foreign policy describ
 
     @Test
     public void assureNESpotterRuns() throws ConfigurationException, SpottingException {
-        SpotlightConfiguration config = new SpotlightConfiguration("conf/dev.properties");
+        SpotlightConfiguration config = new SpotlightConfiguration("conf/server.properties");
         Spotter spotter = new NESpotter(config.getSpotterConfiguration().getOpenNLPModelDir());
         List<SurfaceFormOccurrence> spots = spotter.extract(t);
         testOffsets(spots);
@@ -87,7 +87,7 @@ The financial crunch in the U.S. threatens to undermine a foreign policy describ
 
     @Test
     public void assureOpenNLPNGramSpotterRuns() throws ConfigurationException, SpottingException {
-        SpotlightConfiguration config = new SpotlightConfiguration("conf/dev.properties");
+        SpotlightConfiguration config = new SpotlightConfiguration("conf/server.properties");
         Spotter spotter = new OpenNLPNGramSpotter(config.getSpotterConfiguration().getOpenNLPModelDir());
         List<SurfaceFormOccurrence> spots = spotter.extract(t);
         print(spots);

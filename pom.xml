@@ -25,8 +25,8 @@
     <properties>
         <dbpedia.spotlight.version>0.6</dbpedia.spotlight.version>
 
-        <heapspace.Xmx.compiler>-Xmx5g</heapspace.Xmx.compiler>
-        <heapspace.Xmx.indexer>-Xmx2g</heapspace.Xmx.indexer>
+        <heapspace.Xmx.compiler>-Xmx1g</heapspace.Xmx.compiler>
+        <heapspace.Xmx.indexer>-Xmx1g</heapspace.Xmx.indexer>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.compiler.version>1.6</java.compiler.version>
@@ -34,6 +34,8 @@
         <maven.install.plugin.version>2.3.1</maven.install.plugin.version>
         <maven.assembly.plugin.version>2.2-beta-5</maven.assembly.plugin.version>
         <scala.compiler.version>2.9.1</scala.compiler.version>
+
+        <spotlight.basedir>${project.basedir}</spotlight.basedir>
     </properties>
 
     <groupId>org.dbpedia.spotlight</groupId>
@@ -94,6 +96,124 @@
                 </configuration>
             </plugin>
 
+            <plugin>
+                <inherited>true</inherited>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>1.1</version>
+                <executions>
+                    <execution>
+                        <id>enforce-maven-2-java-6</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>[2.2.1, 3.0)</version>
+                                </requireMavenVersion>
+                                <requireJavaVersion>
+                                    <version>${java.compiler.version}</version>
+                                </requireJavaVersion>
+                            </rules>
+                            <fail>true</fail>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>${maven.install.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>install-dbpedia-jar</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>org.dbpedia.extraction</groupId>
+                            <artifactId>core</artifactId>
+                            <version>2.0-SNAPSHOT</version>
+                            <packaging>jar</packaging>
+                            <file>${spotlight.basedir}/lib/dbpedia-2.0-SNAPSHOT-jar-with-dependencies.jar</file>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>install-nx-parser-jar</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>org.semanticweb.yars</groupId>
+                            <artifactId>nx-parser</artifactId>
+                            <version>1.1</version>
+                            <packaging>jar</packaging>
+                            <file>${spotlight.basedir}/lib/nxparser-1.1.jar</file>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>install-lingpipe-jar</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>com.aliasi</groupId>
+                            <artifactId>lingpipe</artifactId>
+                            <version>4.0.0</version>
+                            <packaging>jar</packaging>
+                            <file>${spotlight.basedir}/lib/lingpipe-4.0.0.jar</file>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>install-cloud9-jar</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>edu.umd</groupId>
+                            <artifactId>cloud9</artifactId>
+                            <version>SNAPSHOT</version>
+                            <packaging>jar</packaging>
+                            <file>${spotlight.basedir}/lib/cloud9.jar</file>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>install-kea-goss-weka-jar</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>weka</groupId>
+                            <artifactId>kea-goss-weka</artifactId>
+                            <version>5.0</version>
+                            <packaging>jar</packaging>
+                            <file>${spotlight.basedir}/lib/kea-goss-5.0-weka-3.7.3-SNAPSHOT.jar</file>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>install-weka-jar</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>weka</groupId>
+                            <artifactId>weka</artifactId>
+                            <version>3.7.3</version>
+                            <packaging>jar</packaging>
+                            <file>${spotlight.basedir}/lib/weka-trunk.jar</file>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
 
@@ -128,13 +248,6 @@
                 <artifactId>rest</artifactId>
                 <version>${dbpedia.spotlight.version}</version>
             </dependency>
-
-            <!-- demo was removed from project -->
-<!--            <dependency>
-                <groupId>org.dbpedia.spotlight</groupId>
-                <artifactId>demo</artifactId>
-                <version>${dbpedia.spotlight.version}</version>
-            </dependency>-->
 
             <dependency>
                 <groupId>log4j</groupId>
@@ -307,11 +420,11 @@
             <layout>default</layout>
         </repository>
 
-    <repository>
-        <id>java.net-Public</id>
-        <name>Maven Java Net Snapshots and Releases</name>
-        <url>https://maven.java.net/content/groups/public/</url>
-    </repository>
+        <repository>
+            <id>java.net-Public</id>
+            <name>Maven Java Net Snapshots and Releases</name>
+            <url>https://maven.java.net/content/groups/public/</url>
+        </repository>
 
 
         <repository>
