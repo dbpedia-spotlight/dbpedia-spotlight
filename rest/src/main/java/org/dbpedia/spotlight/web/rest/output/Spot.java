@@ -21,6 +21,7 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 import com.thoughtworks.xstream.annotations.XStreamImplicit;
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence;
+import org.dbpedia.spotlight.model.Feature;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 
 import java.util.LinkedList;
@@ -34,6 +35,9 @@ public class Spot {
 
     @XStreamAsAttribute
     private int offset;
+
+    @XStreamAsAttribute
+    private String nerType;
 
     @XStreamImplicit
     private List<Resource> resources;
@@ -60,6 +64,9 @@ public class Spot {
         Spot spot = new Spot();
         spot.setName(sfOcc.surfaceForm().name());
         spot.setOffset(sfOcc.textOffset());
+        Feature typeFeature = sfOcc.features().get("type");
+        if (typeFeature != null)
+            spot.setNerType(typeFeature.value().toString());
         return spot;
     }
 
@@ -68,7 +75,13 @@ public class Spot {
         spot.setName(occ.surfaceForm().name());
         spot.setOffset(occ.textOffset());
         spot.setResource(Resource.getInstance(occ));
+//        Feature typeFeature = sfOcc.features().get("type");
+//        if (typeFeature != null)
+//            spot.setNerType(typeFeature.value().toString());
         return spot;
     }
 
+    public void setNerType(String nerType) {
+        this.nerType = nerType;
+    }
 }

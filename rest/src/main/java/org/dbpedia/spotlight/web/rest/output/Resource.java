@@ -46,6 +46,8 @@ public class Resource {
     @XStreamAsAttribute
     private double finalScore;
 
+    @XStreamAsAttribute
+    private String types;
 
     public void setUri(String uri) {
         this.uri = /*DBpediaResource.DBPEDIA_RESOURCE_PREFIX() +*/ uri;
@@ -72,6 +74,10 @@ public class Resource {
         this.finalScore = finalScore;
     }
 
+    public void setTypes(String types) {
+        this.types = types;
+    }
+
     public static Resource getInstance(DBpediaResourceOccurrence occ) {
         Resource resource = new Resource();
         resource.setUri(occ.resource().uri());
@@ -80,6 +86,7 @@ public class Resource {
         resource.setSupport(occ.resource().support());
         resource.setPriorScore(occ.resource().prior());
         resource.setFinalScore(occ.similarityScore());
+        resource.setTypes(occ.resource().types().mkString(", "));
         return resource;
     }
 

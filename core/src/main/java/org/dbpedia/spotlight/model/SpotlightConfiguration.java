@@ -45,7 +45,8 @@ public class SpotlightConfiguration {
 
     //TODO could get all of these from configuration file
 	public final static String DEFAULT_TEXT = "";
-	public final static String DEFAULT_CONFIDENCE = "0.5";
+    public final static String DEFAULT_URL = "";
+    public final static String DEFAULT_CONFIDENCE = "0.5";
 	public final static String DEFAULT_SUPPORT = "30";
 	public final static String DEFAULT_TYPES = "";
 	public final static String DEFAULT_SPARQL = "";
