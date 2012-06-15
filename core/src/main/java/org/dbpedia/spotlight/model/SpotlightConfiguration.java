@@ -45,6 +45,7 @@ public class SpotlightConfiguration {
 
     //TODO could get all of these from configuration file
 	public final static String DEFAULT_TEXT = "";
+    public final static String DEFAULT_URL = "";
 	public final static String DEFAULT_CONFIDENCE = "0.5";
 	public final static String DEFAULT_SUPPORT = "30";
 	public final static String DEFAULT_TYPES = "";
@@ -52,7 +53,7 @@ public class SpotlightConfiguration {
 	public final static String DEFAULT_POLICY = "whitelist";
 	public final static String DEFAULT_COREFERENCE_RESOLUTION = "true";
 
-    // This policy does not reside in DisambiguatorConfiguration, but SpotlighPolicy resides in SpotlighConfiguration, looks strange
+    //TODO Hector: This policy does not reside in DisambiguatorConfiguration, but SpotlighPolicy resides in SpotlighConfiguration, looks strange
     public enum DisambiguationPolicy { Document,Occurrences,CuttingEdge,Default }
 
     public String language;

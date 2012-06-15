@@ -34,10 +34,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.SpottingException;
-import org.dbpedia.spotlight.model.SpotlightConfiguration;
-import org.dbpedia.spotlight.model.SurfaceForm;
-import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
-import org.dbpedia.spotlight.model.Text;
+import org.dbpedia.spotlight.model.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -48,6 +45,8 @@ import java.util.*;
 
 /**
  * Spotter that uses Named Entity Recognition (NER) models from OpenNLP. Only spots People, Organisations and Locations.
+ *
+ * TODO remove hardcoding of opennlp models. get from configuration
  *
  * @author Rohana Rajapakse (GOSS Interactive Limited) - implemented the class
  * @author pablomendes  adjustments to logging, class rename, integrated with the rest of architecture
@@ -105,7 +104,7 @@ public class NESpotter implements Spotter {
                 Object[] typeInfo = type.getValue();
                 URI typeUri = (URI) typeInfo[0];
                 BaseModel nameFinderModel = (BaseModel) typeInfo[1];
-                res = extractNameOccurrences(nameFinderModel, text);
+                res = extractNameOccurrences(nameFinderModel, text, typeUri);
                 if (res != null && !res.isEmpty()) {
                     if (ret == null) {
                         ret = res;
@@ -134,7 +133,7 @@ public class NESpotter implements Spotter {
         this.name = n;
     }
 
-    protected List<SurfaceFormOccurrence> extractNameOccurrences(BaseModel nameFinderModel, Text text) {
+    protected List<SurfaceFormOccurrence> extractNameOccurrences(BaseModel nameFinderModel, Text text, URI oType) {
         String intext = text.text();
         SentenceDetectorME sentenceDetector = new SentenceDetectorME((SentenceModel)sentenceModel);
         String[] sentences = sentenceDetector.sentDetect(intext);
@@ -169,7 +168,11 @@ public class NESpotter implements Spotter {
                         buf.append(tokens[j]);
                         if(j<span.getEnd()-1) buf.append(" ");
                     }
-
+                    String surfaceFormStr = buf.toString().trim();
+                    if (surfaceFormStr.contains(".")) {
+                    	surfaceFormStr = correctPhrase(surfaceFormStr, sentence);
+                    }
+                    
                     int entStart = sentencePositions[i] + tokenspan[span.getStart()].getStart();
                     int entEnd = sentencePositions[i] +tokenspan[span.getEnd()-1].getEnd();
 
@@ -181,8 +184,9 @@ public class NESpotter implements Spotter {
                     System.out.println("Text = " + text);
                     */
 
-                    SurfaceForm surfaceForm = new SurfaceForm(buf.toString());
+                    SurfaceForm surfaceForm = new SurfaceForm(surfaceFormStr);
                     SurfaceFormOccurrence sfocc =  new SurfaceFormOccurrence(surfaceForm, text, entStart);
+                    sfocc.features().put("type", new Feature("type",oType.toString()));
                     sfOccurrences.add(sfocc);
                 }
             }
@@ -195,7 +199,19 @@ public class NESpotter implements Spotter {
         }
         return sfOccurrences;
     }
-
-
+	private String correctPhrase(String phrs, String intext) {
+		//first remove " ."
+		while (phrs.contains(" .")){
+			phrs = phrs.replace(" .", ".");
+		}
+		if (!intext.contains(phrs)) {
+			while (phrs.contains(". ")){
+			phrs = phrs.replace(". ", ".");
+			}
+		}
+		//System.out.println(phrs);
+		return phrs;
+	}
+   
 
 }

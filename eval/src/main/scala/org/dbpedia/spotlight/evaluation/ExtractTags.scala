@@ -6,16 +6,16 @@ import org.dbpedia.spotlight.lucene.similarity.{CachedInvCandFreqSimilarity, JCS
 import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
 import java.io.File
 import org.dbpedia.spotlight.string.WikiLinkParser
-import org.dbpedia.spotlight.extract.LuceneTagExtractor
 import io.Source
 import org.dbpedia.spotlight.model.{Text, SpotlightConfiguration}
+import org.dbpedia.spotlight.extract.LuceneTagExtractor
 
 /**
  * Evaluation class for LuceneTagExtractor
  * @author pablomendes
  */
 
-object LuceneTagExtractor {
+object ExtractTags {
 
     val LOG = LogFactory.getLog(this.getClass)
 

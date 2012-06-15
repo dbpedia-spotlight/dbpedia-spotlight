@@ -19,6 +19,9 @@
 package org.dbpedia.spotlight.sparql;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.*;
 
@@ -48,8 +51,6 @@ public class SparqlQueryExecuter {
        // Create an instance of HttpClient.
     private static HttpClient client = new HttpClient();
 
-    //http://dbpedia.org/sparql?default-graph-uri=http://dbpedia.org&query=select+distinct+%3Fpol+where+{%3Fpol+a+%3Chttp://dbpedia.org/ontology/Politician%3E+}&debug=on&timeout=&format=text/html&save=display&fname=
-
     String mainGraph;
     String sparqlUrl;
 
@@ -58,15 +59,21 @@ public class SparqlQueryExecuter {
         this.sparqlUrl = sparqlUrl;
     }
 
+    // this is the virtuoso way. subclasses can override for other implementations
+    //http://dbpedia.org/sparql?default-graph-uri=http://dbpedia.org&query=select+distinct+%3Fpol+where+{%3Fpol+a+%3Chttp://dbpedia.org/ontology/Politician%3E+}&debug=on&timeout=&format=text/html&save=display&fname=
+    protected URL getUrl(String query) throws UnsupportedEncodingException, MalformedURLException {
+        String graphEncoded = URLEncoder.encode(mainGraph, "UTF-8");
+        String formatEncoded = URLEncoder.encode("application/sparql-results+json", "UTF-8");
+        String queryEncoded = URLEncoder.encode(query, "UTF-8");
+        String url = sparqlUrl+"?"+"default-graph-uri="+graphEncoded+"&query="+queryEncoded+"&format="+formatEncoded+"&debug=on&timeout=";
+        return new URL(url);
+    }
+
 	public List<DBpediaResource> query(String query) throws IOException, OutputException, SparqlExecutionException {
         if (query==null) return new ArrayList<DBpediaResource>();
 		LOG.debug("--SPARQL QUERY: " + query.replace("\n", " "));
 
-		String graphEncoded = URLEncoder.encode(mainGraph, "UTF-8");
-		String formatEncoded = URLEncoder.encode("application/sparql-results+json", "UTF-8");
-        String queryEncoded = URLEncoder.encode(query, "UTF-8");
-
-        String url = "default-graph-uri="+graphEncoded+"&query="+queryEncoded+"&format="+formatEncoded+"&debug=on&timeout=";
+		URL url = getUrl(query);
 		//LOG.trace(url);
 
 		//FIXME Do some test with the returned results to see if there actually are results.
@@ -83,9 +90,19 @@ public class SparqlQueryExecuter {
         return uris;
 	}
 
+    public String update(String query) throws SparqlExecutionException {
+        String response = null;
+        try {
+            URL url = getUrl(query);
+            response = request(url);
+        } catch (Exception e) {
+            throw new SparqlExecutionException(e);
+        }
+        return response;
+    }
 
-    public String request(String sparqlCommand) throws SparqlExecutionException {
-        GetMethod method = new GetMethod(sparqlUrl+"?"+sparqlCommand);
+    public String request(URL url) throws SparqlExecutionException {
+        GetMethod method = new GetMethod(url.toString());
         String response = null;
 
         // Provide custom retry handler is necessary

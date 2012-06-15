@@ -16,12 +16,15 @@
 
 package org.dbpedia.spotlight.model
 
+import java.util.HashMap
+
 class SurfaceFormOccurrence(val surfaceForm : SurfaceForm,
                             val context : Text,
                             val textOffset : Int,
                             val provenance : Provenance.Value,
                             var spotProb : Double = -1)
 {
+    val features = new HashMap[String,Feature]()
 
     def this(surfaceForm : SurfaceForm, context : Text, textOffset : Int) =
     {
