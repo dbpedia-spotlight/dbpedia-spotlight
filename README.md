@@ -1,20 +1,46 @@
 # DBpedia Spotlight
 #### Shedding Light on the Web of Documents
 
+DBpedia Spotlight looks for ~3.5M things of ~320 types in text and tries to link them to their global unique identifiers in [DBpedia](http://dbpedia.org). 
+
+#### Demonstration
+
+Go to our [demonstration](http://spotlight.dbpedia.org/demo/) page, copy+paste some text and play with the parameters to see how it works.
+
+#### Call our web service
+
+You can use our demonstration [Web Service](http://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Web-service) directly from your application.
+
+    curl http://spotlight.dbpedia.org/rest/annotate \
+      --data-urlencode "text=President Obama called Wednesday on Congress to extend a tax break
+      for students included in last year's economic stimulus package, arguing
+      that the policy provides more generous assistance." \
+      --data "confidence=0.2" \
+      --data "support=20"
+
+#### Run your own server
+
+If you need service reliability and lower response times, you can run DBpedia Spotlight in your own [InHouse-Server](http://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/InHouse_Server).
+
+    wget http://spotlight.dbpedia.org/download/release-0.5/dbpedia-spotlight-quickstart.zip
+    unzip dbpedia-spotlight-quickstart.zip
+    cd dbpedia-spotlight-quickstart/
+    ./run.sh
+
+#### Build from source
+
+We provide a [Java/Scala API](http://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Java%2FScala%20API) for you to use our code in your application.
+More info [here](http://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Java%2FScala%20API).
+
+## Introduction
+
 DBpedia Spotlight is a tool for automatically annotating mentions of DBpedia resources in text, providing a solution for linking unstructured information sources to the Linked Open Data cloud through DBpedia. DBpedia Spotlight recognizes that names of concepts or entities have been mentioned (e.g. "Michael Jordan"), and subsequently matches these names to unique identifiers (e.g. [dbpedia:Michael_I._Jordan](http://dbpedia.org/page/Michael_I._Jordan), the machine learning professor or [dbpedia:Michael_Jordan](http://dbpedia.org/page/Michael_Jordan) the basketball player). It can also be used for building your solution for [Named Entity Recognition](http://en.wikipedia.org/wiki/Named_entity_recognition), Keyphrase Extraction, Tagging, etc. amongst other information extraction tasks.
 
 Text annotation has the potential of enhancing a wide range of applications, including search, faceted browsing and navigation. By connecting text documents with DBpedia, our system enables a range of interesting use cases. For instance, the ontology can be used as background knowledge to display complementary information on web pages or to enhance information retrieval tasks. Moreover, faceted browsing over documents and customization of web feeds based on semantics become feasible. Finally, by following links from DBpedia into other data sources, the Linked Open Data cloud is pulled closer to the Web of Documents.
 
 Take a look at our [Known Uses] (http://dbpedia.org/spotlight/knownuses) page for other examples of how DBpedia Spotlight can be used. If you use DBpedia Spotlight in your project, please add a link to http://spotlight.dbpedia.org. If you use it in a paper, please use the citation available in the end of this page.
 
-## Quick Start
-You can try out DBpedia Spotlight through our Web Application or Web Service endpoints. The Web Application is a user interface that allows you to enter text in a form and generates an HTML annotated version of the text with links to DBpedia. The Web Service endpoints provide programmatic access to the demo, allowing you to retrieve data also in XML or JSON. Example calls are displayed below.
-
-  * [Web Application](http://spotlight.dbpedia.org/demo/): play with DBpedia Spotlight online.
-  * [Web Service](http://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Web-service): use our demonstration server in your application.
-  * [InHouse-Server](http://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/InHouse_Server): run DBpedia Spotlight in your own server.
-  * [Java/Scala API](http://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Java%2FScala%20API): use our code in your application.
-
+You can try out DBpedia Spotlight through our Web Application or Web Service endpoints. The Web Application is a user interface that allows you to enter text in a form and generates an HTML annotated version of the text with links to DBpedia. The Web Service endpoints provide programmatic access to the demo, allowing you to retrieve data also in XML or JSON.
 ## Documentation
 
 We split the documentation according to the depth at which we give explanations. Please feel free to take a look at our:
@@ -25,8 +51,8 @@ We split the documentation according to the depth at which we give explanations.
 
 ## Downloads
 
-If you are interested in running DBpedia Spotlight in your own server, or join our development effort, we please check our [download](http://dbpedia.org/spotlight/downloads) and [installation](http://dbpedia.org/spotlight/installation) instructions. DBpedia Spotlight is downloadable from its [project page on Github](https://github.com/dbpedia-spotlight/dbpedia-spotlight/downloads), the latest stable build is 0.5. The latest Java/Scala source code is available from the project's [Github repository](https://github.com/dbpedia-spotlight/main) where it can also be browsed online. Since DBpedia Spotlight uses the entire Wikipedia in order to learn how to annotate DBpedia Resources, the entire dataset cannot be distributed alongside the code, and can be downloaded in varied sizes from the [download page](http://dbpedia.org/spotlight/downloads). A tiny dataset is included in the distribution for demonstration purposes only.
-
+DBpedia Spotlight looks for ~3.5M things of ~320 types in text and tries to disambiguate them to their global unique identifiers in DBpedia. It uses the entire Wikipedia in order to learn how to annotate DBpedia Resources, the entire dataset cannot be distributed alongside the code, and can be downloaded in varied sizes from the [download page](http://dbpedia.org/spotlight/downloads). A tiny dataset is included in the distribution for demonstration purposes only.
+After you've downloaded the files, you need to modify the configuration in server.properties with the correct path to the files. More info [here](https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Installation).
 
 ## Licenses
 
