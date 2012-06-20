@@ -35,6 +35,10 @@
     <packaging>pom</packaging>
     <name>DBpedia Spotlight Distribution Packaging</name>
 
+    <properties>
+        <spotlight.basedir>${project.basedir}/..</spotlight.basedir>
+    </properties>
+
     <build>
 
         <plugins>
