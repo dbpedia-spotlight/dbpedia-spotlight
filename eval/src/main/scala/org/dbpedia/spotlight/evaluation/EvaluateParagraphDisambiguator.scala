@@ -21,8 +21,10 @@ import org.dbpedia.spotlight.io.AnnotatedTextSource
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.disambiguate.{CuttingEdgeDisambiguator, TwoStepDisambiguator, ParagraphDisambiguator}
 import java.io.{PrintWriter, File}
+import org.dbpedia.spotlight.corpus.{MilneWittenCorpus, AidaCorpus}
+
 import scalaj.collection.Imports._
-import org.dbpedia.spotlight.graph.PageRankDisambiguator
+
 import org.dbpedia.spotlight.model._
 
 /**
@@ -62,7 +64,7 @@ object EvaluateParagraphDisambiguator {
         bestK;
     }
 
-    def evaluate(testSource: Traversable[AnnotatedParagraph], disambiguator: ParagraphDisambiguator, output: PrintWriter) {
+    def evaluate(testSource: Traversable[AnnotatedParagraph], disambiguator: ParagraphDisambiguator, output: PrintWriter, occFilter: DBpediaResourceOccurrence => Boolean ) {
         val startTime = System.nanoTime()
 
         var i = 0;
@@ -77,16 +79,18 @@ object EvaluateParagraphDisambiguator {
             LOG.info("Paragraph %d/%d: %s.".format(i, totalParagraphs, a.id))
             val paragraph = Factory.Paragraph.from(a)
 
+            var acc = 0.0
+            try {
             val bestK = filter(disambiguator.bestK(paragraph,100))
 
-            var acc = 0.0
             a.occurrences
-                .filterNot(o => o.id.endsWith("DISAMBIG")) // discounting URIs from gold standard that we know are disambiguations
+                .filter(occFilter) // discounting URIs from gold standard that we know are disambiguations
                 .foreach( correctOccurrence => {
                     nOccurrences = nOccurrences + 1
                     val rank = getRank(correctOccurrence,                                                     // correct
                                    bestK.getOrElse(Factory.SurfaceFormOccurrence.from(correctOccurrence), // predicted
                                                    List[DBpediaResourceOccurrence]()))
+                    output.append("%s\t%s\t%d\n".format(correctOccurrence.id,correctOccurrence.resource.uri,rank))
                     val invRank = if (rank>0) (1.0/rank) else  0.0
                     if (rank==0)  {
                         nZeros = nZeros + 1
@@ -95,6 +99,10 @@ object EvaluateParagraphDisambiguator {
                     }
                     acc = acc + invRank
                 });
+            output.flush()
+            } catch {
+              case e: Exception => LOG.error(e)
+            }
             val mrr = acc / a.occurrences.size
             LOG.info("Mean Reciprocal Rank (MRR) = %.5f".format(mrr))
             mrr
@@ -122,24 +130,32 @@ object EvaluateParagraphDisambiguator {
         //val indexDir: String = args(0)  //"e:\\dbpa\\data\\index\\index-that-works\\Index.wikipediaTraining.Merged."
         val config = new SpotlightConfiguration(args(0));
 
-        val testFileName: String = args(1)  //"e:\\dbpa\\data\\index\\dbpedia36data\\test\\test100k.tsv"
-        val output = new PrintWriter(testFileName+".pareval.log")
+        //val testFileName: String = args(1)  //"e:\\dbpa\\data\\index\\dbpedia36data\\test\\test100k.tsv"
+        //val paragraphs = AnnotatedTextSource
+        //                    .fromOccurrencesFile(new File(testFileName))
+        
 
         //val default : Disambiguator = new DefaultDisambiguator(config)
         //val test : Disambiguator = new GraphCentralityDisambiguator(config)
 
         val factory = new SpotlightFactory(config)
-        val disambiguators = Set(//new TwoStepDisambiguator(factory),//new CuttingEdgeDisambiguator(factory),
-                                 new PageRankDisambiguator(factory)
+        val disambiguators = Set(new TwoStepDisambiguator(factory.candidateSearcher,factory.contextSearcher)
+                                 //, new CuttingEdgeDisambiguator(factory),
+                                 //new PageRankDisambiguator(factory)
                                  )
 
-        val paragraphs = AnnotatedTextSource
-                            .fromOccurrencesFile(new File(testFileName))
+        val sources = List(AidaCorpus.fromFile(new File("/home/pablo/eval/aida/gold/CoNLL-YAGO.tsv")),
+                           MilneWittenCorpus.fromDirectory(new File("/home/pablo/eval/wikify/original")))
 
-
-        // Read some text to test.
-        disambiguators.foreach( d => evaluate(paragraphs, d, output))
-
-        output.close
+        def noNils(o: DBpediaResourceOccurrence) = {
+            !(o.id.endsWith("DISAMBIG") || o.resource.uri.equals(AidaCorpus.nilUri))
+        }
+        sources.foreach( paragraphs => {
+          val testSourceName = paragraphs.name
+          val output = new PrintWriter(testSourceName+".pareval.log")
+          // Read some text to test.
+          disambiguators.foreach( d => evaluate(paragraphs, d, output, noNils))
+          output.close
+        })
     }
 }

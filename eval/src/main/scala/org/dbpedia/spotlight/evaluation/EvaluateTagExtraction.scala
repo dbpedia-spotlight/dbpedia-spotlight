@@ -44,8 +44,8 @@ object EvaluateTagExtraction
 //    val confidence = 0.0;
 //    val support = 0;
     val factory = new SpotlightFactory(configuration)
-//    val disambiguator = new ParagraphDisambiguatorJ(new TwoStepDisambiguator(factory.candidateSearcher, factory.contextSearcher))
-  val disambiguator = new ParagraphDisambiguatorJ(new TwoStepDisambiguator(factory))
+    val disambiguator = new ParagraphDisambiguatorJ(new TwoStepDisambiguator(factory.candidateSearcher, factory.contextSearcher))
+//  val disambiguator = new ParagraphDisambiguatorJ(new TwoStepDisambiguator(factory))
 
   val spotter = factory.spotter()
 
