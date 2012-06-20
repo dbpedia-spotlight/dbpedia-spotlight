@@ -253,7 +253,9 @@ object Factory {
             case DBpediaResourceField.URI_COUNT =>
                 resource.setSupport(document.getField(field.name).stringValue.toInt)
             case DBpediaResourceField.TYPE =>
-                resource.setTypes(document.getValues(field.name).map( t => OntologyType.fromQName(t) ).toList)
+                resource.setTypes(document.getValues(field.name)
+                    .filterNot(t => t.equalsIgnoreCase("http://www.w3.org/2002/07/owl#Thing"))
+                    .map( t => OntologyType.fromQName(t) ).toList)
             case _ =>
         }
     }

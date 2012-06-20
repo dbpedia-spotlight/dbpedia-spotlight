@@ -64,15 +64,18 @@ object TypesLoader
         for (line <- Source.fromFile(typeDictFile, "UTF-8").getLines) {
             val elements = line.split("\t")
             val uri = new DBpediaResource(elements(0)).uri
-            val t = Factory.OntologyType.fromURI(elements(1))
-            i = i + 1;
-            val typesList : java.util.LinkedHashSet[OntologyType] = typesMap.getOrElse(uri,new LinkedHashSet[OntologyType]())
-            typesList.add(t)
-            t match {
-                case ft: FreebaseType => typesList.add(Factory.OntologyType.fromQName("Freebase:/"+ft.domain)) //Add supertype as well to mimic inference
-                case _ => //nothing
+            val typeUri = elements(1)
+            if (!typeUri.equalsIgnoreCase("http://www.w3.org/2002/07/owl#Thing")) {
+                val t = Factory.OntologyType.fromURI(typeUri)
+                i = i + 1;
+                val typesList : java.util.LinkedHashSet[OntologyType] = typesMap.getOrElse(uri,new LinkedHashSet[OntologyType]())
+                typesList.add(t)
+                t match {
+                    case ft: FreebaseType => typesList.add(Factory.OntologyType.fromQName("Freebase:/"+ft.domain)) //Add supertype as well to mimic inference
+                    case _ => //nothing
+                }
+                typesMap = typesMap.updated(uri, typesList)
             }
-            typesMap = typesMap.updated(uri, typesList)
         }
         LOG.info("Done. Loaded %d types for %d resources.".format(i,typesMap.size))
         typesMap
