@@ -18,6 +18,8 @@
 
 package org.dbpedia.spotlight.web.rest.resources;
 
+import de.l3s.boilerpipe.BoilerpipeProcessingException;
+import de.l3s.boilerpipe.extractors.ArticleExtractor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ;
@@ -32,12 +34,9 @@ import org.dbpedia.spotlight.spot.Spotter;
 import org.dbpedia.spotlight.web.rest.Server;
 import org.dbpedia.spotlight.web.rest.ServerUtils;
 import org.dbpedia.spotlight.web.rest.output.Annotation;
-import org.dbpedia.spotlight.web.rest.output.OutputSerializer;
 import org.dbpedia.spotlight.web.rest.output.Resource;
 import org.dbpedia.spotlight.web.rest.output.Spot;
 
-import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy;
-import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy;
 import scala.Enumeration;
 
 import javax.servlet.http.HttpServletRequest;
@@ -46,6 +45,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -153,6 +154,7 @@ public class Candidates {
     @GET
     @Produces(MediaType.TEXT_XML)
     public Response getXML(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
+                           @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @QueryParam("url") String inUrl,
                            @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
                            @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
                            @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
@@ -165,7 +167,8 @@ public class Candidates {
         String clientIp = request.getRemoteAddr();
 
         try {
-            Annotation a = getAnnotation(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, spotter, disambiguatorName, clientIp);
+            String textToProcess = getTextToProcess(text, inUrl);
+            Annotation a = getAnnotation(textToProcess, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, spotter, disambiguatorName, clientIp);
             LOG.info("XML format");
             String content = a.toXML();
             return ServerUtils.ok(content);
@@ -177,6 +180,7 @@ public class Candidates {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getJSON(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
+                            @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @QueryParam("url") String inUrl,
                             @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
                             @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
                             @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
@@ -189,7 +193,8 @@ public class Candidates {
         String clientIp = request.getRemoteAddr();
 
         try {
-            Annotation a = getAnnotation(text, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, spotter, disambiguatorName, clientIp);
+            String textToProcess = getTextToProcess(text, inUrl);
+            Annotation a = getAnnotation(textToProcess, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, spotter, disambiguatorName, clientIp);
             LOG.info("JSON format");
             String content = a.toJSON();
             return ServerUtils.ok(content);
@@ -236,6 +241,7 @@ public class Candidates {
     @Produces(MediaType.TEXT_XML)
     public Response postXML(
             @DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
+            @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @FormParam("url") String inUrl,
             @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @FormParam("confidence") Double confidence,
             @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @FormParam("support") int support,
             @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @FormParam("types") String dbpediaTypes,
@@ -246,7 +252,7 @@ public class Candidates {
             @DefaultValue("Default") @QueryParam("disambiguator") String disambiguatorName,
             @Context HttpServletRequest request
     ) {
-        return getXML(text,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,spotter,disambiguatorName,request);
+        return getXML(text,inUrl,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,spotter,disambiguatorName,request);
     }
 
     @POST
@@ -254,6 +260,7 @@ public class Candidates {
     @Produces(MediaType.APPLICATION_JSON)
     public Response postJSON(
             @DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
+            @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @FormParam("url") String inUrl,
             @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @FormParam("confidence") Double confidence,
             @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @FormParam("support") int support,
             @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @FormParam("types") String dbpediaTypes,
@@ -264,7 +271,21 @@ public class Candidates {
             @DefaultValue("Default") @QueryParam("disambiguator") String disambiguatorName,
             @Context HttpServletRequest request
     ) {
-        return getJSON(text,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,spotter,disambiguatorName,request);
+        return getJSON(text,inUrl,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,spotter,disambiguatorName,request);
+    }
+
+    private String getTextToProcess(String text, String inUrl) throws MalformedURLException, BoilerpipeProcessingException, InputException {
+        String textToProcess = "";
+        if (!text.equals("")){
+            textToProcess = text;
+        }else if (!inUrl.equals("")) {
+            LOG.info("Parsing URL to get main content");
+            URL url = new URL(inUrl);
+            textToProcess = ArticleExtractor.INSTANCE.getText(url);
+        }else{
+            throw new InputException("No input was specified in the &text nor the &url parameter.");
+        }
+        return textToProcess;
     }
 
     public Annotation getAnnotation(String text,
@@ -276,10 +297,11 @@ public class Candidates {
                                     boolean coreferenceResolution,
                                     String spotterName,
                                     String disambiguatorName,
-                                    String clientIp) throws SearchException, InputException, ItemNotFoundException, SpottingException {
+                                    String clientIp) throws SearchException, InputException, ItemNotFoundException, SpottingException, MalformedURLException, BoilerpipeProcessingException {
 
         LOG.info("******************************** Parameters ********************************");
         //announceAPI();
+
         boolean blacklist = false;
         if(policy.trim().equalsIgnoreCase("blacklist")) {
             blacklist = true;
@@ -289,8 +311,8 @@ public class Candidates {
             policy = "whitelist";
         }
         LOG.info("client ip: " + clientIp);
-        LOG.info("text: " + text);
-        LOG.info("text length in chars: "+text.length());
+        LOG.info("text to be processed: " + text);
+        LOG.info("text length in chars: "+ text.length());
         LOG.info("confidence: "+String.valueOf(confidence));
         LOG.info("support: "+String.valueOf(support));
         LOG.info("types: "+ontologyTypesString);
