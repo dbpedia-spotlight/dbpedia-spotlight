@@ -33,6 +33,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author pablomendes
@@ -138,5 +142,63 @@ public class OpenNLPUtil {
         }
         return mdl;
     }
+    
+	protected static int computeOffset(String orgText, int newoffset, List<Integer> remidxes) {
+		int offset = -1;
+		int notremoved = 0;
+		int removed = 0;
+		for (int i = 0; i<orgText.length() && notremoved <= newoffset; i++) {
+			if (remidxes.contains(new Integer(i))) {
+				removed++;
+			} else {
+				notremoved++;
+			}
+		}
+		
+		offset = newoffset + removed;
+		return offset;
+	}	
+	
+
+	
+	protected static List<Integer> chars2remove(String orgText) {
+		
+        //See: http://en.wikipedia.org/wiki/Quotation_mark_glyphs
+        char[] charArray = { '"','\u002C','\u00AB','\u00BB','\u2018','\u2019','\u201A','\u201B','\u201C','\u201D','\u201E','\u201F','\u2039','\u203A'};
+		String regexp = "[";
+		for (Character ch: charArray) {
+			regexp = regexp + ch;
+		}
+		regexp = regexp + "]";
+		
+		//System.out.println("\nregexp: " + regexp);
+		List<Integer> remCharPosLst = new ArrayList<Integer>();
+
+		Pattern p = Pattern.compile(regexp);
+	    Matcher m = p.matcher(orgText); 
+
+	    while (!m.hitEnd()) {
+	     boolean mth = m.find();
+	     if (mth) {
+	    	 //System.out.println("Charater to remove: " + orgText.charAt(m.start()));
+	    	 remCharPosLst.add(m.start());
+	     }
+	    }
+		return remCharPosLst;
+	}
+	
+	
+	protected static String cleanText(String orgTxt, List<Integer> remCharIdxes) {
+		String cleanTxt="";
+		int start = 0;
+		for (int idx: remCharIdxes) {
+			cleanTxt = cleanTxt + orgTxt.substring(start, idx);
+			start = idx + 1;
+		}
+		cleanTxt = cleanTxt + orgTxt.substring(start);
+		
+		return cleanTxt;
+	}
+
 
 }

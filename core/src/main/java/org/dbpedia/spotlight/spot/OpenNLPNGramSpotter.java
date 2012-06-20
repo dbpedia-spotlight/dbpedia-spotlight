@@ -108,9 +108,15 @@ public class OpenNLPNGramSpotter implements Spotter {
 	public List<SurfaceFormOccurrence> extract(Text text) {
 
 		//System.out.println("\n\nRR- extract(...) method called! with text: " + intext + "\n\n");
-
+       
+		//remove special chars from input text, and keep a list of positions of them n a list.
+		//start/end offsets need to be adjusted after extracting spots from cleaned text.
+		String orgText = text.text();
+		List<Integer> chars2removeLst = OpenNLPUtil.chars2remove(orgText);
+		String cleanText = OpenNLPUtil.cleanText(orgText, chars2removeLst);
+		Text cleanTextStr = new Text(cleanText);
 		//extracting NounPhrase nGrams
-		List<SurfaceFormOccurrence> npNgrams = extractNPNGrams(text);
+		List<SurfaceFormOccurrence> npNgrams = extractNPNGrams(cleanTextStr);
 		/*
 		System.out.println("\n\nAll NGrams of sentence:");
 		System.out.println(intext + "\n");
@@ -118,7 +124,18 @@ public class OpenNLPNGramSpotter implements Spotter {
 			System.out.println(ng.surfaceForm() + " [" + ng.textOffset() + "]");
 		}
 		 */
+		
+		
 		if (npNgrams != null && !npNgrams.isEmpty()) {
+			//lets correct the offsets
+			for( SurfaceFormOccurrence ng: npNgrams) {
+				int offset_clean = ng.textOffset();
+				int offset_org = OpenNLPUtil.computeOffset(orgText, offset_clean, chars2removeLst);
+				ng.setTextOffset(offset_org);
+				//System.out.println(ng.surfaceForm() + " [" + ng.textOffset() + "]");
+			}
+
+			
 			return npNgrams;
 		}
 		else {

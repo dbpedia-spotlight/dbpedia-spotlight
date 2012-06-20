@@ -109,7 +109,7 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
         } else if (policy == SpotterConfiguration.SpotterPolicy.NESpotter) {
             spotters.getOrElse(policy, new NESpotter(configuration.getSpotterConfiguration.getOpenNLPModelDir))
         } else if (policy == SpotterConfiguration.SpotterPolicy.KeyphraseSpotter) {
-            spotters.getOrElse(policy, new KeaSpotter("/data/spotlight/3.7/kea/keaModel-1-3-1", 1000, -1)) 
+            spotters.getOrElse(policy, new KeaSpotter(configuration.getSpotterConfiguration.getKeaModel, configuration.getSpotterConfiguration.getKeaMaxNumberOfPhrases, configuration.getSpotterConfiguration.getKeaCutoff))
         } else if (policy == SpotterConfiguration.SpotterPolicy.SpotXmlParser) {
           new SpotXmlParser
         } else if (policy == SpotterConfiguration.SpotterPolicy.WikiMarkupSpotter) {

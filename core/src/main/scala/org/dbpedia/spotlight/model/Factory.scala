@@ -46,6 +46,7 @@ import org.dbpedia.spotlight.disambiguate._
 import org.dbpedia.spotlight.annotate.{DefaultParagraphAnnotator, DefaultAnnotator}
 import scalaj.collection.Imports._
 import org.dbpedia.spotlight.lucene.analysis.PhoneticAnalyzer
+import java.util
 
 /**
  * Class containing methods to create model objects in many different ways
@@ -157,6 +158,17 @@ object Factory {
                 //The default type for non-prefixed type strings:
                 case e: scala.MatchError => new DBpediaType(ontologyType)
             }
+        }
+
+        def fromCSVString(ontologyTypesString: String) : List[OntologyType] = {
+//            val ontologyTypes: java.util.List[OntologyType] = new java.util.ArrayList[OntologyType]
+//            val types: Array[String] = ontologyTypesString.trim.split(",")
+//            for (t <- types) {
+//                if (!(t.trim == "")) ontologyTypes.add(Factory.ontologyType.fromQName(t.trim))
+//            }
+//            ontologyTypes
+            val types = ontologyTypesString.split(",").filterNot(t => t.trim.isEmpty)
+            if (types.size>0) types.map(Factory.ontologyType.fromQName).toList else List[OntologyType]()
         }
     }
 
