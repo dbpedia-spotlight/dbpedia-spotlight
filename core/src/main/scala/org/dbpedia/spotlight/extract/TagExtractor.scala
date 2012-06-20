@@ -8,6 +8,7 @@ import org.dbpedia.spotlight.lucene.LuceneManager
 import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
 import java.io.{StringReader, File}
 import org.dbpedia.spotlight.model._
+import org.dbpedia.spotlight.model.Factory.OntologyType
 
 /**
  * A TagExtractor is almost like a Disambiguator, but it does not constrain the tags to things that were *mentioned* in text.
@@ -21,5 +22,7 @@ trait TagExtractor {
      * Extract a ranked list of DBpedia Resources
      */
     def extract(text: Text, nTags: Int) : Seq[(DBpediaResource,Double)]
+
+    def extract(text: Text, nTags: Int, ontologyTypes: List[OntologyType]) : Seq[(DBpediaResource,Double)]
 
 }

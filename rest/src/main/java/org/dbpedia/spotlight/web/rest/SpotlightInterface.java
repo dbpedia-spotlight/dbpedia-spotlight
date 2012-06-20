@@ -149,11 +149,7 @@ public class SpotlightInterface  {
         List<DBpediaResourceOccurrence> occList = disambiguate(spots, disambiguator);
 
         // Linking / filtering
-        List<OntologyType> ontologyTypes = new ArrayList<OntologyType>();
-        String types[] = ontologyTypesString.trim().split(",");
-        for (String t : types){
-            if (!t.trim().equals("")) ontologyTypes.add(Factory.ontologyType().fromQName(t.trim()));
-        }
+        scala.collection.immutable.List<OntologyType> ontologyTypes = Factory.ontologyType().fromCSVString(ontologyTypesString);
 
         // Filter: Old monolithic way
         CombineAllAnnotationFilters annotationFilter = new CombineAllAnnotationFilters(Server.getConfiguration());

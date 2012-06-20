@@ -1,6 +1,6 @@
 package org.dbpedia.spotlight.extract
 
-import org.dbpedia.spotlight.model.{Text, DBpediaResourceOccurrence}
+import org.dbpedia.spotlight.model.{OntologyType, Text, DBpediaResourceOccurrence}
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.annotate.{ParagraphAnnotator, Annotator}
 
@@ -11,7 +11,7 @@ import org.dbpedia.spotlight.annotate.{ParagraphAnnotator, Annotator}
  * If Berlin, the Allies and 1945 were mentioned, it is clear that the WWWII is a relevant concept.
  * However, if no surface form of WWWII is explicitly mentioned in the text, it will not be extracted by this method.
  * This is a limitation of the annotation -> extraction approach.
- * Use native extractors if you would like all kinds of related concepts.
+ * Use native extractors (e.g. LuceneTagExtractor) if you would like all kinds of related concepts.
  *
  * @author pablomendes
  */
@@ -21,6 +21,10 @@ class TagExtractorFromAnnotator(val annotator: ParagraphAnnotator, val getValue:
     override def extract(text: Text, nTags: Int) = {
         val occs = annotator.annotate(text.text)
         rank(occs)
+    }
+
+    override def extract(text: Text, nTags: Int, ontologyTypes: List[OntologyType]) = {
+        extract(text,nTags).filter(_._1.types.intersect(ontologyTypes).size > 0) // the resource has a type in the ontologyTypesList
     }
 
     def rank(occs: Traversable[DBpediaResourceOccurrence]) = {
