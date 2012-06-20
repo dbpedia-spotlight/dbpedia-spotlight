@@ -18,6 +18,8 @@ import org.dbpedia.spotlight.corpus.AidaCorpus.{CoNLLToken, CoNLLDoc}
 
 class AidaCorpus(val documents: List[CoNLLDoc]) extends AnnotatedTextSource {
 
+    override def name = "AIDA"
+
     override def foreach[U](f : AnnotatedParagraph => U) {
 
         documents.foreach( doc => {

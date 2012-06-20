@@ -55,19 +55,18 @@
                                 <jvmArg>-Xmx14G</jvmArg>
                             </jvmArgs>
                         </launcher>
-                    </launchers>
-                </configuration>
-            </plugin>
-
-
-            <plugin>
-                <groupId>org.scala-tools</groupId>
-                <artifactId>maven-scala-plugin</artifactId>
-
-                <configuration>
-                    <launchers>
                         <launcher>
-                            <id>Server</id>
+                            <id>pareval</id>
+                            <mainClass>org.dbpedia.spotlight.evaluation.EvaluateParagraphDisambiguator</mainClass>
+                            <args>
+                                <arg>../conf/eval.properties</arg>
+                            </args>
+                            <jvmArgs>
+                                <jvmArg>-Xmx14G</jvmArg>
+                            </jvmArgs>
+                        </launcher>
+                        <launcher>
+                            <id>spottereval</id>
                             <mainClass>org.dbpedia.spotlight.evaluation.SpotterEvaluatorPrecisionRecall</mainClass>
                             <jvmArgs>
                                 <jvmArg>${heapspace.Xmx.server}</jvmArg>

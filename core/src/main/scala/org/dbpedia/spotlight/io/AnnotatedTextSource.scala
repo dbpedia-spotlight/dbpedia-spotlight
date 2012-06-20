@@ -35,7 +35,9 @@ import java.text.ParseException
  *
  * @author pablomendes
  */
-trait AnnotatedTextSource extends Traversable[AnnotatedParagraph]
+trait AnnotatedTextSource extends Traversable[AnnotatedParagraph] {
+    def name : String = "AnnotatedTextSource"
+}
 
 object AnnotatedTextSource {
 

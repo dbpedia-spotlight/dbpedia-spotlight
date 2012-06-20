@@ -16,6 +16,8 @@ import xml.NodeSeq
 
 class MilneWittenCorpus(val documents: Traversable[NodeSeq]) extends AnnotatedTextSource {
 
+    override def name = "MilneWitten"
+
     override def foreach[U](f : AnnotatedParagraph => U) {
 
         documents.foreach( doc => {
