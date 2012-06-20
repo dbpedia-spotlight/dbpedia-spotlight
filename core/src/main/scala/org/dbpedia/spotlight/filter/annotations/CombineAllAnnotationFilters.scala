@@ -17,10 +17,10 @@
 package org.dbpedia.spotlight.filter.annotations
 
 import org.apache.commons.logging.LogFactory
-import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.sparql.SparqlQueryExecuter
 import scala.collection.JavaConversions._
+import scalaj.collection.Imports._
 
 class CombineAllAnnotationFilters(val config: SpotlightConfiguration) {
 
@@ -91,7 +91,7 @@ class CombineAllAnnotationFilters(val config: SpotlightConfiguration) {
         filter(occs, confidence, targetSupport, dbpediaTypes, sparqlQuery, listColor, coreferenceResolution)
     }
 
-    def filter(occs : java.util.List[DBpediaResourceOccurrence],
+    def filterJ(occs : java.util.List[DBpediaResourceOccurrence],
                confidence : Double,
                targetSupport : Int,
                dbpediaTypes : java.util.List[OntologyType],
@@ -100,6 +100,17 @@ class CombineAllAnnotationFilters(val config: SpotlightConfiguration) {
                coreferenceResolution : Boolean) : java.util.List[DBpediaResourceOccurrence] = {
 
         filter(occs.toList, confidence, targetSupport, dbpediaTypes, sparqlQuery, blacklist, coreferenceResolution)
+    }
+
+    def filter(occs : java.util.List[DBpediaResourceOccurrence],
+               confidence : Double,
+               targetSupport : Int,
+               dbpediaTypes : List[OntologyType],
+               sparqlQuery : String,
+               blacklist : Boolean,
+               coreferenceResolution : Boolean) : java.util.List[DBpediaResourceOccurrence] = {
+
+        filterJ(occs, confidence, targetSupport, dbpediaTypes.asJava, sparqlQuery, blacklist, coreferenceResolution)
     }
 
 }
