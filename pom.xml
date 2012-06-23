@@ -82,6 +82,7 @@
                 <configuration>
                     <source>${java.compiler.version}</source>
                     <target>${java.compiler.version}</target>
+                    <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
 
