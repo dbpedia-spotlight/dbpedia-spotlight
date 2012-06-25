@@ -70,7 +70,10 @@ public class MergedOccurrencesDisambiguator implements Disambiguator {
     }
 
     public DBpediaResourceOccurrence disambiguate(SurfaceFormOccurrence sfOcc) throws SearchException, ItemNotFoundException, InputException  {
-        return bestK(sfOcc,1).get(0);
+        List<DBpediaResourceOccurrence> occs = bestK(sfOcc,1);
+        if (occs.size()==0)
+            throw new ItemNotFoundException(String.format("Surface form not found: %s",sfOcc.surfaceForm().toString()));
+        return occs.get(0);
     }
 
     public List<DBpediaResourceOccurrence> bestK(SurfaceFormOccurrence sfOccurrence, int k) throws SearchException, ItemNotFoundException, InputException {
@@ -112,36 +115,38 @@ public class MergedOccurrencesDisambiguator implements Disambiguator {
             }
         }
 
-        if (hits.length == 0)
-            throw new ItemNotFoundException("Not found in index: "+sfOccurrence);
-
         // Loop through all hits, build a map from URI to score
         List<DBpediaResourceOccurrence> rankedOccs = new LinkedList<DBpediaResourceOccurrence>();
-        for (int i=0; i < hits.length && i < k; i++) {
-            DBpediaResource resource = mMergedSearcher.getDBpediaResource(hits[i].doc);
-            //resource can be null! not handled here
-            //if (resource==null)
-            //    throw new ItemNotFoundException("Could not choose a URI for "+sfOcc.surfaceForm());
-            
-            Double score = new Double(hits[i].score);
-            Double percentageOfSecond = new Double(-1);
-            if (hits.length > i+1) {
-                percentageOfSecond = hits[i+1].score / score;
-            }
-            DBpediaResourceOccurrence resultOcc = new DBpediaResourceOccurrence("",
-                                                                                resource,
-                                                                                sfOccurrence.surfaceForm(),
-                                                                                sfOccurrence.context(),
-                                                                                sfOccurrence.textOffset(),
-                                                                                Provenance.Annotation(),
-                                                                                score,
-                                                                                percentageOfSecond,
-                                                                                score); //TODO abusing what was spotProb here. now we have contextual score. need better way to do this
-            rankedOccs.add(resultOcc);
-        }
 
-        LOG.debug(String.format("Object creation time took %f ms.",mMergedSearcher.objectCreationTime/1000000.0));
-        mMergedSearcher.objectCreationTime = 0;
+        if (hits.length > 0) {
+            for (int i=0; i < hits.length && i < k; i++) {
+                DBpediaResource resource = mMergedSearcher.getDBpediaResource(hits[i].doc);
+                //resource can be null! not handled here
+                //if (resource==null)
+                //    throw new ItemNotFoundException("Could not choose a URI for "+sfOcc.surfaceForm());
+
+                Double score = new Double(hits[i].score);
+                Double percentageOfSecond = new Double(-1);
+                if (hits.length > i+1) {
+                    percentageOfSecond = hits[i+1].score / score;
+                }
+                DBpediaResourceOccurrence resultOcc = new DBpediaResourceOccurrence("",
+                        resource,
+                        sfOccurrence.surfaceForm(),
+                        sfOccurrence.context(),
+                        sfOccurrence.textOffset(),
+                        Provenance.Annotation(),
+                        score,
+                        percentageOfSecond,
+                        score); //TODO abusing what was spotProb here. now we have contextual score. need better way to do this
+                rankedOccs.add(resultOcc);
+            }
+
+            LOG.debug(String.format("Object creation time took %f ms.",mMergedSearcher.objectCreationTime/1000000.0));
+            mMergedSearcher.objectCreationTime = 0;
+        } else {
+            LOG.debug(String.format("Not found in index: %s", sfOccurrence.surfaceForm().toString()));
+        }
 
         return rankedOccs;
     }
