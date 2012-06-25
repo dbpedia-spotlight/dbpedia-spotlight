@@ -89,10 +89,10 @@ object Factory {
                 -1,         // there is no way to know percentage of second here
                 score)      // to be set later
         }
-        def from(sfOcc: SurfaceFormOccurrence, resource: DBpediaResource, score: Tuple2[Int,Double]) = {
+        def from(sfOcc: SurfaceFormOccurrence, fullResource: DBpediaResource, score: Tuple2[Int,Double]) = {
             //TODO can take a mixture as param and use resource.score to mix with the other two scores in Tuple2
             new DBpediaResourceOccurrence("",  // there is no way to know this here
-                new DBpediaResource(resource.uri, score._1),
+                fullResource, // support is also available from score._1, but types are only in fullResource
                 sfOcc.surfaceForm,
                 sfOcc.context,
                 sfOcc.textOffset,
