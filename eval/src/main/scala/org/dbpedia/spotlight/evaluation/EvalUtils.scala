@@ -6,6 +6,8 @@ import org.dbpedia.spotlight.filter.annotations._
 import java.io.{File, FileOutputStream, PrintStream}
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.extract.TagExtractorFromAnnotator
+import java.text.SimpleDateFormat
+import java.util.Date
 
 /**
  * Helper functions to parse and write dbpedia resource occurrences during evaluation tasks
@@ -91,6 +93,10 @@ object EvalUtils {
         val out = new PrintStream(file)
         out.append("\n"+occList.map( t => t._1.uri).mkString("\n")+"\n")
         out.close();
+    }
+
+    def now() = {
+        new SimpleDateFormat("yyyyMMdd-HHmm").format(new Date())
     }
 
 }

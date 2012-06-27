@@ -142,7 +142,7 @@ object AllOccurrenceSource
 
                 pageCount += 1
                 if (pageCount %100000 == 0) {
-                    LOG.info("Processed %d Wikipedia definition pages (avarage %.2f links per page)".format(pageCount, occCount/pageCount.toDouble))
+                    LOG.info("Processed %d Wikipedia definition pages (average %.2f links per page)".format(pageCount, occCount/pageCount.toDouble))
                 }
             }
         }

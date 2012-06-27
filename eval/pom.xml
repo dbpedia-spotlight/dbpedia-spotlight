@@ -46,18 +46,18 @@
                 <configuration>
                     <launchers>
                         <launcher>
-                            <id>stats</id>
-                            <mainClass>org.dbpedia.spotlight.corpora.StatsCommonVsNoCommonCompressed</mainClass>
+                            <id>pareval</id>
+                            <mainClass>org.dbpedia.spotlight.evaluation.EvaluateParagraphDisambiguator</mainClass>
                             <args>
-                                <arg>../conf/eval.properties</arg>
+                                <arg>../conf/disambigonly.properties</arg>
                             </args>
                             <jvmArgs>
                                 <jvmArg>-Xmx14G</jvmArg>
                             </jvmArgs>
                         </launcher>
                         <launcher>
-                            <id>pareval</id>
-                            <mainClass>org.dbpedia.spotlight.evaluation.EvaluateParagraphDisambiguator</mainClass>
+                            <id>stats</id>
+                            <mainClass>org.dbpedia.spotlight.corpora.StatsCommonVsNoCommonCompressed</mainClass>
                             <args>
                                 <arg>../conf/eval.properties</arg>
                             </args>

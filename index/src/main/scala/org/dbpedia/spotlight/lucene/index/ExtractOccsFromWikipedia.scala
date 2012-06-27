@@ -54,9 +54,8 @@ object ExtractOccsFromWikipedia {
         val maxContextWindowSize  = config.get("org.dbpedia.spotlight.data.maxContextWindowSize").toInt
         val minContextWindowSize  = config.get("org.dbpedia.spotlight.data.minContextWindowSize").toInt
 
-        LOG.info("Loading concept URIs from "+conceptURIsFileName+"...")
-        val conceptUrisSet = Source.fromFile(conceptURIsFileName, "UTF-8").getLines.toSet
-        val conceptUriFilter = new UriWhitelistFilter(conceptUrisSet)
+
+        val conceptUriFilter = UriWhitelistFilter.fromFile(new File(conceptURIsFileName))
 
         val redirectResolver = RedirectResolveFilter.fromFile(new File(redirectTCFileName))
 

@@ -23,8 +23,6 @@ import org.dbpedia.spotlight.util.Profiling._
 import org.dbpedia.spotlight.disambiguate._
 import org.dbpedia.spotlight.exceptions._
 import java.io.{File, PrintStream}
-import java.text.SimpleDateFormat
-import java.util.Date
 
 /**
  * Evaluation class. 
@@ -43,7 +41,7 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
     var sfNotFoundCounters    = Map[String,Int]()
     var timeCounters          = Map[String,Long]()
 
-    val date = new SimpleDateFormat("yyyyMMdd-HHmm").format(new Date())
+    val date = EvalUtils.now()
     val output = new PrintStream(new File(outputFileName));
     val sfNotFoundOutput = new PrintStream(new File(outputFileName+".sfNotFound"))
     val texOutput = new PrintStream(new File(outputFileName+"."+date+".tex"))

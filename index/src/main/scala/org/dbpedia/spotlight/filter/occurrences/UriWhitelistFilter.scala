@@ -17,6 +17,9 @@
 package org.dbpedia.spotlight.filter.occurrences
 
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
+import io.Source
+import org.apache.commons.logging.LogFactory
+import java.io.File
 
 /**
  * Class that takes a whitelist of URIs to allow for indexing.
@@ -35,4 +38,13 @@ class UriWhitelistFilter(val whitelistedUris : Set[String]) extends OccurrenceFi
         }
     }
 
+}
+
+object UriWhitelistFilter {
+    private val LOG = LogFactory.getLog(this.getClass)
+    def fromFile(conceptURIsFileName: File) = {
+        LOG.info("Loading concept URIs from "+conceptURIsFileName+"...")
+        val conceptUrisSet = Source.fromFile(conceptURIsFileName, "UTF-8").getLines.toSet
+        new UriWhitelistFilter(conceptUrisSet)
+    }
 }
