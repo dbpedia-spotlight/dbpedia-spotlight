@@ -5,9 +5,6 @@ import java.io.File
 import org.dbpedia.spotlight.lucene.similarity.{CachedInvCandFreqSimilarity, JCSTermCache}
 import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
 import org.dbpedia.spotlight.extract.LuceneTagExtractor
-import sjson.json._
-import DefaultProtocol._
-import JsonSerialization._
 import org.dbpedia.spotlight.model.{Text, SpotlightConfiguration}
 
 /**

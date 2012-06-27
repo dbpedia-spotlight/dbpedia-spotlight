@@ -41,47 +41,47 @@ object CompactHashSet {
   /** Construct an empty set with given elements.
    */
   def apply[T: ClassManifest] (elems: T*) =
-    (new CompactHashSet[T] /: elems) { (s,p) => 
-      s += p 
+    (new CompactHashSet[T] /: elems) { (s,p) =>
+      s += p
       s
     }
 }
 
 /**
  */
-@serializable @cloneable
-class CompactHashSet[T: ClassManifest] () extends scala.collection.mutable.Set[T]  {
-  
+@cloneable
+class CompactHashSet[T: ClassManifest] () extends scala.collection.mutable.Set[T]  with Serializable {
+
   def this (set: FixedHashSet[T]) = {
     this ()
     fixedSet = set
   }
-  
+
   def this (capacity: Int) = {
     this ()
     var bits = initialBits
     while ((1 << bits) < capacity) bits += 1
     fixedSet = FixedHashSet (bits)
   }
-  
+
   def this (capacity: Int, loadFactor: Float) = {
     this ()
     var bits = initialBits
     while ((1 << bits) < capacity) bits += 1
     fixedSet = FixedHashSet (bits, loadFactor)
   }
-  
+
   /** Array to hold this set elements.
    */
   private[this] var fixedSet = EMPTY_HASH_SET.asInstanceOf[FixedHashSet[T]]
-  
+
   /**
    * Check if this set contains element <code>elem</code>.
    *  @param  elem  the element to check for membership.
    *  @return  <code>true</code> if <code>elem</code> is contained in this set.
    */
   def contains (elem: T) = fixedSet.positionOf (elem) >= 0
-  
+
   /**
    * Add a new element to the set.
    *  @param  elem  the element to be added
@@ -96,20 +96,20 @@ class CompactHashSet[T: ClassManifest] () extends scala.collection.mutable.Set[T
       this
     }
   }
-  
+
   /** Returns the size of this hash set.*/
   override def size = fixedSet.size
-  
+
   /**
    * Creates an iterator for all set elements.
    * @return  an iterator over all set elements.
    */
   //override def elements = fixedSet.elements
-  
+
   // RRR verify
-  
+
   def iterator: Iterator[T] = fixedSet.iterator
-  
+
   /**
    * Removes a single element from a set.
    *  @param  elem  The element to be removed.
@@ -118,12 +118,12 @@ class CompactHashSet[T: ClassManifest] () extends scala.collection.mutable.Set[T
     fixedSet.delete (elem)
     this
   }
-  
+
   override def - (elem: T): this.type  = {
     fixedSet.delete (elem)
     this
   }
-  
+
   /** Return a clone of this set.
    *
    *  @return  a set with the same elements.
@@ -135,12 +135,12 @@ class CompactHashSet[T: ClassManifest] () extends scala.collection.mutable.Set[T
     // c
     new CompactHashSet[T] (fixedSet.clone)
   }
-  
+
   /** Clone internal data declared as private[this] */
   private def cloneData {
     fixedSet = fixedSet.clone
   }
-  
+
   /**
    * Returns a new set containing all elements of this set that
    *  satisfy the predicate <code>p</code>.
@@ -155,26 +155,26 @@ class CompactHashSet[T: ClassManifest] () extends scala.collection.mutable.Set[T
         def create (size: Int) { }
         def copy (i:Int, j:Int) { }
       }))
-  
+
   /**
    * Removes all elements from the set.
    *  After this operation is completed, the set will be empty.
    */
   override def clear { fixedSet.clear }
-  
+
   /** New List with this set elements. */
   override def toList = fixedSet.toList
 }
 
 /** Hash set backed by fixed size array. */
-@serializable @cloneable
+@cloneable
 private abstract class FixedHashSet[T: ClassManifest] (final val bits: Int,
                                                        private[this] var array: Array[T],
-                                                       final val loadFactor: Float) extends scala.collection.Set[T] {
-  
+                                                       final val loadFactor: Float) extends scala.collection.Set[T] with Serializable {
+
   /** Index of the first element in array with given hash. */
   protected def firstIndex (i: Int): Int
-  
+
   /**
    * Method to access a linked list of elements
    *  in array with the same hash code.
@@ -185,68 +185,68 @@ private abstract class FixedHashSet[T: ClassManifest] (final val bits: Int,
    *  other negative values are indices of next deleted element.
    */
   protected def nextIndex (i: Int): Int
-  
+
   /** Set index of the first element in array with given hash. */
   protected def setFirstIndex (i: Int, v: Int)
-  
+
   /** Update linked list of elements with equal hash. */
   protected def setNextIndex (i: Int, v: Int)
-  
+
   /** Mask for hashcode to store in empty index bits. */
   def hcBitmask: Int
-  
+
   /** End of list bit or 0 if it's not supported. */
   def eolBitmask = 0
-  
+
   /** Index value to mark the end of deleted list. */
   def deletedEOL = -1
-  
+
   /** Return index of elem in array or -1 if it does not exists. */
   def positionOf[B >: T] (elem: B): Int
-  
+
   /** Return index of integer elem in array or -1 if it does not exists. */
   def positionOfInt (elem: Int) = positionOf (elem)
-  
+
   /** */
   final def arrayLength = if (array eq null) 0 else array.length
-  
+
   /** */
   final def hashLength = 1 << bits
-  
+
   /** */
   final def indexBitmask = (1 << bits) -1
-  
+
   /** Number of elements in this set */
   private[this] var counter = 0
-  
+
   /** Starting index of empty elements in array */
   private[this] var firstEmptyIndex = 0
-  
+
   /** Index of first deleted elements list in array */
   private[this] var firstDeletedIndex = -1
-  
+
   /** Number of elements in this set. */
   final override def size = counter
-  
+
   /** Maximum number of elements in this set's array. */
   final def capacity = arrayLength
-  
+
   /** Set size (for internal use only). */
   final protected def setSize (newSize: Int) {
     counter = newSize
     firstEmptyIndex = newSize
     firstDeletedIndex = -1
   }
-  
+
   /** Array with this set elements.*/
   final def getArray = array
-  
+
   /** Array with this linked list indices. */
   protected def getIndexArray: AnyRef
-  
+
   /** Return true if given array index is empty (or deleted). */
   def isUnoccupied (i: Int): Boolean
-  
+
   /** Return index in array to insert new element. */
   protected final def findEmptySpot = {
     if (counter >= arrayLength) throw ResizeNeeded
@@ -264,13 +264,13 @@ private abstract class FixedHashSet[T: ClassManifest] (final val bits: Int,
       i
     }
   }
-  
+
   //RPR FIX ME Should be new Set with element.
   def + (elem: T): this.type = {
     add (elem)
     this
   }
-  
+
   /**
    * Adds element to set.
    * Throws ResizeNeeded if set is full.
@@ -284,7 +284,7 @@ private abstract class FixedHashSet[T: ClassManifest] (final val bits: Int,
    * @return  index of inserted element in array
    */
   def addInt (elem: Int): Int = add (elem.asInstanceOf[T])
-  
+
   /**
    * Adds element to set that does not already exist in this set.
    * Throws ResizeNeeded if set is full.
@@ -309,7 +309,7 @@ private abstract class FixedHashSet[T: ClassManifest] (final val bits: Int,
     //     ia (i) = (~newIndex ^ (hc & hcBitmask)).asInstanceOf[Byte]
     //     ia (hashLength + newIndex) = if (next < 0) next else 1
     // }
-    
+
     val ia = getIndexArray
     if (ia.isInstanceOf[Array[Int]]) {
       val iai: Array[Int] = ia.asInstanceOf[Array[Int]]
@@ -322,7 +322,7 @@ private abstract class FixedHashSet[T: ClassManifest] (final val bits: Int,
       ias (i) = (~newIndex ^ (hc & hcBitmask)).asInstanceOf[Short]
       ias (hashLength + newIndex) = if (next < 0) next else 1
     } else if (ia.isInstanceOf[Array[Byte]]) {
-      val iab: Array[Byte] = ia.asInstanceOf[Array[Byte]]      
+      val iab: Array[Byte] = ia.asInstanceOf[Array[Byte]]
       val next = iab (i)
       iab (i) = (~newIndex ^ (hc & hcBitmask)).asInstanceOf[Byte]
       iab (hashLength + newIndex) = if (next < 0) next else 1
@@ -330,7 +330,7 @@ private abstract class FixedHashSet[T: ClassManifest] (final val bits: Int,
     array (newIndex) = elem
     newIndex
   }
-  
+
   /**
    * Copy all elements from another FixedHashSet.
    *
@@ -339,7 +339,7 @@ private abstract class FixedHashSet[T: ClassManifest] (final val bits: Int,
    *                   with its new and old indices in set's arrays.
    */
   def rehash (that: FixedHashSet[T])
-  
+
   /**
    * Make copy of this set filtered by predicate.
    *
@@ -368,7 +368,7 @@ private abstract class FixedHashSet[T: ClassManifest] (final val bits: Int,
       }
       i += 1
     }
-    
+
     // Now we can allocate set with exact size.
     if (count == 0) {
       f.create (-1)
@@ -387,7 +387,7 @@ private abstract class FixedHashSet[T: ClassManifest] (final val bits: Int,
       c
     }
   }
-  
+
   /** Make complete copy of this set.
    */
   override def clone = {
@@ -395,12 +395,12 @@ private abstract class FixedHashSet[T: ClassManifest] (final val bits: Int,
     c.cloneData
     c
   }
-  
+
   /** Clone internal data declared as private[this] */
   protected def cloneData {
     if (array ne null) array = resizeArray (array, array.length)
   }
-  
+
   /** Removes all elements from the set.
    */
   def clear {
@@ -414,13 +414,13 @@ private abstract class FixedHashSet[T: ClassManifest] (final val bits: Int,
     firstEmptyIndex = 0
     firstDeletedIndex = -1
   }
-  
+
   //RPR - Should copy and return a new Set with deleted element.
   final def - (elem: T)  = {
     delete (elem)
     this
   }
-  
+
   /**
    * Delete element from set.
    * @return  index of deleted element in array
@@ -428,11 +428,11 @@ private abstract class FixedHashSet[T: ClassManifest] (final val bits: Int,
    */
   final def delete (elem: T): Int = {
     val hc = hash(elem)
-    
+
     val mask = hcBitmask
     val hcBits = hc & mask
     val eol = eolBitmask
-    
+
     var prev = -1
     var curr = hc & indexBitmask
     while (true) {
@@ -440,7 +440,7 @@ private abstract class FixedHashSet[T: ClassManifest] (final val bits: Int,
       if (i < 0) return -1
       val j = i & indexBitmask
       val k = hashLength + j
-      
+
       if (hcBits == (i & mask)) {
         val o = array(j)
         if ((elem.asInstanceOf[Object] eq o.asInstanceOf[Object]) || elem == o) {
@@ -483,8 +483,8 @@ private abstract class FixedHashSet[T: ClassManifest] (final val bits: Int,
     }
     -1
   }
-  
-  
+
+
   /**
    * Iterator for this set elements.
    */
@@ -500,7 +500,7 @@ private abstract class FixedHashSet[T: ClassManifest] (final val bits: Int,
       else Iterator.empty.next
     }
   }
-  
+
   /**
    * Iterate through this set elements with function.
    */
@@ -516,10 +516,10 @@ private abstract class FixedHashSet[T: ClassManifest] (final val bits: Int,
       else Iterator.empty.next
     }
   }
-  
+
   /** Return <code>true</code> if set contains element <code>elem</code>. */
   final def contains (elem: T) = positionOf (elem) >= 0
-  
+
   /** List of this set elements. */
   final override def toList = {
     var list = List[T] ()
@@ -531,7 +531,7 @@ private abstract class FixedHashSet[T: ClassManifest] (final val bits: Int,
     }
     list
   }
-  
+
   /** List of this set elements. */
   final def toListMap[F] (f: (T,Int) => F) = {
     var list = List[F] ()
@@ -548,30 +548,29 @@ private abstract class FixedHashSet[T: ClassManifest] (final val bits: Int,
 
 /** */
 private final object FixedHashSet {
-  
+
   final object ResizeNeeded extends Exception
-  
+
   final val initialBits = 2 // 4 elements
-  
+
   final val INT_END_OF_LIST = 0x40000000
   final val INT_AVAILABLE_BITS = 0x3FFFFFFF
   final val SHORT_AVAILABLE_BITS = 0x7FFF
   final val BYTE_AVAILABLE_BITS = 0x7F
-  
+
   final val EMPTY_HASH_SET = EmptyHashSet
-  
+
   /** Create new array to hold set or map elements. */
   final def newArray[V: ClassManifest] (size: Int): Array[V] =
     if (size <= 0) null else new Array[V] (size)
-  
+
   /** FixedHashSet implementation with byte-size index arrays. */
-   @serializable
   final class ByteHashSet[T: ClassManifest] (bits: Int, a: Array[T], loadFactor: Float)
-  extends FixedHashSet[T] (bits, a, loadFactor) {
-    
+  extends FixedHashSet[T] (bits, a, loadFactor) with Serializable {
+
     private[this] var indexTable = new Array[Byte] (2 << bits)
     final def getIndexArray = indexTable
-    
+
     // make -1 default instead of 0
     protected final def firstIndex (i: Int) = ~indexTable(i)
     protected final def nextIndex (i: Int) = ~indexTable(len+i)
@@ -579,22 +578,22 @@ private final object FixedHashSet {
     indexTable(i) = (~v).asInstanceOf[Byte]
     protected final def setNextIndex (i: Int, v: Int) =
       indexTable(len+i) = (~v).asInstanceOf[Byte]
-    
+
     override def cloneData {
       super.cloneData
       indexTable = java.util.Arrays.copyOf (indexTable, 2 << bits)
       localArray = getArray
     }
-    
+
     final override def clear {
       super.clear
       java.util.Arrays.fill (indexTable, 0.asInstanceOf[Byte])
     }
-    
+
     final def hcBitmask = BYTE_AVAILABLE_BITS ^ (len-1)
-    
+
     // 'inline' some methods for better performance
-    
+
     private[this] val len = 1 << bits
     // scalac treat 'array' as method call :-(
     // until it's private[this] so make a local copy
@@ -686,37 +685,36 @@ private final object FixedHashSet {
       newIndex
     }
   }
-  
+
   /** FixedHashSet implementation with short-size index arrays.
    */
-  @serializable
   final class ShortHashSet[T:ClassManifest] (bits: Int, a: Array[T], loadFactor: Float)
-        extends FixedHashSet[T] (bits, a, loadFactor) {
+        extends FixedHashSet[T] (bits, a, loadFactor) with Serializable {
     private[this] var indexTable = new Array[Short] (2 << bits)
     final def getIndexArray = indexTable
-    
+
     protected final def firstIndex (i: Int) = ~indexTable(i)
     protected final def nextIndex (i: Int) = ~indexTable(len+i)
     protected final def setFirstIndex (i: Int, v: Int) =
       indexTable(i) = (~v).asInstanceOf[Short]
     protected final def setNextIndex (i: Int, v: Int) =
       indexTable(len+i) = (~v).asInstanceOf[Short]
-    
+
     override def cloneData {
       super.cloneData
       indexTable = java.util.Arrays.copyOf (indexTable, 2 << bits)
       localArray = getArray
     }
-    
+
     final override def clear {
       super.clear
       java.util.Arrays.fill (indexTable, 0.asInstanceOf[Short])
     }
-    
+
     final def hcBitmask = SHORT_AVAILABLE_BITS ^ (len-1)
-    
+
     // 'inline' some methods for better performance
-    
+
     private[this] val len = 1 << bits
     private[this] var localArray = a
     final override def positionOf[B >: T] (elem: B) = {
@@ -804,37 +802,37 @@ private final object FixedHashSet {
       newIndex
     }
   }
-  
+
   /** FixedHashSet implementation with int-size index arrays. */
-  @serializable
-  final class IntHashSet[T: ClassManifest] (bits: Int, a: Array[T], loadFactor: Float) extends FixedHashSet[T] (bits, a, loadFactor) {
-    
+  final class IntHashSet[T: ClassManifest] (bits: Int, a: Array[T], loadFactor: Float) extends FixedHashSet[T] (bits, a, loadFactor)
+  with Serializable {
+
     private[this] var indexTable = new Array[Int] (2 << bits)
-    
+
     final def getIndexArray = indexTable
-    
+
     protected final def firstIndex (i: Int)            = ~indexTable(i)
     protected final def nextIndex (i: Int)             = ~indexTable(len+i)
     protected final def setFirstIndex (i: Int, v: Int) = indexTable(i) = ~v
     protected final def setNextIndex (i: Int, v: Int)  = indexTable(len+i) = ~v
-    
+
     override def cloneData {
       super.cloneData
       indexTable = java.util.Arrays.copyOf (indexTable, 2 << bits)
       localArray = getArray
     }
-    
+
     final override def clear {
       super.clear
       java.util.Arrays.fill (indexTable, 0)
     }
-    
+
     final def hcBitmask = INT_AVAILABLE_BITS ^ (len-1)
     final override def eolBitmask = INT_END_OF_LIST
     final override def deletedEOL = ~INT_END_OF_LIST
-    
+
     // 'inline' some methods for better performance
-    
+
     private[this] val len = 1 << bits
     private[this] var localArray = a
     final override def positionOf[B >: T] (elem: B): Int = {
@@ -858,7 +856,7 @@ private final object FixedHashSet {
       }
       -1
     }
-    
+
     final override def positionOfInt (elem: Int): Int = {
       if (localArray.isInstanceOf[Array[Int]]) {
         val unboxedArray: Array[Int] = localArray.asInstanceOf[Array[Int]]
@@ -882,9 +880,9 @@ private final object FixedHashSet {
         -1
       } else positionOf (elem)
     }
-    
+
     final def isUnoccupied (i: Int): Boolean = indexTable (len+i) > 1
-    
+
     final override def rehash (that: FixedHashSet[T]) {
       val array2 = that.getArray
       if (array2 eq null) return
@@ -929,7 +927,7 @@ private final object FixedHashSet {
         }
       setSize (len2)
     }
-    
+
     final override def add (elem: T): Int = {
       val hc = hash(elem)
       val i = hc & (len - 1)
@@ -953,7 +951,7 @@ private final object FixedHashSet {
       localArray (newIndex) = elem
       newIndex
     }
-    
+
     final override def addInt (elem: Int): Int = {
       if (localArray.isInstanceOf[Array[Int]]) {
         val unboxedArray: Array[Int] = localArray.asInstanceOf[Array[Int]]
@@ -982,21 +980,21 @@ private final object FixedHashSet {
       }
     }
   }
-  
+
   /** FixedHashSet implementation with int-size index arrays
    * and unboxed array of Objects.
    */
-  @serializable
-  final class IntObjectHashSet[T: ClassManifest] (bits: Int, a: Array[T], loadFactor: Float) extends FixedHashSet[T] (bits, a, loadFactor) {
-    
+  final class IntObjectHashSet[T: ClassManifest] (bits: Int, a: Array[T], loadFactor: Float) extends FixedHashSet[T] (bits, a, loadFactor)
+  with Serializable {
+
     private[this] var indexTable = new Array[Int] (2 << bits)
     final def getIndexArray = indexTable
-    
+
     protected final def firstIndex (i: Int) = ~indexTable(i)
     protected final def nextIndex (i: Int) = ~indexTable(len+i)
     protected final def setFirstIndex (i: Int, v: Int) = indexTable(i) = ~v
     protected final def setNextIndex (i: Int, v: Int) = indexTable(len+i) = ~v
-    
+
     override def cloneData {
       super.cloneData
       indexTable = java.util.Arrays.copyOf (indexTable, 2 << bits)
@@ -1009,9 +1007,9 @@ private final object FixedHashSet {
     final def hcBitmask = INT_AVAILABLE_BITS ^ (len-1)
     final override def eolBitmask = INT_END_OF_LIST
     final override def deletedEOL = ~INT_END_OF_LIST
-    
+
     // 'inline' some methods for better performance
-    
+
     private[this] val len = 1 << bits
     private[this] var localArray: Array[Object] = a.asInstanceOf[Array[Object]]
     final override def positionOf[B >: T] (elem: B): Int = {
@@ -1106,12 +1104,11 @@ private final object FixedHashSet {
       newIndex
     }
   }
-  
-  
+
+
   /** Empty FixedHashSet implementation.
    */
-  @serializable
-  final object EmptyHashSet extends FixedHashSet[Any] (initialBits - 1, null, DEFAULT_LOAD_FACTOR) {
+  final object EmptyHashSet extends FixedHashSet[Any] (initialBits - 1, null, DEFAULT_LOAD_FACTOR) with Serializable {
     final override def positionOf[B >: Any] (elem: B) = -1
     final def isUnoccupied (i: Int): Boolean = true
     protected final def firstIndex (i: Int) = -1
@@ -1123,12 +1120,12 @@ private final object FixedHashSet {
     final def rehash (that: FixedHashSet[Any]) { }
     final override def add (elem: Any): Int = { throw ResizeNeeded }
   }
-  
+
   /** Construct FixedHashSet implementation with given parameters.
    */
   final def apply[T: ClassManifest] (bits: Int): FixedHashSet[T] =
     apply (bits, DEFAULT_LOAD_FACTOR)
-  
+
   /** Construct FixedHashSet implementation with given parameters.
    */
   final def apply[T: ClassManifest] (bits: Int, loadFactor: Float): FixedHashSet[T] =
@@ -1149,7 +1146,7 @@ private final object FixedHashSet {
               else
                 new IntHashSet (bits, a, loadFactor)
     }
-  
+
   /** Construct FixedHashSet implementation with capacity (bits)
    *  and copy values from another set.
    */
@@ -1170,7 +1167,7 @@ private final object FixedHashSet {
     newSet.rehash (that)
     newSet
   }
-  
+
   /** Create a new boxed array and copy elements from another array. */
   final def resizeArray[T: ClassManifest] (a: Array[T], newSize: Int): Array[T] = {
     val newArray = new Array[T] (newSize)
@@ -1178,14 +1175,14 @@ private final object FixedHashSet {
       Array.copy (a, 0, newArray, 0, a.length)
     newArray
   }
-  
+
   /** Filtering callbacks. */
   trait Filter[T] {
     def check (key: T, index: Int): Boolean
     def create (size: Int): Unit
     def copy (i: Int, j: Int): Unit
   }
-  
+
   /** Improve hashcode. */
   final def hash(h: Int): Int = {
     // This function ensures that hashCodes that differ only by
@@ -1194,10 +1191,10 @@ private final object FixedHashSet {
     val h2 = h ^ (h >>> 20) ^ (h >>> 12)
     h2 ^ (h2 >>> 7) ^ (h2 >>> 4)
   }
-  
+
   final def hash(o: Any): Int =
     if (o.asInstanceOf[Object] eq null) 0 else hash(o.hashCode)
-  
+
   /** The load factor used when none specified in constructor. */
   final val DEFAULT_LOAD_FACTOR = 1f
 }

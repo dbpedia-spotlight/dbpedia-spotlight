@@ -103,6 +103,10 @@
             <artifactId>nekohtml</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.semanticweb.yars</groupId>
@@ -134,11 +138,10 @@
             <version>3.7.3</version>
         </dependency>
 
-
         <dependency>
-            <groupId>net.debasishg</groupId>
-            <artifactId>sjson_2.9.1</artifactId>
-            <version>0.17</version>
+          <groupId>net.liftweb</groupId>
+          <artifactId>lift-json_2.9.1</artifactId>
+          <version>2.4</version>
         </dependency>
 
         <dependency>

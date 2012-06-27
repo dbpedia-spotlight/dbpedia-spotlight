@@ -1,14 +1,7 @@
 package org.dbpedia.spotlight.web.rest
 
-import org.dbpedia.spotlight.lucene.LuceneManager
-import java.io.File
-import org.dbpedia.spotlight.lucene.similarity.{CachedInvCandFreqSimilarity, JCSTermCache}
-import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
-import org.dbpedia.spotlight.extract.LuceneTagExtractor
-import sjson.json._
-import DefaultProtocol._
-import JsonSerialization._
-import org.dbpedia.spotlight.model.{SurfaceFormOccurrence, DBpediaResource, Text, SpotlightConfiguration}
+import org.dbpedia.spotlight.model.{DBpediaResource, Text}
+import net.liftweb.json._
 
 /**
  * Object to serialize our objects and lists of objects
@@ -19,8 +12,10 @@ import org.dbpedia.spotlight.model.{SurfaceFormOccurrence, DBpediaResource, Text
 object OutputSerializer {
 
     def tagsAsJson(text: Text, tags: Seq[(DBpediaResource,Double)]) = {
+        import net.liftweb.json._
+        import net.liftweb.json.JsonDSL._
         val values = tags.map(t => (t._1.uri,t._2)) //TODO unnecessary iteration. should convert directly from DBpediaResource
-        tojson(values).toString()
+        compact(render(values))
     }
 
     def tagsAsXml(text: Text, tags: Seq[(DBpediaResource,Double)]) = {

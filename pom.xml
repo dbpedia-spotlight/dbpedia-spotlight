@@ -376,13 +376,7 @@
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
-                <version>4.0.3</version>
-            </dependency>
-
-            <dependency>
-                <groupId>commons-httpclient</groupId>
-                <artifactId>commons-httpclient</artifactId>
-                <version>3.1</version>
+                <version>4.2</version>
             </dependency>
 
             <dependency>
@@ -430,11 +424,6 @@
             <name>Scala-tools Maven2 Repository</name>
             <url>http://scala-tools.org/repo-releases/</url>
         </repository>
-
-        <!--repository>
-            <id>json-lib</id>
-            <url>http://json-lib.sourceforge.net</url>
-        </repository-->
 
         <repository>
             <id>anonsvn</id>
