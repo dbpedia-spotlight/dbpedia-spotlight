@@ -10,10 +10,11 @@ import scala.collection.mutable.HashSet
 import org.dbpedia.spotlight.lucene.index.ExtractOccsFromWikipedia._
 import org.dbpedia.spotlight.filter.occurrences.RedirectResolveFilter
 import org.dbpedia.spotlight.db.WikipediaToDBpediaClosure
-import org.dbpedia.spotlight.model._
 import org.apache.commons.logging.LogFactory
 import scala.Predef._
 import scala.Array
+import org.dbpedia.spotlight.model._
+import collection.parallel.mutable
 
 
 /**
@@ -88,7 +89,7 @@ object DBpediaResourceSource {
     var id = 0
 
     val resourceMap = new java.util.HashMap[DBpediaResource, Int]()
-    val resourceByURI = new java.util.HashMap[String, DBpediaResource]()
+    val resourceByURI = scala.collection.mutable.HashMap[String, DBpediaResource]()
 
     LOG.info("Reading resources+counts...")
 
@@ -100,12 +101,12 @@ object DBpediaResourceSource {
         resourceByURI.get(res.uri) match {
           case oldRes: DBpediaResource => {
             oldRes.setSupport(oldRes.support + count.toInt)
-            resourceMap.put(oldRes, oldRes.support + count.toInt)
+            resourceByURI.put(oldRes.uri, oldRes)
           }
           case _ => {
             res.id = id
             id += 1
-            resourceMap.put(res, count.toInt)
+            res.setSupport(count.toInt)
             resourceByURI.put(res.uri, res)
           }
         }
@@ -122,7 +123,7 @@ object DBpediaResourceSource {
 
         try {
           if (! typeURI.startsWith(SchemaOrgType.SCHEMAORG_PREFIX))
-            resourceByURI.get(new DBpediaResource(id).uri).types ::= OntologyType.fromURI(typeURI)
+            resourceByURI(new DBpediaResource(id).uri).types ::= OntologyType.fromURI(typeURI)
         } catch {
           case e: NullPointerException =>
             uriNotFound += id
@@ -131,6 +132,11 @@ object DBpediaResourceSource {
     }
     System.err.println("WARNING: URI for %d type definitions not found!".format(uriNotFound.size) )
     LOG.info("Done.")
+
+    resourceByURI foreach {
+      case (_, res) => resourceMap.put(res, res.support)
+    }
+
     resourceMap
   }
 
