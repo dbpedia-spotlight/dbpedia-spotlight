@@ -40,7 +40,7 @@ class MemoryResourceStore
       System.err.println("Creating reverse-lookup for DBpedia resources.")
       idFromURI = new TObjectIntHashMap(uriForID.size)
 
-      var i = 0
+      var i = 1
       uriForID foreach { uri => {
         idFromURI.put(uri, i)
         i += 1
@@ -69,7 +69,9 @@ class MemoryResourceStore
 
   @throws(classOf[DBpediaResourceNotFoundException])
   def getResourceByName(name: String): DBpediaResource = {
-    getResource(idFromURI.get(name))
+    idFromURI.get(name) match {
+      case id: Int if id > 0 => getResource(id)
+      case id: Int if id == 0 => throw new DBpediaResourceNotFoundException("Could not find %s".format(name))
   }
 
 

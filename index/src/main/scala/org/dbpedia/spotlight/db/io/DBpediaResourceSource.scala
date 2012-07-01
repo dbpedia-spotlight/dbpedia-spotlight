@@ -86,7 +86,7 @@ object DBpediaResourceSource {
 
     LOG.info("Creating DBepdiaResourceSource.")
 
-    var id = 0
+    var id = 1
 
     val resourceMap = new java.util.HashMap[DBpediaResource, Int]()
     val resourceByURI = scala.collection.mutable.HashMap[String, DBpediaResource]()
@@ -99,11 +99,11 @@ object DBpediaResourceSource {
         val res = new DBpediaResource(wikipediaToDBpediaClosure.wikipediaToDBpediaURI(wikiurl))
 
         resourceByURI.get(res.uri) match {
-          case oldRes: DBpediaResource => {
+          case Some(oldRes) => {
             oldRes.setSupport(oldRes.support + count.toInt)
             resourceByURI.put(oldRes.uri, oldRes)
           }
-          case _ => {
+          case None => {
             res.id = id
             id += 1
             res.setSupport(count.toInt)
@@ -125,7 +125,7 @@ object DBpediaResourceSource {
           if (! typeURI.startsWith(SchemaOrgType.SCHEMAORG_PREFIX))
             resourceByURI(new DBpediaResource(id).uri).types ::= OntologyType.fromURI(typeURI)
         } catch {
-          case e: NullPointerException =>
+          case e: java.util.NoSuchElementException =>
             uriNotFound += id
         }
       }
