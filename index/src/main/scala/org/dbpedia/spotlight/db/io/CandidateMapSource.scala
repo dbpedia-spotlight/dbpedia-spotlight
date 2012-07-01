@@ -8,6 +8,8 @@ import org.dbpedia.spotlight.db.model.{SurfaceFormStore, ResourceStore}
 import java.lang.String
 import collection.mutable.HashSet
 import org.dbpedia.spotlight.exceptions.{SurfaceFormNotFoundException, DBpediaResourceNotFoundException, ItemNotFoundException}
+import org.dbpedia.spotlight.db.WikipediaToDBpediaClosure
+import scala.Int
 
 
 /**
@@ -20,6 +22,49 @@ import org.dbpedia.spotlight.exceptions.{SurfaceFormNotFoundException, DBpediaRe
  */
 
 object CandidateMapSource {
+
+  def fromPigInputStreams(
+    pairCounts: InputStream,
+    wikipediaToDBpediaClosure: WikipediaToDBpediaClosure,
+    resStore: ResourceStore,
+    sfStore: SurfaceFormStore
+  ): java.util.Map[Candidate, Int] = {
+
+    val candidateMap = new java.util.HashMap[Candidate, Int]()
+
+    val uriNotFound = HashSet[String]()
+    val sfNotFound = HashSet[String]()
+
+    Source.fromInputStream(pairCounts).getLines() foreach {
+      line: String => {
+        try {
+          val Array(sf, wikiurl, count) = line.trim().split('\t')
+          val uri = wikipediaToDBpediaClosure.wikipediaToDBpediaURI(wikiurl)
+          candidateMap.put(
+            Candidate(sfStore.getSurfaceForm(sf), resStore.getResourceByName(uri)),
+            count.toInt
+          )
+        } catch {
+          case e: ArrayIndexOutOfBoundsException => System.err.println("WARNING: Could not read line.")
+          case e: DBpediaResourceNotFoundException => uriNotFound += line
+          case e: SurfaceFormNotFoundException => sfNotFound += line
+        }
+      }
+    }
+
+    System.err.println("WARNING: URI for %d candidate definitions not found!".format(uriNotFound.size) )
+    System.err.println("WARNING: SF for %d candidate definitions not found!".format(sfNotFound.size) )
+
+    candidateMap
+  }
+
+  def fromPigFiles(
+    pairCounts: File,
+    wikipediaToDBPediaClosure: WikipediaToDBpediaClosure,
+    resStore: ResourceStore,
+    sfStore: SurfaceFormStore
+  ): java.util.Map[Candidate, Int] = fromPigInputStreams(new FileInputStream(pairCounts), wikipediaToDBPediaClosure, resStore, sfStore)
+
 
   def fromTSVInputStream(
     candmap: InputStream,
