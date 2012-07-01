@@ -103,6 +103,8 @@ object DBpediaResourceSource {
             resourceMap.put(oldRes, oldRes.support + count.toInt)
           }
           case _ => {
+            res.id = id
+            id += 1
             resourceMap.put(res, count.toInt)
             resourceByURI.put(res.uri, res)
           }

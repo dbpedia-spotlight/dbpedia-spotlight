@@ -21,7 +21,7 @@ object SurfaceFormSource {
 
     Source.fromInputStream(in).getLines() map {
       line: String => {
-        val Array(name, uri, count) = line.trim().split('\t')
+        val Array(name, count) = line.trim().split('\t')
         val surfaceform = new SurfaceForm(name)
 
         val c = sfFormMap.get(surfaceform) match {
