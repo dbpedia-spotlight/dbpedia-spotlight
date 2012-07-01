@@ -8,6 +8,7 @@ import org.dbpedia.spotlight.model.DBpediaResource
 import java.io.{InputStream, PrintStream, FileInputStream, File}
 import org.apache.commons.logging.LogFactory
 import scala.Predef._
+import collection.immutable.{ListSet, SortedSet}
 
 /**
  * @author Joachim Daiber
@@ -58,14 +59,14 @@ class WikipediaToDBpediaClosure (
   }
 
   def getEndOfChainURI(m: Map[String, String], uri: String): String = {
-    getURIChain(m, List(uri)).head
+    getURIChain(m, ListSet(uri)).last
   }
 
 
-  private def getURIChain(m: Map[String, String], chain: List[String]): List[String] = {
+  private def getURIChain(m: Map[String, String], chain: ListSet[String]): ListSet[String] = {
       // get end of chain but check for redirects to itself
       m.get(chain.head) match {
-          case Some(s: String) => if (chain.contains(s)) chain else getURIChain(m, s :: chain)
+          case Some(s: String) => if (chain.contains(s)) chain else getURIChain(m, chain + s)
           case None => chain
       }
   }

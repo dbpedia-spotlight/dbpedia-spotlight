@@ -10,6 +10,7 @@ import collection.mutable.HashSet
 import org.dbpedia.spotlight.exceptions.{SurfaceFormNotFoundException, DBpediaResourceNotFoundException, ItemNotFoundException}
 import org.dbpedia.spotlight.db.WikipediaToDBpediaClosure
 import scala.Int
+import org.apache.commons.logging.LogFactory
 
 
 /**
@@ -23,6 +24,8 @@ import scala.Int
 
 object CandidateMapSource {
 
+  private val LOG = LogFactory.getLog(this.getClass)
+
   def fromPigInputStreams(
     pairCounts: InputStream,
     wikipediaToDBpediaClosure: WikipediaToDBpediaClosure,
@@ -35,6 +38,7 @@ object CandidateMapSource {
     val uriNotFound = HashSet[String]()
     val sfNotFound = HashSet[String]()
 
+    LOG.info("Reading Candidate Map.")
     Source.fromInputStream(pairCounts).getLines() foreach {
       line: String => {
         try {
@@ -51,9 +55,11 @@ object CandidateMapSource {
         }
       }
     }
+    LOG.info("Done.")
 
-    System.err.println("WARNING: URI for %d candidate definitions not found!".format(uriNotFound.size) )
-    System.err.println("WARNING: SF for %d candidate definitions not found!".format(sfNotFound.size) )
+
+    LOG.warn("URI for %d candidate definitions not found!".format(uriNotFound.size) )
+    LOG.warn("SF for %d candidate definitions not found!".format(sfNotFound.size) )
 
     candidateMap
   }
@@ -91,15 +97,15 @@ object CandidateMapSource {
             count.toInt
           )
         } catch {
-          case e: ArrayIndexOutOfBoundsException => System.err.println("WARNING: Could not read line.")
+          case e: ArrayIndexOutOfBoundsException => LOG.warn("Could not read line.")
           case e: DBpediaResourceNotFoundException => uriNotFound += line
           case e: SurfaceFormNotFoundException => sfNotFound += line
         }
       }
     }
 
-    System.err.println("WARNING: URI for %d candidate definitions not found!".format(uriNotFound.size) )
-    System.err.println("WARNING: SF for %d candidate definitions not found!".format(sfNotFound.size) )
+    LOG.warn("URI for %d candidate definitions not found!".format(uriNotFound.size) )
+    LOG.warn("SF for %d candidate definitions not found!".format(sfNotFound.size) )
 
     candidateMap
   }
