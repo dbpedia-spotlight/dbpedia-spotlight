@@ -13,6 +13,7 @@ import org.dbpedia.spotlight.db.WikipediaToDBpediaClosure
 import org.dbpedia.spotlight.model._
 import org.apache.commons.logging.LogFactory
 import scala.Predef._
+import scala.Array
 
 
 /**
@@ -95,12 +96,18 @@ object DBpediaResourceSource {
       line: String => {
         val Array(wikiurl, count) = line.trim().split('\t')
         val res = new DBpediaResource(wikipediaToDBpediaClosure.wikipediaToDBpediaURI(wikiurl))
-        res.id = id
-        res.setSupport(count.toInt)
-        id += 1
 
-        resourceMap.put(res, count.toInt)
-        resourceByURI.put(res.uri, res)
+        resourceByURI.get(res.uri) match {
+          case oldRes: DBpediaResource => {
+            oldRes.setSupport(oldRes.support + count.toInt)
+            resourceMap.put(oldRes, oldRes.support + count.toInt)
+          }
+          case _ => {
+            resourceMap.put(res, count.toInt)
+            resourceByURI.put(res.uri, res)
+          }
+        }
+
       }
     }
 
