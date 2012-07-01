@@ -19,7 +19,7 @@ object SurfaceFormSource {
 
     val sfFormMap = new HashMap[SurfaceForm, Int]()
 
-    Source.fromInputStream(in).getLines() map {
+    Source.fromInputStream(in).getLines() foreach {
       line: String => {
         val Array(name, count) = line.trim().split('\t')
         val surfaceform = new SurfaceForm(name)
