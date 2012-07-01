@@ -72,6 +72,7 @@ class MemoryResourceStore
     idFromURI.get(name) match {
       case id: Int if id > 0 => getResource(id)
       case id: Int if id == 0 => throw new DBpediaResourceNotFoundException("Could not find %s".format(name))
+    }
   }
 
 

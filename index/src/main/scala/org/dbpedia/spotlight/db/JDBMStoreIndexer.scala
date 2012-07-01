@@ -78,6 +78,11 @@ class JDBMStoreIndexer(val baseDir: File)
     candidateStore.commit()
   }
 
+  def addCandidatesByID(cands: Map[Pair[Int, Int], Int], numberOfSurfaceForms: Int) {
+    throw new NotImplementedException()
+  }
+
+
 
   //TOKENS
 

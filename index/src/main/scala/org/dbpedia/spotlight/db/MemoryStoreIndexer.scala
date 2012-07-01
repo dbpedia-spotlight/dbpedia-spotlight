@@ -72,9 +72,9 @@ class MemoryStoreIndexer(val baseDir: File)
       resourceCount.keys.flatMap(_.getTypes).toSet.asJava
     )
 
-    val supportForID = new Array[Int](resourceCount.size)
-    val uriForID = new Array[String](resourceCount.size)
-    val typesForID = new Array[Array[Short]](resourceCount.size)
+    val supportForID = new Array[Int](resourceCount.size+1)
+    val uriForID = new Array[String](resourceCount.size+1)
+    val typesForID = new Array[Array[Short]](resourceCount.size+1)
 
     resourceCount.foreach {
 
@@ -85,7 +85,7 @@ class MemoryStoreIndexer(val baseDir: File)
         uriForID(el._1.id) = el._1.uri
         typesForID(el._1.id) = (el._1.getTypes map {
           ot: OntologyType => ontologyTypeStore.getOntologyTypeByName(ot.typeID).id}
-        ).toArray
+          ).toArray
 
       }
     }
@@ -134,6 +134,29 @@ class MemoryStoreIndexer(val baseDir: File)
     MemoryStore.dump(candmapStore, new File(baseDir, "candmap.mem"))
   }
 
+  def addCandidatesByID(cands: Map[Pair[Int, Int], Int], numberOfSurfaceForms: Int) {
+    val candmapStore = new MemoryCandidateMapStore()
+
+    val candidates      = new Array[ListBuffer[Int]](numberOfSurfaceForms)
+    val candidateCounts = new Array[ListBuffer[Int]](numberOfSurfaceForms)
+
+    cands.foreach {
+      p: (Pair[Int, Int], Int) => {
+        if(candidates(p._1._1) == null) {
+          candidates(p._1._1)      = ListBuffer[Int]()
+          candidateCounts(p._1._1) = ListBuffer[Int]()
+        }
+
+        candidates(p._1._1)      += p._1._2
+        candidateCounts(p._1._1) += p._2
+      }
+    }
+
+    candmapStore.candidates = (candidates map { l: ListBuffer[Int] => if(l != null) l.toArray else null} ).toArray
+    candmapStore.candidateCounts = (candidateCounts map { l: ListBuffer[Int] => if(l != null) l.toArray else null} ).toArray
+
+    MemoryStore.dump(candmapStore, new File(baseDir, "candmap.mem"))
+  }
 
   def addToken(token: Token, count: Int) {
     throw new NotImplementedException()
@@ -179,19 +202,19 @@ class MemoryStoreIndexer(val baseDir: File)
 
   def addTokenOccurrences(occs: Map[DBpediaResource, Map[Int, Int]]) {
     occs.foreach{ case(res, tokenCounts) => {
-        val (t, c) = tokenCounts.unzip
-        contextStore.tokens(res.id) = t.toArray
-        contextStore.counts(res.id) = c.toArray
-      }
+      val (t, c) = tokenCounts.unzip
+      contextStore.tokens(res.id) = t.toArray
+      contextStore.counts(res.id) = c.toArray
+    }
     }
   }
 
   def addTokenOccurrences(occs: Iterator[Pair[DBpediaResource, Array[Pair[Int, Int]]]]) {
     occs.foreach{ case(res, tokenCounts) => {
-        val (t, c) = tokenCounts.unzip
-        contextStore.tokens(res.id) = t.toArray
-        contextStore.counts(res.id) = c.toArray
-      }
+      val (t, c) = tokenCounts.unzip
+      contextStore.tokens(res.id) = t.toArray
+      contextStore.counts(res.id) = c.toArray
+    }
     }
   }
 
