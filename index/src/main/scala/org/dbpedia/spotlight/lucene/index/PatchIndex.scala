@@ -27,6 +27,7 @@ import org.apache.lucene.store.FSDirectory
 import org.apache.commons.logging.{LogFactory, Log}
 import java.io.{FileInputStream, File}
 import org.dbpedia.spotlight.util.{ExtractCandidateMap, TypesLoader, IndexingConfiguration}
+import org.dbpedia.spotlight.exceptions.ConfigurationException
 
 /**
  * This script goes over the index and adds surface forms, counts and DBpedia Types as provided in input files.

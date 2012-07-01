@@ -4,11 +4,10 @@ import org.dbpedia.spotlight.db.disk.JDBMStore
 import java.io.File
 import org.apache.commons.lang.NotImplementedException
 import scala.collection.JavaConversions._
-import scala.collection.JavaConverters._
 
 import scala.Predef._
 import scala._
-import java.util.{HashMap, Map}
+import java.util.Map
 import org.dbpedia.spotlight.model._
 
 /**
@@ -107,6 +106,10 @@ class JDBMStoreIndexer(val baseDir: File)
   def addTokenOccurrences(occs: Map[DBpediaResource, Map[Int, Int]]) {
     occs.foreach{ case(res, tokenCounts) => addTokenOccurrence(res, tokenCounts) }
     writeTokenOccurrences()
+  }
+
+  def addTokenOccurrences(occs: Iterator[Pair[DBpediaResource, Array[Pair[Int, Int]]]]) {
+    throw new NotImplementedException()
   }
 
   def createContextStore(n: Int) = {

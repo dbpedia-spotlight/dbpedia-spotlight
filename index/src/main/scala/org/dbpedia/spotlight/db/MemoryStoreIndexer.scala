@@ -186,6 +186,16 @@ class MemoryStoreIndexer(val baseDir: File)
     }
   }
 
+  def addTokenOccurrences(occs: Iterator[Pair[DBpediaResource, Array[Pair[Int, Int]]]]) {
+    occs.foreach{ case(res, tokenCounts) => {
+        val (t, c) = tokenCounts.unzip
+        contextStore.tokens(res.id) = t.toArray
+        contextStore.counts(res.id) = c.toArray
+      }
+    }
+  }
+
+
   def writeTokenOccurrences() {
     MemoryStore.dump(contextStore, new File(baseDir, "context.mem"))
   }
