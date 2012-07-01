@@ -42,7 +42,7 @@ class WikipediaToDBpediaClosure (
       val triple = wikiDBPParser.next
       val subj   = triple(0).toString.replaceFirst("http://[a-z]+[.]wikipedia[.]org/wiki/", "")
       val obj    = triple(2).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
-      wikiToDBPMap = wikiToDBPMap.updated(subj, getEndOfChainUri(linkMap, obj))
+      wikiToDBPMap = wikiToDBPMap.updated(subj, getEndOfChainURI(linkMap, obj))
     }
   }
 
@@ -52,16 +52,21 @@ class WikipediaToDBpediaClosure (
 
   def wikipediaToDBpediaURI(wikiURL: String): String = {
     if(wikiToDBPMap.size > 0)
-      getEndOfChainUri(linkMap, wikiToDBPMap(wikiURL))
+      getEndOfChainURI(linkMap, wikiToDBPMap(wikiURL))
     else
-      getEndOfChainUri(linkMap, wikiToDBpediaURI(wikiURL))
+      getEndOfChainURI(linkMap, wikiToDBpediaURI(wikiURL))
   }
 
-  private def getEndOfChainUri(m: Map[String, String], k : String) : String = {
+  def getEndOfChainURI(m: Map[String, String], uri: String): String = {
+    getURIChain(m, List(uri)).head
+  }
+
+
+  private def getURIChain(m: Map[String, String], chain: List[String]): List[String] = {
       // get end of chain but check for redirects to itself
-      m.get(k) match {
-          case Some(s : String) => if (s equals k) k else getEndOfChainUri(m, s)
-          case None => k
+      m.get(chain.head) match {
+          case Some(s: String) => if (chain.contains(s)) chain else getURIChain(m, s :: chain)
+          case None => chain
       }
   }
 
