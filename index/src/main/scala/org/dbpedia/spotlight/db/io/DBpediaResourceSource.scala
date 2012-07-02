@@ -130,7 +130,7 @@ object DBpediaResourceSource {
         }
       }
     }
-    System.err.println("WARNING: URI for %d type definitions not found!".format(uriNotFound.size) )
+    LOG.warn("URI for %d type definitions not found!".format(uriNotFound.size) )
     LOG.info("Done.")
 
     resourceByURI foreach {

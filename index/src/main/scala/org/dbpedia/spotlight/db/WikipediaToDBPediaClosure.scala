@@ -72,14 +72,11 @@ class WikipediaToDBpediaClosure (
     getURIChain(m, ListSet(uri)).last
   }
 
-
   private def getURIChain(m: Map[String, String], chain: ListSet[String]): ListSet[String] = {
       // get end of chain but check for redirects to itself
-      m.get(chain.head) match {
+      m.get(chain.last) match {
           case Some(s: String) => if (chain.contains(s)) chain else getURIChain(m, chain + s)
           case None => chain
       }
   }
-
-
 }

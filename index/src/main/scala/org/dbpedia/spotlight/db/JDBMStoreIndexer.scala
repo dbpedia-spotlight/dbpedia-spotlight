@@ -113,7 +113,7 @@ class JDBMStoreIndexer(val baseDir: File)
     writeTokenOccurrences()
   }
 
-  def addTokenOccurrences(occs: Iterator[Pair[DBpediaResource, Array[Pair[Int, Int]]]]) {
+  def addTokenOccurrences(occs: Iterator[Triple[DBpediaResource, Array[Token], Array[Int]]]) {
     throw new NotImplementedException()
   }
 

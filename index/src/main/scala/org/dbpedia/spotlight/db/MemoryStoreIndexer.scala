@@ -12,8 +12,8 @@ import scala.collection.JavaConverters._
 import collection.mutable.ListBuffer
 import java.util.{Map, Set}
 import scala.Array
-import org.dbpedia.spotlight.model._
 import java.io.File
+import org.dbpedia.spotlight.model._
 
 /**
  * @author Joachim Daiber
@@ -205,12 +205,12 @@ class MemoryStoreIndexer(val baseDir: File)
     }
   }
 
-  def addTokenOccurrences(occs: Iterator[Pair[DBpediaResource, Array[Pair[Int, Int]]]]) {
-    occs.foreach{ case(res, tokenCounts) => {
-      val (t, c) = tokenCounts.unzip
-      contextStore.tokens(res.id) = t.toArray
-      contextStore.counts(res.id) = c.toArray
-    }
+  def addTokenOccurrences(occs: Iterator[Triple[DBpediaResource, Array[Token], Array[Int]]]) {
+    occs.foreach{
+      case(res, tokens, counts) => {
+        contextStore.tokens(res.id) = tokens.map{ t: Token => t.id }.array
+        contextStore.counts(res.id) = counts.array
+      }
     }
   }
 

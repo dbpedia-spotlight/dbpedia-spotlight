@@ -7,6 +7,7 @@ import collection.mutable.HashMap
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 import java.io.{InputStream, FileInputStream, File}
+import org.apache.commons.logging.LogFactory
 
 
 /**
@@ -17,6 +18,8 @@ import java.io.{InputStream, FileInputStream, File}
  */
 
 object TokenSource {
+
+  private val LOG = LogFactory.getLog(this.getClass)
 
   def fromOccurrenceSource(os: OccurrenceSource, tokenizer: Tokenizer): java.util.Map[Token, Int] = {
     val tokenMap = HashMap[String, Int]()
@@ -43,10 +46,15 @@ object TokenSource {
 
     val tokenMap = HashMap[String, Int]()
 
+    var i = 0
     TokenOccurrenceSource.plainTokenOccurrenceSource(tokenFile) foreach {
-      p: Pair[String, Array[Pair[String, Int]]] => {
-        p._2.foreach {
-          case (token, count) => tokenMap.put(token, tokenMap.getOrElse(token, 0))
+      p: Triple[String, Array[String], Array[Int]] => {
+        i += 1
+        if (i % 100000 == 0)
+          LOG.info("Read context for %d resources...".format(i))
+
+        (0 to p._2.size).foreach {
+          i: Int => tokenMap.put(p._2(i), tokenMap.getOrElse(p._2(i), 0) + p._3(i))
         }
       }
     }
