@@ -50,10 +50,10 @@ object TokenSource {
     TokenOccurrenceSource.plainTokenOccurrenceSource(tokenFile) foreach {
       p: Triple[String, Array[String], Array[Int]] => {
         i += 1
-        if (i % 100000 == 0)
+        if (i % 10000 == 0)
           LOG.info("Read context for %d resources...".format(i))
 
-        (0 to p._2.size).foreach {
+        (0 to p._2.size -1).foreach {
           i: Int => tokenMap.put(p._2(i), tokenMap.getOrElse(p._2(i), 0) + p._3(i))
         }
       }

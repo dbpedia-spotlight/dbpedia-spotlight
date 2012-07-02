@@ -27,7 +27,7 @@ object TokenOccurrenceSource {
     plainTokenOccurrenceSource(tokenInputStream) map {
       case (wikiurl: String, tokens: Array[String], counts: Array[Int]) => {
         i += 1
-        if (i % 100000 == 0)
+        if (i % 10000 == 0)
           LOG.info("Read context for %d resources...".format(i))
 
         Triple(
@@ -44,7 +44,7 @@ object TokenOccurrenceSource {
 
 
   def plainTokenOccurrenceSource(tokenInputStream: InputStream): Iterator[Triple[String, Array[String], Array[Int]]] = {
-    Source.fromInputStream(tokenInputStream).getLines() filter(!_.equals("")) map {
+    Source.fromInputStream(tokenInputStream) getLines() filter(!_.equals("")) map {
       line: String => {
         val Array(wikiurl, tokens) = line.trim().split('\t')
           var tokensA = Array[String]()
