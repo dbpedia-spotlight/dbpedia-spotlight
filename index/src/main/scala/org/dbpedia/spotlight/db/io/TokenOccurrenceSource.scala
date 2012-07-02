@@ -29,12 +29,15 @@ object TokenOccurrenceSource {
         i += 1
         if (i % 10000 == 0)
           LOG.info("Read context for %d resources...".format(i))
-
+		try {
         Triple(
           resStore.getResourceByName(wikipediaToDBpediaClosure.wikipediaToDBpediaURI(wikiurl)),
           tokens.map{ token => tokenStore.getToken(token) },
           counts
         )
+		} catch {
+			case e: org.dbpedia.spotlight.exceptions.DBpediaResourceNotFoundException => Triple(null, null, null)
+		}
       }
     }
 

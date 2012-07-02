@@ -40,7 +40,7 @@ class MemoryResourceStore
       System.err.println("Creating reverse-lookup for DBpedia resources.")
       idFromURI = new TObjectIntHashMap(uriForID.size)
 
-      var i = 1
+      var i = 0
       uriForID foreach { uri => {
         idFromURI.put(uri, i)
         i += 1
@@ -52,10 +52,14 @@ class MemoryResourceStore
   @throws(classOf[DBpediaResourceNotFoundException])
   def getResource(id: Int): DBpediaResource = {
 
-    val uri     = uriForID(id)
+	val uri = try {
+    	uriForID(id)
+	} catch {
+		case e: java.lang.ArrayIndexOutOfBoundsException => null
+	}
 
     if (uri == null)
-      throw new SurfaceFormNotFoundException("DBpediaResource %s not found.".format(uri))
+      throw new DBpediaResourceNotFoundException("DBpediaResource %s not found.".format(uri))
 
     val support = supportForID(id)
     val typeIDs = typesForID(id)

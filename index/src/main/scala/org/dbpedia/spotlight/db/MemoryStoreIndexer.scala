@@ -206,10 +206,21 @@ class MemoryStoreIndexer(val baseDir: File)
   }
 
   def addTokenOccurrences(occs: Iterator[Triple[DBpediaResource, Array[Token], Array[Int]]]) {
-    occs.foreach{
-      case(res, tokens, counts) => {
-        contextStore.tokens(res.id) = tokens.map{ t: Token => t.id }.array
-        contextStore.counts(res.id) = counts.array
+    occs.filter(t => t!=null && t._1 != null).foreach{
+      t: Triple[DBpediaResource, Array[Token], Array[Int]] => {
+		val Triple(res, tokens, counts) = t
+		if (res != null) {
+	      if(contextStore.tokens(res.id) != null) {
+             val (mergedTokens, mergedCounts) = (tokens.map{ t: Token => t.id }.array.zip(counts.array) ++ contextStore.tokens(res.id).zip( contextStore.counts(res.id) )).groupBy(_._1).map{ case(k, v) => (k, v.map{ p => p._2}.sum ) }.unzip
+			 contextStore.tokens(res.id) = mergedTokens.toArray
+             contextStore.counts(res.id) = mergedCounts.toArray
+
+
+		  } else{
+		    contextStore.tokens(res.id) = tokens.map{ t: Token => t.id }.array
+            contextStore.counts(res.id) = counts.array
+          }
+		}
       }
     }
   }

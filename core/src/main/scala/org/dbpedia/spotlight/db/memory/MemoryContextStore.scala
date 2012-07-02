@@ -30,13 +30,14 @@ class MemoryContextStore
   def getContextCounts(resource: DBpediaResource): Map[Int, Int] = {
 
     val contextCounts = new HashMap[Int, Int]()
+	val i = resource.id +1
 
-    if (tokens(resource.id) != null) {
-      val t = tokens(resource.id)
-      val c = counts(resource.id)
-
-      (0 to t.length) foreach { i =>
-        contextCounts.put(t(i), c(i))
+    if (tokens(i) != null) {
+      val t = tokens(i)
+      val c = counts(i)
+		println(t.size, c.size)
+      (0 to t.length-1) foreach { j =>
+        contextCounts.put(t(j), c(j))
       }
     }
 
