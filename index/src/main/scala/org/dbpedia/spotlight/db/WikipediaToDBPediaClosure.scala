@@ -52,7 +52,7 @@ class WikipediaToDBpediaClosure (
   private def wikiToDBpediaURI(wikiURL: String): String = {
     wikiURL match {
       case WikiURL(language, title) => {
-        title.takeWhile( p => p != '#' ) match {
+        title.replace("(", "%28").replace(")", "%29").takeWhile( p => p != '#' ) match {
           case t: String if t.startsWith("/") => t.tail
           case t: String => t
         }
