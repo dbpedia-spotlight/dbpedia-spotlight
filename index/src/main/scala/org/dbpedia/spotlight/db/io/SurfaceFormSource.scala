@@ -1,12 +1,13 @@
 package org.dbpedia.spotlight.db.io
 
 import io.Source
-import java.io.{InputStream, FileInputStream, File}
 import org.dbpedia.spotlight.model.SurfaceForm
 import scala.Array
 import java.util.zip.GZIPInputStream
 import java.util.{Map, HashMap}
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
+import org.apache.commons.logging.LogFactory
+import java.io.{File, InputStream, FileInputStream}
 
 
 /**
@@ -15,7 +16,11 @@ import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 
 object SurfaceFormSource {
 
+  private val LOG = LogFactory.getLog(this.getClass)
+
   def fromPigInputStream(in: InputStream): Map[SurfaceForm, Int] = {
+
+    LOG.info("Creating SurfaceFormSource.")
 
     val sfFormMap = new HashMap[SurfaceForm, Int]()
 
@@ -32,6 +37,8 @@ object SurfaceFormSource {
         sfFormMap.put(surfaceform, c + count.toInt)
       }
     }
+
+    LOG.info("Done.")
 
     sfFormMap
   }

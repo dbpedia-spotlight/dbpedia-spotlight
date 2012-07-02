@@ -13,5 +13,4 @@ trait CandidateIndexer {
   def addCandidates(cands: Map[Candidate, Int], numberOfSurfaceForms: Int)
   def addCandidatesByID(cands: Map[Pair[Int, Int], Int], numberOfSurfaceForms: Int)
 
-
 }

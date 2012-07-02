@@ -7,8 +7,8 @@ import org.semanticweb.yars.nx.parser.NxParser
 import org.dbpedia.spotlight.model.DBpediaResource
 import java.io.{InputStream, PrintStream, FileInputStream, File}
 import org.apache.commons.logging.LogFactory
-import scala.Predef._
 import collection.immutable.{ListSet, SortedSet}
+import scala.Predef._
 
 /**
  * @author Joachim Daiber
@@ -47,8 +47,18 @@ class WikipediaToDBpediaClosure (
     }
   }
 
+
+  val WikiURL = """http://([a-z]+)[.]wikipedia[.]org/wiki/(.*)""".r
   private def wikiToDBpediaURI(wikiURL: String): String = {
-    wikiURL.replaceFirst("http://[a-z]+[.]wikipedia[.]org/wiki/", "")
+    wikiURL match {
+      case WikiURL(language, title) => {
+        title.takeWhile( p => p != '#' ) match {
+          case t: String if t.startsWith("/") => t.tail
+          case t: String => t
+        }
+      }
+      case _ => LOG.error("Invalid Wikipedia URL %s".format(wikiURL)); null
+    }
   }
 
   def wikipediaToDBpediaURI(wikiURL: String): String = {

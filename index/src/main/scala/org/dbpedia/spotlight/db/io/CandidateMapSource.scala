@@ -82,7 +82,7 @@ object CandidateMapSource {
     val candidateMap = new java.util.HashMap[Candidate, Int]()
 
     val uriNotFound = HashSet[String]()
-    val sfNotFound = HashSet[String]()
+    val sfNotFound  = HashSet[String]()
 
     Source.fromInputStream(candmap).getLines() foreach {
       line: String => {

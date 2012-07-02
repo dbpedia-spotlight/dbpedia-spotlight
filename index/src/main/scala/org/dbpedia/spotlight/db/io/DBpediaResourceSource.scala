@@ -73,7 +73,7 @@ object DBpediaResourceSource {
         }
       }
     }
-    System.err.println("WARNING: URI for %d type definitions not found!".format(uriNotFound.size) )
+    LOG.warn("URI for %d type definitions not found!".format(uriNotFound.size) )
 
     resourceMap.iterator.map( f => Pair(f._2, f._2.support) ).toMap.asJava
   }

@@ -90,15 +90,10 @@ class MemoryStoreIndexer(val baseDir: File)
       }
     }
 
-
-    println(uriForID.filter({ s: String => s == null }).size)
-
     resStore.ontologyTypeStore = ontologyTypeStore
     resStore.supportForID = supportForID.array
     resStore.uriForID = uriForID.array
     resStore.typesForID = typesForID.array
-
-    println(resStore.uriForID.filter({ s: String => s == null }).size)
 
     MemoryStore.dump(resStore, new File(baseDir, "res.mem"))
   }
@@ -144,9 +139,9 @@ class MemoryStoreIndexer(val baseDir: File)
       p: (Pair[Int, Int], Int) => {
 
         if(candidates(p._1._1) == null) {
-		  candidates(p._1._1)      = Array[Int]()
-		  candidateCounts(p._1._1) = Array[Int]()
-		}
+          candidates(p._1._1)      = Array[Int]()
+          candidateCounts(p._1._1) = Array[Int]()
+        }
 
         candidates(p._1._1)      :+= p._1._2
         candidateCounts(p._1._1) :+= p._2
