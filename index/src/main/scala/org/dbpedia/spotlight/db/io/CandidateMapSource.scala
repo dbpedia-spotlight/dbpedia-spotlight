@@ -31,9 +31,9 @@ object CandidateMapSource {
     wikipediaToDBpediaClosure: WikipediaToDBpediaClosure,
     resStore: ResourceStore,
     sfStore: SurfaceFormStore
-  ): java.util.Map[Candidate, Int] = {
+  ): java.util.Map[Pair[Int, Int], Int] = {
 
-    val candidateMap = new java.util.HashMap[Candidate, Int]()
+    val candidateMap = new java.util.HashMap[Pair[Int, Int], Int]()
 
     val uriNotFound = HashSet[String]()
     val sfNotFound = HashSet[String]()
@@ -45,9 +45,10 @@ object CandidateMapSource {
           val Array(sf, wikiurl, count) = line.trim().split('\t')
           val uri = wikipediaToDBpediaClosure.wikipediaToDBpediaURI(wikiurl)
           candidateMap.put(
-            Candidate(sfStore.getSurfaceForm(sf), resStore.getResourceByName(uri)),
+            Pair(sfStore.getSurfaceForm(sf).id, resStore.getResourceByName(uri).id),
             count.toInt
           )
+		  //println(sfStore.getSurfaceForm(sf).id, wikiurl,  resStore.getResourceByName(uri))
         } catch {
           case e: ArrayIndexOutOfBoundsException => System.err.println("WARNING: Could not read line.")
           case e: DBpediaResourceNotFoundException => uriNotFound += line
@@ -69,7 +70,7 @@ object CandidateMapSource {
     wikipediaToDBPediaClosure: WikipediaToDBpediaClosure,
     resStore: ResourceStore,
     sfStore: SurfaceFormStore
-  ): java.util.Map[Candidate, Int] = fromPigInputStreams(new FileInputStream(pairCounts), wikipediaToDBPediaClosure, resStore, sfStore)
+  ): java.util.Map[Pair[Int, Int], Int] = fromPigInputStreams(new FileInputStream(pairCounts), wikipediaToDBPediaClosure, resStore, sfStore)
 
 
   def fromTSVInputStream(

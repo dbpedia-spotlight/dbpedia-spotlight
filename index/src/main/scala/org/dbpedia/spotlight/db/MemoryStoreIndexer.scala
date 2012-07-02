@@ -137,23 +137,24 @@ class MemoryStoreIndexer(val baseDir: File)
   def addCandidatesByID(cands: Map[Pair[Int, Int], Int], numberOfSurfaceForms: Int) {
     val candmapStore = new MemoryCandidateMapStore()
 
-    val candidates      = new Array[ListBuffer[Int]](numberOfSurfaceForms)
-    val candidateCounts = new Array[ListBuffer[Int]](numberOfSurfaceForms)
+    val candidates      = new Array[Array[Int]](numberOfSurfaceForms)
+    val candidateCounts = new Array[Array[Int]](numberOfSurfaceForms)
 
     cands.foreach {
       p: (Pair[Int, Int], Int) => {
-        if(candidates(p._1._1) == null) {
-          candidates(p._1._1)      = ListBuffer[Int]()
-          candidateCounts(p._1._1) = ListBuffer[Int]()
-        }
 
-        candidates(p._1._1)      += p._1._2
-        candidateCounts(p._1._1) += p._2
+        if(candidates(p._1._1) == null) {
+		  candidates(p._1._1)      = Array[Int]()
+		  candidateCounts(p._1._1) = Array[Int]()
+		}
+
+        candidates(p._1._1)      :+= p._1._2
+        candidateCounts(p._1._1) :+= p._2
       }
     }
 
-    candmapStore.candidates = (candidates map { l: ListBuffer[Int] => if(l != null) l.toArray else null} ).toArray
-    candmapStore.candidateCounts = (candidateCounts map { l: ListBuffer[Int] => if(l != null) l.toArray else null} ).toArray
+    candmapStore.candidates = candidates
+    candmapStore.candidateCounts = candidateCounts
 
     MemoryStore.dump(candmapStore, new File(baseDir, "candmap.mem"))
   }
