@@ -37,6 +37,7 @@ object CandidateMapSource {
 
     val uriNotFound = HashSet[String]()
     val sfNotFound  = HashSet[String]()
+    val uriIgnored  = HashSet[String]()
 
     LOG.info("Reading Candidate Map.")
     Source.fromInputStream(pairCounts).getLines() foreach {
@@ -49,18 +50,19 @@ object CandidateMapSource {
             count.toInt
           )
         } catch {
-          case e: NotADBpediaResourceException => //Ignore disambiguation pages...
-          case e: ArrayIndexOutOfBoundsException => System.err.println("WARNING: Could not read line.")
-          case e: DBpediaResourceNotFoundException => uriNotFound += line
-          case e: SurfaceFormNotFoundException => sfNotFound += line
+          case e: NotADBpediaResourceException     => uriIgnored += wikiurl
+          case e: ArrayIndexOutOfBoundsException   => LOG.warn("WARNING: Could not read line.")
+          case e: DBpediaResourceNotFoundException => uriNotFound += wikiurl
+          case e: SurfaceFormNotFoundException     => sfNotFound += sf
         }
       }
     }
     LOG.info("Done.")
 
 
-    LOG.warn("URI for %d candidate definitions not found!".format(uriNotFound.size) )
-    LOG.warn("SF for %d candidate definitions not found!".format(sfNotFound.size) )
+    LOG.warn("DBpedia resource not found: %d".format(uriNotFound.size) )
+    LOG.warn("Invalid DBpedia resources (e.g. disambiguation page): %d".format(uriIgnored.size) )
+    LOG.warn("SF not found: %d".format(sfNotFound.size) )
 
     candidateMap
   }
