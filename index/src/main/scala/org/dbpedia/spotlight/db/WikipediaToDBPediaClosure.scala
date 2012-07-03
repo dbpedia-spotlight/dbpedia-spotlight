@@ -38,7 +38,7 @@ class WikipediaToDBpediaClosure (
   var disambiguationsSet = Set[String]()
   val disParser = new NxParser(disambiguationTriples)
   while (disParser.hasNext) {
-    val triple = redParser.next
+    val triple = disParser.next
     val subj = triple(0).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
     disambiguationsSet  = disambiguationsSet + subj
   }

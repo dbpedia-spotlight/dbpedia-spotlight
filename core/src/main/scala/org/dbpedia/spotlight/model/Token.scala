@@ -9,6 +9,6 @@ package org.dbpedia.spotlight.model
 
 class Token(val id: Int, val name: String, val count: Int) {
 
-  def toString = "%s (%d)".format(name, count)
+  override def toString = "%s (%d)".format(name, count)
 
 }

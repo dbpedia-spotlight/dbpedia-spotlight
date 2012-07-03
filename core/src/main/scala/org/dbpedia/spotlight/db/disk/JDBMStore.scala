@@ -4,9 +4,6 @@ import net.kotek.jdbm.DBMaker
 
 /**
  * @author Joachim Daiber
- *
- *
- *
  */
 
 class JDBMStore[A, B](databaseFile: String) {

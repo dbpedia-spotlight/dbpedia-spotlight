@@ -6,8 +6,6 @@ import scala.collection.JavaConversions._
 /**
  * @author Joachim Daiber
  *
- *
- *
  */
 
 class TFICFSimilarity extends ContextSimilarity {
@@ -51,7 +49,7 @@ class TFICFSimilarity extends ContextSimilarity {
     val b = math.sqrt( query.keySet.map{ t: Token => math.pow(tficf(t, query, allDocs), 2) }.sum )
     val c = math.sqrt( doc.keySet.map{   t: Token => math.pow(tficf(t, doc, allDocs),   2) }.sum )
 
-    a / (b * c).toDouble
+    a / (b * c)
   }
 
 

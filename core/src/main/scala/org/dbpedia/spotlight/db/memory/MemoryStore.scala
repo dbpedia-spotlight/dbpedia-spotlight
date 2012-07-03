@@ -12,6 +12,8 @@ import org.apache.mahout.math.map.OpenObjectIntHashMap
 import java.lang.{System, Short, String}
 import org.dbpedia.spotlight.db.model.CandidateMapStore
 import collection.mutable.{ListBuffer, HashMap}
+import org.apache.commons.logging.LogFactory
+import com.esotericsoftware.kryo.serializers.DefaultSerializers.KryoSerializableSerializer
 
 
 /**
@@ -21,6 +23,8 @@ import collection.mutable.{ListBuffer, HashMap}
 @SerialVersionUID(1001001)
 abstract class MemoryStore extends Serializable {
 
+  @transient
+  private val LOG = LogFactory.getLog(this.getClass)
 
   def loaded() {
     //Implementations may execute code after the store is loaded
@@ -74,7 +78,7 @@ object MemoryStore {
       val kryo = new Kryo()
       kryo.setRegistrationRequired(true)
 
-      kryo.register(classOf[MemoryContextStore], new JavaSerializer())
+      kryo.register(classOf[MemoryContextStore], new KryoSerializableSerializer())
 
       kryo
     }
