@@ -12,10 +12,12 @@ import scala.Predef._
 import org.dbpedia.spotlight.exceptions.NotADBpediaResourceException
 
 /**
+ * Parts of this are taken from
+ * org.dbpedia.spotlight.util.ExtractCandidateMap
+ *
  * @author Joachim Daiber
- *
- *
- *
+ * @author maxjakob
+ * @author pablomendes
  */
 
 class WikipediaToDBpediaClosure (
@@ -37,7 +39,7 @@ class WikipediaToDBpediaClosure (
 
   LOG.info("Loading disambiguations...")
   var disambiguationsSet = Set[String]()
-  val disParser = new NxParser(redirectsTriples)
+  val disParser = new NxParser(disambiguationTriples)
   while (disParser.hasNext) {
     val triple = redParser.next
     val subj = triple(0).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
