@@ -9,6 +9,7 @@ import java.io.{InputStream, PrintStream, FileInputStream, File}
 import org.apache.commons.logging.LogFactory
 import collection.immutable.{ListSet, SortedSet}
 import scala.Predef._
+import org.dbpedia.spotlight.exceptions.NotADBpediaResourceException
 
 /**
  * @author Joachim Daiber
@@ -18,7 +19,8 @@ import scala.Predef._
  */
 
 class WikipediaToDBpediaClosure (
-  val redirectsTriples: InputStream
+  val redirectsTriples: InputStream,
+  val disambiguationTriples: InputStream
 ) {
   private val LOG = LogFactory.getLog(this.getClass)
 
@@ -32,6 +34,17 @@ class WikipediaToDBpediaClosure (
     linkMap  = linkMap.updated(subj, obj)
   }
   LOG.info("Done.")
+
+  LOG.info("Loading disambiguations...")
+  var disambiguationsSet = Set[String]()
+  val disParser = new NxParser(redirectsTriples)
+  while (disParser.hasNext) {
+    val triple = redParser.next
+    val subj = triple(0).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
+    disambiguationsSet  = disambiguationsSet + subj
+  }
+  LOG.info("Done.")
+
 
   var wikiToDBPMap = Map[String, String]()
   def this(redirectsTriples: InputStream, wikiToDBPTriples: InputStream) {
@@ -48,7 +61,7 @@ class WikipediaToDBpediaClosure (
   }
 
 
-  val WikiURL = """http://([a-z]+)[.]wikipedia[.]org/wiki/(.*)""".r
+  val WikiURL = """http://([a-z]+)[.]wikipedia[.]org/wiki/(.*)$""".r
   private def wikiToDBpediaURI(wikiURL: String): String = {
     wikiURL match {
       case WikiURL(language, title) => {
@@ -62,10 +75,17 @@ class WikipediaToDBpediaClosure (
   }
 
   def wikipediaToDBpediaURI(wikiURL: String): String = {
-    if(wikiToDBPMap.size > 0)
+
+    val uri = if(wikiToDBPMap.size > 0) {
       getEndOfChainURI(linkMap, wikiToDBPMap(wikiURL))
-    else
+    } else {
       getEndOfChainURI(linkMap, wikiToDBpediaURI(wikiURL))
+    }
+
+    if (disambiguationsSet.contains(uri))
+      throw new NotADBpediaResourceException("Resource is a disambiguation page.")
+    else
+      uri
   }
 
   def getEndOfChainURI(m: Map[String, String], uri: String): String = {

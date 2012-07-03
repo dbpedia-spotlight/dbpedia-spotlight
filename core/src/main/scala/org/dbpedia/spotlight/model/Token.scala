@@ -7,4 +7,8 @@ package org.dbpedia.spotlight.model
  *
  */
 
-class Token(val id: Int, val name: String, val count: Int)
+class Token(val id: Int, val name: String, val count: Int) {
+
+  def toString = "%s (%d)".format(name, count)
+
+}

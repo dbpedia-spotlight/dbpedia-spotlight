@@ -7,10 +7,10 @@ import java.io.{File, FileInputStream, InputStream}
 import org.dbpedia.spotlight.db.model.{SurfaceFormStore, ResourceStore}
 import java.lang.String
 import collection.mutable.HashSet
-import org.dbpedia.spotlight.exceptions.{SurfaceFormNotFoundException, DBpediaResourceNotFoundException, ItemNotFoundException}
 import org.dbpedia.spotlight.db.WikipediaToDBpediaClosure
 import scala.Int
 import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.exceptions._
 
 
 /**
@@ -19,7 +19,7 @@ import org.apache.commons.logging.LogFactory
  */
 
 /**
- * Represents a source of DBpediaResources
+ * Represents a source of a SF->Res. mapping
  */
 
 object CandidateMapSource {
@@ -36,7 +36,7 @@ object CandidateMapSource {
     val candidateMap = new java.util.HashMap[Pair[Int, Int], Int]()
 
     val uriNotFound = HashSet[String]()
-    val sfNotFound = HashSet[String]()
+    val sfNotFound  = HashSet[String]()
 
     LOG.info("Reading Candidate Map.")
     Source.fromInputStream(pairCounts).getLines() foreach {
@@ -48,8 +48,8 @@ object CandidateMapSource {
             Pair(sfStore.getSurfaceForm(sf).id, resStore.getResourceByName(uri).id),
             count.toInt
           )
-		  //println(sfStore.getSurfaceForm(sf).id, wikiurl,  resStore.getResourceByName(uri))
         } catch {
+          case e: NotADBpediaResourceException => //Ignore disambiguation pages...
           case e: ArrayIndexOutOfBoundsException => System.err.println("WARNING: Could not read line.")
           case e: DBpediaResourceNotFoundException => uriNotFound += line
           case e: SurfaceFormNotFoundException => sfNotFound += line

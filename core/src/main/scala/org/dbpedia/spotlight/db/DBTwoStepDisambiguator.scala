@@ -19,7 +19,7 @@ class DBTwoStepDisambiguator(
   contextStore: ContextStore,
   tokenizer: Tokenizer,
   mixture: Mixture
-  ) {
+) {
 
   private val LOG = LogFactory.getLog(this.getClass)
 
@@ -60,7 +60,7 @@ class DBTwoStepDisambiguator(
       Map[SurfaceFormOccurrence, List[Candidate]]())(
       (acc, sfOcc) => {
         val sf = surfaceFormStore.getSurfaceForm(sfOcc.surfaceForm.name)
-        println(sf)
+
         LOG.debug("Searching...")
         val candidates = candidateMap.getCandidates(sf)
 

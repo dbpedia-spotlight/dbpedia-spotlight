@@ -15,6 +15,7 @@ import scala.Predef._
 import scala.Array
 import org.dbpedia.spotlight.model._
 import collection.parallel.mutable
+import org.dbpedia.spotlight.exceptions.NotADBpediaResourceException
 
 
 /**
@@ -95,20 +96,24 @@ object DBpediaResourceSource {
 
     Source.fromInputStream(resourceCounts).getLines() foreach {
       line: String => {
-        val Array(wikiurl, count) = line.trim().split('\t')
-        val res = new DBpediaResource(wikipediaToDBpediaClosure.wikipediaToDBpediaURI(wikiurl))
+        try {
+          val Array(wikiurl, count) = line.trim().split('\t')
+          val res = new DBpediaResource(wikipediaToDBpediaClosure.wikipediaToDBpediaURI(wikiurl))
 
-        resourceByURI.get(res.uri) match {
-          case Some(oldRes) => {
-            oldRes.setSupport(oldRes.support + count.toInt)
-            resourceByURI.put(oldRes.uri, oldRes)
+          resourceByURI.get(res.uri) match {
+            case Some(oldRes) => {
+              oldRes.setSupport(oldRes.support + count.toInt)
+              resourceByURI.put(oldRes.uri, oldRes)
+            }
+            case None => {
+              res.id = id
+              id += 1
+              res.setSupport(count.toInt)
+              resourceByURI.put(res.uri, res)
+            }
           }
-          case None => {
-            res.id = id
-            id += 1
-            res.setSupport(count.toInt)
-            resourceByURI.put(res.uri, res)
-          }
+        } catch {
+          case e: NotADBpediaResourceException => //Ignore Disambiguation pages
         }
 
       }
@@ -145,7 +150,7 @@ object DBpediaResourceSource {
     wikipediaToDBpediaClosure: WikipediaToDBpediaClosure,
     counts: File,
     instanceTypes: File
-  ): java.util.Map[DBpediaResource, Int] = fromPigInputStreams(
+    ): java.util.Map[DBpediaResource, Int] = fromPigInputStreams(
     wikipediaToDBpediaClosure,
     new FileInputStream(counts),
     new FileInputStream(instanceTypes)
