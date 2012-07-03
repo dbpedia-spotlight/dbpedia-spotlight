@@ -28,7 +28,7 @@ class DBTwoStepDisambiguator(
   def icf(token: Token, candidate: Candidate, allCandidates: Set[Candidate]): Double = {
 
     val nCandidatesWithToken = allCandidates.map{ cand: Candidate =>
-      contextStore.getContextCount(cand.resource, token)
+      contextStore.getContextCount(token)
     }.filter( count => count > 0 ).size
 
     val nCandidates = allCandidates.size
@@ -46,11 +46,13 @@ class DBTwoStepDisambiguator(
 
   def getScores(text: Text, candidates: Set[Candidate]): Map[String, (Int, Double)] = {
     val tokens = tokenizer.tokenize(text).map{ ts: String => tokenStore.getToken(ts) }
-
+    val contextCounts = candidates.map{ c: Candidate => 
+		(c, contextStore.getContextCounts(cand.resource))
+	}.toMap
     candidates.map {
       candidate =>
         (candidate.resource.uri -> (candidate.resource.support,
-          tokens.map{ token: Token => tficf(token, candidate, candidates) }.sum //TODO add cosine
+          tokens.map{ token: Token => tficf(token, candidate, candidates, contextCounts) }.sum //TODO add cosine
         ))
      }.toMap
 
@@ -69,11 +71,12 @@ class DBTwoStepDisambiguator(
     val occs = paragraph.occurrences.foldLeft(
       Map[SurfaceFormOccurrence, List[Candidate]]())(
       (acc, sfOcc) => {
-
+        val sf = surfaceFormStore.getSurfaceForm(sfOcc.surfaceForm.name)
+		println(sf)
         LOG.debug("Searching...")
-        val candidates = candidateMap.getCandidates(sfOcc.surfaceForm)
+        val candidates = candidateMap.getCandidates(sf)
 
-        LOG.debug("# candidates for: %s = %s.".format(sfOcc.surfaceForm, candidates.size))
+        LOG.debug("# candidates for: %s = %s.".format(sf, candidates.size))
         allCandidates ++= candidates
 
         acc + (sfOcc -> candidates.toList)
