@@ -4,6 +4,8 @@ import model._
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.disambiguate.mixtures.Mixture
 import org.apache.commons.logging.LogFactory
+import scala.collection.JavaConverters._
+import similarity.TFICFSimilarity
 
 /**
  * @author Joachim Daiber
@@ -17,44 +19,30 @@ class DBTwoStepDisambiguator(
   contextStore: ContextStore,
   tokenizer: Tokenizer,
   mixture: Mixture
-) {
+  ) {
 
   private val LOG = LogFactory.getLog(this.getClass)
 
-  def tf(token: Token, candidate: Candidate) = {
-    contextStore.getContextCount(candidate.resource, token)
-  }
-
-  def icf(token: Token, candidate: Candidate, allCandidates: Set[Candidate]): Double = {
-
-    val nCandidatesWithToken = allCandidates.map{ cand: Candidate =>
-      contextStore.getContextCount(token)
-    }.filter( count => count > 0 ).size
-
-    val nCandidates = allCandidates.size
-
-    if (nCandidatesWithToken == 0)
-      0.0
-    else
-      math.log(nCandidates / (nCandidatesWithToken + 1.0)) //TODO Why the +1.0?
-  }
-
-  def tficf(token: Token, candidate: Candidate, allCandidates: Set[Candidate]): Double = {
-    tf(token, candidate).toDouble * icf(token, candidate, allCandidates)
-  }
+  val similarity = new TFICFSimilarity()
 
 
-  def getScores(text: Text, candidates: Set[Candidate]): Map[String, (Int, Double)] = {
+  def getScores(text: Text, candidates: Set[Candidate]): Map[String, Pair[Int, Double]] = {
+
     val tokens = tokenizer.tokenize(text).map{ ts: String => tokenStore.getToken(ts) }
-    val contextCounts = candidates.map{ c: Candidate => 
-		(c, contextStore.getContextCounts(cand.resource))
-	}.toMap
+    val query = tokens.groupBy(identity).mapValues(_.size).asJava
+
+    val contextCounts = candidates.map{ cand: Candidate =>
+      (cand, contextStore.getContextCounts(cand.resource))
+    }.toMap
+
     candidates.map {
-      candidate =>
-        (candidate.resource.uri -> (candidate.resource.support,
-          tokens.map{ token: Token => tficf(token, candidate, candidates, contextCounts) }.sum //TODO add cosine
-        ))
-     }.toMap
+      candidate: Candidate => {
+        candidate.resource.uri -> Pair(
+          candidate.resource.support,
+          similarity.score(query, candidate, contextCounts)
+        )
+      }
+    }.toMap
 
   }
 
@@ -72,7 +60,7 @@ class DBTwoStepDisambiguator(
       Map[SurfaceFormOccurrence, List[Candidate]]())(
       (acc, sfOcc) => {
         val sf = surfaceFormStore.getSurfaceForm(sfOcc.surfaceForm.name)
-		println(sf)
+        println(sf)
         LOG.debug("Searching...")
         val candidates = candidateMap.getCandidates(sf)
 
@@ -94,11 +82,12 @@ class DBTwoStepDisambiguator(
             aSfOcc,
             cand.resource,
             contextScores.getOrElse(cand.resource.uri, (0,0.0))
-          )}
+          )
         }
-        .sortBy( o => mixture.getScore(o) )
-        .reverse
-        .take(k)
+      }
+      .sortBy( o => mixture.getScore(o) )
+      .reverse
+      .take(k)
 
       acc + (aSfOcc -> candOccs)
     })

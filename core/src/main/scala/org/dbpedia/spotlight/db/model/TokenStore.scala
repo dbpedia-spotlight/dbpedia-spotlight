@@ -12,5 +12,6 @@ import org.dbpedia.spotlight.model.Token
 trait TokenStore {
 
   def getToken(token: String): Token
+  def getTokenByID(id: Int): Token
 
 }

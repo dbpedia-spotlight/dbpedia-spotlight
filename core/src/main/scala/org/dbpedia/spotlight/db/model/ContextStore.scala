@@ -14,7 +14,7 @@ import java.util.Map
 trait ContextStore {
 
   def getContextCount(resource: DBpediaResource, token: Token): Int
-  def getContextCounts(resource: DBpediaResource): Map[Int, Int]
+  def getContextCounts(resource: DBpediaResource): Map[Token, Int]
 
 
 }

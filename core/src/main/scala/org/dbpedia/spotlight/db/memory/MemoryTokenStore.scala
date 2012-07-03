@@ -52,5 +52,12 @@ class MemoryTokenStore
     new Token(id, token, count)
   }
 
+  def getTokenByID(id: Int): Token = {
+    val token = tokenForId(id)
+    val count = counts(id)
+    new Token(id, token, count)
+  }
+
+
 
 }
