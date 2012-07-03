@@ -8,6 +8,7 @@ import org.dbpedia.spotlight.db.model.{ResourceStore, TokenStore}
 import org.apache.commons.logging.LogFactory
 import scala.Predef._
 import scala.Array
+import org.dbpedia.spotlight.exceptions.{DBpediaResourceNotFoundException, NotADBpediaResourceException}
 
 
 /**
@@ -36,7 +37,8 @@ object TokenOccurrenceSource {
           counts
         )
 		} catch {
-			case e: org.dbpedia.spotlight.exceptions.DBpediaResourceNotFoundException => Triple(null, null, null)
+			case e: DBpediaResourceNotFoundException => Triple(null, null, null)
+      case e: NotADBpediaResourceException     => Triple(null, null, null)
 		}
       }
     }
