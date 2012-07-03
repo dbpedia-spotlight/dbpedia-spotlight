@@ -1,13 +1,10 @@
 package org.dbpedia.spotlight.db
 
-import memory.MemoryStore
-import org.dbpedia.spotlight.util.ExtractCandidateMap._
-import scala.io.Source
 import org.semanticweb.yars.nx.parser.NxParser
 import org.dbpedia.spotlight.model.DBpediaResource
-import java.io.{InputStream, PrintStream, FileInputStream, File}
+import java.io.InputStream
 import org.apache.commons.logging.LogFactory
-import collection.immutable.{ListSet, SortedSet}
+import collection.immutable.ListSet
 import scala.Predef._
 import org.dbpedia.spotlight.exceptions.NotADBpediaResourceException
 
@@ -49,8 +46,8 @@ class WikipediaToDBpediaClosure (
 
 
   var wikiToDBPMap = Map[String, String]()
-  def this(redirectsTriples: InputStream, wikiToDBPTriples: InputStream) {
-    this(redirectsTriples: InputStream)
+  def this(redirectsTriples: InputStream, disambiguationTriples: InputStream, wikiToDBPTriples: InputStream) {
+    this(redirectsTriples, disambiguationTriples)
 
     LOG.info("Reading Wikipedia to DBpediaMapping...")
     val wikiDBPParser = new NxParser(wikiToDBPTriples)
