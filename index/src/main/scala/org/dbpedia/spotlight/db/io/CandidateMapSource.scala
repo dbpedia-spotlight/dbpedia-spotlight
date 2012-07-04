@@ -35,9 +35,9 @@ object CandidateMapSource {
 
     val candidateMap = new java.util.HashMap[Pair[Int, Int], Int]()
 
-    val uriNotFound = HashSet[String]()
-    val sfNotFound  = HashSet[String]()
-    val uriIgnored  = HashSet[String]()
+    var uriNotFound = 0
+    var sfNotFound  = 0
+    var uriIgnored  = 0
 
     LOG.info("Reading Candidate Map.")
     Source.fromInputStream(pairCounts).getLines() foreach {
@@ -45,24 +45,28 @@ object CandidateMapSource {
         try {
           val Array(sf, wikiurl, count) = line.trim().split('\t')
           val uri = wikipediaToDBpediaClosure.wikipediaToDBpediaURI(wikiurl)
-          candidateMap.put(
-            Pair(sfStore.getSurfaceForm(sf).id, resStore.getResourceByName(uri).id),
-            count.toInt
-          )
+
+          val c = Pair(sfStore.getSurfaceForm(sf).id, resStore.getResourceByName(uri).id)
+          val initialCount = candidateMap.get(c) match {
+            case c: Int => c
+            case _ => 0
+          }
+
+          candidateMap.put(c, initialCount + count.toInt)
         } catch {
-          case e: NotADBpediaResourceException     => uriIgnored += wikiurl
+          case e: NotADBpediaResourceException     => uriIgnored += 1
           case e: ArrayIndexOutOfBoundsException   => LOG.warn("WARNING: Could not read line.")
-          case e: DBpediaResourceNotFoundException => uriNotFound += wikiurl
-          case e: SurfaceFormNotFoundException     => sfNotFound += sf
+          case e: DBpediaResourceNotFoundException => {uriNotFound += 1; println(line)}
+          case e: SurfaceFormNotFoundException     => sfNotFound += 1
         }
       }
     }
     LOG.info("Done.")
 
 
-    LOG.warn("DBpedia resource not found: %d".format(uriNotFound.size) )
-    LOG.warn("Invalid DBpedia resources (e.g. disambiguation page): %d".format(uriIgnored.size) )
-    LOG.warn("SF not found: %d".format(sfNotFound.size) )
+    LOG.warn("DBpedia resource not found: %d".format(uriNotFound) )
+    LOG.warn("Invalid DBpedia resources (e.g. disambiguation page): %d".format(uriIgnored) )
+    LOG.warn("SF not found: %d".format(sfNotFound) )
 
     candidateMap
   }
@@ -79,7 +83,7 @@ object CandidateMapSource {
     candmap: InputStream,
     resourceStore: ResourceStore,
     surfaceFormStore: SurfaceFormStore
-    ): java.util.Map[Candidate, Int] = {
+  ): java.util.Map[Candidate, Int] = {
 
     val candidateMap = new java.util.HashMap[Candidate, Int]()
 
@@ -101,7 +105,7 @@ object CandidateMapSource {
           )
         } catch {
           case e: ArrayIndexOutOfBoundsException => LOG.warn("Could not read line.")
-          case e: DBpediaResourceNotFoundException => uriNotFound += line
+          case e: DBpediaResourceNotFoundException => println(line)
           case e: SurfaceFormNotFoundException => sfNotFound += line
         }
       }
