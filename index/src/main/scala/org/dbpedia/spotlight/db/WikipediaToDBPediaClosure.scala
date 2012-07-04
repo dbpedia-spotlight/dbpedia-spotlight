@@ -60,12 +60,11 @@ class WikipediaToDBpediaClosure (
     }
   }
 
-
   val WikiURL = """http://([a-z]+)[.]wikipedia[.]org/wiki/(.*)$""".r
   private def wikiToDBpediaURI(wikiURL: String): String = {
     wikiURL match {
       case WikiURL(language, title) => {
-        URLEncoder.encode(title, "utf-8").takeWhile( p => p != '#' ) match {
+        URLEncoder.encode(title, "utf-8").replace("'", "%27").capitalize.takeWhile( p => p != '#' ) match {
           case t: String if t.startsWith("/") => t.tail
           case t: String => t
         }
