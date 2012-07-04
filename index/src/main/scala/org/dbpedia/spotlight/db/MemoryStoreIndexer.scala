@@ -10,9 +10,9 @@ import scala.collection.JavaConverters._
 
 import collection.mutable.ListBuffer
 import java.util.{Map, Set}
-import scala.Array
 import java.io.File
 import org.dbpedia.spotlight.model._
+import scala.{Array, Int}
 
 /**
  * @author Joachim Daiber
@@ -36,27 +36,27 @@ class MemoryStoreIndexer(val baseDir: File)
   }
 
   def addSurfaceForms(sfCount: Map[SurfaceForm, (Int, Int)]) {
-    addSurfaceForms(sfCount.toIterator)
-  }
 
-  def addSurfaceForms(sfCount: Iterator[Pair[SurfaceForm, (Int, Int)]]) {
-    val sfStore = new MemorySurfaceFormStore()
+   val sfStore = new MemorySurfaceFormStore()
 
-    var annotatedCountForID = Array[Int]()
-    var totalCountForID = Array[Int]()
-    var stringForID  = Array[String]()
+    var annotatedCountForID = new Array[Int](sfCount.size+1)
+    var totalCountForID = new Array[Int](sfCount.size+1)
+    var stringForID  = new Array[String](sfCount.size+1)
 
+    var i = 1
     sfCount foreach {
-      case (sf, count) => {
-        stringForID         :+= sf.name
-        annotatedCountForID :+= count._1
-        totalCountForID     :+= count._2
+      case (sf, counts) => {
+        stringForID(i) = sf.name
+        annotatedCountForID(i) = counts._1
+        totalCountForID(i) = counts._2
+
+        i += 1
       }
     }
 
-    sfStore.stringForID  = stringForID.array
-    sfStore.annotatedCountForID = annotatedCountForID.array
-    sfStore.totalCountForID = annotatedCountForID.array
+    sfStore.stringForID  = stringForID
+    sfStore.annotatedCountForID = annotatedCountForID
+    sfStore.totalCountForID = totalCountForID
 
     MemoryStore.dump(sfStore, new File(baseDir, "sf.mem"))
   }

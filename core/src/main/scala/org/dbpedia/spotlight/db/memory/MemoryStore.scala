@@ -69,7 +69,6 @@ object MemoryStore {
 
       kryo.register(classOf[Array[Int]],    new DefaultArraySerializers.IntArraySerializer())
       kryo.register(classOf[Array[String]], new DefaultArraySerializers.StringArraySerializer())
-      //kryo.register(classOf[TObjectIntHashMap], new JavaSerializer())
       kryo.register(classOf[MemorySurfaceFormStore])
 
       kryo
