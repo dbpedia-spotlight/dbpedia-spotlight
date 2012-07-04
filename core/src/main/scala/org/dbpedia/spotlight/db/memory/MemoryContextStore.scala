@@ -55,40 +55,46 @@ class MemoryContextStore
     output.writeInt(tokens.length)
 
     (0 to tokens.length-1).foreach { i =>
-      output.writeInt(tokens(i).length)
+      if (tokens(i) == null) {
+        output.writeInt(0)
+      } else {
+        output.writeInt(tokens(i).length)
 
-      tokens(i).foreach{ token =>
-        output.writeInt(token)
+        (0 to tokens(i).length-1).foreach{ j =>
+          output.writeInt(tokens(i)(j))
+        }
+        (0 to tokens(i).length-1).foreach{ j =>
+          output.writeInt(counts(i)(j))
+        }
       }
-      counts(i).foreach{ count =>
-        output.writeInt(count)
-      }
-      if (i == tokens.length-1)
-        output.writeChar('#')
     }
+    output.writeChar('#')
   }
 
   def read(kryo: Kryo, input: Input) {
     val size = input.readInt()
 
+    tokens = new Array[Array[Int]](size)
+    counts = new Array[Array[Int]](size)
+
     (0 to size-1).foreach { i =>
-      tokens = new Array[Array[Int]](size)
-      counts = new Array[Array[Int]](size)
-
       val subsize = input.readInt()
-      tokens(i) = new Array[Int](subsize)
-      counts(i) = new Array[Int](subsize)
 
-      (0 to subsize-1).foreach { j =>
-        tokens(i)(j) = input.readInt()
-      }
-      (0 to subsize-1).foreach { j =>
-        counts(i)(j) = input.readInt()
-      }
+      if (subsize > 0) {
+        tokens(i) = new Array[Int](subsize)
+        counts(i) = new Array[Int](subsize)
 
-      if(input.readChar() != '#')
-        throw new KryoException("Error in deserializing context store...")
-    }
+        (0 to subsize-1).foreach { j =>
+          tokens(i)(j) = input.readInt()
+        }
+        (0 to subsize-1).foreach { j =>
+          counts(i)(j) = input.readInt()
+        }
+     }
+   }
+
+   if(input.readChar() != '#')
+     throw new KryoException("Error in deserializing context store...")
 
   }
 

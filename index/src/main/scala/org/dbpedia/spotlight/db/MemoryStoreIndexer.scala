@@ -210,10 +210,11 @@ class MemoryStoreIndexer(val baseDir: File)
       t: Triple[DBpediaResource, Array[Token], Array[Int]] => {
 		val Triple(res, tokens, counts) = t
 		if (res != null) {
+		  assert (tokens.size == counts.size)
 	      if(contextStore.tokens(res.id) != null) {
              val (mergedTokens, mergedCounts) = (tokens.map{ t: Token => t.id }.array.zip(counts.array) ++ contextStore.tokens(res.id).zip( contextStore.counts(res.id) )).groupBy(_._1).map{ case(k, v) => (k, v.map{ p => p._2}.sum ) }.unzip
-			 contextStore.tokens(res.id) = mergedTokens.toArray
-             contextStore.counts(res.id) = mergedCounts.toArray
+			 contextStore.tokens(res.id) = mergedTokens.toArray.array
+             contextStore.counts(res.id) = mergedCounts.toArray.array
 
 
 		  } else{

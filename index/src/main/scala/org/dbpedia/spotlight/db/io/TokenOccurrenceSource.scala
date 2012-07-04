@@ -55,7 +55,7 @@ object TokenOccurrenceSource {
           var tokensA = Array[String]()
           var countsA = Array[Int]()
 
-          tokens.tail.init.split("[()]").filter(pair => !pair.equals(",") && !pair.equals("")).map {
+          tokens.tail.init.split("[()]").filter(pair => !pair.equals(",") && !pair.equals("")).foreach {
             pair: String => {
               val i = pair.lastIndexOf(',')
               tokensA :+= pair.take(i)
