@@ -1,12 +1,12 @@
 package org.dbpedia.spotlight.db.memory
 
 import org.dbpedia.spotlight.model.DBpediaResource
-import org.dbpedia.spotlight.db.model.ResourceStore
 import gnu.trove.TObjectIntHashMap
 import java.lang.{Short, String}
 import scala.collection.JavaConversions._
 import scala.{throws, transient}
 import org.dbpedia.spotlight.exceptions.{SurfaceFormNotFoundException, DBpediaResourceNotFoundException}
+import org.dbpedia.spotlight.db.model.{OntologyTypeStore, ResourceStore}
 
 /**
  * @author Joachim Daiber
@@ -20,7 +20,7 @@ class MemoryResourceStore
   extends MemoryStore
   with ResourceStore {
 
-  var ontologyTypeStore: MemoryOntologyTypeStore = null
+  var ontologyTypeStore: OntologyTypeStore = null
 
   var supportForID: Array[Int] = null
   var uriForID: Array[String] = null
@@ -52,11 +52,11 @@ class MemoryResourceStore
   @throws(classOf[DBpediaResourceNotFoundException])
   def getResource(id: Int): DBpediaResource = {
 
-	val uri = try {
-    	uriForID(id)
-	} catch {
-		case e: java.lang.ArrayIndexOutOfBoundsException => null
-	}
+    val uri = try {
+        uriForID(id)
+    } catch {
+      case e: java.lang.ArrayIndexOutOfBoundsException => null
+    }
 
     if (uri == null)
       throw new DBpediaResourceNotFoundException("DBpediaResource %s not found.".format(uri))

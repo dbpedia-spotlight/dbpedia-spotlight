@@ -4,11 +4,12 @@ import io.Source
 import org.dbpedia.spotlight.model.SurfaceForm
 import scala.Array
 import java.util.zip.GZIPInputStream
-import java.util.{Map, HashMap}
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 import org.apache.commons.logging.LogFactory
 import java.io.{File, InputStream, FileInputStream}
-
+import scala.Predef._
+import java.util.{Map, HashMap}
+import scala.collection.JavaConversions._
 
 /**
  * Represents a source of SurfaceForms
@@ -18,38 +19,66 @@ object SurfaceFormSource {
 
   private val LOG = LogFactory.getLog(this.getClass)
 
-  def fromPigInputStream(in: InputStream): Map[SurfaceForm, Int] = {
+  def fromPigInputStreams(sfCounts: InputStream, phraseCounts: InputStream): Map[SurfaceForm, (Int, Int)] = {
 
-    LOG.info("Creating SurfaceFormSource.")
+    LOG.info("Creating SurfaceFormSource...")
 
-    val sfFormMap = new HashMap[SurfaceForm, Int]()
+    val annotatedCounts = new HashMap[SurfaceForm, Int]()
+    val totalCounts = new HashMap[SurfaceForm, Int]()
 
-    Source.fromInputStream(in).getLines() foreach {
+    LOG.info("Reading annotated counts...")
+    Source.fromInputStream(sfCounts).getLines() foreach {
       line: String => {
         val Array(name, count) = line.trim().split('\t')
         val surfaceform = new SurfaceForm(name)
 
-        val c = sfFormMap.get(surfaceform) match {
+        val c = annotatedCounts.get(surfaceform) match {
           case c: Int => c
           case _ => 0
         }
 
-        sfFormMap.put(surfaceform, c + count.toInt)
+        annotatedCounts.put(surfaceform, c + count.toInt)
+      }
+    }
+
+    LOG.info("Reading phrase counts...")
+    Source.fromInputStream(phraseCounts).getLines() foreach {
+      line: String => {
+        val Array(name, count) = line.trim().split('\t')
+        val surfaceform = new SurfaceForm(name)
+
+        if(annotatedCounts.containsKey(surfaceform)) {
+
+          val c = totalCounts.get(surfaceform) match {
+            case c: Int => c
+            case _ => 0
+          }
+
+          totalCounts.put(surfaceform, c + count.toInt)
+        }
       }
     }
 
     LOG.info("Done.")
 
-    sfFormMap
+    val sfMap = new HashMap[SurfaceForm, (Int, Int)]()
+
+    annotatedCounts.keySet foreach {
+      sf: SurfaceForm => {
+        val totalCount = totalCounts.get(sf) match {
+          case c: Int => c
+          case _ => 0
+        }
+        sfMap.put(sf, Pair(annotatedCounts.get(sf), totalCount))
+      }
+    }
+
+    sfMap
   }
 
 
-  def fromPigFile(file: File): Map[SurfaceForm, Int] = {
-    if (file.getName.endsWith("gz"))
-      fromPigInputStream(new GZIPInputStream(new FileInputStream(file)))
-    else
-      fromPigInputStream(new FileInputStream(file))
-
+  def fromPigFiles(sfCounts: File, totalCounts: File): Map[SurfaceForm, (Int, Int)] = {
+      fromPigInputStreams(new FileInputStream(sfCounts), new FileInputStream(totalCounts))
   }
 
 

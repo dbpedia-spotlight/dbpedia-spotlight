@@ -127,8 +127,7 @@ object DBpediaResourceSource {
         val Array(id: String, typeURI: String) = line.trim().split('\t')
 
         try {
-          if (! typeURI.startsWith(SchemaOrgType.SCHEMAORG_PREFIX))
-            resourceByURI(new DBpediaResource(id).uri).types ::= OntologyType.fromURI(typeURI)
+          resourceByURI(new DBpediaResource(id).uri).types ::= OntologyType.fromURI(typeURI)
         } catch {
           case e: java.util.NoSuchElementException =>
             uriNotFound += id

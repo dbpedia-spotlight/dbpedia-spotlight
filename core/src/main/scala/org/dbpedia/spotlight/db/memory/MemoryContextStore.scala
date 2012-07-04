@@ -77,20 +77,30 @@ class MemoryContextStore
     tokens = new Array[Array[Int]](size)
     counts = new Array[Array[Int]](size)
 
-    (0 to size-1).foreach { i =>
+    var i = 0
+    var j = 0
+
+    while(i < size) {
       val subsize = input.readInt()
 
       if (subsize > 0) {
         tokens(i) = new Array[Int](subsize)
         counts(i) = new Array[Int](subsize)
 
-        (0 to subsize-1).foreach { j =>
+        j = 0
+        while(j < subsize) {
           tokens(i)(j) = input.readInt()
+          j += 1
         }
-        (0 to subsize-1).foreach { j =>
+
+        j = 0
+        while(j < subsize) {
           counts(i)(j) = input.readInt()
+          j += 1
         }
      }
+
+     i += 1
    }
 
    if(input.readChar() != '#')

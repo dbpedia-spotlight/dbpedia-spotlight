@@ -1,6 +1,5 @@
 package org.dbpedia.spotlight.db
 
-import disk.JDBMStore
 import memory._
 import org.apache.commons.lang.NotImplementedException
 import java.lang.{Short, String}
@@ -32,29 +31,33 @@ class MemoryStoreIndexer(val baseDir: File)
 
   //SURFACE FORMS
 
-  def addSurfaceForm(sf: SurfaceForm, count: Int) {
+  def addSurfaceForm(sf: SurfaceForm, annotatedCount: Int, totalCount: Int) {
     throw new NotImplementedException()
   }
 
-  def addSurfaceForms(sfCount: Map[SurfaceForm, Int]) {
+  def addSurfaceForms(sfCount: Map[SurfaceForm, (Int, Int)]) {
     addSurfaceForms(sfCount.toIterator)
   }
 
-  def addSurfaceForms(sfCount: Iterator[Pair[SurfaceForm, Int]]) {
+  def addSurfaceForms(sfCount: Iterator[Pair[SurfaceForm, (Int, Int)]]) {
     val sfStore = new MemorySurfaceFormStore()
 
-    val supportForID = ListBuffer[Int]()
-    val stringForID  = ListBuffer[String]()
+    var annotatedCountForID = Array[Int]()
+    var totalCountForID = Array[Int]()
+    var stringForID  = Array[String]()
 
     sfCount foreach {
       case (sf, count) => {
-        stringForID.append(sf.name)
-        supportForID.append(count)
+        stringForID         :+= sf.name
+        annotatedCountForID :+= count._1
+        totalCountForID     :+= count._2
       }
     }
 
-    sfStore.stringForID  = stringForID.toArray
-    sfStore.supportForID = supportForID.toArray
+    sfStore.stringForID  = stringForID.array
+    sfStore.annotatedCountForID = annotatedCountForID.array
+    sfStore.totalCountForID = annotatedCountForID.array
+
     MemoryStore.dump(sfStore, new File(baseDir, "sf.mem"))
   }
 

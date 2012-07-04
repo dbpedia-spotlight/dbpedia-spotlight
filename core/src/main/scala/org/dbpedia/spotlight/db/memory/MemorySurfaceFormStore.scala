@@ -5,6 +5,7 @@ import org.dbpedia.spotlight.model.SurfaceForm
 import org.dbpedia.spotlight.db.model.SurfaceFormStore
 import org.dbpedia.spotlight.exceptions.{SurfaceFormNotFoundException, ItemNotFoundException}
 import com.esotericsoftware.kryo.Kryo
+import scala.Array
 
 /**
  * @author Joachim Daiber
@@ -19,11 +20,11 @@ class MemorySurfaceFormStore
   with SurfaceFormStore {
 
   @transient
-  var idForString: TObjectIntHashMap = null
+  var idForString: TObjectIntHashMap  = null
 
-  var stringForID: Array[String] = null
-  var supportForID: Array[Int]   = null
-
+  var stringForID: Array[String]      = null
+  var annotatedCountForID: Array[Int] = null
+  var totalCountForID: Array[Int]     = null
 
   override def loaded() {
     createReverseLookup()
@@ -53,8 +54,11 @@ class MemorySurfaceFormStore
     if (id == 0)
       throw new SurfaceFormNotFoundException("SurfaceForm %s not found.".format(surfaceform))
 
-    val support = supportForID(id)
-    new SurfaceForm(surfaceform, id, support)
+    val annotatedCount = annotatedCountForID(id)
+    val totalCount = totalCountForID(id)
+
+
+    new SurfaceForm(surfaceform, id, annotatedCount, totalCount)
   }
 
 }

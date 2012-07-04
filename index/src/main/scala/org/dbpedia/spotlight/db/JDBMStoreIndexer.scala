@@ -29,17 +29,17 @@ class JDBMStoreIndexer(val baseDir: File)
 
   lazy val sfStore = new JDBMStore[String, Pair[Int, Int]](new File(baseDir, "sf.disk").getAbsolutePath)
 
-  def addSurfaceForm(sf: SurfaceForm, count: Int) {
-    sfStore.add(sf.name, Pair(sf.id, sf.support))
+  def addSurfaceForm(sf: SurfaceForm, annotatedCount: Int, totalCount: Int) {
+    sfStore.add(sf.name, Pair(sf.id, sf.annotatedCount))
   }
 
-  def addSurfaceForms(sfCount: Map[SurfaceForm, Int]) {
-    sfCount.foreach{ case(sf, count) => addSurfaceForm(sf, count) }
+  def addSurfaceForms(sfCount: Map[SurfaceForm, (Int, Int)]) {
+    sfCount.foreach{ case(sf, count) => addSurfaceForm(sf, count._1, count._2) }
     sfStore.commit()
   }
 
-  def addSurfaceForms(sfCount: Iterator[Pair[SurfaceForm, Int]]) {
-    sfCount.foreach{ case(sf, count) => addSurfaceForm(sf, count) }
+  def addSurfaceForms(sfCount: Iterator[Pair[SurfaceForm, (Int, Int)]]) {
+    sfCount.foreach{ case(sf, count) => addSurfaceForm(sf, count._1, count._2) }
     sfStore.commit()
   }
 

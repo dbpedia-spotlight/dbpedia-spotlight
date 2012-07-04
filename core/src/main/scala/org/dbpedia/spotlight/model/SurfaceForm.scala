@@ -22,13 +22,15 @@ import org.dbpedia.spotlight.string.ModifiedWikiUtil
 class SurfaceForm(var name : String) extends Serializable
 {
 
-  var support: Int = 0
+  var annotatedCount: Int = 0
+  var totalCount: Int = 0
   var id: Int = 0
 
-  def this(name: String, id: Int, support: Int) {
+  def this(name: String, id: Int, annotatedCount: Int, totalCount: Int) {
     this(name)
     this.id = id
-    this.support = support
+    this.annotatedCount = annotatedCount
+    this.totalCount = totalCount
   }
 
   name = name.replace("’", "'")

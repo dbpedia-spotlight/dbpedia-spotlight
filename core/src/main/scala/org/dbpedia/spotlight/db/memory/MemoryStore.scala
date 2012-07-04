@@ -14,6 +14,7 @@ import org.dbpedia.spotlight.db.model.CandidateMapStore
 import collection.mutable.{ListBuffer, HashMap}
 import org.apache.commons.logging.LogFactory
 import com.esotericsoftware.kryo.serializers.DefaultSerializers.KryoSerializableSerializer
+import org.dbpedia.spotlight.db.memory.MemoryStore._
 
 
 /**
@@ -35,6 +36,8 @@ abstract class MemoryStore extends Serializable {
 }
 
 object MemoryStore {
+
+  private val LOG = LogFactory.getLog(this.getClass)
 
   val kryos = HashMap[String, Kryo]()
 
@@ -109,12 +112,11 @@ object MemoryStore {
     }
   )
 
+  def load[T](in: InputStream, ms: MemoryStore): T = {
 
-  def load[T](in: InputStream, os: MemoryStore): T = {
+    val kryo: Kryo = kryos.get(ms.getClass.getSimpleName).get
 
-    val kryo: Kryo = kryos.get(os.getClass.getSimpleName).get
-
-    System.err.println("Loading %s...".format(os.getClass.getSimpleName))
+    LOG.info("Loading %s...".format(ms.getClass.getSimpleName))
     val sStart = System.currentTimeMillis()
     val input = new Input(in)
 
@@ -122,7 +124,7 @@ object MemoryStore {
     s.asInstanceOf[MemoryStore].loaded()
 
     input.close()
-    System.err.println("Done (%d ms)".format(System.currentTimeMillis() - sStart))
+    LOG.info("Done (%d ms)".format(System.currentTimeMillis() - sStart))
     s
   }
 
@@ -130,12 +132,12 @@ object MemoryStore {
   def dump(store: MemoryStore, out: File) {
     val kryo = kryos.get(store.getClass.getSimpleName).get
 
-    System.err.println("Writing %s...".format(store.getClass.getSimpleName))
+    LOG.info("Writing %s...".format(store.getClass.getSimpleName))
     val output = new Output(new FileOutputStream(out))
     kryo.writeClassAndObject(output, store)
 
     output.close()
-    System.err.println("Done.")
+    LOG.info("Done.")
   }
 
 
