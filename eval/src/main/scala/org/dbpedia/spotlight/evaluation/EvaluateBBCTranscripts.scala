@@ -85,14 +85,18 @@ object EvaluateBBCTranscripts {
                 LOG.info("Doc length: %s tokens".format(cleanText.split(" ").size))
                 val allEntities = tagExtractor.extract(new Text(cleanText), 500, List(OntologyType.fromQName("TopicalConcept"))).toList
                 //val allEntities = tagExtractor.extract(new Text(cleanText), 500, List()).toList
-                //var allEntities = TagExtractorFromAnnotator.bySimilarity(annotator).rank(annotator.annotate(cleanText).toList)
 
                 val rerankedEntities = rerank(allEntities).toList
+
+                //constrain to only the entities that occurr explicitly (verbatim) in paragraph
+                var occurringEntities = TagExtractorFromAnnotator.bySimilarity(annotator).rank(annotator.annotate(cleanText).toList)
+                    .map( e => e._1.uri).toSet
+                val finalEntities = rerankedEntities.filter( e => occurringEntities.contains(e._1.uri) )
 
                 //System.out.println(outputDir + f.getName.replaceAll(".txt","") + ".json");
                 val setOutputFile: File = new File(outputDir + "/" + f.getName.replaceAll(".txt","") + ".json");
                 val allOut = new PrintStream(setOutputFile)
-                append(allOut, rerankedEntities)
+                append(allOut, finalEntities)
                 allOut.close()
 
             } catch {
