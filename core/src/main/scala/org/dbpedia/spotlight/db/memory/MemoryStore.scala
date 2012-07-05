@@ -1,20 +1,16 @@
 package org.dbpedia.spotlight.db.memory
 
-import com.esotericsoftware.kryo.Kryo
 
 import com.esotericsoftware.kryo.io.{Output, Input}
 import org.dbpedia.spotlight.model.{DBpediaType, FreebaseType, SchemaOrgType, OntologyType}
 import java.io._
-import gnu.trove.TObjectIntHashMap
 import scala.Predef._
-import com.esotericsoftware.kryo.serializers.{FieldSerializer, DefaultArraySerializers, JavaSerializer}
-import org.apache.mahout.math.map.OpenObjectIntHashMap
+import com.esotericsoftware.kryo.serializers.{DefaultArraySerializers, JavaSerializer}
 import java.lang.{System, Short, String}
-import org.dbpedia.spotlight.db.model.CandidateMapStore
-import collection.mutable.{ListBuffer, HashMap}
+import collection.mutable.HashMap
 import org.apache.commons.logging.LogFactory
 import com.esotericsoftware.kryo.serializers.DefaultSerializers.KryoSerializableSerializer
-import org.dbpedia.spotlight.db.memory.MemoryStore._
+import com.esotericsoftware.kryo.Kryo
 
 
 /**
@@ -111,11 +107,11 @@ object MemoryStore {
     }
   )
 
-  def load[T](in: InputStream, ms: MemoryStore): T = {
+  def load[T](in: InputStream, simpleName: String): T = {
 
-    val kryo: Kryo = kryos.get(ms.getClass.getSimpleName).get
+    val kryo: Kryo = kryos.get(simpleName).get
 
-    LOG.info("Loading %s...".format(ms.getClass.getSimpleName))
+    LOG.info("Loading %s...".format(simpleName))
     val sStart = System.currentTimeMillis()
     val input = new Input(in)
 
@@ -127,6 +123,29 @@ object MemoryStore {
     s
   }
 
+  def loadTokenStore(in: InputStream): MemoryTokenStore = {
+    load[MemoryTokenStore](in, classOf[MemoryTokenStore].getClass.getSimpleName)
+  }
+
+  def loadSurfaceFormStore(in: InputStream): MemorySurfaceFormStore = {
+    load[MemorySurfaceFormStore](in, classOf[MemorySurfaceFormStore].getClass.getSimpleName)
+  }
+
+  def loadResourceStore(in: InputStream): MemoryResourceStore = {
+    load[MemoryResourceStore](in, classOf[MemoryResourceStore].getClass.getSimpleName)
+  }
+
+  def loadCandidateMapStore(in: InputStream, resourceStore: MemoryResourceStore): MemoryCandidateMapStore = {
+    val s = load[MemoryCandidateMapStore](in, classOf[MemoryCandidateMapStore].getClass.getSimpleName)
+    s.resourceStore = resourceStore
+    s
+  }
+
+  def loadContextStore(in: InputStream, tokenStore: MemoryTokenStore): MemoryContextStore = {
+    val s = load[MemoryContextStore](in, classOf[MemoryContextStore].getClass.getSimpleName)
+    s.tokenStore = tokenStore
+    s
+  }
 
   def dump(store: MemoryStore, out: File) {
     val kryo = kryos.get(store.getClass.getSimpleName).get

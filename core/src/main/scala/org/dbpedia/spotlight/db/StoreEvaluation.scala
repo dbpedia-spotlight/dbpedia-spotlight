@@ -30,19 +30,23 @@ object StoreEvaluation {
     val consumption = ListBuffer[Long]()
 
     consumption += (Runtime.getRuntime.totalMemory - Runtime.getRuntime.freeMemory) / (1024 * 1024)
-    val sfStore = MemoryStore.load[MemorySurfaceFormStore](new FileInputStream("data/sf.mem"), new MemorySurfaceFormStore())
+    val sfStore = MemoryStore.loadSurfaceFormStore(new FileInputStream("data/sf.mem"))
 
     consumption += (Runtime.getRuntime.totalMemory - Runtime.getRuntime.freeMemory) / (1024 * 1024)
-    val resStore = MemoryStore.load[MemoryResourceStore](new FileInputStream("data/res.mem"), new MemoryResourceStore())
+    val resStore = MemoryStore.loadResourceStore(new FileInputStream("data/res.mem"))
 
-   consumption += (Runtime.getRuntime.totalMemory - Runtime.getRuntime.freeMemory) / (1024 * 1024)
-   val cm = MemoryStore.load[MemoryCandidateMapStore](new FileInputStream("data/candmap.mem"), new MemoryCandidateMapStore())
-   consumption += (Runtime.getRuntime.totalMemory - Runtime.getRuntime.freeMemory) / (1024 * 1024)
-
-    val tokenStore = MemoryStore.load[MemoryTokenStore](new FileInputStream("data/tokens.mem"), new MemoryTokenStore())
     consumption += (Runtime.getRuntime.totalMemory - Runtime.getRuntime.freeMemory) / (1024 * 1024)
 
-    val contextStore = MemoryStore.load[MemoryContextStore](new FileInputStream("data/context.mem"), new MemoryContextStore())
+    val cm = MemoryStore.loadCandidateMapStore(new FileInputStream("data/candmap.mem"), resStore)
+
+    consumption += (Runtime.getRuntime.totalMemory - Runtime.getRuntime.freeMemory) / (1024 * 1024)
+
+    val tokenStore = MemoryStore.loadTokenStore(new FileInputStream("data/tokens.mem"))
+
+    consumption += (Runtime.getRuntime.totalMemory - Runtime.getRuntime.freeMemory) / (1024 * 1024)
+
+    val contextStore = MemoryStore.loadContextStore(new FileInputStream("data/context.mem"), tokenStore)
+
     consumption += (Runtime.getRuntime.totalMemory - Runtime.getRuntime.freeMemory) / (1024 * 1024)
     println("Memory consumption:", consumption)
 
