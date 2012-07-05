@@ -72,7 +72,7 @@ class DBTwoStepDisambiguator(
     occs.keys.foldLeft(Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]())( (acc, aSfOcc) => {
       val candOccs = occs.getOrElse(aSfOcc, List[Candidate]())
         .map{ cand: Candidate => {
-          new DBpediaResourceOccurrence(
+          val res = new DBpediaResourceOccurrence(
             "",
             cand.resource,
             cand.surfaceForm,
@@ -83,9 +83,10 @@ class DBTwoStepDisambiguator(
             0.0,
             contextScores.getOrElse(cand, 0.0)
           )
+          res.setSimilarityScore(mixture.getScore(res))
         }
       }
-      .sortBy( o => mixture.getScore(o) )
+      .sortBy( o => o.similarityScore )
       .reverse
       .take(k)
 
