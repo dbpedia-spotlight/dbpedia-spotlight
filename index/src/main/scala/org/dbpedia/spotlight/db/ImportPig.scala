@@ -2,12 +2,7 @@ package org.dbpedia.spotlight.db
 
 import io._
 import java.io.{FileInputStream, File}
-import memory.{MemorySurfaceFormStore, MemoryTokenStore, MemoryResourceStore, MemoryStore}
-import org.dbpedia.spotlight.io.FileOccurrenceSource
-import org.apache.lucene.analysis.standard.StandardAnalyzer
-import org.apache.lucene.util.Version
-import org.dbpedia.spotlight.model.SurfaceForm
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
+import memory.MemoryStore
 
 /**
  * @author Joachim Daiber
@@ -23,32 +18,35 @@ object ImportPig {
     val memoryIndexer = new MemoryStoreIndexer(new File("data/"))
     //val diskIndexer = new JDBMStoreIndexer(new File("data/"))
 
-    val wikipediaToDBPediaClosure = new WikipediaToDBpediaClosure(
-      new FileInputStream(new File("/Volumes/Daten/DBpedia/Spotlight/Pig/redirects_en.nt"))
+
+    memoryIndexer.addSurfaceForms(
+      SurfaceFormSource.fromPigFiles(
+        new File("raw_data/pig/sfCounts"),
+        new File("raw_data/pig/phrasesCounts")
+      )
+    )
+
+    val wikipediaToDBpediaClosure = new WikipediaToDBpediaClosure(
+      new FileInputStream(new File("raw_data/pig/redirects_en.nt")),
+      new FileInputStream(new File("raw_data/pig/disambiguations_en.nt"))
     )
 
     memoryIndexer.addResources(
       DBpediaResourceSource.fromPigFiles(
-        wikipediaToDBPediaClosure,
-        new File("/Volumes/Daten/DBpedia/Spotlight/Pig/nerd_stats_absolute_counts_enwiki_20120601_5grams/uriCounts"),
-        new File("/Volumes/Daten/DBpedia/Spotlight/instanceTypes.tsv")
-      )
-    )
-
-    memoryIndexer.addSurfaceForms(
-      SurfaceFormSource.fromPigFile(
-        new File("/Volumes/Daten/DBpedia/Spotlight/Pig/nerd_stats_absolute_counts_enwiki_20120601_5grams/sfCounts")
+        wikipediaToDBpediaClosure,
+        new File("raw_data/pig/uriCounts"),
+        new File("raw_data/pig/instanceTypes.tsv")
       )
     )
 
 
-    val sfStore  = MemoryStore.load[MemorySurfaceFormStore](new FileInputStream("data/sf.mem"), new MemorySurfaceFormStore())
-    val resStore = MemoryStore.load[MemoryResourceStore](new FileInputStream("data/res.mem"), new MemoryResourceStore())
+    val sfStore  = MemoryStore.loadSurfaceFormStore(new FileInputStream("data/sf.mem"))
+    val resStore = MemoryStore.loadResourceStore(new FileInputStream("data/res.mem"))
 
-    memoryIndexer.addCandidates(
+    memoryIndexer.addCandidatesByID(
       CandidateMapSource.fromPigFiles(
-        new File("/Volumes/Daten/DBpedia/Spotlight/Pig/nerd_stats_absolute_counts_enwiki_20120601_5grams/pairCounts"),
-        wikipediaToDBPediaClosure,
+        new File("raw_data/pig/pairCounts"),
+        wikipediaToDBpediaClosure,
         resStore,
         sfStore),
       sfStore.size
@@ -56,14 +54,15 @@ object ImportPig {
 
     memoryIndexer.addTokens(
       TokenSource.fromPigFile(
-        new File("/Volumes/Daten/DBpedia/Spotlight/Pig/token_counts_min_2.TSV")
+        new File("raw_data/pig/tokens_json")
       )
     )
 
-    val tokenStore = MemoryStore.load[MemoryTokenStore](new FileInputStream("data/tokens.mem"), new MemoryTokenStore())
+    val tokenStore = MemoryStore.loadTokenStore(new FileInputStream("data/tokens.mem"))
+
     memoryIndexer.addTokenOccurrences(
       TokenOccurrenceSource.fromPigFile(
-        new File("/Volumes/Daten/DBpedia/Spotlight/Pig/token_counts_min_2.TSV"),
+        new File("raw_data/pig/tokens_json"),
         tokenStore,
         wikipediaToDBpediaClosure,
         resStore

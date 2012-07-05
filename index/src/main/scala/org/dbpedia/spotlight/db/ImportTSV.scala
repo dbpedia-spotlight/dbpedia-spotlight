@@ -6,6 +6,7 @@ import java.io.{FileInputStream, File}
 import org.dbpedia.spotlight.io.FileOccurrenceSource
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.util.Version
+import org.dbpedia.spotlight.model.SurfaceForm
 
 /**
  * @author Joachim Daiber
@@ -22,42 +23,42 @@ object ImportTSV {
     val diskIndexer = new JDBMStoreIndexer(new File("data/"))
 
 
-    //memoryIndexer.addSurfaceForms(
-    //  SurfaceFormSource.fromTSVFile(
-    //    new File("/Volumes/Daten/DBpedia/Spotlight/surfaceForms-fromOccs-thresh10-TRD.set")
-    //  ).map{ sf: SurfaceForm => (sf, sf.support) }
-    //)
+    memoryIndexer.addSurfaceForms(
+      SurfaceFormSource.fromTSVFile(
+        new File("raw_data/csv/surfaceForms-fromOccs-thresh10-TRD.set")
+      )
+    )
 
-    //memoryIndexer.addResources(
-    //  DBpediaResourceSource.fromTSVFile(
-    //    new File("/Users/jodaiber/Desktop/conceptURIs.list"),
-    //    new File("/Users/jodaiber/Desktop/uri.count.tsv"),
-    //    new File("/Users/jodaiber/Desktop/instanceTypes.tsv")
-    //  )
-    //)
+    memoryIndexer.addResources(
+      DBpediaResourceSource.fromTSVFiles(
+        new File("raw_data/csv/conceptURIs.list"),
+        new File("raw_data/csv/uri.count.tsv"),
+        new File("raw_data/csv/instanceTypes.tsv")
+      )
+    )
 
-   // val sfStore = MemoryStore.load[MemorySurfaceFormStore](new FileInputStream("data/sf.mem"), new MemorySurfaceFormStore())
-   // memoryIndexer.addCandidates(
-   //   CandidateMapSource.fromTSVFile(
-   //     new File("/Volumes/Daten/DBpedia/Spotlight/candidateMap.count"),
-   //     MemoryStore.load[MemoryResourceStore](new FileInputStream("data/res.mem"), new MemoryResourceStore()),
-   //     sfStore),
-   //   sfStore.size
-   // )
+    val sfStore = MemoryStore.loadSurfaceFormStore(new FileInputStream("data/sf.mem"))
+    memoryIndexer.addCandidates(
+      CandidateMapSource.fromTSVFile(
+        new File("raw_data/csv/candidateMap.count"),
+        MemoryStore.loadResourceStore(new FileInputStream("data/res.mem")),
+        sfStore),
+      sfStore.size
+    )
 
-    //memoryIndexer.addTokens(
-    //  TokenSource.fromOccurrenceSource(
-    //    FileOccurrenceSource.fromFile(new File("/Volumes/Daten/DBpedia/Spotlight/occs.uriSorted.thresh10.tsv.gz")),
-    //    new LuceneTokenizer(new StandardAnalyzer(Version.LUCENE_36))
-    //  )
-    //)
+    memoryIndexer.addTokens(
+      TokenSource.fromOccurrenceSource(
+        FileOccurrenceSource.fromFile(new File("raw_data/csv/occs.uriSorted.thresh10.tsv.gz")),
+        new LuceneTokenizer(new StandardAnalyzer(Version.LUCENE_36))
+      )
+    )
 
     IndexTokenOccurrences.index(
       memoryIndexer,
-      FileOccurrenceSource.fromFile(new File("/Volumes/Daten/DBpedia/Spotlight/occs.uriSorted.thresh10.tsv.gz")),
-      MemoryStore.load[MemoryTokenStore](new FileInputStream("data/tokens.mem"), new MemoryTokenStore()),
+      FileOccurrenceSource.fromFile(new File("raw_data/csv/occs.uriSorted.thresh10.tsv.gz")),
+      MemoryStore.loadTokenStore(new FileInputStream("data/tokens.mem")),
       new LuceneTokenizer(new StandardAnalyzer(Version.LUCENE_36)),
-      MemoryStore.load[MemoryResourceStore](new FileInputStream("data/res.mem"), new MemoryResourceStore())
+      MemoryStore.loadResourceStore(new FileInputStream("data/res.mem"))
     )
 
 

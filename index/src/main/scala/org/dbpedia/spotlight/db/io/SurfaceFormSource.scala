@@ -82,20 +82,20 @@ object SurfaceFormSource {
   }
 
 
-  def fromTSVInputStream(in: InputStream): Map[SurfaceForm, Int] = {
-    val sfFormMap = new HashMap[SurfaceForm, Int]()
+  def fromTSVInputStream(in: InputStream): Map[SurfaceForm, (Int, Int)] = {
+    val sfFormMap = new HashMap[SurfaceForm, (Int, Int)]()
 
     Source.fromInputStream(in).getLines() map {
       line: String => {
         val name = line.trim()
-        sfFormMap.put(new SurfaceForm(name), 0)
+        sfFormMap.put(new SurfaceForm(name), (0, 0))
       }
     }
 
     sfFormMap
   }
 
-  def fromTSVFile(file: File): Map[SurfaceForm, Int] = {
+  def fromTSVFile(file: File): Map[SurfaceForm, (Int, Int)] = {
     if (file.getName.endsWith("gz"))
       fromTSVInputStream(new GZIPInputStream(new FileInputStream(file)))
     else if (file.getName.endsWith("bz2"))
