@@ -29,13 +29,8 @@ class Candidate(val surfaceForm: SurfaceForm, val resource: DBpediaResource, val
           case _ => obj.equals(this)
       }
   }
-
-  override def hashCode() = {
-      this.surfaceForm.hashCode() * 100012 + this.resource.hashCode()
-  }
-
-
-    override def toString = "Candidate["+surfaceForm.name+", "+resource.uri + { if (support > 0) ", " + support else "" } + "]"
+  override def hashCode() = (surfaceForm.name + "/" + resource.uri).hashCode
+  override def toString = "Candidate["+surfaceForm.name+", "+resource.uri + { if (support > 0) ", " + support else "" } + "]"
 }
 
 
