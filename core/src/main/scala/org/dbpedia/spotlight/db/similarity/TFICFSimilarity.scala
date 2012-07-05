@@ -58,7 +58,7 @@ class TFICFSimilarity extends ContextSimilarity {
       scores.put(candRes, scores(candRes) / candidateContexts(candRes).size().toDouble)
     }
 
-    scores.filter{ case(key, value) => value != Double.NaN }.toMap
+    scores.toMap
   }
 
 
