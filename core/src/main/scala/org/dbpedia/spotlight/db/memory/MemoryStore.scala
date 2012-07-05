@@ -124,25 +124,25 @@ object MemoryStore {
   }
 
   def loadTokenStore(in: InputStream): MemoryTokenStore = {
-    load[MemoryTokenStore](in, classOf[MemoryTokenStore].getClass.getSimpleName)
+    load[MemoryTokenStore](in, classOf[MemoryTokenStore].getSimpleName)
   }
 
   def loadSurfaceFormStore(in: InputStream): MemorySurfaceFormStore = {
-    load[MemorySurfaceFormStore](in, classOf[MemorySurfaceFormStore].getClass.getSimpleName)
+    load[MemorySurfaceFormStore](in, classOf[MemorySurfaceFormStore].getSimpleName)
   }
 
   def loadResourceStore(in: InputStream): MemoryResourceStore = {
-    load[MemoryResourceStore](in, classOf[MemoryResourceStore].getClass.getSimpleName)
+    load[MemoryResourceStore](in, classOf[MemoryResourceStore].getSimpleName)
   }
 
   def loadCandidateMapStore(in: InputStream, resourceStore: MemoryResourceStore): MemoryCandidateMapStore = {
-    val s = load[MemoryCandidateMapStore](in, classOf[MemoryCandidateMapStore].getClass.getSimpleName)
+    val s = load[MemoryCandidateMapStore](in, classOf[MemoryCandidateMapStore].getSimpleName)
     s.resourceStore = resourceStore
     s
   }
 
   def loadContextStore(in: InputStream, tokenStore: MemoryTokenStore): MemoryContextStore = {
-    val s = load[MemoryContextStore](in, classOf[MemoryContextStore].getClass.getSimpleName)
+    val s = load[MemoryContextStore](in, classOf[MemoryContextStore].getSimpleName)
     s.tokenStore = tokenStore
     s
   }
