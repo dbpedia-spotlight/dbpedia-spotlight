@@ -1,10 +1,12 @@
 package org.dbpedia.spotlight.db.similarity
 
 import scala.collection.JavaConversions._
-import collection.mutable.HashMap
+
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.model.{DBpediaResource, Candidate, Token}
 import scala.Int
+import collection.immutable
+import collection.mutable
 
 /**
  * @author Joachim Daiber
@@ -23,14 +25,15 @@ class TFICFSimilarity extends ContextSimilarity {
 
   def icf(token: Token, document: java.util.Map[Token, Int], allDocuments: Iterable[java.util.Map[Token, Int]]): Double = {
 
-    val nCandWithToken = allDocuments.map{ doc =>
+    var nCand = 0
+    var nCandWithToken = 0
+    allDocuments.foreach{ doc =>
+      nCand += 1
       doc.get(token) match {
-        case c: Int => c
-        case _ => 0
+        case c: Int => nCandWithToken += 1
+        case _ =>
       }
-    }.filter( count => count > 0 ).size
-
-    val nCand = allDocuments.size
+    }
 
     if (nCandWithToken == 0)
       0.0
@@ -43,22 +46,22 @@ class TFICFSimilarity extends ContextSimilarity {
   }
 
 
-  def score(query: java.util.Map[Token, Int], candidateContexts: Map[DBpediaResource, java.util.Map[Token, Int]]): Map[DBpediaResource, Double] = {
+  def score(query: java.util.Map[Token, Int], candidateContexts: immutable.Map[DBpediaResource, java.util.Map[Token, Int]]): mutable.Map[DBpediaResource, Double] = {
 
     val allDocs = candidateContexts.values
-    val scores = HashMap[DBpediaResource, Double]()
-    query.keys.foreach{
-      token => {
+    val scores = mutable.HashMap[DBpediaResource, Double]()
+    query.foreach{
+      case (token, count) => {
         candidateContexts.keys foreach { candRes: DBpediaResource =>
-          scores.put(candRes, scores.getOrElse(candRes, 0.0) + tficf(token, candidateContexts(candRes), allDocs))
+          scores(candRes) = scores.getOrElse(candRes, 0.0) + tficf(token, candidateContexts(candRes), allDocs)
         }
       }
     }
     candidateContexts.keys foreach { candRes: DBpediaResource =>
-      scores.put(candRes, scores(candRes) / candidateContexts(candRes).size().toDouble)
+      scores(candRes) = scores(candRes) / candidateContexts(candRes).size().toDouble
     }
 
-    scores.toMap
+    scores
   }
 
 

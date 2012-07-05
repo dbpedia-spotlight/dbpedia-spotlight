@@ -6,11 +6,10 @@ import org.dbpedia.spotlight.disambiguate.mixtures.Mixture
 import org.apache.commons.logging.LogFactory
 import scala.collection.JavaConverters._
 import similarity.TFICFSimilarity
-import collection.mutable.HashMap
 import org.dbpedia.spotlight.disambiguate.{ParagraphDisambiguator, Disambiguator}
-import org.dbpedia.spotlight.lucene.LuceneManager
 import scala.Predef._
 import org.dbpedia.spotlight.exceptions.{SurfaceFormNotFoundException, InputException}
+import collection.mutable
 
 
 /**
@@ -32,13 +31,13 @@ class DBTwoStepDisambiguator(
   val similarity = new TFICFSimilarity()
 
 
-  def getScores(text: Text, candidates: Set[DBpediaResource]): Map[DBpediaResource, Double] = {
+  def getScores(text: Text, candidates: Set[DBpediaResource]): mutable.Map[DBpediaResource, Double] = {
 
     val tokens = tokenizer.tokenize(text).map{ ts: String => tokenStore.getToken(ts) }
     val query = tokens.groupBy(identity).mapValues(_.size).asJava
 
     val contextCounts = candidates.map{ candRes: DBpediaResource =>
-      (candRes, contextStore.getContextCounts(candRes))
+      (candRes -> contextStore.getContextCounts(candRes))
     }.toMap
 
     similarity.score(query, contextCounts)
