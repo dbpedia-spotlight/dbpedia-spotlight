@@ -35,11 +35,12 @@ class DBTwoStepDisambiguator(
       (cand, contextStore.getContextCounts(cand.resource))
     }.toMap
 
+    val scores = similarity.score(query, contextCounts)
     candidates.map {
       candidate: Candidate => {
         candidate.resource.uri -> Pair(
           candidate.resource.support,
-          similarity.score(query, candidate, contextCounts)
+          scores(candidate)
         )
       }
     }.toMap

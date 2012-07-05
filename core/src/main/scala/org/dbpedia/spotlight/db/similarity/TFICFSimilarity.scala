@@ -2,6 +2,7 @@ package org.dbpedia.spotlight.db.similarity
 
 import org.dbpedia.spotlight.model.{Candidate, Token}
 import scala.collection.JavaConversions._
+import collection.mutable.HashMap
 
 /**
  * @author Joachim Daiber
@@ -24,9 +25,9 @@ class TFICFSimilarity extends ContextSimilarity {
         case c: Int => c
         case _ => 0
       }
-    }.filter( count => count > 0 ).size - 1 //also contains the query
+    }.filter( count => count > 0 ).size
 
-    val nCand = allDocuments.size - 1 //also contains the query
+    val nCand = allDocuments.size
 
     if (nCandWithToken == 0)
       0.0
@@ -39,17 +40,22 @@ class TFICFSimilarity extends ContextSimilarity {
   }
 
 
-  def score(query: java.util.Map[Token, Int], candidate: Candidate, candidateContexts: Map[Candidate, java.util.Map[Token, Int]]): Double = {
+  def score(query: java.util.Map[Token, Int], candidateContexts: Map[Candidate, java.util.Map[Token, Int]]): HashMap[Candidate, Double] = {
 
-    val allDocs = candidateContexts.values ++ Iterable(query)
-    val doc = candidateContexts(candidate)
-    val mergedTokens = query.keySet().intersect(doc.keySet())
+    val allDocs = candidateContexts.values
+    val scores = HashMap[Candidate, Double]()
+    query.keys.foreach{
+      token => {
+        candidateContexts.keys foreach { c: Candidate =>
+          scores.put(c, scores.getOrElse(c, 0).asInstanceOf[Double] + tficf(token, candidateContexts(c), allDocs))
+        }
+      }
+    }
+    candidateContexts.keys foreach { c: Candidate =>
+      scores(c) = scores(c) / candidateContexts(c).size()
+    }
 
-    val a = mergedTokens.map{ t: Token => tficf(t, query, allDocs) * tficf(t, doc, allDocs) }.sum
-    val b = math.sqrt( query.keySet.map{ t: Token => math.pow(tficf(t, query, allDocs), 2) }.sum )
-    val c = math.sqrt( doc.keySet.map{   t: Token => math.pow(tficf(t, doc,   allDocs), 2) }.sum )
-
-    a / (b * c)
+    scores
   }
 
 
