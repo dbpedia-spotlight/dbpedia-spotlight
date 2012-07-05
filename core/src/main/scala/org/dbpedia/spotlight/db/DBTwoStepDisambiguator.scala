@@ -87,6 +87,7 @@ class DBTwoStepDisambiguator(
           resOcc
         }
       }
+      .filter{ o => o.similarityScore != Double.NaN }
       .sortBy( o => o.similarityScore )
       .reverse
       .take(k)
