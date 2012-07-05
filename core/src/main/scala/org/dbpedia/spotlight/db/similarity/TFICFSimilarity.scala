@@ -17,7 +17,7 @@ class TFICFSimilarity extends ContextSimilarity {
     }
   }
 
-  def icf(token: Token, document: java.util.Map[Token, Int], allDocuments: Set[java.util.Map[Token, Int]]): Double = {
+  def icf(token: Token, document: java.util.Map[Token, Int], allDocuments: Iterable[java.util.Map[Token, Int]]): Double = {
 
     val nCandWithToken = allDocuments.map{ doc =>
       doc.get(token) match {
@@ -34,14 +34,14 @@ class TFICFSimilarity extends ContextSimilarity {
       math.log(nCand / (nCandWithToken)) + 1.0
   }
 
-  def tficf(token: Token, document: java.util.Map[Token, Int], allDocuments: Set[java.util.Map[Token, Int]]): Double = {
+  def tficf(token: Token, document: java.util.Map[Token, Int], allDocuments: Iterable[java.util.Map[Token, Int]]): Double = {
     tf(token, document).toDouble * icf(token, document, allDocuments)
   }
 
 
   def score(query: java.util.Map[Token, Int], candidate: Candidate, candidateContexts: Map[Candidate, java.util.Map[Token, Int]]): Double = {
 
-    val allDocs = candidateContexts.values ++ query
+    val allDocs = candidateContexts.values ++ Iterable(query)
     val doc = candidateContexts(candidate)
     val mergedTokens = query.keySet().intersect(doc.keySet())
 
