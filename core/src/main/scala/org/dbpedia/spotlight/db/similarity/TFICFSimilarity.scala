@@ -1,9 +1,10 @@
 package org.dbpedia.spotlight.db.similarity
 
-import org.dbpedia.spotlight.model.{Candidate, Token}
 import scala.collection.JavaConversions._
 import collection.mutable.HashMap
 import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.model.{DBpediaResource, Candidate, Token}
+import scala.Int
 
 /**
  * @author Joachim Daiber
@@ -43,19 +44,19 @@ class TFICFSimilarity extends ContextSimilarity {
   }
 
 
-  def score(query: java.util.Map[Token, Int], candidateContexts: Map[Candidate, java.util.Map[Token, Int]]): Map[Candidate, Double] = {
+  def score(query: java.util.Map[Token, Int], candidateContexts: Map[DBpediaResource, java.util.Map[Token, Int]]): Map[DBpediaResource, Double] = {
 
     val allDocs = candidateContexts.values
-    val scores = HashMap[Candidate, Double]()
+    val scores = HashMap[DBpediaResource, Double]()
     query.keys.foreach{
       token => {
-        candidateContexts.keys foreach { c: Candidate =>
-          scores.put(c, scores.getOrElse(c, 0.0) + tficf(token, candidateContexts(c), allDocs))
+        candidateContexts.keys foreach { candRes: DBpediaResource =>
+          scores.put(candRes, scores.getOrElse(candRes, 0.0) + tficf(token, candidateContexts(candRes), allDocs))
         }
       }
     }
-    candidateContexts.keys foreach { c: Candidate =>
-      scores.put(c, scores(c) / candidateContexts(c).size().toDouble)
+    candidateContexts.keys foreach { candRes: DBpediaResource =>
+      scores.put(candRes, scores(candRes) / candidateContexts(candRes).size().toDouble)
     }
 
     scores.toMap
