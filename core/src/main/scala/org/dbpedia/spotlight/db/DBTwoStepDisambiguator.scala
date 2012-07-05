@@ -8,8 +8,9 @@ import scala.collection.JavaConverters._
 import similarity.TFICFSimilarity
 import collection.mutable.HashMap
 import org.dbpedia.spotlight.disambiguate.{ParagraphDisambiguator, Disambiguator}
-import org.dbpedia.spotlight.exceptions.InputException
 import org.dbpedia.spotlight.lucene.LuceneManager
+import scala.Predef._
+import org.dbpedia.spotlight.exceptions.{SurfaceFormNotFoundException, InputException}
 
 
 /**
@@ -56,15 +57,21 @@ class DBTwoStepDisambiguator(
     val occs = paragraph.occurrences.foldLeft(
       Map[SurfaceFormOccurrence, List[Candidate]]())(
       (acc, sfOcc) => {
-        val sf = surfaceFormStore.getSurfaceForm(sfOcc.surfaceForm.name)
 
         LOG.debug("Searching...")
-        val candidates = candidateMap.getCandidates(sf)
 
-        LOG.debug("# candidates for: %s = %s.".format(sf, candidates.size))
-        allCandidateResources ++= candidates.map(_.resource)
+        val candidateRes = try {
+          val sf = surfaceFormStore.getSurfaceForm(sfOcc.surfaceForm.name)
+          val cands = candidateMap.getCandidates(sf)
+          LOG.debug("# candidates for: %s = %s.".format(sf, cands.size))
+          cands
+        } catch {
+          case e: SurfaceFormNotFoundException => Set[Candidate]()
+        }
 
-        acc + (sfOcc -> candidates.toList)
+        allCandidateResources ++= candidateRes.map(_.resource)
+
+        acc + (sfOcc -> candidateRes.toList)
       })
 
 
