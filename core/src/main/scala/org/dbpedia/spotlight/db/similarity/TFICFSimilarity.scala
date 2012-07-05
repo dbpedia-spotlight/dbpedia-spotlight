@@ -39,15 +39,15 @@ class TFICFSimilarity extends ContextSimilarity {
   }
 
 
-  def score(query: java.util.Map[Token, Int], candidate: Candidate, contextCounts: Map[Candidate, java.util.Map[Token, Int]]): Double = {
+  def score(query: java.util.Map[Token, Int], candidate: Candidate, candidateContexts: Map[Candidate, java.util.Map[Token, Int]]): Double = {
 
-    val allDocs = Set(query) ++ contextCounts.values
-    val doc = contextCounts(candidate)
+    val allDocs = candidateContexts.values ++ query
+    val doc = candidateContexts(candidate)
     val mergedTokens = query.keySet().intersect(doc.keySet())
 
     val a = mergedTokens.map{ t: Token => tficf(t, query, allDocs) * tficf(t, doc, allDocs) }.sum
     val b = math.sqrt( query.keySet.map{ t: Token => math.pow(tficf(t, query, allDocs), 2) }.sum )
-    val c = math.sqrt( doc.keySet.map{   t: Token => math.pow(tficf(t, doc, allDocs),   2) }.sum )
+    val c = math.sqrt( doc.keySet.map{   t: Token => math.pow(tficf(t, doc,   allDocs), 2) }.sum )
 
     a / (b * c)
   }
