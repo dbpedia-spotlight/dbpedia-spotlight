@@ -15,12 +15,11 @@ class TFICFSimilarity extends ContextSimilarity {
 
   private val LOG = LogFactory.getLog(this.getClass)
 
-  def tf(token: Token, document: java.util.Map[Token, Int]) = {
+  def tf(token: Token, document: java.util.Map[Token, Int]): Int =
     document.get(token) match {
       case c: Int => c
       case _ => 0
     }
-  }
 
   def icf(token: Token, document: java.util.Map[Token, Int], allDocuments: Iterable[java.util.Map[Token, Int]]): Double = {
 
@@ -59,7 +58,7 @@ class TFICFSimilarity extends ContextSimilarity {
       scores.put(candRes, scores(candRes) / candidateContexts(candRes).size().toDouble)
     }
 
-    scores.toMap
+    scores.filter{ case(key, value) => value != Double.NaN }.toMap
   }
 
 
