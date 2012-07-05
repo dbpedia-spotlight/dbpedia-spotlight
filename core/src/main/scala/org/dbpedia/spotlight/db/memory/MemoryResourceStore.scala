@@ -29,8 +29,14 @@ class MemoryResourceStore
   @transient
   var idFromURI: TObjectIntHashMap = null
 
+  @transient
+  var totalSupport = 0.0
+
   override def loaded() {
     createReverseLookup()
+    LOG.info("Counting total support...")
+    totalSupport = supportForID.sum.toDouble
+    LOG.info("Done.")
   }
 
   def size = uriForID.size
@@ -67,6 +73,8 @@ class MemoryResourceStore
     val res = new DBpediaResource(uri, support)
     res.id = id
     res.setTypes((typeIDs map { typeID: Short => ontologyTypeStore.getOntologyType(typeID) }).toList)
+
+    res.setPrior(res.support / totalSupport)
 
     res
   }
