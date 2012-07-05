@@ -7,6 +7,9 @@ import org.apache.commons.logging.LogFactory
 import scala.collection.JavaConverters._
 import similarity.TFICFSimilarity
 import collection.mutable.HashMap
+import org.dbpedia.spotlight.disambiguate.{ParagraphDisambiguator, Disambiguator}
+import org.dbpedia.spotlight.exceptions.InputException
+import org.dbpedia.spotlight.lucene.LuceneManager
 
 
 /**
@@ -21,7 +24,7 @@ class DBTwoStepDisambiguator(
   contextStore: ContextStore,
   tokenizer: Tokenizer,
   mixture: Mixture
-) {
+) extends ParagraphDisambiguator {
 
   private val LOG = LogFactory.getLog(this.getClass)
 
@@ -96,5 +99,19 @@ class DBTwoStepDisambiguator(
     })
 
   }
+
+  @throws(classOf[InputException])
+  def disambiguate(paragraph: Paragraph): List[DBpediaResourceOccurrence] = {
+      // return first from each candidate set
+      bestK(paragraph, 5)
+          .filter(kv =>
+              kv._2.nonEmpty)
+          .map( kv =>
+              kv._2.head)
+          .toList
+  }
+
+  def name = "Database-backed 2 Step TF*ICF disambiguator"
+
 
 }
