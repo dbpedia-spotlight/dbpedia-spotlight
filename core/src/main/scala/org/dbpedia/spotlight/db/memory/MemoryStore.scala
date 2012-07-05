@@ -25,7 +25,7 @@ import org.dbpedia.spotlight.db.memory.MemoryStore._
 abstract class MemoryStore extends Serializable {
 
   @transient
-  private val LOG = LogFactory.getLog(this.getClass)
+  protected val LOG = LogFactory.getLog(this.getClass)
 
   def loaded() {
     //Implementations may execute code after the store is loaded

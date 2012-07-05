@@ -6,6 +6,8 @@ import org.dbpedia.spotlight.disambiguate.mixtures.Mixture
 import org.apache.commons.logging.LogFactory
 import scala.collection.JavaConverters._
 import similarity.TFICFSimilarity
+import collection.mutable.HashMap
+
 
 /**
  * @author Joachim Daiber
@@ -26,7 +28,7 @@ class DBTwoStepDisambiguator(
   val similarity = new TFICFSimilarity()
 
 
-  def getScores(text: Text, candidates: Set[Candidate]): Map[String, Pair[Int, Double]] = {
+  def getScores(text: Text, candidates: Set[Candidate]): Map[Candidate, Double] = {
 
     val tokens = tokenizer.tokenize(text).map{ ts: String => tokenStore.getToken(ts) }
     val query = tokens.groupBy(identity).mapValues(_.size).asJava
@@ -35,16 +37,7 @@ class DBTwoStepDisambiguator(
       (cand, contextStore.getContextCounts(cand.resource))
     }.toMap
 
-    val scores = similarity.score(query, contextCounts)
-    candidates.map {
-      candidate: Candidate => {
-        candidate.resource.uri -> Pair(
-          candidate.resource.support,
-          scores(candidate)
-        )
-      }
-    }.toMap
-
+    similarity.score(query, contextCounts)
   }
 
 
@@ -79,10 +72,16 @@ class DBTwoStepDisambiguator(
     occs.keys.foldLeft(Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]())( (acc, aSfOcc) => {
       val candOccs = occs.getOrElse(aSfOcc, List[Candidate]())
         .map{ cand: Candidate => {
-          Factory.DBpediaResourceOccurrence.from(
-            aSfOcc,
+          new DBpediaResourceOccurrence(
+            "",
             cand.resource,
-            contextScores.getOrElse(cand.resource.uri, (0,0.0))
+            cand.surfaceForm,
+            aSfOcc.context,
+            aSfOcc.textOffset,
+            Provenance.Undefined,
+            0.0,
+            0.0,
+            contextScores.getOrElse(cand, 0.0)
           )
         }
       }
