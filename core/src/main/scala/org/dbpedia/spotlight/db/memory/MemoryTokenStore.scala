@@ -47,9 +47,11 @@ class MemoryTokenStore
   def getToken(token: String): Token = {
 
     val id = idFromToken.get(token)
-    val count = counts(id)
 
-    new Token(id, token, count)
+    if (id == 0)
+      Token.UNKNOWN
+    else
+      new Token(id, token, counts(id))
   }
 
   def getTokenByID(id: Int): Token = {
