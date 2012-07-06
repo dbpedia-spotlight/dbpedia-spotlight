@@ -43,7 +43,7 @@ class DBTwoStepDisambiguator(
     similarity.score(query, contextCounts)
   }
 
-
+  val MAX_CANDIDATES = 300
   def bestK(paragraph: Paragraph, k: Int): Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]] = {
 
     LOG.debug("Running bestK for paragraph %s.".format(paragraph.id))
@@ -63,7 +63,11 @@ class DBTwoStepDisambiguator(
           val sf = surfaceFormStore.getSurfaceForm(sfOcc.surfaceForm.name)
           val cands = candidateMap.getCandidates(sf)
           LOG.debug("# candidates for: %s = %s.".format(sf, cands.size))
-          cands
+
+          if (cands.size > MAX_CANDIDATES)
+            cands.toList.sortBy( _.prior ).reverse.take(MAX_CANDIDATES).toSet
+          else
+            cands
         } catch {
           case e: SurfaceFormNotFoundException => Set[Candidate]()
         }
@@ -92,7 +96,11 @@ class DBTwoStepDisambiguator(
             0.0,
             contextScores.getOrElse(cand.resource, 0.0)
           )
-          resOcc.setSimilarityScore(mixture.getScore(resOcc))
+          resOcc.setSimilarityScore(
+            (1234.3989 * cand.prior) +
+               0.9968 * resOcc.contextualScore +
+                 -0.0275
+          )
           resOcc
         }
       }

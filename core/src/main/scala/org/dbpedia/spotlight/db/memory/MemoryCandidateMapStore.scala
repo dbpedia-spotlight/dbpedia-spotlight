@@ -25,9 +25,14 @@ class MemoryCandidateMapStore
   @transient
   var resourceStore: ResourceStore = null
 
-  def getCandidates(surfaceform: SurfaceForm): Set[Candidate] =
-    candidates(surfaceform.id).zip(candidateCounts(surfaceform.id)).map {
-      case (resID, count) => new Candidate(surfaceform, resourceStore.getResource(resID), count)
-    }.toSet
+  def getCandidates(surfaceform: SurfaceForm): Set[Candidate] = {
+    try {
+      candidates(surfaceform.id).zip(candidateCounts(surfaceform.id)).map {
+            case (resID, count) => new Candidate(surfaceform, resourceStore.getResource(resID), count)
+      }.toSet
+    } catch {
+      case e: NullPointerException => Set[Candidate]()
+    }
+  }
 
 }

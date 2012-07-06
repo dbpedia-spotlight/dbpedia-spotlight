@@ -31,6 +31,9 @@ class Candidate(val surfaceForm: SurfaceForm, val resource: DBpediaResource, val
   }
   override def hashCode() = (surfaceForm.name + "/" + resource.uri).hashCode
   override def toString = "Candidate["+surfaceForm.name+", "+resource.uri + { if (support > 0) ", " + support else "" } + "]"
+
+  def prior: Double = this.support / this.surfaceForm.annotatedCount.toDouble
+
 }
 
 
