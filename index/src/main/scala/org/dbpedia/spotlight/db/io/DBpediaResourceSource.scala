@@ -65,8 +65,7 @@ object DBpediaResourceSource {
         val Array(id: String, typeURI: String) = line.trim().split('\t')
 
         try {
-          if (! typeURI.startsWith(SchemaOrgType.SCHEMAORG_PREFIX))
-            resourceMap(new DBpediaResource(id).uri).types ::= OntologyType.fromURI(typeURI)
+          resourceMap(new DBpediaResource(id).uri).types ::= OntologyType.fromURI(typeURI)
         } catch {
           case e: NoSuchElementException =>
             //System.err.println("WARNING: DBpedia resource not in concept list %s (%s)".format(id, typeURI) )
@@ -124,13 +123,13 @@ object DBpediaResourceSource {
     val uriNotFound = HashSet[String]()
     Source.fromInputStream(instanceTypes).getLines() foreach {
       line: String => {
-        val Array(id: String, typeURI: String) = line.trim().split('\t')
+        val Array(uri: String, typeURI: String) = line.trim().split('\t')
 
         try {
-          resourceByURI(new DBpediaResource(id).uri).types ::= OntologyType.fromURI(typeURI)
+          resourceByURI(new DBpediaResource(uri).uri).types ::= OntologyType.fromURI(typeURI)
         } catch {
           case e: java.util.NoSuchElementException =>
-            uriNotFound += id
+            uriNotFound += uri
         }
       }
     }
@@ -149,7 +148,7 @@ object DBpediaResourceSource {
     wikipediaToDBpediaClosure: WikipediaToDBpediaClosure,
     counts: File,
     instanceTypes: File
-    ): java.util.Map[DBpediaResource, Int] = fromPigInputStreams(
+  ): java.util.Map[DBpediaResource, Int] = fromPigInputStreams(
     wikipediaToDBpediaClosure,
     new FileInputStream(counts),
     new FileInputStream(instanceTypes)
@@ -160,7 +159,7 @@ object DBpediaResourceSource {
     conceptList: File,
     counts: File,
     instanceTypes: File
-    ): java.util.Map[DBpediaResource, Int] = fromTSVInputStream(
+  ): java.util.Map[DBpediaResource, Int] = fromTSVInputStream(
     new FileInputStream(conceptList),
     new FileInputStream(counts),
     new FileInputStream(instanceTypes)
