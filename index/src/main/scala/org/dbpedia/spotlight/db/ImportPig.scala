@@ -60,6 +60,7 @@ object ImportPig {
 
     val tokenStore = MemoryStore.loadTokenStore(new FileInputStream("data/tokens.mem"))
 
+    memoryIndexer.createContextStore(resStore.size)
     memoryIndexer.addTokenOccurrences(
       TokenOccurrenceSource.fromPigFile(
         new File("raw_data/pig/tokens_json"),
@@ -68,6 +69,7 @@ object ImportPig {
         resStore
       )
     )
+    memoryIndexer.writeTokenOccurrences()
 
 
   }
