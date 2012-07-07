@@ -12,13 +12,13 @@ import org.dbpedia.spotlight.model.SurfaceForm
 
 class DiskSurfaceFormStore(file: String) extends SurfaceFormStore {
 
-  val jdbm = new JDBMStore[String, Pair[Int, Int]](file)
+  val jdbm = new JDBMStore[String, Triple[Int, Int, Int]](file)
 
   def getSurfaceForm(surfaceform: String): SurfaceForm = {
     val sfc = jdbm.get(surfaceform)
     if (sfc == null)
       return null
-    new SurfaceForm(surfaceform, sfc._1, sfc._2)
+    new SurfaceForm(surfaceform, sfc._1, sfc._2, sfc._3)
   }
 
 }
