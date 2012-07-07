@@ -67,11 +67,12 @@ class WikipediaToDBpediaClosure (
       case WikiURL(language, title) => {
 
         //use only the part before the anchor, URL encode it
-        ModifiedWikiUtil.wikiEncode(URLDecoder.decode(title, "utf-8").takeWhile( p => p != '#' ))
-        match {
-          case t: String if t.startsWith("/") => t.tail
-          case t: String => t
-        }
+        ModifiedWikiUtil.wikiEncode(
+          URLDecoder.decode(
+            title.takeWhile( p => p != '#' ) match {
+              case t: String if t.startsWith("/") => t.tail
+              case t: String => t
+            }, "utf-8"))
       }
       case _ => LOG.error("Invalid Wikipedia URL %s".format(wikiURL)); null
     }
