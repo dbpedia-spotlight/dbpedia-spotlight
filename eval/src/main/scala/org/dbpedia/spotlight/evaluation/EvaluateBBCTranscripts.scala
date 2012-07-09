@@ -51,13 +51,13 @@ object EvaluateBBCTranscripts {
     val disambiguator = new ParagraphDisambiguatorJ(new TwoStepDisambiguator(factory.candidateSearcher, factory.contextSearcher))
     //  val disambiguator = new ParagraphDisambiguatorJ(new TwoStepDisambiguator(factory))
 
-    val spotter = factory.spotter()
+    //val spotter = factory.spotter(SpotterConfiguration.SpotterPolicy.LingPipeSpotter)
+//    val annotator = new DefaultParagraphAnnotator(spotter, disambiguator);
 
-    val targetTypesList = null;
-    //TODO filter by type
+    val targetTypesList = List(OntologyType.fromQName("TopicalConcept"),OntologyType.fromQName("Person"),OntologyType.fromQName("Organisation"),OntologyType.fromQName("Place"))
+
     val coreferenceResolution = true;
 
-    val annotator = new DefaultParagraphAnnotator(spotter, disambiguator);
     val filter = new AnnotationFilter(configuration)
 
 
@@ -75,6 +75,9 @@ object EvaluateBBCTranscripts {
             exit();
         }
 
+        // list with URIs in target KB (after removing namespace http://dbpedia.org/resource/)
+        val validUris = Source.fromFile(baseDir+"uris.set").getLines().toSet
+
         var i = 0
         inputDir.listFiles().filter(_.getName.endsWith(".txt")).foreach(f =>{
             i = i + 1
@@ -83,20 +86,36 @@ object EvaluateBBCTranscripts {
             try {
                 LOG.info("Doc " + i)
                 LOG.info("Doc length: %s tokens".format(cleanText.split(" ").size))
-                val allEntities = tagExtractor.extract(new Text(cleanText), 500, List(OntologyType.fromQName("TopicalConcept"))).toList
-                //val allEntities = tagExtractor.extract(new Text(cleanText), 500, List()).toList
+                //val allEntities = tagExtractor.extract(new Text(cleanText), 5000, List(OntologyType.fromQName("TopicalConcept"))).toList
+                val allEntities = tagExtractor.extract(new Text(cleanText), 5000, List()).toList
 
-                val rerankedEntities = rerank(allEntities).toList
+                // constrain to entities within BBCs KB
+                val filteredEntities = allEntities.filter( e => validUris.contains(e._1.uri) )
+                //constrain to only entities of allowed types: val finalEntities = spottedEntities.filter( e => (e._1.getTypes.intersect(targetTypesList).size > 0) )
 
                 //constrain to only the entities that occurr explicitly (verbatim) in paragraph
-                var occurringEntities = TagExtractorFromAnnotator.bySimilarity(annotator).rank(annotator.annotate(cleanText).toList)
-                    .map( e => e._1.uri).toSet
-                val finalEntities = rerankedEntities.filter( e => occurringEntities.contains(e._1.uri) )
+//                var occurringEntities = TagExtractorFromAnnotator.bySimilarity(annotator)
+//                                            .rank(annotator.annotate(cleanText).toList)
+//                                            .filter( e=> validUris.contains(e._1.uri))
+
+//              // don't constrain, but bump verbatim entities
+//                val bumpedOccurringEntities = (filteredEntities ::: occurringEntities).groupBy(_._1).map { case (k,list) => {
+//                                                val sum = list.foldLeft(0.0) { (acc,b) => acc + b._2 }
+//                                                (k,sum)
+//                                            }}.toList
+//                                                .sortBy(_._2)
+//                                                .reverse
+
+
+                val rerankedEntities = rerank(filteredEntities).toList
+
+                val finalEntities = rerankedEntities
 
                 //System.out.println(outputDir + f.getName.replaceAll(".txt","") + ".json");
                 val setOutputFile: File = new File(outputDir + "/" + f.getName.replaceAll(".txt","") + ".json");
                 val allOut = new PrintStream(setOutputFile)
                 append(allOut, finalEntities)
+                LOG.info("NTags: %d".format(finalEntities.size))
                 allOut.close()
 
             } catch {
@@ -117,7 +136,7 @@ object EvaluateBBCTranscripts {
         val place = if (resource.getTypes.contains(OntologyType.fromQName("PopulatedPlace"))) 1.2 else 1
         val person = if (resource.getTypes.contains(OntologyType.fromQName("Person"))) 1.2 else 1
         //val organisation = if (resource.getTypes.contains(OntologyType.fromQName("Organisation"))) 1.2 else 1
-        contextual*topical*place*person * (1 + 100*(prior))
+        contextual*topical*place*person * (1 + 10*(prior))
     }
 
     def rerank(tags: Seq[(DBpediaResource,Double)]) = {
