@@ -19,75 +19,39 @@
 package org.dbpedia.spotlight.disambiguate
 
 import org.apache.commons.logging.LogFactory
-import org.apache.lucene.index.Term
-import org.apache.lucene.search.Explanation
-import org.apache.lucene.search.FieldCacheTermsFilter
-import org.apache.lucene.search.ScoreDoc
-import org.apache.lucene.search.similar.MoreLikeThis
-import org.apache.lucene.search.TermsFilter
-import org.dbpedia.spotlight.exceptions.InputException
-import org.dbpedia.spotlight.exceptions.ItemNotFoundException
-import org.dbpedia.spotlight.exceptions.SearchException
-import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
-import org.dbpedia.spotlight.lucene.LuceneManager
-import org.dbpedia.spotlight.lucene.LuceneManager.DBpediaResourceField
-import org.dbpedia.spotlight.lucene.LuceneManager.PhoneticSurfaceForms
-import org.dbpedia.spotlight.lucene.search.LuceneCandidateSearcher
-import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
-import org.dbpedia.spotlight.lucene.similarity._
-import org.apache.commons.logging.LogFactory
-import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
 import java.lang.UnsupportedOperationException
-import org.dbpedia.spotlight.model.CandidateSearcher
-import org.dbpedia.spotlight.model.DBpediaResource
-import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
-import org.dbpedia.spotlight.model.Factory
-import org.dbpedia.spotlight.model.Paragraph
-import org.dbpedia.spotlight.model.SurfaceForm
-import org.dbpedia.spotlight.model.SurfaceFormOccurrence
-import org.dbpedia.spotlight.model.Text
 import scalaj.collection.Imports._
 import org.apache.lucene.search.similar.MoreLikeThis
 import org.dbpedia.spotlight.exceptions.{ItemNotFoundException, SearchException, InputException}
-import org.apache.lucene.search.{ScoreDoc, FieldCacheTermsFilter, Explanation, TermsFilter}
-import collection.mutable.{HashMap, HashSet}
+import org.apache.lucene.search.{ScoreDoc, Explanation}
 import org.dbpedia.spotlight.model._
 import org.apache.lucene.index.Term
 import com.officedepot.cdap2.collection.CompactHashSet
-import org.dbpedia.spotlight.lucene.search.{LuceneCandidateSearcher, MergedOccurrencesContextSearcher}
-import org.dbpedia.spotlight.lucene.LuceneManager.{PhoneticSurfaceForms, DBpediaResourceField}
-import collection.immutable.Map._
-import java.io.{StringReader, ByteArrayInputStream, File}
-import scala.Array
+import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
+import org.dbpedia.spotlight.lucene.LuceneManager.DBpediaResourceField
+import java.io.StringReader
+import org.dbpedia.spotlight.db.model.TopicalPriorStore
+import org.dbpedia.spotlight.topics.TopicExtractor
 
 /**
- * Paragraph disambiguator that queries paragraphs once and uses candidate map to filter results.
- * 1) performs candidate selection: searches sf -> uri
- * 2) context score: searches context with filter(uri)
- * 3) disambiguates by ranking candidates found in 1 according to score from 2.
  *
  * @author pablomendes
  */
-class TwoStepDisambiguator(val candidateSearcher: CandidateSearcher,
-                           val contextSearcher: MergedOccurrencesContextSearcher) //TODO should be ContextSearcher. Need a generic disambiguator to enable this.
-    extends ParagraphDisambiguator  {
+class TopicBiasedDisambiguator(val candidateSearcher: CandidateSearcher,
+                               val contextSearcher: MergedOccurrencesContextSearcher, //TODO should be ContextSearcher. Need a generic disambiguator to enable this.
+                               val topicalPriorStore: TopicalPriorStore)
+    extends ParagraphDisambiguator {
 
     private val LOG = LogFactory.getLog(this.getClass)
-
-    LOG.info("Initializing disambiguator object ...")
-
-    val disambiguator : Disambiguator = new MergedOccurrencesDisambiguator(contextSearcher)
-
-    LOG.info("Done.")
 
     @throws(classOf[InputException])
     def disambiguate(paragraph: Paragraph): List[DBpediaResourceOccurrence] = {
         // return first from each candidate set
         bestK(paragraph, 5)
             .filter(kv =>
-                kv._2.nonEmpty)
-            .map( kv =>
-                kv._2.head)
+            kv._2.nonEmpty)
+            .map(kv =>
+            kv._2.head)
             .toList
     }
 
@@ -96,11 +60,11 @@ class TwoStepDisambiguator(val candidateSearcher: CandidateSearcher,
     def query(text: Text, allowedUris: Array[DBpediaResource]) = {
         LOG.debug("Setting up query.")
 
-        val context = if (text.text.size<250) text.text.concat(" "+text.text) else text.text //HACK for text that is too short
+        val context = if (text.text.size < 250) text.text.concat(" " + text.text) else text.text //HACK for text that is too short
         //LOG.debug(context)
         val nHits = allowedUris.size
         val filter = new org.apache.lucene.search.TermsFilter() //TODO can use caching? val filter = new FieldCacheTermsFilter(DBpediaResourceField.CONTEXT.toString,allowedUris)
-        allowedUris.foreach( u => filter.addTerm(new Term(DBpediaResourceField.URI.toString,u.uri)) )
+        allowedUris.foreach(u => filter.addTerm(new Term(DBpediaResourceField.URI.toString, u.uri)))
 
         val mlt = new MoreLikeThis(contextSearcher.mReader);
         mlt.setFieldNames(Array(DBpediaResourceField.CONTEXT.toString))
@@ -118,8 +82,8 @@ class TwoStepDisambiguator(val candidateSearcher: CandidateSearcher,
         val s1 = System.nanoTime()
         // step1: get candidates for all surface forms (TODO here building allCandidates directly, but could extract from occs)
         val occs = paragraph.occurrences
-            .foldLeft( Map[SurfaceFormOccurrence,List[DBpediaResource]]())(
-            (acc,sfOcc) => {
+            .foldLeft(Map[SurfaceFormOccurrence, List[DBpediaResource]]())(
+            (acc, sfOcc) => {
                 LOG.debug("searching...")
                 var candidates = new java.util.HashSet[DBpediaResource]().asScala
                 try {
@@ -131,8 +95,8 @@ class TwoStepDisambiguator(val candidateSearcher: CandidateSearcher,
                 //TODO if support comes from candidate index, it means c(sf,r).
 
                 //LOG.debug("# candidates for: %s = %s (%s)".format(sfOcc.surfaceForm,candidates.size,candidates))
-                LOG.debug("# candidates for: %s = %s.".format(sfOcc.surfaceForm,candidates.size))
-                candidates.foreach( r => allCandidates.add(r))
+                LOG.debug("# candidates for: %s = %s.".format(sfOcc.surfaceForm, candidates.size))
+                candidates.foreach(r => allCandidates.add(r))
                 acc + (sfOcc -> candidates.toList)
             });
         val e1 = System.nanoTime()
@@ -140,24 +104,45 @@ class TwoStepDisambiguator(val candidateSearcher: CandidateSearcher,
         occs
     }
 
+    def getTopicalScore(textTopics: Map[String, Double], resource: DBpediaResource): Double = {
+        //TODO Topic->Double
+        val resourceTopicCounts = topicalPriorStore.getTopicalPriorCounts(resource)
+        val topicTotals = topicalPriorStore.getTotalCounts()
+        val score = textTopics.map {
+            case (topic, textScore) => {
+                val total = topicTotals.get(topic) match {
+                    case Some(n) => n
+                    case None => throw new SearchException("Topic set was not loaded correctly.")
+                }
+                val resourceCount = resourceTopicCounts.getOrElse(topic, 0).toDouble
+                val resourcePrior = resourceCount / total.toDouble
+                val logRP = if (resourcePrior==0) 0.0 else math.log(resourcePrior)
+                val logTS = if (textScore==0) 0.0 else math.log(textScore)
+                logRP + logTS
+            }
+        }.sum
+        math.exp(score)
+    }
 
-    def bestK(paragraph:  Paragraph, k: Int): Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]] = {
+    def bestK(paragraph: Paragraph, k: Int): Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]] = {
 
         LOG.debug("Running bestK for paragraph %s.".format(paragraph.id))
 
-        if (paragraph.occurrences.size==0) return Map[SurfaceFormOccurrence,List[DBpediaResourceOccurrence]]()
+        if (paragraph.occurrences.size == 0) return Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]()
 
-//        val m1 = if (candLuceneManager.getDBpediaResourceFactory == null) "lucene" else "jdbc"
-//        val m2 = if (contextLuceneManager.getDBpediaResourceFactory == null) "lucene" else "jdbc"
+        val topics = TopicExtractor.getTopics(paragraph.text.text)
+
+        //        val m1 = if (candLuceneManager.getDBpediaResourceFactory == null) "lucene" else "jdbc"
+        //        val m2 = if (contextLuceneManager.getDBpediaResourceFactory == null) "lucene" else "jdbc"
 
         // step1: get candidates for all surface forms
         //       (TODO here building allCandidates directly, but could extract from occs)
         var allCandidates = CompactHashSet[DBpediaResource]();
-        val occs = getCandidates(paragraph,allCandidates)
+        val occs = getCandidates(paragraph, allCandidates)
 
         val s2 = System.nanoTime()
         // step2: query once for the paragraph context, get scores for each candidate resource
-        var hits : Array[ScoreDoc] = null
+        var hits: Array[ScoreDoc] = null
         try {
             hits = query(paragraph.text, allCandidates.toArray)
         } catch {
@@ -169,11 +154,12 @@ class TwoStepDisambiguator(val candidateSearcher: CandidateSearcher,
 
         // LOG.debug("Reading DBpediaResources.")
         val scores = hits
-            .foldRight(Map[String,Tuple2[DBpediaResource,Double]]())((hit,acc) => {
+            .foldRight(Map[String, Tuple2[DBpediaResource, Double]]())((hit, acc) => {
             var resource: DBpediaResource = contextSearcher.getDBpediaResource(hit.doc) //this method returns resource.support=c(r)
-            var score = hit.score
+            val topicalScore = getTopicalScore(topics, resource)
+            var score = if (topicalScore == 0.0) hit.score else (hit.score * topicalScore)
             //TODO can mix here the scores: c(s,r) / c(r)
-            acc + (resource.uri -> (resource,score))
+            acc + (resource.uri ->(resource, score))
         });
         val e2 = System.nanoTime()
         //LOG.debug("Scores (%d): %s".format(scores.size, scores))
@@ -181,53 +167,53 @@ class TwoStepDisambiguator(val candidateSearcher: CandidateSearcher,
         //LOG.debug("Time with %s: %f.".format(m2, (e2-s2) / 1000000.0 ))
 
         // pick the best k for each surface form
-        val r = occs.keys.foldLeft(Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]())( (acc,aSfOcc) => {
-            val candOccs = occs.getOrElse(aSfOcc,List[DBpediaResource]())
-                    .map( shallowResource => {
-                        val (resource: DBpediaResource, supportConfidence: (Int,Double)) = scores.get(shallowResource.uri) match {
-                            case Some((fullResource,contextualScore)) => {
-                                (fullResource,(fullResource.support,contextualScore))
-                            }
-                            case _ => (shallowResource,(shallowResource.support,0.0))
-                        }
-                        Factory.DBpediaResourceOccurrence.from(aSfOcc,
-                            resource, //TODO this resource may contain the c(s,r) that can be used for conditional prob.
-                            supportConfidence)
-                    })
-                    .sortBy(o => o.contextualScore) //TODO should be final score
+        val r = occs.keys.foldLeft(Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]())((acc, aSfOcc) => {
+            val candOccs = occs.getOrElse(aSfOcc, List[DBpediaResource]())
+                .map(shallowResource => {
+                val (resource: DBpediaResource, supportConfidence: (Int, Double)) = scores.get(shallowResource.uri) match {
+                    case Some((fullResource, contextualScore)) => {
+                        (fullResource, (fullResource.support, contextualScore))
+                    }
+                    case _ => (shallowResource, (shallowResource.support, 0.0))
+                }
+                Factory.DBpediaResourceOccurrence.from(aSfOcc,
+                    resource, //TODO this resource may contain the c(s,r) that can be used for conditional prob.
+                    supportConfidence)
+            })
+                .sortBy(o => o.contextualScore) //TODO should be final score
                 .reverse
                 .take(k)
             acc + (aSfOcc -> candOccs)
         });
 
-       // LOG.debug("Reranked (%d)".format(r.size))
+        // LOG.debug("Reranked (%d)".format(r.size))
 
         r
     }
 
-    def name() : String = {
-        "2step+"+disambiguator.name
+    def name(): String = {
+        "TopicBiasedDisambiguator"
     }
 
-    def ambiguity(sf : SurfaceForm) : Int = {
+    def ambiguity(sf: SurfaceForm): Int = {
         candidateSearcher.getAmbiguity(sf)
     }
 
-    def support(resource : DBpediaResource) : Int = {
-        disambiguator.support(resource)
+    def support(resource: DBpediaResource): Int = {
+        throw new UnsupportedOperationException("Not implemented.")
     }
 
     @throws(classOf[SearchException])
-    def explain(goldStandardOccurrence: DBpediaResourceOccurrence, nExplanations: Int) : List[Explanation] = {
-        disambiguator.explain(goldStandardOccurrence, nExplanations).asScala.toList
+    def explain(goldStandardOccurrence: DBpediaResourceOccurrence, nExplanations: Int): List[Explanation] = {
+        throw new UnsupportedOperationException("Not implemented.")
     }
 
-    def contextTermsNumber(resource : DBpediaResource) : Int = {
-        disambiguator.contextTermsNumber(resource)
+    def contextTermsNumber(resource: DBpediaResource): Int = {
+        throw new UnsupportedOperationException("Not implemented.")
     }
 
-    def averageIdf(context : Text) : Double = {
-        disambiguator.averageIdf(context)
+    def averageIdf(context: Text): Double = {
+        throw new UnsupportedOperationException("Not implemented.")
     }
 
 
@@ -235,6 +221,7 @@ class TwoStepDisambiguator(val candidateSearcher: CandidateSearcher,
     def disambiguate(sfOccurrence: SurfaceFormOccurrence): DBpediaResourceOccurrence = {
         throw new UnsupportedOperationException("Cannot disambiguate single occurrence. This disambiguator uses multiple occurrences in the same paragraph as disambiguation context.")
     }
+
     def bestK(sfOccurrence: SurfaceFormOccurrence, k: Int): java.util.List[DBpediaResourceOccurrence] = {
         throw new UnsupportedOperationException("Cannot disambiguate single occurrence. This disambiguator uses multiple occurrences in the same paragraph as disambiguation context.")
     }
