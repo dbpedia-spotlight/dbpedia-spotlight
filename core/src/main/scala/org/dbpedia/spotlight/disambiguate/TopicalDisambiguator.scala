@@ -92,10 +92,13 @@ class TopicalDisambiguator(val candidateSearcher: CandidateSearcher,val topicalP
                 case Some(n) => n
                 case None => throw new SearchException("Topic set was not loaded correctly.")
             }
-            val resourcePrior = resourceTopicCounts.getOrElse(topic,0).toDouble / total.toDouble
+            val resourceCount = resourceTopicCounts.getOrElse(topic, 0).toDouble
+            val resourcePrior = resourceCount / total.toDouble
+            val logRP = if (resourcePrior==0) 0.0 else math.log(resourcePrior)
+            val logTS = if (textScore==0) 0.0 else math.log(textScore)
             if (resourcePrior>0.0)
-                LOG.trace("\t\ttopic: %s, rescource prior: %.5f".format(topic,resourcePrior))
-            math.log(resourcePrior) + math.log(textScore)
+                LOG.trace("\t\ttopic: %s, resource prior: %.5f".format(topic,resourcePrior))
+            logRP + logTS
           }
         }.sum
         math.exp(score)

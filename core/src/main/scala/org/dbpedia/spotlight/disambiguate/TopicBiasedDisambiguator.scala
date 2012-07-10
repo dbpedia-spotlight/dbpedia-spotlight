@@ -114,8 +114,11 @@ class TopicBiasedDisambiguator(val candidateSearcher: CandidateSearcher,
                     case Some(n) => n
                     case None => throw new SearchException("Topic set was not loaded correctly.")
                 }
-                val resourcePrior = resourceTopicCounts.getOrElse(topic, 0).toDouble / total.toDouble
-                math.log(resourcePrior) + math.log(textScore)
+                val resourceCount = resourceTopicCounts.getOrElse(topic, 0).toDouble
+                val resourcePrior = resourceCount / total.toDouble
+                val logRP = if (resourcePrior==0) 0.0 else math.log(resourcePrior)
+                val logTS = if (textScore==0) 0.0 else math.log(textScore)
+                logRP + logTS
             }
         }.sum
         math.exp(score)
@@ -154,7 +157,7 @@ class TopicBiasedDisambiguator(val candidateSearcher: CandidateSearcher,
             .foldRight(Map[String, Tuple2[DBpediaResource, Double]]())((hit, acc) => {
             var resource: DBpediaResource = contextSearcher.getDBpediaResource(hit.doc) //this method returns resource.support=c(r)
             val topicalScore = getTopicalScore(topics, resource)
-            var score = if (topicalScore > 0) hit.score * topicalScore else hit.score
+            var score = if (topicalScore == 0.0) hit.score else (hit.score * topicalScore)
             //TODO can mix here the scores: c(s,r) / c(r)
             acc + (resource.uri ->(resource, score))
         });
