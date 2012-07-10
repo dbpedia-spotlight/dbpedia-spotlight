@@ -53,7 +53,7 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
     val analyzer = configuration.analyzer
     assert(analyzer!=null)
 
-       val contextIndexDir = LuceneManager.pickDirectory(new File(configuration.getContextIndexDirectory))
+    val contextIndexDir = LuceneManager.pickDirectory(new File(configuration.getContextIndexDirectory))
     val contextLuceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(contextIndexDir) // use this if all surface forms in the index are lower-cased
     val similarity = new CachedInvCandFreqSimilarity(JCSTermCache.getInstance(contextLuceneManager, configuration.getMaxCacheSize))
     contextLuceneManager.setContextSimilarity(similarity)        // set most successful Similarity
@@ -145,7 +145,7 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
         } else if (policy == SpotlightConfiguration.DisambiguationPolicy.Document) {
             disambiguators.getOrElse(policy, new ParagraphDisambiguatorJ(new TwoStepDisambiguator(candidateSearcher,contextSearcher)))
         } else if (policy == SpotlightConfiguration.DisambiguationPolicy.Occurrences) {
-            disambiguators.getOrElse(policy, new ParagraphDisambiguatorJ(new DefaultDisambiguator(this)))
+            disambiguators.getOrElse(policy, new ParagraphDisambiguatorJ(new DefaultDisambiguator(contextSearcher)))
         } else if (policy == SpotlightConfiguration.DisambiguationPolicy.CuttingEdge) {
             disambiguators.getOrElse(policy, new ParagraphDisambiguatorJ(new CuttingEdgeDisambiguator(this)))
         } else { // by default use Occurrences
