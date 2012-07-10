@@ -29,13 +29,13 @@ import scalaj.collection.Imports._
  *
  * @author pablomendes
  */
-class CuttingEdgeDisambiguator(val factory: SpotlightFactory) extends Disambiguator with ParagraphDisambiguator {
+class CuttingEdgeDisambiguator(val contextSearcher: ContextSearcher) extends Disambiguator with ParagraphDisambiguator {
 
     private val LOG = LogFactory.getLog(this.getClass)
 
     LOG.info("Initializing disambiguator object ...")
 
-    val disambiguator : Disambiguator = new MixedWeightsDisambiguator(factory.contextSearcher, new LinearRegressionMixture())
+    val disambiguator : Disambiguator = new MixedWeightsDisambiguator(contextSearcher, new LinearRegressionMixture())
 
     //TODO fix MultiThreading
     //val disambiguator : Disambiguator = new MultiThreadedDisambiguatorWrapper(new MixedWeightsDisambiguator(contextSearcher, new LinearRegressionMixture()))
