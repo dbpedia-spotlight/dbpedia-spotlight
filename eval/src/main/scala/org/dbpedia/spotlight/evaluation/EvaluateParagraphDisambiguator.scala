@@ -26,7 +26,6 @@ import org.dbpedia.spotlight.corpus.{MilneWittenCorpus, AidaCorpus}
 import scalaj.collection.Imports._
 
 import org.dbpedia.spotlight.model._
-import org.dbpedia.spotlight.db.model.HashMapTopicalPriorStore
 import org.dbpedia.spotlight.filter.occurrences.{UriWhitelistFilter, RedirectResolveFilter, OccurrenceFilter}
 import scala.Some
 
@@ -150,9 +149,7 @@ object EvaluateParagraphDisambiguator {
         //val test : Disambiguator = new GraphCentralityDisambiguator(config)
 
         val factory = new SpotlightFactory(config)
-        val topics = HashMapTopicalPriorStore.fromDir(new File("data/topics"))
-        val disambiguators = Set(new TopicalDisambiguator(factory.candidateSearcher,topics),
-                                 new TopicBiasedDisambiguator(factory.candidateSearcher,factory.contextSearcher,topics),
+        val disambiguators = Set(
                                  new TwoStepDisambiguator(factory.candidateSearcher,factory.contextSearcher)
                                  //, new CuttingEdgeDisambiguator(factory),
                                  //new PageRankDisambiguator(factory)
