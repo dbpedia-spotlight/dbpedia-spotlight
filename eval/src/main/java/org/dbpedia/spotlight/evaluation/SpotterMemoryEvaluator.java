@@ -61,12 +61,7 @@ public class SpotterMemoryEvaluator {
                 SurfaceFormDictionary sfDictProbThresh3 = ExactSurfaceFormDictionary.fromLingPipeDictionary(dictionary, false);
                 System.out.println("Dictionary size: " + sfDictProbThresh3.size());
                 File stopwordsFile = new File(openNLPDir+"stopwords.txt");
-                spotter = new OpenNLPChunkerSpotter(new File(openNLPDir,OpenNLPUtil.OpenNlpModels.SentenceModel.filename()+".bin"),
-                        new File(openNLPDir,OpenNLPUtil.OpenNlpModels.TokenizerModel.filename()+".bin"),
-                        new File(openNLPDir,OpenNLPUtil.OpenNlpModels.POSModel.filename()+".bin"),
-                        new File(openNLPDir, OpenNLPUtil.OpenNlpModels.ChunkModel.filename()+".bin"),
-                        sfDictProbThresh3,
-                        stopwordsFile);
+                spotter = OpenNLPChunkerSpotter.fromDir(openNLPDir,sfDictProbThresh3,stopwordsFile);
                 break;
             }
             case 1: {

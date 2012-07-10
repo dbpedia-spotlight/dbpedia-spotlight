@@ -1,7 +1,7 @@
 package org.dbpedia.spotlight.spot.opennlp
 
 
-import org.dbpedia.spotlight.spot.Spotter
+import org.dbpedia.spotlight.spot.{OpenNLPUtil, Spotter}
 import opennlp.tools.chunker.{ChunkerModel, ChunkerME, Chunker}
 import java.io.FileInputStream
 import java.io.File
@@ -13,6 +13,7 @@ import scala.util.control.Breaks._
 import org.dbpedia.spotlight.model.{SurfaceForm, SurfaceFormOccurrence, Text}
 import collection.mutable.HashSet
 import io.Source
+import scalaj.collection.Implicits._
 
 
 /**
@@ -23,14 +24,13 @@ import io.Source
  * This is similar to OpenNLPNGramSpotter but a bit simpler and uses a dictionary of known surface forms instead of NER.
  *
  */
-
 class OpenNLPChunkerSpotter(
   sentenceModel: File,
   tokenizerModel: File,
   posModel: File,
   chunkerModel: File,
   surfaceFormDictionary: SurfaceFormDictionary,
-  stopwordsFile: File
+  stopwords: java.util.Set[String]
 ) extends Spotter {
 
   val posTagger: POSTagger =
@@ -44,11 +44,6 @@ class OpenNLPChunkerSpotter(
 
   val chunker: Chunker =
     new ChunkerME(new ChunkerModel(new FileInputStream(chunkerModel)))
-
-  val stopwords = new HashSet[String]()
-  Source.fromFile(stopwordsFile).getLines().foreach { line =>
-    stopwords.add(line.trim())
-  }
 
   def extract(text: Text): java.util.List[SurfaceFormOccurrence] = {
     val spots = new LinkedList[SurfaceFormOccurrence]
@@ -100,4 +95,25 @@ class OpenNLPChunkerSpotter(
   def setName(name: String) {
     this.name = name
   }
+}
+
+object OpenNLPChunkerSpotter {
+
+    def fromDir(openNLPDir: String, sfDict: SurfaceFormDictionary, stopwordsFile: File) : OpenNLPChunkerSpotter = {
+        val stopwords = new HashSet[String]()
+        Source.fromFile(stopwordsFile).getLines().foreach { line =>
+          stopwords.add(line.trim())
+        }
+        fromDir(openNLPDir,sfDict,stopwords.toSet.asJava)
+    }
+
+    def fromDir(openNLPDir: String, sfDict: SurfaceFormDictionary, stopwords: java.util.Set[String]) : OpenNLPChunkerSpotter = {
+        new OpenNLPChunkerSpotter(new File(openNLPDir, OpenNLPUtil.OpenNlpModels.SentenceModel.filename + ".bin"),
+              new File(openNLPDir, OpenNLPUtil.OpenNlpModels.TokenizerModel.filename + ".bin"),
+              new File(openNLPDir, OpenNLPUtil.OpenNlpModels.POSModel.filename + ".bin"),
+              new File(openNLPDir, OpenNLPUtil.OpenNlpModels.ChunkModel.filename + ".bin"),
+                      sfDict,
+                      stopwords)
+    }
+
 }

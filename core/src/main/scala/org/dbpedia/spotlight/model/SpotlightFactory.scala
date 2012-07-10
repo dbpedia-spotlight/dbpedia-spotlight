@@ -31,6 +31,7 @@ import org.dbpedia.spotlight.disambiguate._
 import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter
 import java.io.File
 import org.dbpedia.spotlight.spot._
+import opennlp.{SurfaceFormDictionary, ProbabilisticSurfaceFormDictionary, OpenNLPChunkerSpotter}
 import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters
 import org.dbpedia.spotlight.tagging.lingpipe.{LingPipeTextUtil, LingPipeTaggedTokenProvider, LingPipeFactory}
 import collection.JavaConversions._
@@ -39,6 +40,9 @@ import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy
 import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy
 import org.dbpedia.spotlight.lucene.search.{LuceneCandidateSearcher, MergedOccurrencesContextSearcher}
+import com.aliasi.util.AbstractExternalizable
+import com.aliasi.dict.{DictionaryEntry, Dictionary}
+import java.util
 
 /**
  * This class contains many of the "defaults" for DBpedia Spotlight.
@@ -92,6 +96,7 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
 
     //populate
     LOG.info("Initiating spotters...")
+    lazy val spotDict : Dictionary[String] = AbstractExternalizable.readObject(new File(configuration.getSpotterConfiguration.getSpotterFile)).asInstanceOf[Dictionary[String]] //TODO temp until new configuration is in place
     spotter()
     LOG.info("Initiating disambiguators...")
     disambiguator()
@@ -101,7 +106,7 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
         if (policy == SpotterConfiguration.SpotterPolicy.Default) {
             spotters.getOrElse(policy, spotter(SpotterConfiguration.SpotterPolicy.LingPipeSpotter)); // if no default, use lingpipe
         } else if(policy == SpotterConfiguration.SpotterPolicy.LingPipeSpotter) {
-            spotters.getOrElse(policy, new LingPipeSpotter(new File(configuration.getSpotterConfiguration.getSpotterFile)))
+            spotters.getOrElse(policy, new LingPipeSpotter(spotDict))
         } else if (policy == SpotterConfiguration.SpotterPolicy.AtLeastOneNounSelector) {
             spotters.getOrElse(policy, SpotterWithSelector.getInstance(spotter(SpotterConfiguration.SpotterPolicy.LingPipeSpotter),new AtLeastOneNounSelector(),taggedTokenProvider()))
         } else if (policy == SpotterConfiguration.SpotterPolicy.CoOccurrenceBasedSelector) {
@@ -110,6 +115,9 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
             spotters.getOrElse(policy, new NESpotter(configuration.getSpotterConfiguration.getOpenNLPModelDir))
         } else if (policy == SpotterConfiguration.SpotterPolicy.KeyphraseSpotter) {
             spotters.getOrElse(policy, new KeaSpotter(configuration.getSpotterConfiguration.getKeaModel, configuration.getSpotterConfiguration.getKeaMaxNumberOfPhrases, configuration.getSpotterConfiguration.getKeaCutoff))
+        } else if (policy == SpotterConfiguration.SpotterPolicy.OpenNLPChunkerSpotter) {
+            val dict = ProbabilisticSurfaceFormDictionary.fromLingPipeDictionary(spotDict, false) //TODO with new configuration in place, we can load from file into a more compact dictionary
+            spotters.getOrElse(policy, OpenNLPChunkerSpotter.fromDir(configuration.getSpotterConfiguration.getOpenNLPModelDir+"/"+configuration.language.toLowerCase+"/", dict, configuration.getStopWords))
         } else if (policy == SpotterConfiguration.SpotterPolicy.SpotXmlParser) {
           new SpotXmlParser
         } else if (policy == SpotterConfiguration.SpotterPolicy.WikiMarkupSpotter) {

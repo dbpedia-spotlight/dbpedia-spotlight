@@ -81,11 +81,15 @@ object ProbabilisticSurfaceFormDictionary {
     SurfaceFormDictionary.fromIterator(io.Source.fromFile(dictionaryFile).getLines(),
       new ProbabilisticSurfaceFormDictionary(io.Source.fromFile(dictionaryFile).size, caseSensitive))
   }
-  def fromLingPipeDictionary(dictionaryFile: File, caseSensitive: Boolean = true): SurfaceFormDictionary = {
+  def fromLingPipeDictionaryFile(dictionaryFile: File, caseSensitive: Boolean = true): SurfaceFormDictionary = {
     val lingpipeDictionary: Dictionary[String] = AbstractExternalizable.readObject(dictionaryFile).asInstanceOf[Dictionary[String]]
     SurfaceFormDictionary.fromLingPipeDictionary(lingpipeDictionary,
       new ProbabilisticSurfaceFormDictionary(lingpipeDictionary.size(), caseSensitive))
   }
+    def fromLingPipeDictionary(lingpipeDictionary: Dictionary[String], caseSensitive: Boolean = true): SurfaceFormDictionary = {
+        SurfaceFormDictionary.fromLingPipeDictionary(lingpipeDictionary,
+            new ProbabilisticSurfaceFormDictionary(lingpipeDictionary.size(), caseSensitive))
+    }
 }
 
 object ExactSurfaceFormDictionary {

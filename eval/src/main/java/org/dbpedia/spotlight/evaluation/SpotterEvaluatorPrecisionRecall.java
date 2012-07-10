@@ -142,49 +142,29 @@ public class SpotterEvaluatorPrecisionRecall {
 
 
 
-        SurfaceFormDictionary sfDictProbThreshGold = ProbabilisticSurfaceFormDictionary.fromLingPipeDictionary(lexSpotterGoldFile,false);
-        Spotter onlpChunksSpotterGold = new OpenNLPChunkerSpotter(new File(openNLPDir,OpenNLPUtil.OpenNlpModels.SentenceModel.filename()+".bin"),
-                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.TokenizerModel.filename()+".bin"),
-                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.POSModel.filename()+".bin"),
-                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.ChunkModel.filename()+".bin"),
-                sfDictProbThreshGold,
-                stopwords);
+        SurfaceFormDictionary sfDictProbThreshGold = ProbabilisticSurfaceFormDictionary.fromLingPipeDictionaryFile(lexSpotterGoldFile,false);
+        Spotter onlpChunksSpotterGold = OpenNLPChunkerSpotter.fromDir(openNLPDir,sfDictProbThreshGold,stopwords);
         onlpChunksSpotterGold.setName("\\joNPL{gold}                  ");
         latexTable.append(getLatexTableRow(onlpChunksSpotterGold, documents, goldSurfaceFormOccurrences,baseResult));
 
         //File sfDictThresh3 = new File("/home/pablo/workspace/spotlight/index/output/surfaceForms-fromOccs-thresh3-TRD.set");
         //SurfaceFormDictionary sfDictProbThresh3 = ProbabilisticSurfaceFormDictionary.fromFile(sfDictThresh3, false);
-        SurfaceFormDictionary sfDictProbThresh3 = ProbabilisticSurfaceFormDictionary.fromLingPipeDictionary(lexSpotterT3File,false);
-        Spotter onlpChunksSpotter3 = new OpenNLPChunkerSpotter(new File(openNLPDir,OpenNLPUtil.OpenNlpModels.SentenceModel.filename()+".bin"),
-                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.TokenizerModel.filename()+".bin"),
-                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.POSModel.filename()+".bin"),
-                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.ChunkModel.filename()+".bin"),
-                sfDictProbThresh3,
-                stopwords);
+        SurfaceFormDictionary sfDictProbThresh3 = ProbabilisticSurfaceFormDictionary.fromLingPipeDictionaryFile(lexSpotterT3File,false);
+        Spotter onlpChunksSpotter3 = OpenNLPChunkerSpotter.fromDir(openNLPDir,sfDictProbThresh3,stopwords);
         onlpChunksSpotter3.setName("\\joNPL{>3}                  ");
         latexTable.append(getLatexTableRow(onlpChunksSpotter3, documents, goldSurfaceFormOccurrences,baseResult));
 
         //File sfDictThresh10 = new File("/home/pablo/workspace/spotlight/index/output/surfaceForms-fromOccs-thresh10-TRD.set");
         //SurfaceFormDictionary sfDictProbThresh10 = ProbabilisticSurfaceFormDictionary.fromFile(sfDictThresh10, false);
-        SurfaceFormDictionary sfDictProbThresh10 = ProbabilisticSurfaceFormDictionary.fromLingPipeDictionary(lexSpotterT10File,false);
-        Spotter onlpChunksSpotter10 = new OpenNLPChunkerSpotter(new File(openNLPDir,OpenNLPUtil.OpenNlpModels.SentenceModel.filename()+".bin"),
-                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.TokenizerModel.filename()+".bin"),
-                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.POSModel.filename()+".bin"),
-                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.ChunkModel.filename()+".bin"),
-                sfDictProbThresh10,
-                stopwords);
+        SurfaceFormDictionary sfDictProbThresh10 = ProbabilisticSurfaceFormDictionary.fromLingPipeDictionaryFile(lexSpotterT10File,false);
+        Spotter onlpChunksSpotter10 = OpenNLPChunkerSpotter.fromDir(openNLPDir,sfDictProbThresh10,stopwords);
         onlpChunksSpotter10.setName("\\joNPL{>10}                 ");
         latexTable.append(getLatexTableRow(onlpChunksSpotter10, documents, goldSurfaceFormOccurrences,baseResult));
 
         //File sfDictThresh75 = new File("/home/pablo/workspace/spotlight/index/output/surfaceForms-fromOccs-thresh75.tsv");
         //SurfaceFormDictionary sfDictProbThresh75 = ProbabilisticSurfaceFormDictionary.fromFile(sfDictThresh75, false);
-        SurfaceFormDictionary sfDictProbThresh75 = ProbabilisticSurfaceFormDictionary.fromLingPipeDictionary(lexSpotterT75File,false);
-        Spotter onlpChunksSpotter75 = new OpenNLPChunkerSpotter(new File(openNLPDir,OpenNLPUtil.OpenNlpModels.SentenceModel.filename()+".bin"),
-                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.TokenizerModel.filename()+".bin"),
-                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.POSModel.filename()+".bin"),
-                new File(openNLPDir,OpenNLPUtil.OpenNlpModels.ChunkModel.filename()+".bin"),
-                sfDictProbThresh75,
-                stopwords);
+        SurfaceFormDictionary sfDictProbThresh75 = ProbabilisticSurfaceFormDictionary.fromLingPipeDictionaryFile(lexSpotterT75File,false);
+        Spotter onlpChunksSpotter75 = OpenNLPChunkerSpotter.fromDir(openNLPDir,sfDictProbThresh75,stopwords);
         onlpChunksSpotter75.setName("\\joNPL{>75}                 ");
         latexTable.append(getLatexTableRow(onlpChunksSpotter75, documents, goldSurfaceFormOccurrences,baseResult));
 

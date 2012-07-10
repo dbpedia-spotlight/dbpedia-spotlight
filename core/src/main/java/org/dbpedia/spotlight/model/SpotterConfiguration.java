@@ -54,7 +54,7 @@ public class SpotterConfiguration {
         CoOccurrenceBasedSelector,
         NESpotter,
         KeyphraseSpotter,
-       // OpenNLPChunkerSpotter
+        OpenNLPChunkerSpotter,
         WikiMarkupSpotter,
         SpotXmlParser
     }
