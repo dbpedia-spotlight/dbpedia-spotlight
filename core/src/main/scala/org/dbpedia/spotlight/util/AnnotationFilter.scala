@@ -257,7 +257,7 @@ class AnnotationFilter(val config: SpotlightConfiguration)
         var config = new SpotlightConfiguration("conf/server.properties");
 
         val factory = new SpotlightFactory(config);
-        val disambiguator : Disambiguator = new DefaultDisambiguator(factory)
+        val disambiguator : Disambiguator = new DefaultDisambiguator(factory.contextSearcher)
 
 //        // -- Spotter --
 //        val spotter : Spotter = new LingPipeSpotter(spotterFile)
