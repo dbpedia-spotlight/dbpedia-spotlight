@@ -34,7 +34,6 @@ class CuttingEdgeDisambiguator(val contextSearcher: ContextSearcher) extends Dis
     private val LOG = LogFactory.getLog(this.getClass)
 
     LOG.info("Initializing disambiguator object ...")
-
     val disambiguator : Disambiguator = new MixedWeightsDisambiguator(contextSearcher, new LinearRegressionMixture())
 
     //TODO fix MultiThreading

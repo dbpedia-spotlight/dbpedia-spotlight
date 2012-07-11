@@ -23,10 +23,7 @@ import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.ScoreDoc;
 import org.dbpedia.spotlight.disambiguate.Disambiguator;
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguator;
-import org.dbpedia.spotlight.exceptions.DisambiguationException;
-import org.dbpedia.spotlight.exceptions.InputException;
-import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
-import org.dbpedia.spotlight.exceptions.SearchException;
+import org.dbpedia.spotlight.exceptions.*;
 import org.dbpedia.spotlight.lucene.LuceneFeatureVector;
 import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher;
 import org.dbpedia.spotlight.model.*;
@@ -40,6 +37,16 @@ public class MergedOccurrencesDisambiguator implements Disambiguator {
     final Log LOG = LogFactory.getLog(this.getClass());
 
     MergedOccurrencesContextSearcher mMergedSearcher;
+
+    public MergedOccurrencesDisambiguator(ContextSearcher searcher) throws IOException, ConfigurationException {
+        //TODO this is horrible, but it's a temp fix until we organize the interfaces
+        //FIXME
+        if (searcher instanceof MergedOccurrencesContextSearcher) {
+            mMergedSearcher = (MergedOccurrencesContextSearcher) searcher;
+        } else {
+            throw new ConfigurationException("You cannot use MergedOccurrencesDisambiguator with a searcher that is not MergedOccurrencesContextSearcher.");
+        }
+    }
 
     public MergedOccurrencesDisambiguator(MergedOccurrencesContextSearcher searcher) throws IOException {
         this.mMergedSearcher = searcher;

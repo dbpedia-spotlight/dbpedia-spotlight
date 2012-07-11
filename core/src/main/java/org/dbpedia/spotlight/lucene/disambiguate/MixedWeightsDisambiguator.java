@@ -17,11 +17,9 @@
 package org.dbpedia.spotlight.lucene.disambiguate;
 
 import org.dbpedia.spotlight.disambiguate.mixtures.Mixture;
-import org.dbpedia.spotlight.exceptions.DisambiguationException;
-import org.dbpedia.spotlight.exceptions.InputException;
-import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
-import org.dbpedia.spotlight.exceptions.SearchException;
+import org.dbpedia.spotlight.exceptions.*;
 import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher;
+import org.dbpedia.spotlight.model.ContextSearcher;
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 
@@ -41,7 +39,7 @@ public class MixedWeightsDisambiguator extends MergedOccurrencesDisambiguator {
 
     Mixture mixture;
 
-    public MixedWeightsDisambiguator(MergedOccurrencesContextSearcher searcher, Mixture mixture) throws IOException {
+    public MixedWeightsDisambiguator(ContextSearcher searcher, Mixture mixture) throws IOException, ConfigurationException {
         super(searcher);
         this.mixture = mixture;
     }

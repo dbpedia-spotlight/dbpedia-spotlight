@@ -43,6 +43,7 @@ class DefaultDisambiguator(val contextSearcher: ContextSearcher) extends Disambi
     private val LOG = LogFactory.getLog(this.getClass)
 
     LOG.info("Initializing disambiguator object ...")
+
     val disambiguator : Disambiguator = new MergedOccurrencesDisambiguator(contextSearcher)
 
     LOG.info("Done.")

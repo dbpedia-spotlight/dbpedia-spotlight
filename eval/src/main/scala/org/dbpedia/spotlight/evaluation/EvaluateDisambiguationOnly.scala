@@ -107,8 +107,8 @@ object EvaluateDisambiguationOnly
         //val indexDir = baseDir+"/2.9.3/Index.wikipediaTraining.Merged";
 
         val factory = new SpotlightFactory(config)
-        val default : Disambiguator = new DefaultDisambiguator(factory)
-        val cuttingEdge : Disambiguator = new CuttingEdgeDisambiguator(factory)
+        val default : Disambiguator = new DefaultDisambiguator(factory.contextSearcher)
+        val cuttingEdge : Disambiguator = new CuttingEdgeDisambiguator(factory.contextSearcher)
 
         //val test : Disambiguator = new GraphCentralityDisambiguator(config)
         val disSet = Set(cuttingEdge);
