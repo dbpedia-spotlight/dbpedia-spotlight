@@ -56,10 +56,11 @@ public class Spot {
     // Annotation interface
     private static SpotlightInterface annotationInterface =  new SpotlightInterface("/spot");
 
-    
+
     @GET
     @Produces({MediaType.TEXT_XML,MediaType.APPLICATION_XML})
     public Response getXML(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
+                           @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @QueryParam("url") String inUrl,
                             //@DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
                             //@DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
                             @DefaultValue("Default") @QueryParam("spotter") String spotterName,
@@ -68,7 +69,8 @@ public class Spot {
         String clientIp = request.getRemoteAddr();
 
         try {
-            List<SurfaceFormOccurrence> spots = annotationInterface.spot(spotterName, new Text(text));
+            String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
+            List<SurfaceFormOccurrence> spots = annotationInterface.spot(spotterName, new Text(textToProcess));
             String response = new Annotation(new Text(text), spots).toXML();
             return ServerUtils.ok(response);
         } catch (Exception e) {
@@ -80,6 +82,7 @@ public class Spot {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getJSON(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
+                            @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @QueryParam("url") String inUrl,
                             //@DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
                             //@DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
                             @DefaultValue("Default") @QueryParam("spotter") String spotterName,
@@ -88,7 +91,8 @@ public class Spot {
         String clientIp = request.getRemoteAddr();
 
         try {
-            List<SurfaceFormOccurrence> spots = annotationInterface.spot(spotterName, new Text(text));
+            String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
+            List<SurfaceFormOccurrence> spots = annotationInterface.spot(spotterName, new Text(textToProcess));
             String response = new Annotation(new Text(text), spots).toJSON();
             return ServerUtils.ok(response);
         } catch (Exception e) {
@@ -101,6 +105,7 @@ public class Spot {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces({MediaType.TEXT_XML,MediaType.APPLICATION_XML})
     public Response postXML(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
+                            @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @QueryParam("url") String inUrl,
                             //@DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
                             //@DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
                             @DefaultValue("Default") @FormParam("spotter") String spotterName,
@@ -109,7 +114,8 @@ public class Spot {
         String clientIp = request.getRemoteAddr();
 
         try {
-            List<SurfaceFormOccurrence> spots = annotationInterface.spot(spotterName, new Text(text));
+            String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
+            List<SurfaceFormOccurrence> spots = annotationInterface.spot(spotterName, new Text(textToProcess));
             String response = new Annotation(new Text(text), spots).toXML();
             return ServerUtils.ok(response);
         } catch (Exception e) {
@@ -122,6 +128,7 @@ public class Spot {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
     public Response postJSON(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
+                             @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @QueryParam("url") String inUrl,
                             //@DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
                             //@DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
                             @DefaultValue("Default") @FormParam("spotter") String spotterName,
@@ -130,6 +137,7 @@ public class Spot {
         String clientIp = request.getRemoteAddr();
 
         try {
+            String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
             List<SurfaceFormOccurrence> spots = annotationInterface.spot(spotterName, new Text(text));
             String response = new Annotation(new Text(text), spots).toJSON();
             return ServerUtils.ok(response);
