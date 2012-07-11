@@ -167,7 +167,7 @@ public class Candidates {
         String clientIp = request.getRemoteAddr();
 
         try {
-            String textToProcess = getTextToProcess(text, inUrl);
+            String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
             Annotation a = getAnnotation(textToProcess, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, spotter, disambiguatorName, clientIp);
             LOG.info("XML format");
             String content = a.toXML();
@@ -193,7 +193,7 @@ public class Candidates {
         String clientIp = request.getRemoteAddr();
 
         try {
-            String textToProcess = getTextToProcess(text, inUrl);
+            String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
             Annotation a = getAnnotation(textToProcess, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, spotter, disambiguatorName, clientIp);
             LOG.info("JSON format");
             String content = a.toJSON();
@@ -272,20 +272,6 @@ public class Candidates {
             @Context HttpServletRequest request
     ) {
         return getJSON(text,inUrl,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,spotter,disambiguatorName,request);
-    }
-
-    private String getTextToProcess(String text, String inUrl) throws MalformedURLException, BoilerpipeProcessingException, InputException {
-        String textToProcess = "";
-        if (!text.equals("")){
-            textToProcess = text;
-        }else if (!inUrl.equals("")) {
-            LOG.info("Parsing URL to get main content");
-            URL url = new URL(inUrl);
-            textToProcess = ArticleExtractor.INSTANCE.getText(url);
-        }else{
-            throw new InputException("No input was specified in the &text nor the &url parameter.");
-        }
-        return textToProcess;
     }
 
     public Annotation getAnnotation(String text,
