@@ -23,13 +23,14 @@ import org.apache.lucene.search.Explanation
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.lucene.disambiguate.MixedWeightsDisambiguator
 import scalaj.collection.Imports._
+import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
 
 /**
  * Implementation used for evaluation runs. Will change as new scores/implementations come in.
  *
  * @author pablomendes
  */
-class CuttingEdgeDisambiguator(val contextSearcher: ContextSearcher) extends Disambiguator with ParagraphDisambiguator {
+class CuttingEdgeDisambiguator(val contextSearcher: MergedOccurrencesContextSearcher) extends Disambiguator with ParagraphDisambiguator {
 
     private val LOG = LogFactory.getLog(this.getClass)
 

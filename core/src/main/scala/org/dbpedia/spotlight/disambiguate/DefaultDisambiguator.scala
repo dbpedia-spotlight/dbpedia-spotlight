@@ -38,7 +38,7 @@ import scala.collection.JavaConversions._
  * @author maxjakob
  * @author pablomendes
  */
-class DefaultDisambiguator(val contextSearcher: ContextSearcher) extends Disambiguator with ParagraphDisambiguator  {
+class DefaultDisambiguator(val contextSearcher: MergedOccurrencesContextSearcher) extends Disambiguator with ParagraphDisambiguator  {
 
     private val LOG = LogFactory.getLog(this.getClass)
 
