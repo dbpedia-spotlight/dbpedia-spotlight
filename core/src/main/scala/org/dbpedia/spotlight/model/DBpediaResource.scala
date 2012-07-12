@@ -29,7 +29,7 @@ class DBpediaResource(var uri : String,
 {
     require(uri != null)
 
-    uri = uri.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
+    uri = uri.replace(SpotlightConfiguration.DEFAULT_NAMESPACE, "")
 
     uri = if (ModifiedWikiUtil.isEncoded(uri)) {
               ModifiedWikiUtil.spaceToUnderscore(uri).capitalize
@@ -79,7 +79,7 @@ class DBpediaResource(var uri : String,
     override def toString = {
         val typesString = if (types!=null && types.nonEmpty) types.filter(_!=null).filter(_.typeID!=null).map(_.typeID).mkString("(", ",", ")") else ""
 
-        if (isCommonWord) {
+        if (isExternalURI) {
             "WiktionaryResource["+uri+typesString+"]"
         } else {
             "DBpediaResource["+uri+typesString+"]"
@@ -87,24 +87,18 @@ class DBpediaResource(var uri : String,
     }
 
     /**
-     * This means that a dummy candidate has been added as a surrogate to a common word.
+     * This means that it is not from our default namespace
      */
-    def isCommonWord = {
-        uri.startsWith("W:")
+    def isExternalURI = {
+        uri.startsWith("http://")
     }
 
     def getFullUri = {
-        if (isCommonWord) {
-            DBpediaResource.WIKTIONARY_RESOURCE_PREFIX + uri
+        if (isExternalURI) {
+            uri
         } else {
-            DBpediaResource.DBPEDIA_RESOURCE_PREFIX + uri
+            SpotlightConfiguration.DEFAULT_NAMESPACE + uri
         }
     }
 
-}
-
-@serializable
-object DBpediaResource {
-    val DBPEDIA_RESOURCE_PREFIX = "http://dbpedia.org/resource/"
-    val WIKTIONARY_RESOURCE_PREFIX = "http://en.wiktionary.org/wiki/"
 }

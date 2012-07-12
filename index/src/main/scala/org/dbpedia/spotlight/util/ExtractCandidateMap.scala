@@ -37,7 +37,7 @@ package org.dbpedia.spotlight.util
 import io.Source
 import org.apache.commons.logging.LogFactory
 import java.io._
-import org.dbpedia.spotlight.model.{SurfaceForm, DBpediaResource}
+import org.dbpedia.spotlight.model.{SpotlightConfiguration, SurfaceForm}
 import java.util.Scanner
 import org.semanticweb.yars.nx.parser.NxParser
 import org.dbpedia.spotlight.string.ModifiedWikiUtil
@@ -93,7 +93,7 @@ object ExtractCandidateMap
         // redirects and disambiguations are bad URIs
         for (fileName <- List(redirectsFileName, disambiguationsFileName)) {
             for(triple <- new NxParser(new FileInputStream(fileName))) {
-                val badUri = triple(0).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
+                val badUri = triple(0).toString.replace(SpotlightConfiguration.DEFAULT_NAMESPACE, "")
                 badURIs += badUri
                 badURIStream.println(badUri)
             }
@@ -105,7 +105,7 @@ object ExtractCandidateMap
         val parser = new NxParser(new FileInputStream(titlesFileName))
         while (parser.hasNext) {
             val triple = parser.next
-            val uri = triple(0).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
+            val uri = triple(0).toString.replace(SpotlightConfiguration.DEFAULT_NAMESPACE, "")
             if (looksLikeAGoodURI(uri) && !badURIs.contains(uri))
                 conceptURIStream.println(uri)
         }
@@ -150,8 +150,8 @@ object ExtractCandidateMap
         val parser = new NxParser(new FileInputStream(redirectsFileName))
         while (parser.hasNext) {
             val triple = parser.next
-            val subj = triple(0).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
-            val obj = triple(2).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
+            val subj = triple(0).toString.replace(SpotlightConfiguration.DEFAULT_NAMESPACE, "")
+            val obj = triple(2).toString.replace(SpotlightConfiguration.DEFAULT_NAMESPACE, "")
             linkMap = linkMap.updated(subj, obj)
         }
 
@@ -233,8 +233,8 @@ object ExtractCandidateMap
             val parser = new NxParser(new FileInputStream(fileName))
             while (parser.hasNext) {
                 val triple = parser.next
-                val surfaceFormUri = triple(0).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
-                val uri = triple(2).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
+                val surfaceFormUri = triple(0).toString.replace(SpotlightConfiguration.DEFAULT_NAMESPACE, "")
+                val uri = triple(2).toString.replace(SpotlightConfiguration.DEFAULT_NAMESPACE, "")
 
                 if (conceptURIs contains uri) {
                     getCleanSurfaceForm(surfaceFormUri, stopWords, lowerCased) match {
@@ -281,8 +281,8 @@ object ExtractCandidateMap
             val parser = new NxParser(new FileInputStream(fileName))
             while (parser.hasNext) {
                 val triple = parser.next
-                val subj = triple(0).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
-                val obj = triple(2).toString.replace(DBpediaResource.DBPEDIA_RESOURCE_PREFIX, "")
+                val subj = triple(0).toString.replace(SpotlightConfiguration.DEFAULT_NAMESPACE, "")
+                val obj = triple(2).toString.replace(SpotlightConfiguration.DEFAULT_NAMESPACE, "")
                 linkMap = linkMap.updated(obj, linkMap.get(obj).getOrElse(List[String]()) ::: List(subj))
             }
         }
@@ -364,7 +364,7 @@ object ExtractCandidateMap
 
         for (line <- Source.fromFile(surfaceFormsFileName, "UTF-8").getLines) {
             val elements = line.split("\t")
-            val subj = new Resource(DBpediaResource.DBPEDIA_RESOURCE_PREFIX+elements(1))
+            val subj = new Resource(SpotlightConfiguration.DEFAULT_NAMESPACE+elements(1))
             val obj = new Literal(elements(0), langString, Literal.STRING)
             val triple = new Triple(subj, predicate, obj)
             ntStream.println(triple.toN3)
@@ -387,7 +387,7 @@ object ExtractCandidateMap
 
         for (line <- Source.fromFile(surfaceFormsFileName, "UTF-8").getLines) {
             val elements = line.split("\t")
-            val subj = new Resource(DBpediaResource.DBPEDIA_RESOURCE_PREFIX+elements(1))
+            val subj = new Resource(SpotlightConfiguration.DEFAULT_NAMESPACE+elements(1))
             val obj = new Resource("http://lexvo.org/id/term/"+langString+"/"+ModifiedWikiUtil.wikiEncode(elements(0)))
             val triple = new Triple(subj, predicate, obj)
             ntStream.println(triple.toN3)

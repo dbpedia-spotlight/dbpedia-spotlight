@@ -52,6 +52,7 @@ public class SpotlightConfiguration {
 	public final static String DEFAULT_SPARQL = "";
 	public final static String DEFAULT_POLICY = "whitelist";
 	public final static String DEFAULT_COREFERENCE_RESOLUTION = "true";
+    public static String DEFAULT_NAMESPACE = "http://dbpedia.org/resource/";
 
     public enum DisambiguationPolicy { Document,Occurrences,CuttingEdge,Default }
 
@@ -160,7 +161,9 @@ public class SpotlightConfiguration {
 			throw new ConfigurationException("Cannot find configuration file "+fileName,e);
 		}
 
-		//Read the spotter configuration from the properties file
+        DEFAULT_NAMESPACE = config.getProperty("org.dbpedia.spotlight.default_namespace",DEFAULT_NAMESPACE);
+
+        //Read the spotter configuration from the properties file
 		spotterConfiguration = new SpotterConfiguration(fileName);
 
         disambiguatorConfiguration = new DisambiguatorConfiguration(fileName);
