@@ -4,10 +4,7 @@ import org.dbpedia.spotlight.io.AnnotatedTextSource
 import org.dbpedia.spotlight.model._
 import java.io.File
 import io.Source
-import scala.None
 import collection.mutable.ListBuffer
-import org.dbpedia.spotlight.corpus.AidaCorpus.CoNLLDoc
-
 
 /**
  * Annotated text source for reading the corpus from the PREDOSE project at Knoesis
@@ -20,13 +17,12 @@ class PredoseCorpus(val lines: Iterator[String]) extends AnnotatedTextSource {
     override def name = "PREDOSE"
 
     override def foreach[U](f: AnnotatedParagraph => U) {
-             /*
-Well...you did take klonopin AND oxycodone AND railed 5mg of opana, which is a pretty stout dose from what Ive heard. Thats YOUR fault. And we dont "swim" here. It might be blue, but its not a fucking pool; its a drug forum of which youre posting at, and we are creatures of self-interest, so the only reason youre posting, most likely, is for yourself. edit: this also is better suited for trip reports.
-33	42	oxycodone	http://dbpedia.org/resource/Oxycodone
-302	308	reason	http://knoesis.org/ontology/predose#reason
-61	66	opana	http://knoesis.org/ontology/predose#Opana
-213	217	drug	http://knoesis.org/ontology/predose#Drug
-
+        /*
+        Well...you did take klonopin AND oxycodone AND railed 5mg of opana, which is a pretty stout dose from what Ive heard. Thats YOUR fault. And we dont "swim" here. It might be blue, but its not a fucking pool; its a drug forum of which youre posting at, and we are creatures of self-interest, so the only reason youre posting, most likely, is for yourself. edit: this also is better suited for trip reports.
+        33	42	oxycodone	http://dbpedia.org/resource/Oxycodone
+        302	308	reason	http://knoesis.org/ontology/predose#reason
+        61	66	opana	http://knoesis.org/ontology/predose#Opana
+        213	217	drug	http://knoesis.org/ontology/predose#Drug
         */
         val OccurrenceLine = """^(\d+)\t(\d+)\t(.+?)\t(\S+)$""".r
 
@@ -73,10 +69,9 @@ object PredoseCorpus {
     }
 
     def main(args: Array[String]) {
-        val file = "/home/pablo/eval/predose/predose_annotations.tsv" // new File(args(0)) //)
+        val file = new File(args(0))
 
         PredoseCorpus.fromFile(file)
-            //.filter(_.id.contains("1393"))
             .foreach(println)
     }
 
