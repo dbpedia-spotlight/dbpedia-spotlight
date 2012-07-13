@@ -19,45 +19,18 @@
 package org.dbpedia.spotlight.disambiguate
 
 import org.apache.commons.logging.LogFactory
-import org.apache.lucene.index.Term
-import org.apache.lucene.search.Explanation
-import org.apache.lucene.search.FieldCacheTermsFilter
-import org.apache.lucene.search.ScoreDoc
-import org.apache.lucene.search.similar.MoreLikeThis
-import org.apache.lucene.search.TermsFilter
-import org.dbpedia.spotlight.exceptions.InputException
-import org.dbpedia.spotlight.exceptions.ItemNotFoundException
-import org.dbpedia.spotlight.exceptions.SearchException
-import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
-import org.dbpedia.spotlight.lucene.LuceneManager
-import org.dbpedia.spotlight.lucene.LuceneManager.DBpediaResourceField
-import org.dbpedia.spotlight.lucene.LuceneManager.PhoneticSurfaceForms
-import org.dbpedia.spotlight.lucene.search.LuceneCandidateSearcher
-import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
-import org.dbpedia.spotlight.lucene.similarity._
-import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
 import java.lang.UnsupportedOperationException
-import org.dbpedia.spotlight.model.CandidateSearcher
-import org.dbpedia.spotlight.model.DBpediaResource
-import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
-import org.dbpedia.spotlight.model.Factory
-import org.dbpedia.spotlight.model.Paragraph
-import org.dbpedia.spotlight.model.SurfaceForm
-import org.dbpedia.spotlight.model.SurfaceFormOccurrence
-import org.dbpedia.spotlight.model.Text
 import scalaj.collection.Imports._
 import org.apache.lucene.search.similar.MoreLikeThis
 import org.dbpedia.spotlight.exceptions.{ItemNotFoundException, SearchException, InputException}
-import org.apache.lucene.search.{ScoreDoc, FieldCacheTermsFilter, Explanation, TermsFilter}
-import collection.mutable.{HashMap, HashSet}
+import org.apache.lucene.search.{ScoreDoc, Explanation}
 import org.dbpedia.spotlight.model._
 import org.apache.lucene.index.Term
 import com.officedepot.cdap2.collection.CompactHashSet
-import org.dbpedia.spotlight.lucene.search.{LuceneCandidateSearcher, MergedOccurrencesContextSearcher}
-import org.dbpedia.spotlight.lucene.LuceneManager.{PhoneticSurfaceForms, DBpediaResourceField}
-import collection.immutable.Map._
-import java.io.{StringReader, ByteArrayInputStream, File}
+import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
+import org.dbpedia.spotlight.lucene.LuceneManager.DBpediaResourceField
+import java.io.StringReader
 import scala.Array
 
 /**
