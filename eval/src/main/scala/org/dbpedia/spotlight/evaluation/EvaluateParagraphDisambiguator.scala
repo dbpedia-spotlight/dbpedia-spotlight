@@ -129,6 +129,7 @@ object EvaluateParagraphDisambiguator {
         //val test : Disambiguator = new GraphCentralityDisambiguator(config)
 
         val factory = new SpotlightFactory(config)
+
         //val topics = HashMapTopicalPriorStore.fromDir(new File("data/topics"))
         val disambiguators = Set(//new TopicalDisambiguator(factory.candidateSearcher,topics),
                                  //new TopicBiasedDisambiguator(factory.candidateSearcher,factory.contextSearcher,topics)
