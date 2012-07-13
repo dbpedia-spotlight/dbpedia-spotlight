@@ -35,6 +35,6 @@ class DisambiguationResult(val correctOccurrence: DBpediaResourceOccurrence, val
         rank
     }
 
-
+    lazy val predicted = predictedOccurrences.headOption
 
 }

@@ -64,7 +64,7 @@ public class Spot {
         Spot spot = new Spot();
         spot.setName(sfOcc.surfaceForm().name());
         spot.setOffset(sfOcc.textOffset());
-        String typeFeature = (String) sfOcc.feature("type").get();
+        String typeFeature = (String) sfOcc.featureValue("type").get();
         if (typeFeature != null)
             spot.setNerType(typeFeature);
         return spot;

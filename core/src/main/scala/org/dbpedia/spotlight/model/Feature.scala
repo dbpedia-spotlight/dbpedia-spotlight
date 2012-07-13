@@ -6,6 +6,17 @@ package org.dbpedia.spotlight.model
  *
  */
 //class Feature[T<:Any](val featureName: String, val value: T)
-class Feature(val featureName: String, val value: Any)
+class Feature(val featureName: String, val value: Any) {
 
-class Score(name: String, score: Double) extends Feature(name,score)
+    override def toString : String = {
+        this match {
+            case s : Score => s.value.toString
+            case n : Nominal => n.value.toString
+            case _ => value.toString
+        }
+    }
+}
+
+class Score(name: String, value: Double) extends Feature(name,value)
+
+class Nominal(name: String, value: String) extends Feature(name,value)

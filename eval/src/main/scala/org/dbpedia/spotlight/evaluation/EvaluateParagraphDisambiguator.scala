@@ -17,7 +17,7 @@
  */
 package org.dbpedia.spotlight.evaluation
 
-import org.dbpedia.spotlight.io.{TrainingDataOutputGenerator, TSVOutputGenerator, OutputGenerator, AnnotatedTextSource}
+import org.dbpedia.spotlight.io._
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.disambiguate._
 import java.io.{PrintWriter, File}
@@ -175,13 +175,15 @@ object EvaluateParagraphDisambiguator {
             }
         }
 
-        val occFilters = List(UriWhitelistFilter.fromFile(new File(conceptURIsFileName)), RedirectResolveFilter.fromFile(new File(redirectTCFileName)), noNils)
+        val occFilters = List(UriWhitelistFilter.fromFile(new File(conceptURIsFileName)),
+                              RedirectResolveFilter.fromFile(new File(redirectTCFileName)),
+                              noNils)
 
         sources.foreach( paragraphs => {
           val testSourceName = paragraphs.name
           disambiguators.foreach( d => {
               val dName = d.name.replaceAll("""[.*[?/<>|*:\"{\\}].*]""","_")
-              val tsvOut = new TSVOutputGenerator(new PrintWriter("%s-%s-%s.pareval.log".format(testSourceName,dName,EvalUtils.now())))
+              val tsvOut = new ProbabilityTrainingData(new PrintWriter("%s-%s-%s.pareval.log".format(testSourceName,dName,EvalUtils.now())))
               //val arffOut = new TrainingDataOutputGenerator()
               val outputs = List(tsvOut)
               evaluate(paragraphs, d, outputs, occFilters)

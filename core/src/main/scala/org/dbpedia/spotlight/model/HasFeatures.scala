@@ -10,8 +10,12 @@ trait HasFeatures {
 
   val features = HashMap[String, Feature]()
 
-  def feature[T](feature: String): Option[T] = {
-    features.get(feature) match {
+  def feature(featureName: String) : Option[Feature] = {
+    features.get(featureName)
+  }
+
+  def featureValue[T](featureName: String): Option[T] = {
+    features.get(featureName) match {
       case Some(f) => Option(f.value.asInstanceOf[T])
       case None => None
     }
