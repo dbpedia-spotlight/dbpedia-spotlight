@@ -24,10 +24,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.document.MapFieldSelector;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TermEnum;
-import org.apache.lucene.index.TermFreqVector;
+import org.apache.lucene.index.*;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.*;
 import org.dbpedia.spotlight.exceptions.SearchException;
@@ -63,8 +60,7 @@ public class BaseSearcher implements Closeable {
     public BaseSearcher(LuceneManager lucene) throws IOException {
         this.mLucene = lucene;
         LOG.info("Using index at: "+this.mLucene.mContextIndexDir);
-        LOG.debug("Opening IndexSearcher and IndexReader for Lucene directory "+this.mLucene.mContextIndexDir+" ...");
-        this.mReader = IndexReader.open(this.mLucene.mContextIndexDir, true); // read-only=true
+        this.mReader = LuceneManager.openIndexReader(this.mLucene.mContextIndexDir); //will open single or multireader
         this.mSearcher = new IndexSearcher(this.mReader);
         LOG.debug("Done.");
 

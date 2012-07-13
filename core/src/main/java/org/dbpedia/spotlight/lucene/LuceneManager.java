@@ -18,6 +18,8 @@
 
 package org.dbpedia.spotlight.lucene;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.StopAnalyzer;
@@ -25,6 +27,7 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.MultiReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
@@ -42,10 +45,7 @@ import org.dbpedia.spotlight.lucene.search.CandidateResourceQuery;
 import org.dbpedia.spotlight.util.MemUtil;
 import org.dbpedia.spotlight.model.*;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -63,6 +63,8 @@ import java.util.*;
  * @author pablomendes
  */
 public class LuceneManager {
+
+    protected static final Log LOG = LogFactory.getLog(LuceneManager.class);
 
     /*TODO yes, we know we shouldn't have public fields floating around.
     "Tips on Choosing an Access Level: (from http://download.oracle.com/docs/cd/E17409_01/javase/tutorial/java/javaOO/accesscontrol.html)
@@ -136,7 +138,7 @@ public class LuceneManager {
      * @return
      * @throws IOException
      */
-    public static Directory pickDirectory(File indexDir) throws IOException {
+    public static FSDirectory pickDirectory(File indexDir) throws IOException {
         if (System.getProperty("os.name").equals("Linux") && System.getProperty("os.arch").contains("64")) {
             return new MMapDirectory(indexDir);
         } else if (System.getProperty("os.name").equals("Linux") ) {
@@ -145,6 +147,68 @@ public class LuceneManager {
             return FSDirectory.open(indexDir);
         }
     }
+
+    public static IndexReader openIndexReader(Directory indexDir) throws IOException {
+             if (isLuceneDirectory(indexDir)) {
+                 return openSingleReader(indexDir);
+             } else {
+                 return openMultiReader(indexDir);
+             }
+         }
+
+         public static IndexReader openSingleReader(Directory indexDir) throws IOException {
+             LOG.debug("Opening IndexSearcher and IndexReader for Lucene directory "+indexDir+" ...");
+             return IndexReader.open(indexDir, true); // read-only=true
+         }
+
+
+         private static File getLuceneDirectoryRoot(Directory dir) throws IOException {
+             File d = null;
+             if (dir instanceof FSDirectory) {
+                 d = ((FSDirectory) dir).getDirectory();
+             } else {
+                 throw new IOException("Directory is not FSDirectory.");
+             }
+             return d;
+         }
+
+         private static boolean isLuceneDirectory(Directory dir) throws IOException {
+             return isLuceneDirectory(getLuceneDirectoryRoot(dir));
+         }
+
+         private static boolean isLuceneDirectory(File file) {
+             FileFilter luceneFilesFilter = new FileFilter() {
+                 @Override
+                 public boolean accept(File file) {
+                     return file.getName().equals("segments.gen");
+                     //|| file.getName().endsWith(".")
+                 }
+             };
+             return file.isDirectory() && (file.listFiles(luceneFilesFilter).length>0);
+         }
+
+         public static IndexReader openMultiReader(Directory indexDir) throws IOException {
+             List<IndexReader> readers = new ArrayList<IndexReader>();
+
+             FileFilter isDirFilter = new FileFilter() {
+                 @Override
+                 public boolean accept(File file) {
+                     return isLuceneDirectory(file);
+                 }
+             };
+             // assume that this is a valid lucene directory, scream otherwise
+             File d = getLuceneDirectoryRoot(indexDir);
+             File[] files = d.listFiles(isDirFilter);
+             if (files==null || files.length==0)
+                 throw new IOException(String.format("File does not seem to be a valid Lucene directory: %s",d.getAbsolutePath()));
+
+             List<File> fileList = Arrays.asList(files);
+             for (File f: fileList) {
+                     readers.add(IndexReader.open(LuceneManager.pickDirectory(f)));
+             }
+             LOG.info("Opening IndexSearcher and IndexReader for "+readers.size()+" Lucene indexes under directory "+indexDir+" ...");
+             return new MultiReader(readers.toArray(new IndexReader[readers.size()]));
+         }
 
     public Analyzer defaultAnalyzer() {
         return mDefaultAnalyzer;
