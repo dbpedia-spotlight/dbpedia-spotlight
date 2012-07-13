@@ -53,7 +53,7 @@ class EvaluatePredose {
               val tsvOut = new TSVOutputGenerator(new PrintWriter("%s-%s-%s.pareval.log".format(testSourceName,dName,EvalUtils.now())))
               //val arffOut = new TrainingDataOutputGenerator()
               val outputs = List(tsvOut)
-              evaluate(paragraphs, d, outputs, occFilters)
+              EvaluateParagraphDisambiguator.evaluate(paragraphs, d, outputs, occFilters)
               outputs.foreach(_.close)
           })
         })
