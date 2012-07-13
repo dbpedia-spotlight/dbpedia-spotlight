@@ -17,11 +17,11 @@
  */
 package org.dbpedia.spotlight.evaluation
 
-import org.dbpedia.spotlight.io.AnnotatedTextSource
+import org.dbpedia.spotlight.io.{TrainingDataOutputGenerator, TSVOutputGenerator, OutputGenerator, AnnotatedTextSource}
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.disambiguate._
 import java.io.{PrintWriter, File}
-import org.dbpedia.spotlight.corpus.{MilneWittenCorpus, AidaCorpus}
+import org.dbpedia.spotlight.corpus.{PredoseCorpus, MilneWittenCorpus, AidaCorpus}
 
 import scalaj.collection.Imports._
 
@@ -66,7 +66,7 @@ object EvaluateParagraphDisambiguator {
         bestK;
     }
 
-    def evaluate(testSource: AnnotatedTextSource, disambiguator: ParagraphDisambiguator, output: PrintWriter, occFilters: List[OccurrenceFilter] ) {
+    def evaluate(testSource: AnnotatedTextSource, disambiguator: ParagraphDisambiguator, outputs: List[OutputGenerator], occFilters: List[OccurrenceFilter] ) {
         val startTime = System.nanoTime()
 
         var i = 0;
@@ -87,27 +87,30 @@ object EvaluateParagraphDisambiguator {
             try {
                 val bestK = filter(disambiguator.bestK(paragraph,100))
 
-                val occs = occFilters.foldLeft(a.occurrences.toTraversable){ (o,f) => f.filterOccs(o) } // discounting URIs from gold standard that we know are disambiguations, fixing redirects, etc.
+                val goldOccurrences = occFilters.foldLeft(a.occurrences.toTraversable){ (o,f) => f.filterOccs(o) } // discounting URIs from gold standard that we know are disambiguations, fixing redirects, etc.
 
-                occs.foreach( correctOccurrence => {
+                goldOccurrences.foreach( correctOccurrence => {
                     nOccurrences = nOccurrences + 1
-                    val rank = getRank(correctOccurrence,                                                     // correct
-                        bestK.getOrElse(Factory.SurfaceFormOccurrence.from(correctOccurrence), // predicted
-                            List[DBpediaResourceOccurrence]()))
-                    output.append("%s\t%s\t%d\n".format(correctOccurrence.id,correctOccurrence.resource.uri,rank))
-                    val invRank = if (rank>0) (1.0/rank) else  0.0
-                    if (rank==0)  {
+
+                    val disambResult = new DisambiguationResult(correctOccurrence,                                                     // correct
+                                                                bestK.getOrElse(Factory.SurfaceFormOccurrence.from(correctOccurrence), // predicted
+                                                                                List[DBpediaResourceOccurrence]()))
+
+                    outputs.foreach(_.write(disambResult))
+
+                    val invRank = if (disambResult.rank>0) (1.0/disambResult.rank) else  0.0
+                    if (disambResult.rank==0)  {
                         nZeros = nZeros + 1
-                    } else if (rank==1)  {
+                    } else if (disambResult.rank==1)  {
                         nCorrects = nCorrects + 1
                     }
                     acc = acc + invRank
                 });
-                output.flush()
+                outputs.foreach(_.flush)
             } catch {
                 case e: Exception => LOG.error(e)
             }
-            val mrr = acc / a.occurrences.size
+            val mrr = if (a.occurrences.size==0) 0.0 else acc / a.occurrences.size
             LOG.info("Mean Reciprocal Rank (MRR) = %.5f".format(mrr))
             mrr
         })
@@ -122,16 +125,17 @@ object EvaluateParagraphDisambiguator {
         LOG.info("Elapsed time: %s sec".format( (endTime-startTime) / 1000000000))
         LOG.info("********************")
 
-        output.append("\n********************" +
-            "\nCorpus: %s".format(testSource.name) +
-            "\nNumber of occs: %d (original), %d (processed)".format(nOriginalOccurrences,nOccurrences) +
-            "\nDisambiguator: %s".format(disambiguator.name)+
-            "\nCorrect URI not found = %d / %d = %.3f".format(nZeros,nOccurrences,nZeros.toDouble/nOccurrences)+
-            "\nAccuracy = %d / %d = %.3f".format(nCorrects,nOccurrences,nCorrects.toDouble/nOccurrences) +
-            "\nGlobal MRR: %s".format(mrrResults.sum / mrrResults.size)+
-            "\nElapsed time: %s sec".format( (endTime-startTime) / 1000000000))
+        val disambigSummary = "Corpus: %s".format(testSource.name) +
+                    "\nNumber of occs: %d (original), %d (processed)".format(nOriginalOccurrences,nOccurrences) +
+                    "\nDisambiguator: %s".format(disambiguator.name)+
+                    "\nCorrect URI not found = %d / %d = %.3f".format(nZeros,nOccurrences,nZeros.toDouble/nOccurrences)+
+                    "\nAccuracy = %d / %d = %.3f".format(nCorrects,nOccurrences,nCorrects.toDouble/nOccurrences) +
+                    "\nGlobal MRR: %s".format(mrrResults.sum / mrrResults.size)+
+                    "\nElapsed time: %s sec".format( (endTime-startTime) / 1000000000);
 
-        output.flush
+        outputs.foreach(_.summary(disambigSummary))
+
+        outputs.foreach(_.flush)
     }
 
     def main(args : Array[String]) {
@@ -156,12 +160,14 @@ object EvaluateParagraphDisambiguator {
                                 )
 
         val sources = List(//AidaCorpus.fromFile(new File("/home/pablo/eval/aida/gold/CoNLL-YAGO.tsv")),
-                           MilneWittenCorpus.fromDirectory(new File("/home/pablo/eval/wikify/original")))
+                           //MilneWittenCorpus.fromDirectory(new File("/home/pablo/eval/wikify/original"))
+                           PredoseCorpus.fromFile(new File("/home/pablo/eval/predose/predose_annotations.tsv")))
 
         val noNils = new OccurrenceFilter {
             def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
                 if (occ.id.endsWith("DISAMBIG") || //Max has marked ids with DISAMBIG in a TSV file for one of our datasets
-                    occ.resource.uri.equals(AidaCorpus.nilUri)) {
+                    occ.resource.uri.equals(AidaCorpus.nilUri) ||
+                    occ.resource.uri.startsWith("http://knoesis")) {
                     None
                 } else {
                     Some(occ)
@@ -175,9 +181,11 @@ object EvaluateParagraphDisambiguator {
           val testSourceName = paragraphs.name
           disambiguators.foreach( d => {
               val dName = d.name.replaceAll("""[.*[?/<>|*:\"{\\}].*]""","_")
-              val output = new PrintWriter("%s-%s-%s.pareval.log".format(testSourceName,dName,EvalUtils.now()))
-              evaluate(paragraphs, d, output, occFilters)
-              output.close
+              val tsvOut = new TSVOutputGenerator(new PrintWriter("%s-%s-%s.pareval.log".format(testSourceName,dName,EvalUtils.now())))
+              //val arffOut = new TrainingDataOutputGenerator()
+              val outputs = List(tsvOut)
+              evaluate(paragraphs, d, outputs, occFilters)
+              outputs.foreach(_.close)
           })
         })
     }
