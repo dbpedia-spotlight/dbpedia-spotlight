@@ -21,7 +21,6 @@ abstract class TrainingDataOutputGenerator(output: PrintWriter) extends TSVOutpu
      */
     protected def extractFeatures(result: DisambiguationResult) : List[Feature]
 
-
     override def write(result: DisambiguationResult) {
         val correct = if (result.rank==1) "1" else "0"
 

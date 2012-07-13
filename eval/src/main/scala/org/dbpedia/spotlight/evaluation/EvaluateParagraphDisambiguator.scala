@@ -38,30 +38,6 @@ object EvaluateParagraphDisambiguator {
 
     private val LOG = LogFactory.getLog(this.getClass)
 
-    def getRank(correctOccurrence: DBpediaResourceOccurrence, bestK: List[DBpediaResourceOccurrence]) = {
-        LOG.debug("Ranking for: %s -> %s".format(correctOccurrence.surfaceForm,correctOccurrence.resource))
-        LOG.debug("K=%s".format(bestK.size));
-        var rank,i = 0
-        //LOG.debug("                : prior \t context \t final \t uri")
-        LOG.debug("                : context \t uri")
-        for(predictedOccurrence <- bestK) {
-            i = i + 1
-            if(correctOccurrence.resource equals predictedOccurrence.resource) {
-                rank = i
-                //LOG.debug("  **     correct: %.5f \t %.5f \t %.5f \t %s".format(predictedOccurrence.resource.prior, predictedOccurrence.contextualScore, predictedOccurrence.similarityScore, predictedOccurrence.resource))
-                LOG.debug("  **     correct: %.5f \t %s".format(predictedOccurrence.contextualScore, predictedOccurrence.resource))
-            }
-            else {
-                //LOG.debug("       spotlight: %.5f \t %.5f \t %.5f \t %s".format(predictedOccurrence.resource.prior, predictedOccurrence.contextualScore, predictedOccurrence.similarityScore, predictedOccurrence.resource))
-                LOG.debug("       spotlight: %.5f \t %s".format(predictedOccurrence.contextualScore, predictedOccurrence.resource))
-            }
-        }
-        if (rank==0)
-            LOG.debug("  **   not found: %.5s \t %.5s \t %.5s \t %s".format("NA", "NA", "NA", correctOccurrence.resource))
-        LOG.debug("Rank: %s".format(rank))
-        rank
-    }
-
     def filter(bestK: Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]) :  Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]] = {
         bestK;
     }
@@ -153,10 +129,10 @@ object EvaluateParagraphDisambiguator {
         //val test : Disambiguator = new GraphCentralityDisambiguator(config)
 
         val factory = new SpotlightFactory(config)
-        val topics = HashMapTopicalPriorStore.fromDir(new File("data/topics"))
+        //val topics = HashMapTopicalPriorStore.fromDir(new File("data/topics"))
         val disambiguators = Set(//new TopicalDisambiguator(factory.candidateSearcher,topics),
-                                 new TopicBiasedDisambiguator(factory.candidateSearcher,factory.contextSearcher,topics)
-                                 //new TwoStepDisambiguator(factory.candidateSearcher,factory.contextSearcher)
+                                 //new TopicBiasedDisambiguator(factory.candidateSearcher,factory.contextSearcher,topics)
+                                 new TwoStepDisambiguator(factory.candidateSearcher,factory.contextSearcher)
                                  //, new CuttingEdgeDisambiguator(factory),
                                  //new PageRankDisambiguator(factory)
                                 )
@@ -185,7 +161,7 @@ object EvaluateParagraphDisambiguator {
           val testSourceName = paragraphs.name
           disambiguators.foreach( d => {
               val dName = d.name.replaceAll("""[.*[?/<>|*:\"{\\}].*]""","_")
-              val tsvOut = new ProbabilityTrainingData(new PrintWriter("%s-%s-%s.pareval.log".format(testSourceName,dName,EvalUtils.now())))
+              val tsvOut = new TSVOutputGenerator(new PrintWriter("%s-%s-%s.pareval.log".format(testSourceName,dName,EvalUtils.now())))
               //val arffOut = new TrainingDataOutputGenerator()
               val outputs = List(tsvOut)
               evaluate(paragraphs, d, outputs, occFilters)

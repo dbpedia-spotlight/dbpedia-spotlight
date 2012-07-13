@@ -63,7 +63,7 @@ public class CandidateIndexer extends BaseIndexer<Candidate> {
             throw new IndexException("Error adding candidate map to the index. ", e);
         }
 
-        LOG.debug("Added to " + mLucene.directory().toString() + ": " + surfaceForm.toString() + " -> " + resource.toString());
+        LOG.trace("Added to " + mLucene.directory().toString() + ": " + surfaceForm.toString() + " -> " + resource.toString());
     }
 
     public void add(List<SurfaceForm> surfaceForms, DBpediaResource resource) throws IndexException {
@@ -77,7 +77,7 @@ public class CandidateIndexer extends BaseIndexer<Candidate> {
             throw new IndexException("Error adding candidate map to the index. ", e);
         }
 
-        LOG.debug("Added to " + mLucene.directory().toString() + ": " + surfaceForms.toString() + " -> " + resource.toString());
+        LOG.trace("Added to " + mLucene.directory().toString() + ": " + surfaceForms.toString() + " -> " + resource.toString());
     }
 
     public void add(SurfaceForm surfaceForm, DBpediaResource resource, int nTimes) throws IndexException {
@@ -88,7 +88,7 @@ public class CandidateIndexer extends BaseIndexer<Candidate> {
             throw new IndexException("Error adding candidate map to the index. ", e);
         }
 
-        LOG.debug("Added to " + mLucene.directory().toString() + ": " + surfaceForm.toString() + " -> " + resource.toString());
+        LOG.trace("Added to " + mLucene.directory().toString() + ": " + surfaceForm.toString() + " -> " + resource.toString());
     }
 
     public void add(Candidate candidate) throws IndexException {

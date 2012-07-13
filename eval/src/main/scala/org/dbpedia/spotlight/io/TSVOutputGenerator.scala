@@ -1,6 +1,6 @@
 package org.dbpedia.spotlight.io
 
-import org.dbpedia.spotlight.model.{Feature, DisambiguationResult, DBpediaResourceOccurrence}
+import org.dbpedia.spotlight.model.DisambiguationResult
 import java.io.PrintWriter
 
 /**
@@ -21,7 +21,7 @@ class TSVOutputGenerator(val output: PrintWriter) extends OutputGenerator {
     }
 
     def header(fields: List[String]) = {
-        output.append(line(fields ::: List("class")))
+        output.append(line(fields))
         firstLine = false
     }
 
@@ -30,14 +30,16 @@ class TSVOutputGenerator(val output: PrintWriter) extends OutputGenerator {
     def write(result: DisambiguationResult) {
 
         if (firstLine)
-            header(List("occId","correct","rank","ambiguity"))
+            header(List("occId","correct","surfaceForm","rank","ambiguity"))
 
-        val rank = result.rank
-        val ambiguity = result.predictedOccurrences.size
-        output.append("\""+List(result.correctOccurrence.id,
-                                                result.correctOccurrence.resource.uri,
-                                                rank,
-                                                ambiguity).mkString("\"\t\"")+"\"\n")
+        val rank = result.rank.toString
+        val ambiguity = result.predictedOccurrences.size.toString
+        val fields = List(result.correctOccurrence.id,
+                        result.correctOccurrence.resource.uri,
+                        result.correctOccurrence.surfaceForm.name,
+                        rank,
+                        ambiguity)
+        output.append(line(fields))
     }
 
     def close() {
