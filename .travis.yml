@@ -3,7 +3,8 @@ jdk:
   - openjdk7
 notifications:
   email:
-    - dbp-spotlight-developers@lists.sourceforge.net
+    recipients:
+      - dbp-spotlight-developers@lists.sourceforge.net
     on_success: change 
     on_failure: change
   irc: "irc.freenode.org#dbpedia-spotlight"
