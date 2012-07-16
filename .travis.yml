@@ -1,6 +1,9 @@
 language: java
 jdk:
   - openjdk7
+branches:
+  only:
+    - master
 notifications:
   email:
     recipients:
