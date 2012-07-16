@@ -1,9 +1,7 @@
 package org.dbpedia.spotlight.io
 
-import org.dbpedia.spotlight.model.{Feature, DisambiguationResult, DBpediaResourceOccurrence}
+import org.dbpedia.spotlight.model.{Feature, DisambiguationResult}
 import java.io.PrintWriter
-import org.dbpedia.spotlight.feature.Feature
-import org.dbpedia.spotlight.model.Feature
 import org.dbpedia.spotlight.exceptions.InputException
 
 /**
