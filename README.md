@@ -32,6 +32,8 @@ If you need service reliability and lower response times, you can run DBpedia Sp
 We provide a [Java/Scala API](http://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Java%2FScala%20API) for you to use our code in your application.
 More info [here](http://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Java%2FScala%20API).
 
+[![Build Status](https://secure.travis-ci.org/dbpedia-spotlight/dbpedia-spotlight.png?branch=master)](http://travis-ci.org/dbpedia-spotlight/dbpedia-spotlight)
+
 ## Introduction
 
 DBpedia Spotlight is a tool for automatically annotating mentions of DBpedia resources in text, providing a solution for linking unstructured information sources to the Linked Open Data cloud through DBpedia. DBpedia Spotlight recognizes that names of concepts or entities have been mentioned (e.g. "Michael Jordan"), and subsequently matches these names to unique identifiers (e.g. [dbpedia:Michael_I._Jordan](http://dbpedia.org/page/Michael_I._Jordan), the machine learning professor or [dbpedia:Michael_Jordan](http://dbpedia.org/page/Michael_Jordan) the basketball player). It can also be used for building your solution for [Named Entity Recognition](http://en.wikipedia.org/wiki/Named_entity_recognition), Keyphrase Extraction, Tagging, etc. amongst other information extraction tasks.
