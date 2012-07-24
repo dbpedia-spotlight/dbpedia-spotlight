@@ -2,12 +2,11 @@ package org.dbpedia.spotlight.corpus
 
 import org.dbpedia.spotlight.io.AnnotatedTextSource
 import org.dbpedia.spotlight.model._
-import java.io.{FileNotFoundException, File}
+import java.io.File
 import xml.XML
 import io.Source
-import org.apache.commons.logging.LogFactory
-import collection.mutable
 import collection.mutable.ListBuffer
+import org.dbpedia.extraction.util.WikiUtil
 
 /**
  * Created with IntelliJ IDEA.
@@ -69,7 +68,7 @@ class KBPCorpus(val queryFile:File, val answerFile:File, val sourceDir:File, val
          val idGap = id - lastId
          (2 to idGap).foreach(_ => uriList+="") //the missed entity id is treated as empty uri
          lastId = id
-         uriList += e.attribute("wiki_title").get.toString()
+         uriList += WikiUtil.wikiEncode(e.attribute("wiki_title").get.toString())
        })
     })
     uriList.toArray
@@ -108,8 +107,7 @@ class KBPCorpus(val queryFile:File, val answerFile:File, val sourceDir:File, val
 
   private def entityIdToRes(eid:String):DBpediaResource = {
     val index = eid.slice(1,eid.length).toInt - 1
-    val uri = kb(index)
-    new DBpediaResource(uri)
+    new DBpediaResource(kb(index))
   }
 
   //assumes the sgml file is well-formed and can be treated as xml
