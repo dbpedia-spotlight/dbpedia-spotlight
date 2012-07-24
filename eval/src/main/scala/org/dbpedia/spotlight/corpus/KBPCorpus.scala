@@ -67,7 +67,6 @@ class KBPCorpus(val queryFile:File, val answerFile:File, val sourceDir:File, val
          val idStr = e.attribute("id").get.toString()
          val id = idStr.slice(1,idStr.length).toInt
          val idGap = id - lastId
-         if (idGap > 1) println(String.format("A gap found between lastId: %s to id: %s at file: %s",lastId.toString,id.toString,f.getName))
          (2 to idGap).foreach(_ => uriList+="") //the missed entity id is treated as empty uri
          lastId = id
          uriList += e.attribute("wiki_title").get.toString()
