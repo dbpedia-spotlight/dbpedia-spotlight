@@ -6,6 +6,8 @@ import java.io.{FileNotFoundException, File}
 import xml.XML
 import io.Source
 import org.apache.commons.logging.LogFactory
+import collection.mutable
+import collection.mutable.ListBuffer
 
 /**
  * Created with IntelliJ IDEA.
@@ -17,11 +19,13 @@ import org.apache.commons.logging.LogFactory
 
 class KBPCorpus(val queryFile:File, val answerFile:File, val sourceDir:File, val kbDir:File) extends AnnotatedTextSource {
   override def name = "KBP"
-  private val LOG = LogFactory.getLog(this.getClass)
 
+  //preparing queries
   val queryMap = queryFromFile()
-  val sourceDocs = queryMap.values.toList.sorted
+  //preparing answers(golden standards)
   val answers = goldenStandardFromFile()
+  //preparing knowledge base
+  val kb = kbFromDirectory()
 
   val nwFolders = Map[String,String](
     "AFP_ENG" -> "2009/nw/afp_eng",
@@ -51,43 +55,76 @@ class KBPCorpus(val queryFile:File, val answerFile:File, val sourceDir:File, val
     answers
   }
 
+  //assume that entity indices are strictly increasing
+  def kbFromDirectory() = {
+    val uriList = new ListBuffer[String]
+    val files = kbDir.listFiles.filter(f => """.*\.xml$""".r.findFirstIn(f.getName).isDefined)
+    var lastId = 0
+    files.foreach(f =>{
+       val root = XML.loadFile(f)
+       val entities = root \ "entity"
+       entities.foreach(e => {
+         val idStr = e.attribute("id").get.toString()
+         val id = idStr.slice(1,idStr.length).toInt
+         val idGap = id - lastId
+         if (idGap > 1) println(String.format("A gap found between lastId: %s to id: %s at file: %s",lastId.toString,id.toString,f.getName))
+         (2 to idGap).foreach(_ => uriList+="") //the missed entity id is treated as empty uri
+         lastId = id
+         uriList += e.attribute("wiki_title").get.toString()
+       })
+    })
+    uriList.toArray
+  }
 
+  /**
+   * KBP is query basis.
+   * This foreach operates over each queries
+   * In each paragraph there is typically only one occurrence
+   * @param f function to be applied on each AnnotataedParagraph
+   * @tparam U
+   */
   def foreach[U](f: (AnnotatedParagraph) => U) {
     queryMap.foreach{case(qid,(sf,docid)) =>{
-      val res = entityIdToRes(answers(qid))
-      val paralist = getContextParagraphs(docid,sf)
-      paralist.foreach{case (paraText,paraNum,offset)=>{
-        val paraId = docid + "-" + paraNum
-        val occurrence = new DBpediaResourceOccurrence(
-          paraId +"-"+offset,
-          res,
-          new SurfaceForm(sf),
-          paraText,
-          offset,
-          Provenance.Manual,
-          1.0
-        )
-        val annotated = new AnnotatedParagraph(paraId,paraText,List(occurrence))
-        f(annotated)
-      }}
+      val answer = answers(qid)
+      if (!answer.startsWith("NIL")){ //now ignore NIL answers
+        val res = entityIdToRes(answers(qid))
+        val paralist = getContextParagraphs(docid,sf)
+        paralist.foreach{case (paraText,paraNum,offset)=>{
+          val paraId = docid + "-" + paraNum
+          val occurrence = new DBpediaResourceOccurrence(
+            paraId +"-"+offset,
+            res,
+            new SurfaceForm(sf),
+            paraText,
+            offset,
+            Provenance.Manual,
+            1.0
+          )
+          val annotated = new AnnotatedParagraph(paraId,paraText,List(occurrence))
+          f(annotated)
+        }}
+      }
     }}
   }
 
-  //TODO: Need to make it efficient to do this
   private def entityIdToRes(eid:String):DBpediaResource = {
-    null
+    val index = eid.slice(1,eid.length).toInt - 1
+    val uri = kb(index)
+    new DBpediaResource(uri)
   }
 
+  //assumes the sgml file is well-formed and can be treated as xml
   private def parseNews(sf:String, file:File):List[(Text,Int,Int)] ={
     val root = XML.loadFile(file)
-    val paragraphs = root \ "P"
+    val paragraphs = root \\ "P"
     parse(paragraphs.map(n => n.text),sf)
   }
 
+  //assumes the sgml file is well-formed and can be treated as xml
   private def parseWebBlog(sf:String, file:File):List[(Text,Int,Int)] = {
     val root = XML.loadFile(file)
     val body = root \ "POST"
-    val paragraphs = body.text.split("\n")
+    val paragraphs = body.text.split("\\n")
     parse(paragraphs,sf)
   }
 
@@ -109,16 +146,12 @@ class KBPCorpus(val queryFile:File, val answerFile:File, val sourceDir:File, val
 
   private def getContextParagraphs(docId:String,sf:String):List[(Text,Int,Int)] = {
     var paras = List[(Text,Int,Int)]()
-    val folderId = docId.split(".")(0)
+    val folderId = docId.split('.')(0)
     val baseDir = sourceDir.getCanonicalPath
     nwFolders.foreach{case(id,path) => {
       if (folderId.startsWith(id)){
-         val fullpath = baseDir + "/" + path + "/" + folderId.slice(8,folderId.length-1) +"/"+docId+ext
-         try{
-           paras = parseNews(sf,new File(fullpath))
-         }catch{
-           case fofe:FileNotFoundException => LOG.error("The source file path was not found!")
-         }
+         val fullpath = baseDir + "/" + path + "/" + folderId.slice(8,folderId.length) +"/"+docId+ext
+         paras = parseNews(sf,new File(fullpath))
       }
     }}
 
@@ -133,14 +166,14 @@ class KBPCorpus(val queryFile:File, val answerFile:File, val sourceDir:File, val
 }
 
 object KBPCorpus {
-  val qFile = new File("D:\\Hector\\Downloads\\TAC_2010_KBP_Training_Entity_Linking_V2.0\\data/tac_2010_kbp_training_entity_linking_queries.xml")
-  val aFile = new File("D:\\Hector\\Downloads\\TAC_2010_KBP_Training_Entity_Linking_V2.0\\data/tac_2010_kbp_training_entity_linking_query_types.tab")
-  val sourceDir = new File("D:\\nlp\\kbp\\2010_data/TAC_2010_KBP_Source_Data")
-  val kbDir = new File("D:\\nlp\\kbp\\2009_data\\data")
+  val qFile = new File("/mnt/windows/Extra/Researches/data/kbp/queries/TAC_2010_KBP_Evaluation_Entity_Linking_Gold_Standard_V1.0/TAC_2010_KBP_Evaluation_Entity_Linking_Gold_Standard_V1.1/data/tac_2010_kbp_evaluation_entity_linking_queries.xml")
+  val aFile = new File("/mnt/windows/Extra/Researches/data/kbp/queries/TAC_2010_KBP_Evaluation_Entity_Linking_Gold_Standard_V1.0/TAC_2010_KBP_Evaluation_Entity_Linking_Gold_Standard_V1.1/data/tac_2010_kbp_evaluation_entity_linking_query_types.tab")
+  val sourceDir = new File("/mnt/windows/Extra/Researches/data/kbp/kbp2011/TAC_KBP_2010_Source_Data/TAC_2010_KBP_Source_Data/data")
+  val kbDir = new File("/mnt/windows/Extra/Researches/data/kbp/kbp2011/TAC_2009_KBP_Evaluation_Reference_Knowledge_Base/data")
 
   val kbp = new KBPCorpus (qFile,aFile,sourceDir,kbDir)
 
   def main (args: Array[String]){
-
+    kbp.foreach(println)
   }
 }
