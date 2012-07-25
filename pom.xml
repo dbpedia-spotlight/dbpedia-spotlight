@@ -48,7 +48,8 @@
         <module>core</module>
         <module>rest</module>
         <module>index</module>
-        <!--module>eval</module-->
+        <module>live</module>
+      <!--module>eval</module-->
     </modules>
 
     <build>
