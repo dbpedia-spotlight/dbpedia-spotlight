@@ -16,6 +16,15 @@ import org.dbpedia.extraction.util.WikiUtil
  * To change this template use File | Settings | File Templates.
  */
 
+/**
+ * This class allow reading KBPCorpus as AnnotatedTextSource
+ * There are many files to prepared to get a KBPCorpus, see the parameters below
+ * Please note that query files and answer files should correspond to each other
+ * @param queryFile The entity linking queries XML file in KBP data
+ * @param answerFile The annotation (entity_linking_query_types.tab) file in KBP data
+ * @param sourceDir  The extraced TAC_2010_Source_Data/data directory, containing source newswires and web blogs
+ * @param kbDir The extraced Knowledge Base/data Directory
+ */
 class KBPCorpus(val queryFile:File, val answerFile:File, val sourceDir:File, val kbDir:File) extends AnnotatedTextSource {
   override def name = "KBP"
 
