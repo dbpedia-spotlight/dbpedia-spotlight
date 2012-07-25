@@ -1,0 +1,11 @@
+#!/bin/bash
+# Will make it run like a daemon in other release.
+ #if [ -x /usr/sbin/invoke-rc.d ]; then
+	# start the daemon, but do not bail out on errors since the config
+	# file might still be unedited
+#	invoke-rc.d dbpedia-spotlight start || true
+# else
+# 	[ -x /etc/init.d/dbpedia-spotlight ] && /etc/init.d/dbpedia-spotlight start
+# fi
+chmod a+rx /usr/bin/dbpedia-spotlight
+echo "Now you can start your server via /usr/bin/dbpedia-spotlight"
