@@ -1,0 +1,13 @@
+language: java
+jdk:
+  - openjdk7
+branches:
+  only:
+    - master
+notifications:
+  email:
+    recipients:
+      - dbp-spotlight-developers@lists.sourceforge.net
+    on_success: change 
+    on_failure: change
+  irc: "irc.freenode.org#dbpedia-spotlight"
