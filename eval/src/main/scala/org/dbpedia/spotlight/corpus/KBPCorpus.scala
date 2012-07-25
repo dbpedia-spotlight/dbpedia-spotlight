@@ -56,7 +56,9 @@ class KBPCorpus(val queryFile:File, val answerFile:File, val sourceDir:File, val
   val ext = ".sgm"
 
   def queryFromFile () = {
-    val queries= XML.loadFile(queryFile)
+    val content = Source.fromFile(queryFile).mkString
+    val fixed = content.replaceAll("(?i)encoding=\"utf8\"","encoding=\"utf-8\"") //fix encoding to make SAXpaser accept the document
+    val queries= XML.loadString(fixed)
     val queryMap = (queries \ "query").map(q => ((q \"@id").text,((q \"name").text,(q \"docid").text))).toMap
     queryMap
   }
@@ -204,8 +206,15 @@ class KBPCorpus(val queryFile:File, val answerFile:File, val sourceDir:File, val
 }
 
 object KBPCorpus {
-  val qFile = new File("/mnt/windows/Extra/Researches/data/kbp/queries/TAC_2010_KBP_Evaluation_Entity_Linking_Gold_Standard_V1.0/TAC_2010_KBP_Evaluation_Entity_Linking_Gold_Standard_V1.1/data/tac_2010_kbp_evaluation_entity_linking_queries.xml")
-  val aFile = new File("/mnt/windows/Extra/Researches/data/kbp/queries/TAC_2010_KBP_Evaluation_Entity_Linking_Gold_Standard_V1.0/TAC_2010_KBP_Evaluation_Entity_Linking_Gold_Standard_V1.1/data/tac_2010_kbp_evaluation_entity_linking_query_types.tab")
+  val qFile = new File("/mnt/windows/Extra/Researches/data/kbp/queries/TAC_2011_KBP_English_Evaluation_Entity_Linking_Annotation/data/tac_2011_kbp_english_evaluation_entity_linking_queries.xml")
+  val aFile = new File("/mnt/windows/Extra/Researches/data/kbp/queries/TAC_2011_KBP_English_Evaluation_Entity_Linking_Annotation/data/tac_2011_kbp_english_evaluation_entity_linking_query_types.tab")
+
+  //val qFile = new File("/mnt/windows/Extra/Researches/data/kbp/queries/TAC_2009_KBP_Evaluation_Entity_Linking_List/data/entity_linking_queries.xml")
+  //val aFile = new File("/mnt/windows/Extra/Researches/data/kbp/queries/TAC_2009_KBP_Gold_Standard_Entity_Linking_Entity_Type_List/data/Gold_Standard_Entity_Linking_List_with_Entity_Types.tab")
+
+  //val qFile = new File("/mnt/windows/Extra/Researches/data/kbp/queries/TAC_2010_KBP_Evaluation_Entity_Linking_Gold_Standard_V1.0/TAC_2010_KBP_Evaluation_Entity_Linking_Gold_Standard_V1.1/data/tac_2010_kbp_evaluation_entity_linking_queries.xml")
+  //val aFile = new File("/mnt/windows/Extra/Researches/data/kbp/queries/TAC_2010_KBP_Evaluation_Entity_Linking_Gold_Standard_V1.0/TAC_2010_KBP_Evaluation_Entity_Linking_Gold_Standard_V1.1/data/tac_2010_kbp_evaluation_entity_linking_query_types.tab")
+
   val sourceDir = new File("/mnt/windows/Extra/Researches/data/kbp/kbp2011/TAC_KBP_2010_Source_Data/TAC_2010_KBP_Source_Data/data")
   val kbDir = new File("/mnt/windows/Extra/Researches/data/kbp/kbp2011/TAC_2009_KBP_Evaluation_Reference_Knowledge_Base/data")
 
