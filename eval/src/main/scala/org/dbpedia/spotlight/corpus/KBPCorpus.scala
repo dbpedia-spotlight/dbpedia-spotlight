@@ -7,6 +7,7 @@ import xml.XML
 import io.Source
 import collection.mutable.ListBuffer
 import org.dbpedia.extraction.util.WikiUtil
+import org.apache.commons.logging.LogFactory
 
 /**
  * Created with IntelliJ IDEA.
@@ -27,6 +28,8 @@ import org.dbpedia.extraction.util.WikiUtil
  */
 class KBPCorpus(val queryFile:File, val answerFile:File, val sourceDir:File, val kbDir:File) extends AnnotatedTextSource {
   override def name = "KBP"
+
+  val LOG = LogFactory.getLog(this.getClass)
 
   //preparing queries
   val queryMap = queryFromFile()
@@ -65,21 +68,38 @@ class KBPCorpus(val queryFile:File, val answerFile:File, val sourceDir:File, val
 
   //assume that entity indices are strictly increasing
   def kbFromDirectory() = {
+    LOG.info("Loading Knowledge Base from directory")
     val uriList = new ListBuffer[String]
-    val files = kbDir.listFiles.filter(f => """.*\.xml$""".r.findFirstIn(f.getName).isDefined)
+    val files = kbDir.listFiles.filter(f => """.*\.xml$""".r.findFirstIn(f.getName).isDefined).sorted //knowledge base files are alphabetically ordered
     var lastId = 0
+    var entityCount = 0
+    var skippedCount = 0
     files.foreach(f =>{
        val root = XML.loadFile(f)
        val entities = root \ "entity"
+       entityCount += entities.length
+
        entities.foreach(e => {
          val idStr = e.attribute("id").get.toString()
          val id = idStr.slice(1,idStr.length).toInt
-         val idGap = id - lastId
-         (2 to idGap).foreach(_ => uriList+="") //the missed entity id is treated as empty uri
+
+         val idGap = id - lastId - 1
+         skippedCount += idGap
+
+         (1 to idGap).foreach(_ => uriList+="") //the missed entity id is treated as empty uri
+
          lastId = id
-         uriList += WikiUtil.wikiEncode(e.attribute("wiki_title").get.toString())
+         uriList += WikiUtil.wikiEncode(e.attribute("wiki_title").getOrElse("").toString())
        })
+
     })
+
+    LOG.info(String.format("Done. Read in %s entities. %s entities skipped in knowledge base (mark as empty uri). Max entity index: %s",
+              entityCount.toString, skippedCount.toString,uriList.length.toString))
+
+    if (uriList.length != entityCount+skippedCount)
+        LOG.error(String.format("Read in %s entities, skipped %s entities, but stored %s entities",entityCount.toString,skippedCount.toString,uriList.length.toString))
+
     uriList.toArray
   }
 
@@ -115,23 +135,35 @@ class KBPCorpus(val queryFile:File, val answerFile:File, val sourceDir:File, val
   }
 
   private def entityIdToRes(eid:String):DBpediaResource = {
-    val index = eid.slice(1,eid.length).toInt - 1
-    new DBpediaResource(kb(index))
+    val index = eid.slice(1,eid.length).toInt - 1   //KB index start at 1, must -1
+    val res = new DBpediaResource(kb(index))
+
+    if (res.uri == "") LOG.error(String.format("%s : [%s] cannot be matched with a valid uri in knowledge base",eid,kb(index)))
+
+    res
   }
 
   //assumes the sgml file is well-formed and can be treated as xml
   private def parseNews(sf:String, file:File):List[(Text,Int,Int)] ={
     val root = XML.loadFile(file)
     val paragraphs = root \\ "P"
-    parse(paragraphs.map(n => n.text),sf)
+    val res = parse(paragraphs.map(n => n.text.replace("\n"," ")),sf)
+
+    if(res.length == 0) LOG.warn(sf+" not found in file(news wire): "+file.getAbsolutePath)
+
+    res
   }
 
   //assumes the sgml file is well-formed and can be treated as xml
   private def parseWebBlog(sf:String, file:File):List[(Text,Int,Int)] = {
     val root = XML.loadFile(file)
-    val body = root \ "POST"
-    val paragraphs = body.text.split("\\n")
-    parse(paragraphs,sf)
+    val body = root \\ "POST"
+    val paragraphs = body.text.split("\\n\\n")  //paragraphs are seperated by one additional new line in source files
+    val res= parse(paragraphs.map(p => p.replace("\n"," ")),sf)
+
+    if(res.length == 0) LOG.warn(sf+" not found in file(web blog): "+file.getAbsolutePath)
+
+    res
   }
 
   private def parse(paras:Seq[String],sf:String) = {
