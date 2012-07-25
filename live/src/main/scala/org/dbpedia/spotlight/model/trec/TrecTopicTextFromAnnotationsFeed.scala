@@ -38,14 +38,18 @@ class TrecTopicTextFromAnnotationsFeed(topicalPriors: TopicalPriorStore, minimal
 
     annotations.foreach { case (resource, occCount) => {
       val counts = topicalPriors.getTopicalPriorCounts(resource).filter(!_._1.equals(TopicUtil.CATCH_TOPIC))
-      normalizingConstant *= math.pow(counts.values.sum.toDouble/totalSum,occCount)
+      val resourceSum =  counts.values.sum.toDouble
 
-      counts.filter(_._2 > 0).foreach {
-        case (topic, count) => {
-          if (probabilities.contains(topic))
-            probabilities(topic) *= math.pow(count.toDouble/topicCounts(topic), occCount)
-          else
-            probabilities += (topic -> math.pow(count.toDouble/topicCounts(topic), occCount))
+      if (resourceSum > 0.0) {
+        normalizingConstant *= math.pow(resourceSum/totalSum,occCount)
+
+        counts.filter(_._2 > 0).foreach {
+          case (topic, count) => {
+            if (probabilities.contains(topic))
+              probabilities(topic) *= math.pow(count.toDouble/topicCounts(topic), occCount)
+            else
+              probabilities += (topic -> math.pow(count.toDouble/topicCounts(topic), occCount))
+          }
         }
       }
     }}

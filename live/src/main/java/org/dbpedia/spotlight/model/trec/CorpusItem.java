@@ -21,9 +21,6 @@ import java.util.Collections;
 import java.util.BitSet;
 import java.nio.ByteBuffer;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * CorpusItem is the thrift equivalent of
  * http://trec-kba.org/schemas/v1.0/corpus-item.json
