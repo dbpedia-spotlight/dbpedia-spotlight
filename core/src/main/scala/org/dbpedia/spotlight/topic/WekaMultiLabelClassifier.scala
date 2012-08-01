@@ -22,6 +22,8 @@ import org.apache.commons.logging.LogFactory
  */
 object WekaMultiLabelClassifier{
 
+  val NEGATIVE_TOPIC_PREFIX="_"
+
   private val LOG = LogFactory.getLog(getClass)
 
   /**
@@ -119,8 +121,6 @@ class WekaMultiLabelClassifier(dictionary:WordIdDictionary,
 
   private val LOG = LogFactory.getLog(getClass)
 
-  val NEGATIVE_TOPIC_PREFIX="_"
-
   private val translater = new TextVectorizerWithTransformation(dictionary,topicsInfo)
 
   var models = Map[Topic,WekaSingleLabelClassifier]()
@@ -132,14 +132,14 @@ class WekaMultiLabelClassifier(dictionary:WordIdDictionary,
       }).foreach( modelFile => {
         val name = modelFile.getName.replace(".model","")
         models += (new Topic(name) ->
-          new WekaSingleLabelClassifier(dictionary, topicsInfo, modelFile, List(new Topic(name), new Topic(NEGATIVE_TOPIC_PREFIX+name))))
+          new WekaSingleLabelClassifier(dictionary, topicsInfo, modelFile, List(new Topic(name), new Topic(WekaMultiLabelClassifier.NEGATIVE_TOPIC_PREFIX+name))))
       } )
     else
       modelsDir.mkdirs()
 
     topicsInfo.getTopics.filterNot( topic => topic.equals(TopicUtil.OVERALL_TOPIC) || models.contains(topic)).foreach( topic => {
       models += (topic ->
-        new WekaSingleLabelClassifier(dictionary, topicsInfo, new File(modelsDir,topic.getName+".model"), List(topic, new Topic(NEGATIVE_TOPIC_PREFIX+topic.getName))))
+        new WekaSingleLabelClassifier(dictionary, topicsInfo, new File(modelsDir,topic.getName+".model"), List(topic, new Topic(WekaMultiLabelClassifier.NEGATIVE_TOPIC_PREFIX+topic.getName))))
     })
   }
 
@@ -168,14 +168,13 @@ class WekaMultiLabelClassifier(dictionary:WordIdDictionary,
 
   def update(vector:Map[Int,Double], topic: Topic) {
     if (getTopics.contains(topic)) {
-      models.foreach { case (modelTopic,model) => {
-        if (modelTopic.equals(topic)) {
-          model.update(vector, topic)
-        }
-        else if (math.random < 1.0/(models.size-1.0)) {
-          model.update(vector, new Topic(NEGATIVE_TOPIC_PREFIX+modelTopic.getName))
-        }
-      }}
+      models(topic).update(vector,topic)
+    }
+    else {
+      val posTopic = new Topic(topic.getName.substring(1))
+      if (getTopics().contains(posTopic)) {
+        models(posTopic).update(vector,topic)
+      }
     }
   }
 

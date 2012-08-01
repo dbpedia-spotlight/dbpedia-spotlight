@@ -150,7 +150,7 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
 
     def disambiguator(policy: SpotlightConfiguration.DisambiguationPolicy) : ParagraphDisambiguatorJ = {
         if (policy == SpotlightConfiguration.DisambiguationPolicy.Default) {
-            disambiguator(SpotlightConfiguration.DisambiguationPolicy.Occurrences)
+            disambiguator(SpotlightConfiguration.DisambiguationPolicy.Default)
         } else if (policy == SpotlightConfiguration.DisambiguationPolicy.Document) {
             disambiguators.getOrElse(policy, new ParagraphDisambiguatorJ(new TwoStepDisambiguator(candidateSearcher,contextSearcher)))
         } else if (policy == SpotlightConfiguration.DisambiguationPolicy.Occurrences) {

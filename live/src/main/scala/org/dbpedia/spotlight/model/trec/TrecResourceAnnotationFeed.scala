@@ -1,11 +1,11 @@
 package org.dbpedia.spotlight.model.trec
 
-import org.dbpedia.spotlight.model.{DecoratorFeed, FeedListener, Feed}
-import org.dbpedia.spotlight.model.{Text, DBpediaResource}
+import org.dbpedia.spotlight.model._
 import collection.mutable._
 import org.dbpedia.spotlight.annotate.{ParagraphAnnotator, Annotator}
 import scala.collection.JavaConversions._
 import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.io.WikiOccurrenceSource
 
 /**
  * This class is a decorator for the TrecCorpusFeed which adds Annotations to the streamed texts.
@@ -16,23 +16,66 @@ import org.apache.commons.logging.LogFactory
  * @author Dirk Weissenborn
  */
 class TrecResourceAnnotationFeed(val annotator: ParagraphAnnotator, feed:Feed[(Set[DBpediaResource], Text)])
-  extends DecoratorFeed[(Set[DBpediaResource], Text) , (Set[DBpediaResource], Text, Map[DBpediaResource,Int])](feed, true) {
+  extends FeedListener[(Set[DBpediaResource], Text)] {
+  feed.subscribe(this)
 
   private val LOG = LogFactory.getLog(getClass)
 
-  def processFeedItem(item: (Set[DBpediaResource], Text)) {
+  val textAnnotationFeed = new Feed[(Set[DBpediaResource],Text,Map[DBpediaResource,Double])](true) {
+    def act {
+      loop {
+        receive {
+          case item:(Set[DBpediaResource],Text,Map[DBpediaResource,Double]) => super.notifyListeners(item)
+        }
+      }
+    }
+  }
+
+  val resourceAnnotationFeed = new Feed[(Set[DBpediaResource],Map[DBpediaResource,Double])](true) {
+    def act {
+      loop {
+        receive {
+          case item:(Set[DBpediaResource],Map[DBpediaResource,Double]) => super.notifyListeners(item)
+        }
+      }
+    }
+  }
+
+  def startFeed {
+    textAnnotationFeed.start()
+    resourceAnnotationFeed.start()
+  }
+
+
+  def update(item: (Set[DBpediaResource], Text)) {
     LOG.debug("Annotating text with DBpediaResources...")
     LOG.debug("Text: "+item._2.text)
-    val annotations = Map[DBpediaResource,Int]()
+    val annotations = Map[DBpediaResource,Double]()
 
-    for(occurrence <- annotator.annotate(item._2.text)) {
-      if (annotations.contains(occurrence.resource))
-        annotations(occurrence.resource) += 1
-      else
-        annotations += (occurrence.resource -> 1)
-    }
+    val text = item._2.text
+    text.split("\n").foreach(paragraph => {
+      if(paragraph.length > 0) {
+        val currentAnnotations = Map[DBpediaResource,Double]()
+
+        for(occurrence <- annotator.annotate(paragraph)) {
+          if (occurrence!=null) {
+            if (annotations.contains(occurrence.resource))
+              annotations(occurrence.resource) += 1
+            else
+              annotations += (occurrence.resource -> 1)
+            if (currentAnnotations.contains(occurrence.resource))
+              currentAnnotations(occurrence.resource) += 1
+            else
+              currentAnnotations += (occurrence.resource -> 1)
+          }
+        }
+        textAnnotationFeed ! (item._1,new Text(paragraph), currentAnnotations)
+      }
+    } )
+
+
     LOG.debug("Resources annotated:"+annotations.foldLeft("")((string,annotation) => string+" "+annotation._1.uri))
-    notifyListeners((item._1,item._2,annotations))
+    resourceAnnotationFeed ! (item._1,annotations)
   }
 
 }

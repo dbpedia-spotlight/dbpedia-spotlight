@@ -16,9 +16,13 @@
 
 package org.dbpedia.spotlight.lucene.disambiguate;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.disambiguate.mixtures.Mixture;
-import org.dbpedia.spotlight.exceptions.*;
-import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher;
+import org.dbpedia.spotlight.exceptions.ConfigurationException;
+import org.dbpedia.spotlight.exceptions.InputException;
+import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
+import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.model.ContextSearcher;
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
@@ -36,6 +40,7 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public class MixedWeightsDisambiguator extends MergedOccurrencesDisambiguator {
+    private Log LOG = LogFactory.getLog(getClass());
 
     Mixture mixture;
 
@@ -66,7 +71,7 @@ public class MixedWeightsDisambiguator extends MergedOccurrencesDisambiguator {
         }
 
         if(resultOcc == null) {
-            throw new SearchException("Error when reranking mixture weights "+sfOcc.surfaceForm()); //DisambiguationException
+            LOG.error("SearchException: Error when reranking mixture weights "+sfOcc.surfaceForm()); //DisambiguationException
         }
 
         return resultOcc;

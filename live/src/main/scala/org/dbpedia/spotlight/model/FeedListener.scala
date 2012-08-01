@@ -39,7 +39,7 @@ abstract class FeedListener[T <: Product](implicit m: Manifest[T]) extends Actor
   }
 
   def notify(item: Product, iMan:Manifest[_]) {
-    if (item.getClass.equals(m.erasure))
+    if (iMan.equals(m))
       update(item.asInstanceOf[T])
     else {
       val iManIt = iMan.typeArguments.iterator

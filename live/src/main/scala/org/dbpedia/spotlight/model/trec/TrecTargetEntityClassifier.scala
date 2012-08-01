@@ -39,9 +39,7 @@ class TrecTargetEntityClassifier(val modelDir:File, var targetEntities : Set[DBp
       topicsInfo,
       new File(modelDir.getAbsolutePath+"/multilabel-model"), null, false)
 
-  def update(targets: Set[DBpediaResource], annotations: Map[DBpediaResource,Int]) {
-    LOG.info("Updating target-entity classifier...")
-
+  def update(targets: Set[DBpediaResource], annotations: Map[DBpediaResource,Double]) {
     val vector = vectorize(annotations)
 
     targets.foreach(target=> {
@@ -50,13 +48,13 @@ class TrecTargetEntityClassifier(val modelDir:File, var targetEntities : Set[DBp
   }
 
 
-  private def vectorize(annotations: Map[DBpediaResource, Int]):Map[Int,Double] = {
+  private def vectorize(annotations: Map[DBpediaResource, Double]):Map[Int,Double] = {
     var vector = Map[Int, Double]()
     annotations.foreach {
       case (resource, count) => {
         val id = dictionary.getOrElsePut(resource.uri)
         if (id >= 0) {
-          vector += (id -> count.toDouble)
+          vector += (id -> count)
         }
       }
     }
@@ -65,7 +63,7 @@ class TrecTargetEntityClassifier(val modelDir:File, var targetEntities : Set[DBp
     vector.transform((id, count) => count / squaredSum)
   }
 
-  def getPredictions(annotations: Map[DBpediaResource,Int]) : Map[DBpediaResource,Double] = {
+  def getPredictions(annotations: Map[DBpediaResource,Double]) : Map[DBpediaResource,Double] = {
     val vector = vectorize(annotations)
 
     val predictions = classifier.getPredictions(vector.keysIterator.toArray, vector.valuesIterator.toArray)

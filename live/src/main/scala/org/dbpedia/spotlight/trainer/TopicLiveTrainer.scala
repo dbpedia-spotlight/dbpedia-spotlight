@@ -1,6 +1,6 @@
 package org.dbpedia.spotlight.trainer
 
-import org.dbpedia.spotlight.topic.TopicalClassifier
+import org.dbpedia.spotlight.topic.{WekaMultiLabelClassifier, TopicalClassifier}
 import org.dbpedia.spotlight.model._
 import org.apache.commons.logging.LogFactory
 import scala.collection.mutable._
@@ -61,9 +61,9 @@ object TopicLiveTrainer {
  * @param evalFile if defined, file which will contain training evaluations
  * @param evalInterval interval (measured in number of updates) between evaluations
  */
-class TopicLiveTrainer(val classifier: TopicalClassifier, evalFile: File = null, evalInterval:Int = 10) {
+class TopicLiveTrainer(val classifier: TopicalClassifier, minimalConfidence:Double = 0.8, evalFile: File = null, evalInterval:Int = 100) {
   private val LOG = LogFactory.getLog(getClass)
-
+  private val multiLabel = classifier.isInstanceOf[WekaMultiLabelClassifier]
   private var evalWriter:PrintWriter = null
   if (evalFile!=null)
     evalWriter = new PrintWriter(new FileWriter(evalFile,true))
@@ -71,12 +71,12 @@ class TopicLiveTrainer(val classifier: TopicalClassifier, evalFile: File = null,
   private val rssFeedListener = new FeedListener[(Topic, RssItem)] {
     protected override def update(item: (Topic, RssItem)) {
       LOG.debug("Updating topical classifier from RSS...")
-      updateModel(Set(item._1), item._2.description)
+      updateModel(Map(item._1->1), item._2.description)
     }
   }
 
-  private val topicSetTextFeedListener = new FeedListener[(Set[Topic], Text)] {
-    protected override def update(item: (Set[Topic], Text)) {
+  private val topicSetTextFeedListener = new FeedListener[(Map[Topic,Double],Text)] {
+    protected override def update(item: (Map[Topic,Double],Text)) {
       LOG.debug("Updating topical classifier...")
       updateModel(item._1,item._2)
     }
@@ -85,32 +85,50 @@ class TopicLiveTrainer(val classifier: TopicalClassifier, evalFile: File = null,
   private val topicTextFeedListener = new FeedListener[(Topic, Text)] {
     protected override def update(item: (Topic, Text)) {
       LOG.debug("Updating topical classifier...")
-      updateModel(Set(item._1),item._2)
+      updateModel(Map(item._1->1),item._2)
     }
   }
 
   private var updateCtr = 0
   private var meanSquaredError = 0.0
 
-  private def updateModel(topics:Set[Topic], text:Text) {
+  private def updateModel(topics:Map[Topic,Double], text:Text) {
     updateCtr += 1
+    val predictions = classifier.getPredictions(text)
 
     if (evalWriter!=null) {
-      val predictions = classifier.getPredictions(text)
       meanSquaredError += predictions.foldLeft(0.0)((sum,prediction) =>
-        sum + math.pow( { if(topics.contains(prediction._1)) 1.0 else 0.0 } - prediction._2, 2))
+        sum + math.pow( topics.getOrElse(prediction._1, 0.0) - prediction._2, 2))
 
       if (updateCtr%evalInterval==0) {
         evalWriter.println("===== Evaluation of interval "+(updateCtr-evalInterval)+" - "+updateCtr+" =====")
         evalWriter.println("mean squared error: "+(meanSquaredError/evalInterval))
-        evalWriter.println("last predictions:"+predictions.foldLeft("")( (string,prediction) => " ("+prediction._2+","+prediction._1.getName+")"))
-        evalWriter.println("last topics: "+topics.foldLeft("")( (string,topic) => " "+topic.getName))
-        evalWriter.println("last text: "+text.text)
+        evalWriter.println("last topics: "+topics.toList.sortBy(-_._2).take(4).foldLeft("")(
+          (string,topic) => string+" ("+topic._2.toString.substring(0,math.min(4,topic._2.toString.length))+","+topic._1.getName+")"))
+        evalWriter.println("for text: "+text.text.substring(0,math.min(200,text.text.length))+"...")
+        evalWriter.println("last predictions:"+predictions.toList.sortBy(-_._2).take(4).foldLeft("")(
+          (string,prediction) => string+" ("+prediction._2.toString.substring(0,math.min(4,prediction._2.toString.length))+","+prediction._1.getName+")"))
+        evalWriter.flush()
         meanSquaredError = 0.0
       }
     }
-
-    topics.foreach(topic => classifier.update(text, topic) )
+    if (evalWriter!=null)
+      evalWriter.print("last trained topics: ")
+    predictions.foreach{ case (topic,prediction) =>
+      if (prediction > minimalConfidence)
+        if (topics.getOrElse(topic,0.0) < minimalConfidence) {
+          if (evalWriter!=null)
+            evalWriter.print(" not_"+topic.getName)
+          classifier.update(text,new Topic(WekaMultiLabelClassifier.NEGATIVE_TOPIC_PREFIX+topic.getName))
+        }
+        else {
+          if (evalWriter!=null)
+            evalWriter.print(" "+topic.getName)
+          classifier.update(text,topic)
+        }
+    }
+    if (evalWriter!=null)
+      evalWriter.println
   }
 
   def subscribeToAll {

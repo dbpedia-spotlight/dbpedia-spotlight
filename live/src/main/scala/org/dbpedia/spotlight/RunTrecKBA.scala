@@ -9,13 +9,6 @@ import trainer.{TrecLiveTargetEntityTrainer, TopicLiveTrainer}
 import org.apache.commons.logging.LogFactory
 import actors.Actor
 
-/**
- * Created with IntelliJ IDEA.
- * User: dirk
- * Date: 7/18/12
- * Time: 11:57 AM
- * To change this template use File | Settings | File Templates.
- */
 
 object RunTrecKBA {
 
@@ -25,7 +18,7 @@ object RunTrecKBA {
    *
    * @param args spotlight configuration, trec corpus dir, trecJudgmentsFile, training start date (yyyy-MM-dd-hh), end date,
    *             minimal confidence of assigning topic to a list of resources, path to trec target entity classifier model dir,
-   *             evaluation folder (evaluation, if folder exists, no evaluation otherwise), clear (optional, start training from scratch except of topical classifier)
+   *             evaluation folder (evaluation, if folder exists, no evaluation otherwise), evaluation interval, clear (optional, start training from scratch except of topical classifier)
    */
   def main(args: Array[String]) {
     var configuration: SpotlightConfiguration = null
@@ -58,7 +51,9 @@ object RunTrecKBA {
     if (!evalFolder.exists())
       evalFolder = null
 
-    val clear = args.length > 8 && args(8).equals("clear")
+    val evaluationInterval = args(8).toInt
+
+    val clear = args.length > 9 && args(9).equals("clear")
 
     if (clear) {
       targetClassifierModelDir.listFiles().foreach(file => {
@@ -75,13 +70,15 @@ object RunTrecKBA {
     //Feed setup
     val corpusFeed = new TrecCorpusFeed(corpusDir, startDate, endDate, trecJudgmentsFile, clear)
     val annotationFeed = new TrecResourceAnnotationFeed(factory.annotator(), corpusFeed)
-    annotationFeed.start
-    val trecTopicTextFeed = new TrecTopicTextFromAnnotationsFeed(HashMapTopicalPriorStore, minimalConfidence, annotationFeed)
+    annotationFeed.startFeed
+    val trecTopicTextFeed = new TrecTopicTextFromAnnotationsFeed(HashMapTopicalPriorStore, annotationFeed.textAnnotationFeed)
     trecTopicTextFeed.start
 
     //Trainer
-    val topicalClassifierTrainer = new TopicLiveTrainer(factory.topicalClassifier, new File(evalFolder, "topic_training.eval"))
-    val trecTargetEntityTrainer = new TrecLiveTargetEntityTrainer(targetClassifierModelDir, corpusFeed.targetEntities, new File(evalFolder, "target_entity_training.eval"))
+    val topicalClassifierTrainer = new TopicLiveTrainer(factory.topicalClassifier, minimalConfidence, new File(evalFolder, "topic_training.eval"),evaluationInterval)
+    topicalClassifierTrainer.subscribeToAll
+    val trecTargetEntityTrainer = new TrecLiveTargetEntityTrainer(targetClassifierModelDir, corpusFeed.targetEntities, new File(evalFolder, "target_entity_training.eval"), evaluationInterval)
+    annotationFeed.resourceAnnotationFeed.subscribe(trecTargetEntityTrainer.feedListener)
 
     LOG.info("Starting training!")
     corpusFeed.start()

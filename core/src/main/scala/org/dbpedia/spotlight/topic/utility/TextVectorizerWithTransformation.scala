@@ -2,6 +2,7 @@ package org.dbpedia.spotlight.topic.utility
 
 import scala.collection.mutable._
 import org.dbpedia.spotlight.model.Topic
+import collection.mutable
 
 /**
  * Created with IntelliJ IDEA.
@@ -18,8 +19,10 @@ protected[topic] class TextVectorizerWithTransformation(private val dictionary: 
   def textToTranformedInput(text: String, transform: Boolean = true, isTraining:Boolean = false, topic:Topic = null, increaseVocabulary:Int = 0): Map[Int, Double] = {
     var vector = vectorizer.getWordCountVector(text)
 
+    val _isTraining = isTraining && topicInfo.getTopics.contains(topic)
+
     //if there should be no transformation, keeping stats is not important
-    if (isTraining) {
+    if (_isTraining) {
       if (transform) {
         topicInfo.incNumDocs(TopicUtil.OVERALL_TOPIC, 1)
         topicInfo.incNumDocs(topic, 1)
@@ -38,16 +41,16 @@ protected[topic] class TextVectorizerWithTransformation(private val dictionary: 
         }
     }
 
-    vector = Map() ++ vector.filter(entry => dictionary.getId(entry._1) > 0)
+    vector = Map() ++ vector.filter(entry => dictionary.getId(entry._1)>= 0)
 
-    if (isTraining && transform) {
+    if (_isTraining && transform) {
       val sum = math.sqrt(vector.foldLeft(0.0)((ctr, element)=>ctr + element._2*element._2))
 
       vector.foreach{ case (word,count) => {
-        var stats = topicInfo.getWordFrequencies(topic)(word)
+        var stats = topicInfo.getWordFrequencies(topic).getOrElse(word,(0.0,0.0))
         topicInfo.putWordFrequency(topic, word, stats._1 + count/sum, stats._2 + 1 )
 
-        stats = topicInfo.getWordFrequencies(TopicUtil.OVERALL_TOPIC)(word)
+        stats = topicInfo.getWordFrequencies(TopicUtil.OVERALL_TOPIC).getOrElse(word,(0.0,0.0))
         topicInfo.putWordFrequency(TopicUtil.OVERALL_TOPIC, word, stats._1 + count/sum, stats._2 + 1)
       } }
     }
@@ -65,12 +68,10 @@ protected[topic] class TextVectorizerWithTransformation(private val dictionary: 
 
     var idVector = Map[Int, Double]()
     vector.foreach{ case (word,count) => {
-
-        val id = dictionary.getId(word)
+      val id = dictionary.getId(word)
       if (id>=0)
-        idVector += (dictionary.getId(word) -> count / squaredSum)
+        idVector += (id -> count / squaredSum)
     } }
-
 
     idVector
   }

@@ -1,8 +1,11 @@
 package org.dbpedia.spotlight
 
-import model.{FeedListener, Feed}
+import db.model.HashMapTopicalPriorStore
+import model._
 import org.junit.Test
-import org.dbpedia.spotlight.model.{DBpediaResource, Topic}
+import java.io.File
+import collection.mutable._
+import trec.TrecTopicTextFromAnnotationsFeed
 
 
 class FeedsTest {
@@ -43,6 +46,33 @@ class FeedsTest {
     feed.start()
     Thread.sleep(2000)
     assert(ctr==2)
+  }
+
+  @Test
+  def testTrecTopicFeed {
+    val countsFolder = "/media/Data/Wikipedia/counts"//getClass.getClassLoader.getResource("counts").getPath
+    HashMapTopicalPriorStore.fromDir(new File(countsFolder))
+
+    val testFeed = new Feed[(Set[DBpediaResource],Text, Map[DBpediaResource,Double])](true) {
+      def act {
+       notifyListeners(Set(new DBpediaResource("MP3")),new Text("Mathematics"),
+         Map(new DBpediaResource("MP3")->1.0,new DBpediaResource("Track")->1.0))
+      }
+    }
+
+    val listener = new FeedListener[(Map[Topic,Double],Text)]() {
+      def update(item: (Map[Topic,Double],Text)) {
+        item._1.foreach {
+          case (topic, prob) => assert(prob <= 1)
+        }
+      }
+    }
+
+    val annotationFeed = new TrecTopicTextFromAnnotationsFeed(HashMapTopicalPriorStore,testFeed)
+    listener.subscribeToAllFeeds
+    annotationFeed.start()
+    testFeed.start()
+    Thread.sleep(1000)
   }
 
 }

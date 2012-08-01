@@ -31,7 +31,7 @@
           <launchers>
             <launcher>
               <id>Trec</id>
-              <mainClass>live.RunTrecKBA</mainClass>
+              <mainClass>org.dbpedia.spotlight.RunTrecKBA</mainClass>
               <jvmArgs>
                 <jvmArg>${heapspace.Xmx.live}</jvmArg>
               </jvmArgs>
