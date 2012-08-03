@@ -414,10 +414,8 @@ object ExtractCandidateMap
 
         maximumSurfaceFormLength = config.get("org.dbpedia.spotlight.data.maxSurfaceFormLength").toInt
 
-
         //DBpedia config
         SpotlightConfiguration.DEFAULT_NAMESPACE=config.get("org.dbpedia.spotlight.default_namespace",SpotlightConfiguration.DEFAULT_NAMESPACE)
-
 
 
         //Bad URIs -- will exclude any URIs that match these patterns. Used for Lists, disambiguations, etc.
