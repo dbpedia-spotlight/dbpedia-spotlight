@@ -32,7 +32,7 @@
         <java.compiler.version>1.6</java.compiler.version>
         <maven.scala.plugin.version>2.15.0</maven.scala.plugin.version>
         <maven.install.plugin.version>2.3.1</maven.install.plugin.version>
-        <maven.assembly.plugin.version>2.2-beta-5</maven.assembly.plugin.version>
+        <maven.assembly.plugin.version>2.3</maven.assembly.plugin.version>
         <scala.compiler.version>2.9.1</scala.compiler.version>
 
         <spotlight.basedir>${project.basedir}</spotlight.basedir>
