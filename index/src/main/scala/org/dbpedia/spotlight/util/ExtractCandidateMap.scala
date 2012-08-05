@@ -355,7 +355,7 @@ object ExtractCandidateMap
         if (!new File(surfaceFormsFileName).isFile) {
             throw new IllegalStateException("surface forms not created yet; call saveSurfaceForms first or set surface forms file")
         }
-        val langString = "en"
+
         val surfaceFormPredicate = "http://dbpedia.org/ontology/hasSurfaceForm"
         val predicate = new Resource(surfaceFormPredicate)
 
@@ -365,7 +365,7 @@ object ExtractCandidateMap
         for (line <- Source.fromFile(surfaceFormsFileName, "UTF-8").getLines) {
             val elements = line.split("\t")
             val subj = new Resource(SpotlightConfiguration.DEFAULT_NAMESPACE+elements(1))
-            val obj = new Literal(elements(0), langString, Literal.STRING)
+            val obj = new Literal(elements(0), "lang=" + SpotlightConfiguration.DEFAULT_LANGUAGE_I18N_CODE, Literal.STRING)
             val triple = new Triple(subj, predicate, obj)
             ntStream.println(triple.toN3)
         }

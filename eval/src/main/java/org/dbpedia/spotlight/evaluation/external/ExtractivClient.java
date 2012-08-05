@@ -23,6 +23,7 @@ import org.apache.commons.httpclient.methods.multipart.*;
 import org.dbpedia.spotlight.exceptions.AnnotationException;
 import org.dbpedia.spotlight.model.DBpediaResource;
 import org.dbpedia.spotlight.model.DBpediaType;
+import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.Text;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -124,7 +125,7 @@ public class ExtractivClient extends AnnotationClient {
 
 				String dbpediaLink = null;
 				for (int j = 0; j < links.length(); j++) {
-					if (links.getString(j).startsWith("http://dbpedia.org/resource/")) {
+					if (links.getString(j).startsWith(SpotlightConfiguration.DEFAULT_NAMESPACE)) {
 						dbpediaLink = links.getString(j);
 					}
 				}
