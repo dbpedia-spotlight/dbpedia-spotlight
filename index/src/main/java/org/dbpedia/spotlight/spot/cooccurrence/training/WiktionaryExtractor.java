@@ -3,6 +3,7 @@ package org.dbpedia.spotlight.spot.cooccurrence.training;
 import au.com.bytecode.opencsv.CSVWriter;
 import org.apache.commons.lang.StringUtils;
 import org.dbpedia.helper.CoreUtil;
+import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.openrdf.model.Statement;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
@@ -41,7 +42,7 @@ public class WiktionaryExtractor extends DefaultHandler {
 	private int iRead = 0;
 	private StringBuilder contentBuilder = new StringBuilder();
 	private HashMap<String, Statement> confusables;
-	private static final String WIKI_LANG = "en";
+
 
 	public void setConfusables(List<Statement> confusablesRDF) {
 
@@ -105,7 +106,7 @@ public class WiktionaryExtractor extends DefaultHandler {
 					wikipediaParts = extractTemplate(line);
 
 					for(String wikipediaPart : wikipediaParts){
-						if(wikipediaPart.startsWith("lang=") && !wikipediaPart.equals("lang=" + WIKI_LANG)){
+						if(wikipediaPart.startsWith("lang=") && !wikipediaPart.equals("lang=" + SpotlightConfiguration.DEFAULT_LANGUAGE_I18N_CODE)){
 							/**
 							 * We only want links to the Wikipedia of the current language.
 							 */
@@ -142,9 +143,9 @@ public class WiktionaryExtractor extends DefaultHandler {
 					}
 
 					if(wikiLink == null)
-						dbpediaResource = "http://dbpedia.org/resource/" + wikipediaEncode(currentTitle);
+						dbpediaResource = SpotlightConfiguration.DEFAULT_NAMESPACE + wikipediaEncode(currentTitle);
 					else
-						dbpediaResource = "http://dbpedia.org/resource/" + wikipediaEncode(wikiLink);
+						dbpediaResource = SpotlightConfiguration.DEFAULT_NAMESPACE + wikipediaEncode(wikiLink);
 
 				}
 

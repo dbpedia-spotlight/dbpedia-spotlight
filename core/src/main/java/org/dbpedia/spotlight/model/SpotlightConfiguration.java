@@ -53,6 +53,8 @@ public class SpotlightConfiguration {
 	public final static String DEFAULT_POLICY = "whitelist";
 	public final static String DEFAULT_COREFERENCE_RESOLUTION = "true";
     public static String DEFAULT_NAMESPACE = "http://dbpedia.org/resource/";
+    public static String DEFAULT_ONTOLOGY_PREFIX = "http://dbpedia.org/ontology/";
+    public static String DEFAULT_LANGUAGE_I18N_CODE = "en";
 
     public enum DisambiguationPolicy { Document,Occurrences,CuttingEdge,Default }
 
@@ -162,6 +164,8 @@ public class SpotlightConfiguration {
 		}
 
         DEFAULT_NAMESPACE = config.getProperty("org.dbpedia.spotlight.default_namespace",DEFAULT_NAMESPACE);
+        DEFAULT_ONTOLOGY_PREFIX = config.getProperty("org.dbpedia.spotlight.default_ontology", DEFAULT_ONTOLOGY_PREFIX);
+        DEFAULT_LANGUAGE_I18N_CODE = config.getProperty("org.dbpedia.spotlight.language_i18n_code",DEFAULT_LANGUAGE_I18N_CODE);
 
         //Read the spotter configuration from the properties file
 		spotterConfiguration = new SpotterConfiguration(fileName);
