@@ -26,6 +26,7 @@ import org.dbpedia.spotlight.exceptions.IndexException;
 import org.dbpedia.spotlight.lucene.LuceneManager;
 import org.dbpedia.spotlight.model.Candidate;
 import org.dbpedia.spotlight.model.DBpediaResource;
+import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SurfaceForm;
 import org.semanticweb.yars.nx.Node;
 import org.semanticweb.yars.nx.parser.NxParser;
@@ -104,7 +105,7 @@ public class CandidateIndexer extends BaseIndexer<Candidate> {
         NxParser nxParser = new NxParser(new FileInputStream(surfaceFormsDataSet), false);
         while (nxParser.hasNext()) {
             Node[] nodes = nxParser.next();
-            String resourceString = nodes[0].toString().replace("http://dbpedia.org/resource/","");
+            String resourceString = nodes[0].toString().replace(SpotlightConfiguration.DEFAULT_NAMESPACE,"");
             String surfaceFormString = nodes[2].toString();
             List<SurfaceForm> surfaceForms = AddSurfaceFormsToIndex.fromTitlesToAlternativesJ(new SurfaceForm(surfaceFormString));
             add(surfaceForms, new DBpediaResource(resourceString));

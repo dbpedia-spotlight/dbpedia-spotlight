@@ -74,7 +74,7 @@ class DBpediaType(var name : String) extends OntologyType {
 }
 
 object DBpediaType {
-    val DBPEDIA_ONTOLOGY_PREFIX = "http://dbpedia.org/ontology/"
+    val DBPEDIA_ONTOLOGY_PREFIX = SpotlightConfiguration.DEFAULT_ONTOLOGY_PREFIX
     val UNKNOWN = new DBpediaType("unknown")
 }
 
