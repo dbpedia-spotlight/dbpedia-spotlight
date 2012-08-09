@@ -1,4 +1,4 @@
-package org.dbpedia.spotlight.topic.utility
+package org.dbpedia.spotlight.db.model
 
 import org.apache.commons.logging.LogFactory
 import java.io._
@@ -13,8 +13,8 @@ import io.Source
  * To change this template use File | Settings | File Templates.
  */
 
-class WordIdDictionary(private val pathToDictionary: String, private var maxSize:Int, var isPhonetic:Boolean = false) {
-  def this(pathToDic:String)=this(pathToDic,0)
+class WordIdDictionary(private val pathToDictionary: String, private var maxSize: Int, var isPhonetic: Boolean = false) {
+  def this(pathToDic: String) = this(pathToDic, 0)
 
   private val LOG = LogFactory.getLog(getClass)
 
@@ -24,7 +24,7 @@ class WordIdDictionary(private val pathToDictionary: String, private var maxSize
     try {
       var firstLine = true
       Source.fromFile(pathToDictionary).getLines().foreach(thisLine => {
-        if(firstLine) {
+        if (firstLine) {
           if (thisLine.trim.equals("@phonetic"))
             isPhonetic = true
           else {
@@ -37,7 +37,7 @@ class WordIdDictionary(private val pathToDictionary: String, private var maxSize
           val split = thisLine.split("\t")
           dictionary += (split(0) -> split(1).toInt)
         }
-      } )
+      })
       LOG.info("Dictionary loaded")
     }
     catch {
@@ -67,13 +67,13 @@ class WordIdDictionary(private val pathToDictionary: String, private var maxSize
     }
   }
 
-  def getId(word: String): Int = dictionary.getOrElse(word,-1)
+  def getId(word: String): Int = dictionary.getOrElse(word, -1)
 
   def put(word: String, id: Int) {
     dictionary += (word -> id)
   }
 
-  def getOrElsePut(word:String) : Int = {
+  def getOrElsePut(word: String): Int = {
     var id = getId(word)
     if (id < 0 && getSpace > 0) {
       id = getSize
@@ -87,8 +87,11 @@ class WordIdDictionary(private val pathToDictionary: String, private var maxSize
 
   def getSize = dictionary.size
 
-  def getMaxSize = if(maxSize==0) getSize else maxSize
-  def setMaxSize(maxSize:Int) { this.maxSize = maxSize }
+  def getMaxSize = if (maxSize == 0) getSize else maxSize
+
+  def setMaxSize(maxSize: Int) {
+    this.maxSize = maxSize
+  }
 
   def getSpace = maxSize - dictionary.size
 

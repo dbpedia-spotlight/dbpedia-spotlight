@@ -1,4 +1,4 @@
-package org.dbpedia.spotlight.model
+package org.dbpedia.spotlight.feed
 
 import scala.reflect.Manifest
 import collection.mutable._
@@ -21,7 +21,7 @@ object FeedRegistry {
          feeds filter {
            case (manifest, feed) => {
              val is = listToMap[Manifest[_]](manifest.typeArguments)
-             should.foldLeft(true)( (result, element) => result && element._2 >= is.getOrElse(element._1, 0))
+             should.foldLeft(true)((result, element) => result && element._2 >= is.getOrElse(element._1, 0))
            }
          }) {
 
@@ -30,14 +30,14 @@ object FeedRegistry {
     ret
   }
 
-  def getFeedsByManifest( m: Manifest[_]): Set[Feed[_]] = {
+  def getFeedsByManifest(m: Manifest[_]): Set[Feed[_]] = {
     var ret = Set[Feed[_]]()
     val should = listToMap[Manifest[_]](m.typeArguments)
     for (feed <-
          feeds filter {
            case (manifest, feed) => {
              val is = listToMap[Manifest[_]](manifest.typeArguments)
-             should.foldLeft(true)( (result, element) => result && element._2 <= is.getOrElse(element._1, 0))
+             should.foldLeft(true)((result, element) => result && element._2 <= is.getOrElse(element._1, 0))
            }
          }) {
 
@@ -46,12 +46,12 @@ object FeedRegistry {
     ret
   }
 
-  private def listToMap[A](seq:List[A]):Map[A,Int] = {
-    var result = Map[A,Int]()
+  private def listToMap[A](seq: List[A]): Map[A, Int] = {
+    var result = Map[A, Int]()
 
-    seq.foreach( element => {
+    seq.foreach(element => {
       if (!result.contains(element)) {
-        result += ( element -> seq.count( element2 => element.equals(element2)))
+        result += (element -> seq.count(element2 => element.equals(element2)))
       }
     })
     result

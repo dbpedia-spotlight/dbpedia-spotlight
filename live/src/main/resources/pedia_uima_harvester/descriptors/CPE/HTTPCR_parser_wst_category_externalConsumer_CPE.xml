@@ -107,7 +107,7 @@
 				<nameValuePair>
 					<name>ExternalProcessorClassName</name>
 					<value>
-						<string>org.dbpedia.spotlight.model.WikipediaUpdateFeed</string>
+						<string>org.dbpedia.spotlight.feed.WikipediaUpdateFeed</string>
 					</value>
 				</nameValuePair>
 			</configurationParameterSettings>

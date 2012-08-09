@@ -3,11 +3,12 @@ package org.dbpedia.spotlight.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.db.model.HashMapTopicalPriorStore;
+import org.dbpedia.spotlight.db.model.TopicalStatInformation;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.topic.TopicalClassifier;
 import org.dbpedia.spotlight.topic.WekaMultiLabelClassifier;
 import org.dbpedia.spotlight.topic.WekaSingleLabelClassifier;
-import org.dbpedia.spotlight.topic.utility.TopicUtil;
+import org.dbpedia.spotlight.topic.util.TopicUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,6 +34,8 @@ public class TopicalClassificationConfiguration {
     static String DICTIONARY_MAXSIZE="org.dbpedia.spotlight.topic.dictionary.maxsize";
     static String TOPICAL_PRIORS="org.dbpedia.spotlight.topic.priors";
 
+    private static TopicalClassifier classifier;
+
     //public enum DisambiguationPolicy { Document,Occurrences,CuttingEdge,Default }
 
     public TopicalClassificationConfiguration(String configFileName) throws ConfigurationException {
@@ -46,28 +49,37 @@ public class TopicalClassificationConfiguration {
         if (config.getProperty(CLASSIFIER_TYPE) == null || config.getProperty(CLASSIFIER_PATH) == null || config.getProperty(DICTIONARY) == null || config.getProperty(DICTIONARY_MAXSIZE) == null)
             throw new ConfigurationException(String.format("Please validate your configuration in file %s for topical classification.",configFileName));
 
-        File priorsDir =  new File(config.getProperty(TOPICAL_PRIORS));
-        if(!priorsDir.exists())
+        File priors =  new File(config.getProperty(TOPICAL_PRIORS));
+        if(!priors.exists())
             LOG.warn("Topical priors were not loaded!");
         else
-            HashMapTopicalPriorStore.fromDir(priorsDir);
+            HashMapTopicalPriorStore.fromDir(priors);
 
+        classifier = loadClassifier();
     }
 
-    public TopicalClassifier getClassifier() {
+    private TopicalClassifier loadClassifier() {
         LOG.info("Loading topical classifier...");
+        TopicalStatInformation info = TopicUtil.getTopicInfo(config.getProperty(TOPICS_INFO));
+
         if(config.getProperty(CLASSIFIER_TYPE).equals("org.dbpedia.spotlight.topic.WekaSingleLabelClassifier")) {
             return new WekaSingleLabelClassifier(TopicUtil.getDictionary(config.getProperty(DICTIONARY), Integer.parseInt(config.getProperty(DICTIONARY_MAXSIZE))),
-                                                 TopicUtil.getTopicInfo(config.getProperty(TOPICS_INFO)),
-                                                 new File(config.getProperty(CLASSIFIER_PATH)));
+                                                 info,
+                                                 new File(config.getProperty(CLASSIFIER_PATH)),
+                                                 null,
+                                                 info.loaded());
         }
 
         if(config.getProperty(CLASSIFIER_TYPE).equals("org.dbpedia.spotlight.topic.WekaMultiLabelClassifier"))
           return new WekaMultiLabelClassifier(TopicUtil.getDictionary(config.getProperty(DICTIONARY), Integer.parseInt(config.getProperty(DICTIONARY_MAXSIZE))),
                                               TopicUtil.getTopicInfo(config.getProperty(TOPICS_INFO)),
-                                              new File(config.getProperty(CLASSIFIER_PATH)));
+                                              new File(config.getProperty(CLASSIFIER_PATH)),info.loaded());
 
         return null;
+    }
+
+    public TopicalClassifier getClassifier() {
+        return classifier;
     }
 
 }

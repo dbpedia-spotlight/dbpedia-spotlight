@@ -1,9 +1,7 @@
 package org.dbpedia.spotlight.topic.convert
 
-import org.dbpedia.spotlight.topic.utility.WordIdDictionary
+import org.dbpedia.spotlight.db.model.WordIdDictionary
 import java.io.{FileWriter, PrintWriter}
-import org.dbpedia.spotlight.model.Topic
-import scala.collection.mutable._
 import org.apache.commons.logging.LogFactory
 
 /**

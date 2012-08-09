@@ -3,8 +3,6 @@ package org.dbpedia.spotlight.topic.convert
 import java.io.{FileWriter, PrintWriter}
 import io.Source
 import org.apache.commons.logging.LogFactory
-import collection.mutable.LinkedList
-import java.util.Scanner
 
 
 /**
@@ -16,8 +14,7 @@ object VowpalWCScalingFilter {
   private val LOG = LogFactory.getLog(getClass)
 
   def main(args:Array[String]) {
-    //reduceElementFeatures(args(0),args(1), args(2).toDouble)
-    reduceElementFeatures("/media/Data/Wikipedia/Clustering/input.vowpal.rest","/media/Data/Wikipedia/Clustering/reduced.input.vowpal.rest", 20.0)
+    reduceElementFeatures(args(0),args(1), args(2).toDouble)
   }
 
   def reduceElementFeatures(pathToCorpus:String, output:String, normalization:Double) {

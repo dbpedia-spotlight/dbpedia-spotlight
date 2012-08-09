@@ -26,15 +26,48 @@ import org.apache.lucene.search.{ScoreDoc, Explanation}
 import org.dbpedia.spotlight.model._
 import com.officedepot.cdap2.collection.CompactHashSet
 import org.dbpedia.spotlight.db.model.TopicalPriorStore
-import org.dbpedia.spotlight.topic.TopicExtractor
+import org.dbpedia.spotlight.topic.util.TopicExtractor
+import org.dbpedia.spotlight.topic.{MultiLabelClassifier, TopicalClassifier}
 
 /**
  * Uses only topic prior to decide on disambiguation.
  * Baseline disambiguator.For evaluation only.
+ * 
+ * r ... resource
+ * c ... context (text)
+ * s ... surfaceform
+ * l_i ... one topic labeling (in total there are pow(2,N) labelings possible for multilabel and N for single label)
+ * t_k ... topic "k"
+ * _t_k ... not topic "k"
  *
- * @author pablomendes
+ * So we want argmax r p(r | c,s):
+ *
+ * p(r|c,s) = p(s|c,r) * p(r|c) / p(s|c)
+ *
+ * p(s|c,r) ...  ? it cannot be one, otherwise s would be subsumed by c), one simple assumption could be that p(s|c)=p(s)
+ * p(s|c) ... ?
+ *
+ * for multilabel:
+ *
+ * p(r|c) = Sum(p(r,l_i | c)
+ *        = Sum( p(l_i|c) * p(r|l_i,c) ) , assuming p(r|l_i,c) = p(r|l_i),
+ *
+ * sum with pow(2,N) summands !!!! But the sum is governed by the most probable labeling (i.e. max_l ( p(l|c) * p(r|l,c) )) which will be used as heuristic. Note: this is a very simple heurstic and may not
+ * reflect reality well.
+
+ * for this sum.
+ *
+ * l_i(k) = t_k or _t_k
+ *
+ * p(l_i|c) = Product_k( p(l_i(k) | c) )
+ * p(r|l_i) = Product_k( p(r | l_i(k)) )
+ *
+ * for single label (not implemented yet):
+ * Sum( p(l_i|c) * p(r|l_i,c) )  would be linear (with the number of topics) in time because just one label is assigned and this would be computable
+ *
+ * @author pablomendes, dirk weissenborn
  */
-class TopicalDisambiguator(val candidateSearcher: CandidateSearcher,val topicalPriorStore: TopicalPriorStore)
+class TopicalDisambiguator(val candidateSearcher: CandidateSearcher,val topicalPriorStore: TopicalPriorStore, val classifier: TopicalClassifier)
     extends ParagraphDisambiguator {
 
     private val LOG = LogFactory.getLog(this.getClass)
@@ -77,25 +110,51 @@ class TopicalDisambiguator(val candidateSearcher: CandidateSearcher,val topicalP
         occs
     }
 
-    def getTopicalScore(textTopics: Map[Topic,Double], resource: DBpediaResource) : Double = {//TODO Topic->Double
+    private def getKLDivergence(distr1:Array[Double], distr2:Array[Double]):Double = {
+        var div = 0.0
+        val log2 = math.log(2.0)
+        for (i <- 0 until distr1.length)
+            div += distr1(i)*math.log(distr1(i)/distr2(i))/ log2
+
+        div
+    }
+
+    def getTopicalScore(textTopics: Array[(Topic,Double)], resource: DBpediaResource) : Double = {//TODO Topic->Double
         val resourceTopicCounts = topicalPriorStore.getTopicalPriorCounts(resource)
         val topicTotals = topicalPriorStore.getTotalCounts()
-        LOG.trace("resource: %s".format(resource.uri))
-        val score = textTopics.map{ case (topic,textScore) => {
-            val total = topicTotals.get(topic) match {
-                case Some(n) => n
-                case None => throw new SearchException("Topic set was not loaded correctly.")
+        val total = topicTotals.values.sum
+
+        var score = 0.0
+
+        //calculate priors
+        val (resourcePriorsForTopic,resourcePriorsForNotTopic) =
+            textTopics.foldLeft((Map[Topic,Double](),Map[Topic,Double]())) {
+                case ((priorsT,priorsNT),(topic,_)) => {
+                    val topicTotal = topicTotals.get(topic) match {
+                        case Some(n) => n
+                        case None => throw new SearchException("Topic set was not loaded correctly.")
+                    }
+                    val resourceCount = resourceTopicCounts.getOrElse(topic, 0).toDouble
+                    (priorsT + (topic -> resourceCount / topicTotal.toDouble) ,
+                     priorsNT + (topic-> (resourceTopicCounts.values.sum-resourceCount) / (total-topicTotal).toDouble) )
+                }
             }
-            val resourceCount = resourceTopicCounts.getOrElse(topic, 0).toDouble
-            val resourcePrior = resourceCount / total.toDouble
-            val logRP = if (resourcePrior==0) 0.0 else math.log(resourcePrior)
-            val logTS = if (textScore==0) 0.0 else math.log(textScore)
-            if (resourcePrior>0.0)
-                LOG.trace("\t\ttopic: %s, resource prior: %.5f".format(topic,resourcePrior))
-            logRP + logTS
-          }
-        }.sum
-        math.exp(score)
+
+        // different scores for multi-label and single label
+        if (classifier.isInstanceOf[MultiLabelClassifier])
+            score = textTopics.foldLeft(1.0){ case (acc,(topic,textScore)) => {
+                acc * math.max(textScore * resourcePriorsForTopic(topic), (1-textScore)*resourcePriorsForNotTopic(topic))
+             }}
+        else
+            score = textTopics.foldLeft(0.0){ case (acc,(topic,_)) => {
+                var summand = 1.0
+                textTopics.foreach{ case(otherTopic,textScore) => {
+                    summand *=  { if(otherTopic.equals(topic)) textScore * resourcePriorsForTopic(topic) else (1-textScore)* resourcePriorsForNotTopic(topic) }
+                }}
+                acc + summand
+            }}
+
+        score
     }
 
     def bestK(paragraph: Paragraph, k: Int): Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]] = {
@@ -104,8 +163,8 @@ class TopicalDisambiguator(val candidateSearcher: CandidateSearcher,val topicalP
 
         if (paragraph.occurrences.size == 0) return Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]()
 
-        val topics = TopicExtractor.getTopics(paragraph.text.text)
-        LOG.trace("text: %s".format(topics.filter(_._2>0).toMap.toString))
+        val topics = classifier.getPredictions(paragraph.text)
+        LOG.trace("text: %s".format(topics.filter(_._2>0).toString))
 
         //        val m1 = if (candLuceneManager.getDBpediaResourceFactory == null) "lucene" else "jdbc"
         //        val m2 = if (contextLuceneManager.getDBpediaResourceFactory == null) "lucene" else "jdbc"

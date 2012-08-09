@@ -1,0 +1,201 @@
+<topics>
+  <topic name="architecture">
+    <iptc mediatopic="20000032"/>
+    <keywords>Architecture</keywords>
+    <!--feed url="http://topics.nytimes.com/top/reference/timestopics/subjects/a/architecture/index.html?rss=1"/>
+    <feed url="http://www.architectsjournal.co.uk/XmlServers/navsectionRSS.aspx?navsectioncode=3"/-->
+  </topic>
+
+  <topic name="biology">
+    <iptc mediatopic="20000719"/>
+    <keywords>
+      Biology
+    </keywords>
+    <!--feed url="http://feeds.biologynews.net/biologynews/headlines?format=xml"/-->
+  </topic>
+
+  <topic name="chemistry">
+    <iptc mediatopic="20000725"/>
+    <keywords>Chemistry</keywords>
+  </topic>
+
+  <topic name="cinema">
+    <iptc mediatopic="20000005"/>
+    <keywords>Film,Cinema</keywords>
+  </topic>
+
+  <topic name="computer">
+    <iptc mediatopic="20000763"/>
+    <keywords>Computing</keywords>
+  </topic>
+
+  <topic name="crime">
+    <iptc mediatopic="20000082"/>
+    <keywords>Criminology</keywords>
+  </topic>
+
+  <topic name="economy">
+    <iptc mediatopic="20000344"/>
+    <keywords>Economy</keywords>
+  </topic>
+
+  <topic name="business">
+    <iptc mediatopic="20000171"/>
+    <keywords>Business</keywords>
+  </topic>
+
+  <topic name="education">
+    <iptc mediatopic="05000000"/>
+    <keywords>Education</keywords>
+  </topic>
+
+  <topic name="fashion">
+    <iptc mediatopic="20000011"/>
+    <keywords>Fashion</keywords>
+  </topic>
+
+  <topic name="food">
+    <iptc mediatopic="20000248"/>
+    <keywords>Food_and_drink</keywords>
+  </topic>
+
+  <topic name="geography">
+    <iptc mediatopic="20000746"/>
+    <keywords>
+      Geography
+    </keywords>
+  </topic>
+
+  <topic name="health">
+    <iptc mediatopic="07000000"/>
+    <keywords>
+      Health
+    </keywords>
+  </topic>
+
+  <topic name="history">
+    <iptc mediatopic="20000747"/>
+    <keywords>
+      History
+    </keywords>
+  </topic>
+
+  <topic name="law">
+    <iptc mediatopic="20000121"/>
+    <keywords>Law</keywords>
+  </topic>
+
+  <topic name="literature">
+    <iptc mediatopic="20000013"/>
+    <keywords>Literature</keywords>
+  </topic>
+
+  <topic name="mathematics">
+    <iptc mediatopic="20000715"/>
+    <keywords>
+      Mathematics
+    </keywords>
+  </topic>
+
+  <topic name="music">
+    <iptc mediatopic="20000018"/>
+    <keywords>Music</keywords>
+  </topic>
+
+  <!--topic name="journalism">
+    <iptc mediatopic="20000310"/>
+    <keywords>newspaper,magazine,journal,press,publication</keywords>
+  </topic-->
+
+  <topic name="performing_arts">
+    <iptc mediatopic="20000029"/>
+    <iptc mediatopic="20000028"/>
+    <iptc mediatopic="20000007"/>
+    <keywords>Performing_arts</keywords>
+  </topic>
+
+  <topic name="philosophy">
+    <iptc mediatopic="20000751"/>
+    <keywords>Philosophy</keywords>
+  </topic>
+
+  <topic name="physics">
+    <iptc mediatopic="20000731"/>
+    <keywords>Physics
+    </keywords>
+  </topic>
+
+  <topic name="politics">
+    <iptc mediatopic="11000000"/>
+    <keywords>
+      Politics
+    </keywords>
+  </topic>
+
+  <topic name="psychology">
+    <iptc mediatopic="20000753"/>
+    <keywords>Psychology</keywords>
+  </topic>
+
+  <topic name="religion">
+    <iptc mediatopic="12000000"/>
+    <keywords>
+      Religion
+    </keywords>
+  </topic>
+
+  <topic name="society">
+    <iptc mediatopic="14000000"/>
+    <keywords>Society
+    </keywords>
+  </topic>
+
+  <topic name="sport">
+    <iptc mediatopic="15000000"/>
+    <keywords>
+      Sports
+    </keywords>
+  </topic>
+
+  <topic name="technology">
+    <iptc mediatopic="20000756"/>
+    <keywords>Technology</keywords>
+  </topic>
+
+  <topic name="mass_media">
+    <iptc mediatopic="20000045"/>
+    <keywords>Television,Radio,Mass_media</keywords>
+  </topic>
+
+  <topic name="transportation">
+    <iptc mediatopic="20000337"/>
+    <keywords>
+      Transport
+    </keywords>
+  </topic>
+
+  <!--topic name="video_game">
+    <iptc mediatopic="20000548"/>
+    <keywords>
+      console,shooter,gameplay,multiplay,nintendo,playstation,xbox,atari,sega,bethesda,computer_game,konami,namco,ubisoft,activision,electronic_arts
+    </keywords>
+  </topic-->
+
+  <topic name="visual_arts">
+    <iptc mediatopic="20000031"/>
+    <keywords>
+      Visual_arts,Painting
+    </keywords>
+  </topic>
+
+  <topic name="war">
+    <iptc mediatopic="20000062"/>
+    <keywords>War,Military</keywords>
+  </topic>
+
+  <topic name="zoology">
+    <iptc mediatopic="20000724"/>
+    <keywords>Zoology</keywords>
+  </topic>
+
+</topics>

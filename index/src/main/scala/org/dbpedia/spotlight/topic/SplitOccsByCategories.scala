@@ -7,18 +7,20 @@ import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.io.FileOccsCategoriesSource
 import org.dbpedia.spotlight.model.{Topic, DBpediaCategory}
 import org.dbpedia.spotlight.util.IndexingConfiguration
-import utility.TopicUtil
+import util.TopicUtil
 import wikipedia.util.WikipediaFlattenedHierarchyLoader
 
 
 /**
- * This object takes the sorted occs file extracted by ExtractOccsFromWikipedia, the output directory from FlattenWikipediaHierarchy
- * and dbpedias sorted file article_categories (http://downloads.dbpedia.org/3.7/en/article_categories_en.nt.bz2) and
- * splits the occs file into files foreach of the top categories
+ * This object takes the sorted occs file extracted by ExtractOccsFromWikipedia, a flattened hierarchy (created by either
+ * FlattenHierarchyByClusters, FlattenHierarchySemiSupervised or FlattenWikipediaHierarchy)
+ * and dbpedias sorted article_categories file (http://downloads.dbpedia.org/3.7/en/article_categories_en.nt.bz2) and
+ * splits the occs file into files foreach topic
  *
  * @author dirk
  */
-object SplitOccsByTopics {
+//TODO just allow concept uris
+object SplitOccsByCategories {
 
   private val LOG = LogFactory.getLog(getClass)
 

@@ -7,19 +7,20 @@ import org.dbpedia.spotlight.io.FileOccsCategoriesSource
 import actors.Actor
 import java.util.regex.Pattern
 import java.util.Scanner
-import org.dbpedia.spotlight.util.IndexingConfiguration
-import org.dbpedia.spotlight.topic.utility.{TextVectorizer, WordIdDictionary}
-import org.dbpedia.spotlight.model.{DBpediaResourceOccurrence, DBpediaCategory, Text}
+import org.dbpedia.spotlight.util.{TextVectorizer, IndexingConfiguration}
+import org.dbpedia.spotlight.db.model.WordIdDictionary
+import org.dbpedia.spotlight.model.{DBpediaResourceOccurrence, DBpediaCategory}
 
 
 /**
  * a) Writes splitted vectors (that have to be sorted and merged) to file <br/>
- * args: "extract"   sorted-occs-file  output-file   offset indexing.properties-file
+ * args: "extract", sorted-occs-file, output-file, offset (from which occ to start), indexing.properties-file
  * offset is the number of occs to skip in occs file
  * <br/>
  * b) Merge sorted splitted vectors back together mergeSortedSplittedVectors  <br/>
  * args: "merge"   sorted-vectors   output-file   number-of-categories-to-keep   indexing.properties-file
  */
+//TODO just allow concept uris
 object ExtractCategoryCorpus {
 
   private val LOG = LogFactory.getLog(getClass)
@@ -72,7 +73,7 @@ object ExtractCategoryCorpus {
     val doublePatternMatcher = Pattern.compile("[0-9]+\\.[0-9]+").matcher("")
     var tempFreq: List[(String, Array[Double])] = null
 
-    //using scanner because size of lines is huge- performance
+    //using scanner because size of lines is huge
     var scanner = new Scanner(new File(input))
     scanner.useDelimiter("\\s")
 
@@ -220,7 +221,7 @@ object ExtractCategoryCorpus {
         while (iterator.hasNext) {
           element = iterator.next()
           if (element._2 > normalization/4)
-            //*2 because of probable sparsity, because not kept categories are sparse mentioned categories
+            //*2 because of probable sparsity, because not kept categories are sparsely mentioned categories
             restWriter.print(" "+element._1 + ":" + (math.round(element._2/normalization*2)))
           if (!iterator.hasNext)
             restWriter.println()
@@ -248,7 +249,7 @@ object ExtractCategoryCorpus {
   case object Finished
 
 
-  class Producer(source: Traversable[(DBpediaResourceOccurrence, Set[DBpediaCategory])], offset: Int) extends Actor {
+  private class Producer(source: Traversable[(DBpediaResourceOccurrence, Set[DBpediaCategory])], offset: Int) extends Actor {
     def act() {
       react {
         case Produce(n: Int) => produce(n)
@@ -307,7 +308,7 @@ object ExtractCategoryCorpus {
     start
   }
 
-  class Consumer(producer: Producer, outputPath: String) extends Actor {
+  private class Consumer(producer: Producer, outputPath: String) extends Actor {
     new File(outputPath).getParentFile.mkdirs()
     var done = false
     val n = 30000

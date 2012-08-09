@@ -1,7 +1,7 @@
-package org.dbpedia.spotlight.model.trec
+package org.dbpedia.spotlight.feed.trec
 
 import org.dbpedia.spotlight.model.{Text, DBpediaResource}
-import org.dbpedia.spotlight.model.Feed
+import org.dbpedia.spotlight.feed.Feed
 import java.util.Date
 import java.io.{FilenameFilter, File}
 import org.apache.commons.lang.time.DateUtils

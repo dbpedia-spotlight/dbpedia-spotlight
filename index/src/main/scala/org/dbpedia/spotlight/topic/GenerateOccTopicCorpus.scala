@@ -8,12 +8,12 @@ import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.util.IndexingConfiguration
 import org.dbpedia.spotlight.io.{FileOccurrenceSource, FileOccsCategoriesSource}
 import org.dbpedia.spotlight.model.{Topic, DBpediaCategory}
-import utility.TopicUtil
+import util.TopicUtil
 import wikipedia.util.{WikipediaFlattenedHierarchyLoader, WikipediaHierarchyLoader}
 
 
 /**
- * This object takes the splitted occs file extracted with SplitOccsByTopics$,
+ * This object takes the splitted occs directory extracted by SplitOccsByCategories$$ or SplitOccsSemiSupervised$,
  * dbpedias sorted file article_categories (http://downloads.dbpedia.org/3.7/en/article_categories_en.nt.bz2),
  * wikipedias hierarchy (http://downloads.dbpedia.org/3.7/en/skos_categories_en.nt),
  * the output directory from FlattenWikipediaHierarchy, the number of examples each corpus should contain and finally
@@ -29,15 +29,16 @@ object GenerateOccTopicCorpus {
    *
    * @param args 1st: indexing.properties, 2nd: path to splitted occs,
    *             3rd: number of examples to be written for each topic (if <= 0, maximum number will be written),
-   *             4th: output corpus file, 5th: from flattened hierarchy (true|false)
+   *             4th: output corpus file, 5th: from flattened category hierarchy (true|false)
    */
   def main(args: Array[String]) {
     val config = new IndexingConfiguration(args(0))
 
-    if (args.length < 5 || args(4).equals("true"))
+    if (args.length < 5 || args(4).equals("true")) {
       generateCorpusFromTopics(args(1), config.get("org.dbpedia.spotlight.data.sortedArticlesCategories"),
         config.get("org.dbpedia.spotlight.topic.flattenedHierarchy"),
         args(2).toInt, args(3))
+    }
     else
       generateCorpus(args(1), args(2).toInt, args(3))
   }
@@ -75,7 +76,7 @@ object GenerateOccTopicCorpus {
 
       val topic = new Topic(topicFile.getName.substring(0, topicFile.getName.length - 4))
 
-      if (!topic.equals("others")) {
+      if (!topic.equals(TopicUtil.CATCH_TOPIC)) {
         /*val occsIt = Source.fromFile(topicFile).getLines()
         var counter = 0
 
@@ -289,21 +290,7 @@ object GenerateOccTopicCorpus {
 
       LOG.info("======================= Processing " + topicFile.getName + " =======================")
 
-      if (!topic.getName.equals(TopicUtil.CATCH_TOPIC)) {
-        /*var counter = 0
-
-        breakable { FileOccurrenceSource.fromFile(topicFile).foreach( occ => {
-          if(counter < corpusSize) {
-            outputWriter.println(topic.getName+"\t"+occ.context.text)
-            counter += 1
-            if (counter%10000==0)
-              LOG.info(counter+" examples written")
-          }
-          else
-            break()
-        } ) }
-      }
-      else {*/
+      if (!topic.equals(TopicUtil.CATCH_TOPIC)) {
         val topicCats = flattenedHierarchy(topic)
 
         LOG.info("======================= Count category members =======================")
@@ -329,6 +316,7 @@ object GenerateOccTopicCorpus {
         }
 
         LOG.info("======================= Extract " + corpusSize + " occs to corpus =======================")
+        //Extract the same ratio of members for each category
         val ratio = corpusSize.toDouble / memberMap.foldLeft(0.0)(_ + _._2)
         memberMap = memberMap.transform {
           (category, value) => value * ratio
@@ -373,6 +361,13 @@ object GenerateOccTopicCorpus {
     outputWriter.close()
   }
 
+    /**
+     * Simplest way of generating a topic corpus from splitted occs, which takes examples from splitted occs by random,
+     * until nrOfExamples is reached
+     * @param pathToSplittedOccs
+     * @param nrOfExamples
+     * @param outputPath
+     */
   def generateCorpus(pathToSplittedOccs: String, nrOfExamples: Int, outputPath: String) {
     val outputWriter = new PrintWriter(new FileWriter(outputPath))
 

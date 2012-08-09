@@ -4,21 +4,20 @@ import io.Source
 import java.io._
 import scala.collection.mutable._
 import org.dbpedia.spotlight.io.VowpalPredIterator
-import org.dbpedia.spotlight.topic.utility.TextVectorizer
+import org.dbpedia.spotlight.util.TextVectorizer
 import actors._
 import actors.Actor._
 import org.dbpedia.spotlight.model.{Topic, DBpediaCategory}
 import java.io.File
 import org.apache.commons.logging.LogFactory
-import scala.util.control.Breaks._
-import collection.mutable
 import org.dbpedia.spotlight.topic.wikipedia.util.TopicKeywordLoader
 
 /**
  * This object takes the input corpora (normal and rest) produced by ExtractCategoryCorpus$ and clusters hierarchically
- * until labels can be applied with sufficient confidence or until maximal depth of flattening is reached.
+ * until labels can be applied with sufficient confidence or until maximal depth of flattening is reached. <br>
+ * Note: this is maybe the most complicated way to flatten the hierarchy and this class is a monster!
  *
- * @deprecated rather use FlattenHierarchyByTopics
+ * @deprecated rather use FlattenHierarchySemiSupervised$
  * @see org.dbpedia.spotlight.topic.wikipedia.flattening.ExtractCategoryCorpus$
  * @author Dirk Weissenborn
  */
@@ -55,7 +54,7 @@ object FlattenHierarchyByClusters {
    * @param categoriesFile
    * @param restCategoriesFile
    * @param output path of flattened hierarchy
-   * @param tmpPath wemp working dir
+   * @param tmpPath temp working dir
    * @param clusteringDepth maximal depth of hierarchical flattening
    */
   def flattenCategories(trainingCorpus:String, restCorpus:String,
@@ -439,7 +438,7 @@ object FlattenHierarchyByClusters {
             }
       }
     } )
-    var proc:Process = processBuilder.start()
+    val proc:Process = processBuilder.start()
     //Send the proc to the actor, to extract the console output.
     newreader ! proc
     processes.synchronized {

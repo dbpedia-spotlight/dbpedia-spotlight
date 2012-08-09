@@ -1,13 +1,15 @@
 package org.dbpedia.spotlight.topic.convert
 
 import java.io._
-import scala.collection.mutable.{Map}
+import scala.collection.mutable.Map
 import scala.Predef._
 import org.apache.commons.cli._
 import scala._
 import org.apache.commons.logging.LogFactory
-import org.dbpedia.spotlight.topic.utility._
+import org.dbpedia.spotlight.topic.util._
 import org.dbpedia.spotlight.model.Topic
+import org.dbpedia.spotlight.db.model.{WordIdDictionary, TopicalStatInformation}
+import org.dbpedia.spotlight.util.TextVectorizer
 
 /**
  * Iterates over a tsv-corpus file, where each line's first column is the category of the second column which is the

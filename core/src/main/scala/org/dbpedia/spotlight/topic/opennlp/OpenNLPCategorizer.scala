@@ -2,27 +2,24 @@ package org.dbpedia.spotlight.topic.opennlp
 
 import io.Source
 import org.apache.commons.logging.LogFactory
-import opennlp.tools.util.{ObjectStream, PlainTextByLineStream}
+import opennlp.tools.util.PlainTextByLineStream
 import java.io._
 import weka.classifiers.evaluation.{NominalPrediction, ConfusionMatrix}
 import opennlp.tools.doccat._
 
 /**
- * Created with IntelliJ IDEA.
- * User: dirk
- * Date: 5/28/12
- * Time: 1:49 PM
- * To change this template use File | Settings | File Templates.
+ * Simple utility class for evaluating the performance of OpenNLP topical classification on given corpora
+ *
+ * @author dirk
  */
-
 object OpenNLPCategorizer {
 
   private val LOG = LogFactory.getLog(getClass())
 
   def main(args: Array[String]) {
     //trainModel("/media/Data/Wikipedia/model/training.corpus100k","/home/dirk/GSOC2012/20NewsGroup/en-doccat100k.bin")
-    loadModel("/home/dirk/GSOC2012/20NewsGroup/en-doccat100k.bin")
-    testModel("/media/Data/Wikipedia/model/test.corpus100k")
+    //loadModel("/home/dirk/GSOC2012/20NewsGroup/en-doccat100k.bin")
+    //testModel("/media/Data/Wikipedia/model/test.corpus100k")
   }
 
 

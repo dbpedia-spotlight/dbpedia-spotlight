@@ -1,11 +1,12 @@
 package org.dbpedia.spotlight
 
 import db.model.HashMapTopicalPriorStore
+import feed.trec.TrecTopicTextFromAnnotationsFeed
+import feed.{FeedListener, Feed}
 import model._
 import org.junit.Test
 import java.io.File
 import collection.mutable._
-import trec.TrecTopicTextFromAnnotationsFeed
 
 
 class FeedsTest {

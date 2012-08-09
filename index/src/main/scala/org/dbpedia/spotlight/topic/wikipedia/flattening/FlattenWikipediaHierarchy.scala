@@ -15,7 +15,7 @@ import org.dbpedia.spotlight.util.IndexingConfiguration
  * (extracted by dbpedia) and flattens it to the topics, specified in the topics file which should have the following format: <br/>
  * topicLabel=wikicategory1,wikicategory2,...
  *
- * @deprecated rather use FlattenHierarchyByTopics
+ * @deprecated rather use FlattenHierarchySemiSupervised$
  * @author dirk
  */
 object FlattenWikipediaHierarchy {

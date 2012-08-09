@@ -31,7 +31,14 @@
           <launchers>
             <launcher>
               <id>Trec</id>
-              <mainClass>org.dbpedia.spotlight.RunTrecKBA</mainClass>
+              <mainClass>org.dbpedia.spotlight.run.RunTrecKBA</mainClass>
+              <jvmArgs>
+                <jvmArg>${heapspace.Xmx.live}</jvmArg>
+              </jvmArgs>
+            </launcher>
+            <launcher>
+              <id>TestInference</id>
+              <mainClass>org.dbpedia.spotlight.TopicInferenceEvaluation</mainClass>
               <jvmArgs>
                 <jvmArg>${heapspace.Xmx.live}</jvmArg>
               </jvmArgs>

@@ -1,17 +1,18 @@
-package org.dbpedia.spotlight.topic.utility
+package org.dbpedia.spotlight.topic.util
 
 import scala.collection.mutable._
 import org.dbpedia.spotlight.model.Topic
-import collection.mutable
+import org.dbpedia.spotlight.db.model.{WordIdDictionary, TopicalStatInformation}
+import org.dbpedia.spotlight.util.TextVectorizer
 
 /**
- * Created with IntelliJ IDEA.
- * User: dirk
- * Date: 5/30/12
- * Time: 2:49 PM
- * To change this template use File | Settings | File Templates.
+ * This class converts textual input into word vectors applying transformations if needed. It also updates the dictionary
+ * and topical information (which just keeps track of word occurrences within the topics) if it is desired, thus making this
+ * class part of live training of the topical classifier.
+ * @param dictionary
+ * @param topicInfo
  */
-//TODO merge with TextVectorizer or rename
+//TODO better name!!
 protected[topic] class TextVectorizerWithTransformation(private val dictionary: WordIdDictionary,private val topicInfo: TopicalStatInformation) {
 
   private val vectorizer = new TextVectorizer(dictionary.isPhonetic)

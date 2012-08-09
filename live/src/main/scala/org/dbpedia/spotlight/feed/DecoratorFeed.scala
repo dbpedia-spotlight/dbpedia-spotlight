@@ -1,4 +1,4 @@
-package org.dbpedia.spotlight.model
+package org.dbpedia.spotlight.feed
 
 /**
  * Baseclass for all feeds that decorate (enrich) other feeds with new information
@@ -9,7 +9,7 @@ package org.dbpedia.spotlight.model
  * @tparam A Type of feed to decorate
  * @tparam B Type of this feed
  */
-abstract class DecoratorFeed[A <: Product, B <: Product](val feed:Feed[A], synchronous:Boolean)(implicit mA:Manifest[A], mB:Manifest[B]) extends Feed[B](synchronous){
+abstract class DecoratorFeed[A <: Product, B <: Product](val feed: Feed[A], synchronous: Boolean)(implicit mA: Manifest[A], mB: Manifest[B]) extends Feed[B](synchronous) {
 
   val feedListener = new FeedListener[A]() {
     def update(item: A) {

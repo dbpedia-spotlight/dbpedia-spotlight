@@ -30,16 +30,21 @@ import com.officedepot.cdap2.collection.CompactHashSet
 import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
 import org.dbpedia.spotlight.lucene.LuceneManager.DBpediaResourceField
 import java.io.StringReader
-import org.dbpedia.spotlight.db.model.TopicalPriorStore
-import org.dbpedia.spotlight.topic.TopicExtractor
+import org.dbpedia.spotlight.db.model.{ResourceTopicsStore, TopicalPriorStore}
+import org.dbpedia.spotlight.topic.util.{TopicUtil, TopicExtractor}
+import org.dbpedia.spotlight.topic.{MultiLabelClassifier, TopicalClassifier}
 
 /**
  *
- * @author pablomendes
+ * @author pablomendes, dirk weissenborn
  */
+
 class TopicBiasedDisambiguator(val candidateSearcher: CandidateSearcher,
                                val contextSearcher: MergedOccurrencesContextSearcher, //TODO should be ContextSearcher. Need a generic disambiguator to enable this.
-                               val topicalPriorStore: TopicalPriorStore)
+                               val topicalPriorStore: TopicalPriorStore,
+                               val resourceTopicStore:ResourceTopicsStore,
+                               val minimalConfidence: Double,
+                               val classifier: TopicalClassifier)
     extends ParagraphDisambiguator {
 
     private val LOG = LogFactory.getLog(this.getClass)
@@ -80,6 +85,9 @@ class TopicBiasedDisambiguator(val candidateSearcher: CandidateSearcher,
     //If you don't pass anything down, we will just fill in a dummy hashset and let the garbage collector deal with it
     def getCandidates(paragraph: Paragraph, allCandidates: CompactHashSet[DBpediaResource] = CompactHashSet[DBpediaResource]()) = {
         val s1 = System.nanoTime()
+
+        //val topics = classifier.getPredictions(paragraph.text)
+
         // step1: get candidates for all surface forms (TODO here building allCandidates directly, but could extract from occs)
         val occs = paragraph.occurrences
             .foldLeft(Map[SurfaceFormOccurrence, List[DBpediaResource]]())(
@@ -87,7 +95,10 @@ class TopicBiasedDisambiguator(val candidateSearcher: CandidateSearcher,
                 LOG.debug("searching...")
                 var candidates = new java.util.HashSet[DBpediaResource]().asScala
                 try {
-                    candidates = candidateSearcher.getCandidates(sfOcc.surfaceForm).asScala //.map(r => r.uri)
+                    candidates = candidateSearcher.getCandidates(sfOcc.surfaceForm).asScala/*.filter( res => {
+                                                                                                        val score = getTopicalScore(topics, res)
+                                                                                                        score > 0.0
+                                                                                                    } ) //.map(r => r.uri)  */
                 } catch {
                     case e: ItemNotFoundException => LOG.debug(e);
                 }
@@ -104,24 +115,83 @@ class TopicBiasedDisambiguator(val candidateSearcher: CandidateSearcher,
         occs
     }
 
-    def getTopicalScore(textTopics: Map[Topic, Double], resource: DBpediaResource): Double = {
-        //TODO Topic->Double
-        val resourceTopicCounts = topicalPriorStore.getTopicalPriorCounts(resource)
-        val topicTotals = topicalPriorStore.getTotalCounts()
-        val score = textTopics.map {
-            case (topic, textScore) => {
-                val total = topicTotals.get(topic) match {
-                    case Some(n) => n
-                    case None => throw new SearchException("Topic set was not loaded correctly.")
+    private def getDistance(distr1:Array[Double], distr2:Array[Double]):Double = {
+        var dis = 0.0
+
+        for (i <- 0 until distr1.length)
+          dis += math.pow(distr1(i) - distr2(i),2)
+
+        dis
+    }
+
+    def getTopicalScore(textTopics: Array[(Topic, Double)], resource: DBpediaResource): Double = {
+        val resourceTopicCounts = topicalPriorStore.getTopicalPriorCounts(resource)//.filterNot(_._1.equals(TopicUtil.CATCH_TOPIC))
+        val topicTotals = topicalPriorStore.getTotalCounts()//.filterNot(_._1.equals(TopicUtil.CATCH_TOPIC))
+        val total = topicTotals.values.sum
+        val resourceTotal =  resourceTopicCounts.values.sum.toDouble
+
+        var score = 0.0
+        // p( r | c) = Sum ( p(r|t) * p(t|c) )
+        // priors p(r|t)
+        /*val (resourcePriorsForTopic,resourcePriorsForNotTopic) =
+            textTopics.foldLeft((Map[Topic,Double](),Map[Topic,Double]())) {
+                case ((priorsT,priorsNT),(topic,_)) => {
+                    val topicTotal = topicTotals.get(topic) match {
+                        case Some(n) => n
+                        case None => throw new SearchException("Topic set was not loaded correctly.")
+                    }
+                    val resourceCount = resourceTopicCounts.getOrElse(topic, 0).toDouble
+                    (priorsT + (topic -> (resourceCount+1) / topicTotal.toDouble) ,
+                        priorsNT + (topic-> (resourceTopicCounts.values.sum-resourceCount+textTopics.size+1) / (total-topicTotal).toDouble) )
                 }
-                val resourceCount = resourceTopicCounts.getOrElse(topic, 0).toDouble
-                val resourcePrior = resourceCount / total.toDouble
-                val logRP = if (resourcePrior==0) 0.0 else math.log(resourcePrior)
-                val logTS = if (textScore==0) 0.0 else math.log(textScore)
-                logRP + logTS
             }
-        }.sum
-        math.exp(score)
+
+        // different scores for multi-label and single label
+        if (classifier.isInstanceOf[MultiLabelClassifier])
+            score = textTopics.foldLeft(1.0){ case (acc,(topic,textScore)) => {
+                acc * math.max(textScore * resourcePriorsForTopic(topic), (1-textScore)*resourcePriorsForNotTopic(topic))
+            }}
+        else
+            score = textTopics.foldLeft(0.0){ case (acc,(topic,_)) => {
+                var summand = 1.0
+                textTopics.foreach{ case(otherTopic,textScore) => {
+                    summand *=  { if(otherTopic.equals(topic)) textScore * resourcePriorsForTopic(topic) else (1-textScore)* resourcePriorsForNotTopic(topic) }
+                }}
+                acc + summand
+            }} */
+
+        //calculate priors p(topic|resource)
+        var topicPriorsForResource = Map[Topic,Double]() // resourceTopicStore.pTopicGivenResource(resource)
+        topicPriorsForResource =
+        textTopics.foldLeft(Map[Topic,Double]()) {
+            case (priorsT,(topic,_)) => {
+                val resourceCount = resourceTopicCounts.getOrElse(topic, 0).toDouble
+                priorsT + (topic -> (resourceCount+1) / (resourceTotal+textTopics.size))
+            }
+        }
+
+
+        // different scores for multi-label and single label
+        //val sum = textTopics.foldLeft(0.0)( _ + _._2 )
+
+        //DOT PRODUCT
+        score = textTopics.sortBy(_._1.getName).map(_._2).zip(topicPriorsForResource.toList.sortBy(_._1.getName).map(_._2)).
+            foldLeft(0.0)((acc, predictions) => acc + predictions._1*predictions._2)
+
+
+        //DISTANCE BASED
+        /*val distance = getDistance(textTopics.sortBy(_._1.getName).map(_._2).toArray, topicPriorsForResource.toList.sortBy(_._1.getName).map(_._2).toArray)
+        score = 1.0/(distance+1.0) */
+
+
+        //OUTPUT
+        /*
+        LOG.info("Resource: "+resource.uri)
+        LOG.info("Priors: "+topicPriorsForResource.toList.sortBy(-_._2).foldLeft("")((acc,prediction)=> acc+" %s:%.3f".format(prediction._1.getName,prediction._2)))
+        LOG.info("Predictions: "+textTopics.sortBy(-_._2).foldLeft("")((acc,prediction)=> acc+" %s:%.3f".format(prediction._1.getName,prediction._2)))
+        LOG.info("Score: "+score)    */
+
+        score
     }
 
     def bestK(paragraph: Paragraph, k: Int): Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]] = {
@@ -130,18 +200,18 @@ class TopicBiasedDisambiguator(val candidateSearcher: CandidateSearcher,
 
         if (paragraph.occurrences.size == 0) return Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]()
 
-        val topics = TopicExtractor.getTopics(paragraph.text.text)
 
         //        val m1 = if (candLuceneManager.getDBpediaResourceFactory == null) "lucene" else "jdbc"
         //        val m2 = if (contextLuceneManager.getDBpediaResourceFactory == null) "lucene" else "jdbc"
 
         // step1: get candidates for all surface forms
         //       (TODO here building allCandidates directly, but could extract from occs)
-        var allCandidates = CompactHashSet[DBpediaResource]();
+        val allCandidates = CompactHashSet[DBpediaResource]();
         val occs = getCandidates(paragraph, allCandidates)
 
         val s2 = System.nanoTime()
         // step2: query once for the paragraph context, get scores for each candidate resource
+
         var hits: Array[ScoreDoc] = null
         try {
             hits = query(paragraph.text, allCandidates.toArray)
@@ -153,14 +223,17 @@ class TopicBiasedDisambiguator(val candidateSearcher: CandidateSearcher,
         // LOG.debug("Hits (%d): %s".format(hits.size, hits.map( sd => "%s=%s".format(sd.doc,sd.score) ).mkString(",")))
 
         // LOG.debug("Reading DBpediaResources.")
+        val topics = classifier.getPredictions(paragraph.text)
+
         val scores = hits
-            .foldRight(Map[String, Tuple2[DBpediaResource, Double]]())((hit, acc) => {
-            var resource: DBpediaResource = contextSearcher.getDBpediaResource(hit.doc) //this method returns resource.support=c(r)
-            val topicalScore = getTopicalScore(topics, resource)
-            var score = if (topicalScore == 0.0) hit.score else (hit.score * topicalScore)
+            .foldRight(Map[String, Tuple3[DBpediaResource, Double,Double]]())((hit, acc) => {
+            val resource: DBpediaResource = contextSearcher.getDBpediaResource(hit.doc) //this method returns resource.support=c(r)
+            val score = hit.score
             //TODO can mix here the scores: c(s,r) / c(r)
-            acc + (resource.uri ->(resource, score))
-        });
+            acc + (resource.uri ->(resource, score, getTopicalScore(topics,resource)))
+        })
+
+
         val e2 = System.nanoTime()
         //LOG.debug("Scores (%d): %s".format(scores.size, scores))
 
@@ -170,17 +243,27 @@ class TopicBiasedDisambiguator(val candidateSearcher: CandidateSearcher,
         val r = occs.keys.foldLeft(Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]())((acc, aSfOcc) => {
             val candOccs = occs.getOrElse(aSfOcc, List[DBpediaResource]())
                 .map(shallowResource => {
-                val (resource: DBpediaResource, supportConfidence: (Int, Double)) = scores.get(shallowResource.uri) match {
-                    case Some((fullResource, contextualScore)) => {
-                        (fullResource, (fullResource.support, contextualScore))
+                val (resource: DBpediaResource, supportConfidence: (Int, Double, Double)) = scores.get(shallowResource.uri) match {
+                    case Some((fullResource, contextualScore,topicalScore)) => {
+                        (fullResource, (fullResource.support, contextualScore,topicalScore))
                     }
-                    case _ => (shallowResource, (shallowResource.support, 0.0))
+                    case _ => (shallowResource, (shallowResource.support, 0.0,0.0))
                 }
-                Factory.DBpediaResourceOccurrence.from(aSfOcc,
+                /*Factory.DBpediaResourceOccurrence.from(aSfOcc,
                     resource, //TODO this resource may contain the c(s,r) that can be used for conditional prob.
-                    supportConfidence)
+                    supportConfidence)*/
+                new DBpediaResourceOccurrence("",  // there is no way to know this here
+                    resource, // support is also available from score._1, but types are only in fullResource
+                    aSfOcc.surfaceForm,
+                    aSfOcc.context,
+                    aSfOcc.textOffset,
+                    Provenance.Annotation,
+                    supportConfidence._2,
+                    -1,         // there is no way to know percentage of second here
+                    supportConfidence._2,
+                    supportConfidence._3)//topical score
             })
-                .sortBy(o => o.contextualScore) //TODO should be final score
+                .sortBy(o => 2.9853 * o.contextualScore+ 0.7345*o.topicalScore) //TODO should be final score
                 .reverse
                 .take(k)
             acc + (aSfOcc -> candOccs)

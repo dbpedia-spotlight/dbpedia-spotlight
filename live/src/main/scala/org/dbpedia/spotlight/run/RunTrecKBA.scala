@@ -1,13 +1,13 @@
-package org.dbpedia.spotlight
+package org.dbpedia.spotlight.run
 
-import model.trec.{TrecTopicTextFromAnnotationsFeed, TrecResourceAnnotationFeed, TrecCorpusFeed}
 import org.dbpedia.spotlight.model.{SpotlightFactory, SpotlightConfiguration}
 import org.apache.commons.lang.time.DateUtils
 import java.io.{BufferedReader, InputStreamReader, FileNotFoundException, File}
 import org.dbpedia.spotlight.db.model.HashMapTopicalPriorStore
-import trainer.{TrecLiveTargetEntityTrainer, TopicLiveTrainer}
 import org.apache.commons.logging.LogFactory
 import actors.Actor
+import org.dbpedia.spotlight.feed.trec.{TrecTopicTextFromAnnotationsFeed, TrecResourceAnnotationFeed, TrecCorpusFeed}
+import org.dbpedia.spotlight.trainer.{TrecLiveTargetEntityTrainer, TopicLiveTrainer}
 
 
 object RunTrecKBA {
@@ -75,7 +75,7 @@ object RunTrecKBA {
     trecTopicTextFeed.start
 
     //Trainer
-    val topicalClassifierTrainer = new TopicLiveTrainer(factory.topicalClassifier, minimalConfidence, new File(evalFolder, "topic_training.eval"),evaluationInterval)
+    val topicalClassifierTrainer = new TopicLiveTrainer(factory.topicalClassifier, minimalConfidence, new File(evalFolder, "topic_training.eval"), evaluationInterval)
     topicalClassifierTrainer.subscribeToAll
     val trecTargetEntityTrainer = new TrecLiveTargetEntityTrainer(targetClassifierModelDir, corpusFeed.targetEntities, new File(evalFolder, "target_entity_training.eval"), evaluationInterval)
     annotationFeed.resourceAnnotationFeed.subscribe(trecTargetEntityTrainer.feedListener)

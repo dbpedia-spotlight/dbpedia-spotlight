@@ -1,4 +1,4 @@
-package org.dbpedia.spotlight.model.trec
+package org.dbpedia.spotlight.feed.trec
 
 import org.dbpedia.spotlight.model._
 import collection.mutable._
@@ -6,6 +6,7 @@ import org.dbpedia.spotlight.annotate.{ParagraphAnnotator, Annotator}
 import scala.collection.JavaConversions._
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.io.WikiOccurrenceSource
+import org.dbpedia.spotlight.feed.{FeedListener, Feed}
 
 /**
  * This class is a decorator for the TrecCorpusFeed which adds Annotations to the streamed texts.
@@ -29,6 +30,8 @@ class TrecResourceAnnotationFeed(val annotator: ParagraphAnnotator, feed:Feed[(S
         }
       }
     }
+
+    def newItem(item:(Set[DBpediaResource],Text,Map[DBpediaResource,Double])) { super.notifyListeners(item) }
   }
 
   val resourceAnnotationFeed = new Feed[(Set[DBpediaResource],Map[DBpediaResource,Double])](true) {
@@ -39,6 +42,8 @@ class TrecResourceAnnotationFeed(val annotator: ParagraphAnnotator, feed:Feed[(S
         }
       }
     }
+
+    def newItem(item:(Set[DBpediaResource],Map[DBpediaResource,Double])) { super.notifyListeners(item) }
   }
 
   def startFeed {
@@ -69,13 +74,13 @@ class TrecResourceAnnotationFeed(val annotator: ParagraphAnnotator, feed:Feed[(S
               currentAnnotations += (occurrence.resource -> 1)
           }
         }
-        textAnnotationFeed ! (item._1,new Text(paragraph), currentAnnotations)
+        textAnnotationFeed.newItem((item._1,new Text(paragraph), currentAnnotations))
       }
     } )
 
 
     LOG.debug("Resources annotated:"+annotations.foldLeft("")((string,annotation) => string+" "+annotation._1.uri))
-    resourceAnnotationFeed ! (item._1,annotations)
+    resourceAnnotationFeed.newItem((item._1,annotations))
   }
 
 }

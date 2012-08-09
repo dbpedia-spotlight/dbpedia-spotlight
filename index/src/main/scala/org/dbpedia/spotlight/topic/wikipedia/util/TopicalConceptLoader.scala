@@ -4,13 +4,8 @@ import org.dbpedia.spotlight.model.DBpediaCategory
 import io.Source
 
 /**
- * Created with IntelliJ IDEA.
- * User: dirk
- * Date: 7/3/12
- * Time: 4:23 PM
- * To change this template use File | Settings | File Templates.
+ * Simple loader object for topical concepts (from file) extracted by dbpedia spotlight
  */
-
 object TopicalConceptLoader {
 
   def loadTopicalConcepts(path:String) : Set[DBpediaCategory] = {

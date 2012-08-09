@@ -1,4 +1,4 @@
-package org.dbpedia.spotlight.model
+package org.dbpedia.spotlight.feed
 
 import scala.collection.mutable._
 import actors.Actor
@@ -21,13 +21,13 @@ abstract class Feed[T <: Product](synchronous: Boolean)(implicit m: Manifest[T])
 
   protected def notifyListeners(item: T) {
     if (synchronous)
-      listeners.foreach( listener => {
-        var thread :Thread = null
+      listeners.foreach(listener => {
+        var thread: Thread = null
         listener.synchronized {
           thread = new Thread(new Runnable {
             def run() {
               listener.synchronized {
-                listener.notify(item,m)
+                listener.notify(item, m)
               }
             }
           })
@@ -36,7 +36,7 @@ abstract class Feed[T <: Product](synchronous: Boolean)(implicit m: Manifest[T])
       })
     else
       listeners.foreach {
-        _ ! (item,m)
+        _ !(item, m)
       }
   }
 

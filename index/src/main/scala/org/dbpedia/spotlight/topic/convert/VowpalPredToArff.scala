@@ -1,29 +1,27 @@
 package org.dbpedia.spotlight.topic.convert
 
-import java.io.{FileWriter, PrintWriter}
+import java.io.{File, FileWriter, PrintWriter}
 
 /**
  * Utility class for converting vowpals prediction output to wekas arff input file
- *
- * terminal:
- * input path, output path of arff, path to categories.list from TextCorpusToInputCorpus$
+ * <br>
+ * terminal:  <br>
+ * input of vowpal prediction, topics.list that belonged to the training corpus from which predictions were computed, output path of arff
  *
  * @author dirk
  */
 object VowpalPredToArff {
 
   def main(args: Array[String]) {
-    convertVWToArff("/media/Data/Wikipedia/model/lda10k/transformed/train/predictions.dat",
-      "/media/Data/Wikipedia/model/lda10k/transformed/train/predictions.arff",
-      "/media/Data/Wikipedia/model/lda10k/transformed/train/categories.list")
+    convertVWToArff(new File(args(0)), new File(args(1)), new File(args(2)))
   }
 
-  def convertVWToArff(predictionFile : String, outputFile : String, catFile : String) {
+  def convertVWToArff(predictionFile : File, topicsFile : File, outputFile : File) {
     val pw: PrintWriter = new PrintWriter(new FileWriter(outputFile))
     pw.println("@RELATION topics")
 
     val lines = scala.io.Source.fromFile(predictionFile).getLines()
-    val categoryLines = scala.io.Source.fromFile(catFile).getLines()
+    val categoryLines = scala.io.Source.fromFile(topicsFile).getLines()
 
     val firstLine : String = lines.next()
     val split : Array[String]= firstLine.split(" ")
@@ -44,7 +42,7 @@ object VowpalPredToArff {
     pw.close()
   }
 
-  def convertVWToNormalizedArff(predictionFile : String, outputFile : String, catFile : String) {
+  def convertVWToNormalizedArff(predictionFile : File, outputFile : File, catFile : File) {
     val pw: PrintWriter = new PrintWriter(new FileWriter(outputFile))
     pw.println("@RELATION topics")
 

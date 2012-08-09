@@ -48,13 +48,13 @@
 
                 <configuration>
                     <launchers>
-                          <launcher>
-                            <id>Trec</id>
-                            <mainClass>live.RunTrecKBA</mainClass>
-                            <jvmArgs>
-                              <jvmArg>-Xmx16G</jvmArg>
-                            </jvmArgs>
-                          </launcher>
+                      <launcher>
+                        <id>calculatevectors</id>
+                        <mainClass>org.dbpedia.spotlight.topic.CalculateResourceTopicVectors</mainClass>
+                        <jvmArgs>
+                          <jvmArg>-Xmx16G</jvmArg>
+                        </jvmArgs>
+                      </launcher>
                         <launcher>
                             <id>enrichtypes</id>
                             <mainClass>org.dbpedia.spotlight.lucene.index.AddTypesToIndex</mainClass>

@@ -1,4 +1,4 @@
-package org.dbpedia.spotlight.model
+package org.dbpedia.spotlight.feed
 
 import java.net.URL
 import actors.{Actor, TIMEOUT}
@@ -7,6 +7,7 @@ import org.apache.commons.lang.time.DateUtils
 import java.util
 import org.apache.commons.logging.LogFactory
 import util.Date
+import org.dbpedia.spotlight.model.{Text, RssItem, Topic}
 
 /**
  * Implementation of a topical RSS feed

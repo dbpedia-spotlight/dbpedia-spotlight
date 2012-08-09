@@ -48,11 +48,11 @@
                         <launcher>
                             <id>pareval</id>
                             <mainClass>org.dbpedia.spotlight.evaluation.EvaluateParagraphDisambiguator</mainClass>
-                            <args>
+                            <!--args>
                                 <arg>../conf/disambigonly.properties</arg>
-                            </args>
+                            </args-->
                             <jvmArgs>
-                                <jvmArg>-Xmx14G</jvmArg>
+                                <jvmArg>-Xmx16G</jvmArg>
                             </jvmArgs>
                         </launcher>
                         <launcher>
@@ -83,7 +83,7 @@
 
 
     <dependencies>
-        <dependency>
+       <dependency>
             <groupId>org.dbpedia.spotlight</groupId>
             <artifactId>core</artifactId>
             <version>0.6</version>

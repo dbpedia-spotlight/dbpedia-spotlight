@@ -1,10 +1,10 @@
 package org.dbpedia.spotlight.trainer
 
 import java.io.{FileWriter, PrintWriter, File}
-import org.dbpedia.spotlight.model.{Text, DBpediaResource, FeedRegistry, FeedListener}
+import org.dbpedia.spotlight.feed.{FeedRegistry, FeedListener}
+import org.dbpedia.spotlight.model._
 import scala.collection.mutable.{Set,Map}
 import org.apache.commons.logging.LogFactory
-import org.dbpedia.spotlight.model.trec.TrecTargetEntityClassifier
 
 /**
  * Trainer of TrecTargetEntityClassifier, which consumes updates from feeds of type (Set[DBpediaResource], Text, Map[DBpediaResource,Int]), e.g. TrecResourceAnnotationFeed.

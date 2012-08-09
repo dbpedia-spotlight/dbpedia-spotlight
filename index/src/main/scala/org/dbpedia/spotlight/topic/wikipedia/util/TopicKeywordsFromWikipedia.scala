@@ -3,10 +3,9 @@ package org.dbpedia.spotlight.topic.wikipedia.util
 import io._
 import scala.collection.mutable._
 import xml.XML
-import org.dbpedia.spotlight.topic.utility.TextVectorizer
+import org.dbpedia.spotlight.util.TextVectorizer
 import java.io.{FileWriter, PrintWriter}
 import org.apache.commons.logging.LogFactory
-import collection.mutable
 
 /**
  * This object allows you to extract keywords from the wikipedia for given topics specified in the topics file which has

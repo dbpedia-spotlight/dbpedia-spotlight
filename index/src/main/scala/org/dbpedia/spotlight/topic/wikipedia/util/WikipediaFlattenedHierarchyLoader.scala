@@ -30,7 +30,7 @@ object WikipediaFlattenedHierarchyLoader {
       LOG.info("Flattened hierarchy was loaded!")
     }
     else
-      LOG.info("Flattened hierarchy was not found, loaded empty flattened hierarchy!")
+      LOG.warn("Flattened hierarchy was not found, loaded empty flattened hierarchy!")
 
     flattenedHierarchy
   }

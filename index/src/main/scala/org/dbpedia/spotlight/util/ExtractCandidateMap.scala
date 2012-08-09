@@ -47,7 +47,7 @@ import util.matching.Regex
 import java.net.URI
 
 /**
- * Functions to create Concept URIs (possible targets of disambiguations)
+ * Functions to create Concept URIs (possible mainResources of disambiguations)
  *                     transitive closure of redirects that end at Concept URIs
  *                     surface forms for Concept URIs
  * from DBpedia data sets and Wikipedia.
