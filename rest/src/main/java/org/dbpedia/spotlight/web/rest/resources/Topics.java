@@ -1,11 +1,10 @@
 package org.dbpedia.spotlight.web.rest.resources;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.Text;
 import org.dbpedia.spotlight.model.Topic;
 import org.dbpedia.spotlight.topic.TopicalClassifier;
+import org.dbpedia.spotlight.web.rest.OutputSerializer;
 import org.dbpedia.spotlight.web.rest.Server;
 import scala.Tuple2;
 
@@ -22,13 +21,6 @@ import javax.ws.rs.core.Response;
 @Path("/topic")
 @Consumes("text/plain")
 public class Topics {
-    XStream jsonStreamer;
-
-    public Topics() {
-        jsonStreamer = new XStream(new JettisonMappedXmlDriver());
-        jsonStreamer.setMode(XStream.NO_REFERENCES);
-        jsonStreamer.autodetectAnnotations(true);
-    }
 
     // Sets the necessary headers in order to enable CORS
     private Response ok(String response) {
@@ -39,14 +31,10 @@ public class Topics {
     @Produces( MediaType.APPLICATION_JSON )
     public Response getJSON(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text) {
         TopicalClassifier classifier = Server.getClassifier();
-        Tuple2<Topic,Object>[] result = classifier.getPredictions(new Text(text));
-        org.dbpedia.spotlight.web.rest.output.Topic[] topics = new org.dbpedia.spotlight.web.rest.output.Topic[result.length];
+        Text textObj = new Text(text);
+        Tuple2<Topic,Object>[] result = classifier.getPredictions(textObj);
 
-        for(int i = 0; i < result.length; i++) {
-          topics[i] = new org.dbpedia.spotlight.web.rest.output.Topic(result[i]._1().getName(), (Double) result[i]._2());
-        }
-
-        return ok(jsonStreamer.toXML(topics));
+        return ok(OutputSerializer.topicTagsAsJson(textObj, result).toString());
     }
 
     @POST
@@ -57,14 +45,33 @@ public class Topics {
             @Context HttpServletRequest request
     ) {
         TopicalClassifier classifier = Server.getClassifier();
-        Tuple2<Topic,Object>[] result = classifier.getPredictions(new Text(text));
-        org.dbpedia.spotlight.web.rest.output.Topic[] topics = new org.dbpedia.spotlight.web.rest.output.Topic[result.length];
+        Text textObj = new Text(text);
+        Tuple2<Topic,Object>[] result = classifier.getPredictions(textObj);
 
-        for(int i = 0; i < result.length; i++) {
-            topics[i] = new org.dbpedia.spotlight.web.rest.output.Topic(result[i]._1().getName(), (Double) result[i]._2());
-        }
-
-        return ok(jsonStreamer.toXML(topics));
+        return ok(OutputSerializer.topicTagsAsJson(textObj, result).toString());
     }
 
+    @GET
+    @Produces( MediaType.APPLICATION_XML )
+    public Response getXML(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text) {
+        TopicalClassifier classifier = Server.getClassifier();
+        Text textObj = new Text(text);
+        Tuple2<Topic,Object>[] result = classifier.getPredictions(textObj);
+
+        return ok(OutputSerializer.topicTagsAsXml(textObj, result).toString());
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_XML)
+    public Response postXML(
+            @DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
+            @Context HttpServletRequest request
+    ) {
+        TopicalClassifier classifier = Server.getClassifier();
+        Text textObj = new Text(text);
+        Tuple2<Topic,Object>[] result = classifier.getPredictions(textObj);
+
+        return ok(OutputSerializer.topicTagsAsXml(textObj, result).toString());
+    }
 }
