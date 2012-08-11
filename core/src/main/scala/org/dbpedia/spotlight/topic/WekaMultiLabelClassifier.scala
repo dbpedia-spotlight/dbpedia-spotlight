@@ -29,7 +29,7 @@ object WekaMultiLabelClassifier {
      * @param args path to training corpus in arff (class labels have to be last attribute), path to output directory
      */
     def main(args: Array[String]) {
-        trainModel(args(0), args(1))
+        trainModel(new File(args(0)), new File(args(1)))
     }
 
     def fromProperties(properties: Properties): WekaMultiLabelClassifier =
@@ -38,12 +38,12 @@ object WekaMultiLabelClassifier {
             new File(properties.getProperty("org.dbpedia.spotlight.topic.model.path")))
 
 
-    def trainModel(arff: String, modelOut: String) {
-        new File(modelOut).mkdirs()
+    def trainModel(arff: File, modelOut: File) {
+        modelOut.mkdirs()
 
         // load data
         val loader: ArffLoader = new ArffLoader()
-        loader.setFile(new File(arff))
+        loader.setFile(arff)
         val structure = loader.getStructure
 
         var topicLabels = List[String]()
@@ -63,7 +63,7 @@ object WekaMultiLabelClassifier {
 
         for (i <- 0 until topicNumber) {
             loader.reset()
-            loader.setFile(new File(arff))
+            loader.setFile(arff)
             loader.getStructure
 
             var valueRange = ""
@@ -98,9 +98,10 @@ object WekaMultiLabelClassifier {
                 }
             }
 
-            LOG.info("Writing model for " + label + " to " + modelOut + "/" + label + ".model")
+            val outputModelFile = new File(modelOut , label + ".model")
+            LOG.info("Writing model for " + label + " to " +outputModelFile.getAbsolutePath)
             val oos = new ObjectOutputStream(
-                new FileOutputStream(modelOut + "/" + label + ".model"))
+                new FileOutputStream(outputModelFile))
             oos.writeObject(nb)
             oos.flush()
             oos.close()

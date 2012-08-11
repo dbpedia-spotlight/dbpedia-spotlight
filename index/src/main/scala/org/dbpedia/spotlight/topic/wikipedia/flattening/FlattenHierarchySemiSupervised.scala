@@ -25,258 +25,278 @@ import org.dbpedia.spotlight.util.IndexingConfiguration
  */
 
 object FlattenHierarchySemiSupervised {
-  private val LOG = LogFactory.getLog(getClass)
+    private val LOG = LogFactory.getLog(getClass)
 
-  /**
-   *
-   * @param args  path to indexing properties, path to training corpus, path to training input categories,
-   *              path to evaluation corpus, path to evaluation corpus' categories, path to temporary dir,
-   *              confidence threshold for assigning a category to a topic (should be high, prob. at least 0.8)
-   */
-  def main(args:Array[String]) {
-    val config = new IndexingConfiguration(args(0))
+    /**
+     *
+     * @param args  path to indexing properties, path to training corpus, path to training input categories,
+     *              path to evaluation corpus, path to evaluation corpus' categories, path to temporary dir,
+     *              confidence threshold for assigning a category to a topic (should be high, prob. at least 0.8)
+     */
+    def main(args: Array[String]) {
+        val config = new IndexingConfiguration(args(0))
 
-    flattenHierarchyByTopics(
-      config.get("org.dbpedia.spotlight.topic.description"),
-      args(1),
-      args(2),
-      args(3),
-      args(4),
-      config.get("org.dbpedia.spotlight.topic.categories.dictionary"),
-      config.get("org.dbpedia.spotlight.data.concepts"),
-      args(5),
-      config.get("org.dbpedia.spotlight.topic.flattenedHierarchy"),
-      args(6).toDouble
-    )
-  }
-
-  def flattenHierarchyByTopics(pathToTopicDescription:String,
-                               pathToTrainingCorpus:String,              //input
-                               pathToTrainingCorpusCategories:String,    //input.categories
-                               pathToEvaluationCorpus:String,            //rest
-                               pathToEvaluationCorpusCategories:String,  //rest.categories
-                               pathToDictionary:String,
-                               pathToTopicalConcepts:String,
-                               tmpPath:String,
-                               output:String,
-                               classificationThreshold:Double)  {
-
-    def getScore(categoryName:Set[String], matchName:String) : Double = {
-      val parts = matchName.split("_")
-      parts.foreach( part => if(!categoryName.contains(part)) return 0.0 )
-
-      return 1.0
+        flattenHierarchyByTopics(
+            new File(config.get("org.dbpedia.spotlight.topic.description")),
+            new File(args(1)),
+            new File(args(2)),
+            new File(args(3)),
+            new File(args(4)),
+            new File(config.get("org.dbpedia.spotlight.topic.categories.dictionary")),
+            new File(config.get("org.dbpedia.spotlight.data.concepts")),
+            new File(args(5)),
+            new File(config.get("org.dbpedia.spotlight.topic.flattenedHierarchy")),
+            args(6).toDouble
+        )
     }
 
-    new File(output).mkdirs()
+    def flattenHierarchyByTopics(topicDescriptionFile: File,
+                                 trainingCorpus: File, //input
+                                 trainingCorpusCategories: File, //input.categories
+                                 evaluationCorpus: File, //rest
+                                 evaluationCorpusCategories: File, //rest.categories
+                                 dictionaryFile: File,
+                                 topicalConceptsFile: File,
+                                 tmpFile: File,
+                                 output: File,
+                                 classificationThreshold: Double) {
 
-    //val concepts = TopicalConceptLoader.loadTopicalConcepts(pathToTopicalConcepts)
+        def getScore(categoryName: Set[String], matchName: String): Double = {
+            val parts = matchName.split("_")
+            parts.foreach(part => if (!categoryName.contains(part)) return 0.0)
 
-    val tempArffPath = tmpPath+"/topics.arff"
-    val tempTopicsPath = tmpPath+"/topics.list"
-    val tempModelPath = tmpPath+"/model.dat"
-    val normalize = true
+            return 1.0
+        }
 
-    val dictionary = new WordIdDictionary(pathToDictionary)
-    dictionary.setMaxSize(dictionary.getSize)
-    var topicCategories = WikipediaFlattenedHierarchyLoader.loadFlattenedHierarchy(output).transform( (topic, categories) => categories.transform( (category,distance) => 1.0/distance) )//Map[Topic,Map[DBpediaCategory,Double]]()
-    val alreadyProcessed = Set[DBpediaCategory]()
-    //TODO topicinfo.xml
+        output.mkdirs()
 
-    val vectorizer = new TextVectorizer()
+        //val concepts = TopicalConceptLoader.loadTopicalConcepts(topicalConceptsFile)
 
-    //do not allow years as categories, e.g. 1830_births, 1830_deaths -> too many of them - bring a lot of confusion, People_by People_from
-    // bla_people_o_
-    LOG.info("Categories starting with a year or consisting of the word 'people' will not be assigned!")
-    val pattern = Pattern.compile("(\\d\\d+|People.*|.*people|.*expatriates).*").matcher("")
+        val tempArffPath = tmpFile + "/topics.arff"
+        val tempTopicsPath = tmpFile + "/topics.list"
+        val tempModelPath = tmpFile + "/model.dat"
+        val normalize = true
 
-    val topicDescriptions = TopicDescription.fromDescriptionFile(pathToTopicDescription)
+        val dictionary = new WordIdDictionary(dictionaryFile)
+        dictionary.setMaxSize(dictionary.getSize)
+        var topicCategories = WikipediaFlattenedHierarchyLoader.loadFlattenedHierarchy(output).transform((topic, categories) => categories.transform((category, distance) => 1.0 / distance)) //Map[Topic,Map[DBpediaCategory,Double]]()
+        val alreadyProcessed = Set[DBpediaCategory]()
+        //TODO topicinfo.xml
 
-    // if no categories were assigned yet, find trivial assignments (by keyword matching)
-    if (topicCategories.isEmpty) {
-      topicDescriptions.foreach( description => {
-        topicCategories += (description.topic -> Map[DBpediaCategory,Double]())
-      } )
+        val vectorizer = new TextVectorizer()
 
-      var assignedCategoriesCtr = 0
-      scala.io.Source.fromFile(pathToTrainingCorpusCategories).getLines().foreach( cat => {
-        val category = new DBpediaCategory(cat)
-        pattern.reset(category.getCategory)
-        if (!alreadyProcessed.contains(category) && !pattern.matches()) {
-          val catNameAsSet = Set() ++ vectorizer.getWordCountVector(category.getCategory.toLowerCase.replaceAll("[^a-z]", " ")).keySet
-          val selectedTopics = Map[Topic, Double]()
+        //do not allow years as categories, e.g. 1830_births, 1830_deaths -> too many of them - bring a lot of confusion, People_by People_from
+        // bla_people_o_
+        LOG.info("Categories starting with a year or consisting of the word 'people' will not be assigned!")
+        val pattern = Pattern.compile("(\\d\\d+|People.*|.*people|.*expatriates).*").matcher("")
 
-          topicDescriptions.foreach( description =>  {
-            var sum = 0.0
-            description.keywords.foreach( keyword => sum += getScore(catNameAsSet,keyword) )
+        val topicDescriptions = TopicDescription.fromDescriptionFile(topicDescriptionFile)
 
-            if (sum >=1.0) {
-              selectedTopics += (description.topic -> sum)
-            }
-          })
-
-          if (selectedTopics.size > 0) {
-            var topics = selectedTopics.toList.sortBy(x => -x._2)
-            topics = topics.takeWhile { case (topic, value) => value > 0.9*topics.head._2 }
-            topics.foreach(topic => {
-              topicCategories(topic._1) += (category -> topic._2)
+        // if no categories were assigned yet, find trivial assignments (by keyword matching)
+        if (topicCategories.isEmpty) {
+            topicDescriptions.foreach(description => {
+                topicCategories += (description.topic -> Map[DBpediaCategory, Double]())
             })
-            assignedCategoriesCtr += 1
-            alreadyProcessed += (category)
-            if(assignedCategoriesCtr%1000==0) {
-              LOG.info("Assigned "+assignedCategoriesCtr+" categories to topics")
-              LOG.info("Latest assignment: " + category.getCategory + " -> " + topics.head._1.getName)
+
+            var assignedCategoriesCtr = 0
+            scala.io.Source.fromFile(trainingCorpusCategories).getLines().foreach(cat => {
+                val category = new DBpediaCategory(cat)
+                pattern.reset(category.getCategory)
+                if (!alreadyProcessed.contains(category) && !pattern.matches()) {
+                    val catNameAsSet = Set() ++ vectorizer.getWordCountVector(category.getCategory.toLowerCase.replaceAll("[^a-z]", " ")).keySet
+                    val selectedTopics = Map[Topic, Double]()
+
+                    topicDescriptions.foreach(description => {
+                        var sum = 0.0
+                        description.categories.foreach(keyword => sum += getScore(catNameAsSet, keyword))
+
+                        if (sum >= 1.0) {
+                            selectedTopics += (description.topic -> sum)
+                        }
+                    })
+
+                    if (selectedTopics.size > 0) {
+                        var topics = selectedTopics.toList.sortBy(x => -x._2)
+                        topics = topics.takeWhile {
+                            case (topic, value) => value > 0.9 * topics.head._2
+                        }
+                        topics.foreach(topic => {
+                            topicCategories(topic._1) += (category -> topic._2)
+                        })
+                        assignedCategoriesCtr += 1
+                        alreadyProcessed += (category)
+                        if (assignedCategoriesCtr % 1000 == 0) {
+                            LOG.info("Assigned " + assignedCategoriesCtr + " categories to topics")
+                            LOG.info("Latest assignment: " + category.getCategory + " -> " + topics.head._1.getName)
+                        }
+                    }
+                }
+            })
+
+            val writers = Map[Topic, PrintWriter]()
+            topicDescriptions.foreach(description => writers += (description.topic -> new PrintWriter(new FileWriter(output + "/" + description.topic.getName + ".tsv"))))
+
+            topicCategories.foreach {
+                case (topic, categories) => {
+                    categories.toList.sortBy(-_._2).foreach {
+                        case (category, score) => writers(topic).println(category.getCategory + "\t" + 1 / score)
+                    }
+                }
             }
-          }
+
+            writers.foreach(_._2.close())
         }
-      } )
-
-      val writers = Map[Topic,PrintWriter]()
-      topicDescriptions.foreach( description => writers += (description.topic -> new PrintWriter(new FileWriter(output+"/"+description.topic.getName+".tsv"))) )
-
-      topicCategories.foreach { case (topic, categories) => {
-        categories.toList.sortBy(-_._2).foreach { case (category, score) => writers(topic).println(category.getCategory+"\t"+1/score)}
-      } }
-
-      writers.foreach(_._2.close())
-    }
-    else
-      topicCategories.foreach { case (topic,categories) => alreadyProcessed ++= categories.keySet }
+        else
+            topicCategories.foreach {
+                case (topic, categories) => alreadyProcessed ++= categories.keySet
+            }
 
 
-    LOG.info(alreadyProcessed.size+" categories were already assigned")
+        LOG.info(alreadyProcessed.size + " categories were already assigned")
 
-    LOG.info("Assigning categories to topics utilizing topical classification")
+        LOG.info("Assigning categories to topics utilizing topical classification")
 
-    val topicCategoriesForTraining = Map[Topic,Set[DBpediaCategory]]()
-    scala.io.Source.fromFile(pathToTrainingCorpusCategories).getLines().foreach( category => {
-      topicCategories.foreach { case (topic, categories)=>
-        if (categories.keySet.contains(new DBpediaCategory(category))) {
-          if (topicCategoriesForTraining.contains(topic))
-            topicCategoriesForTraining(topic) += (new DBpediaCategory(category))
-          else
-            topicCategoriesForTraining += (topic -> Set(new DBpediaCategory(category)))
-        }
-      }
-    })
-
-    val nrOfExamples = topicCategoriesForTraining.foldLeft(Double.MaxValue)( (acc, topicCats) => math.min(acc,topicCats._2.size))
-
-    topicCategories.foreach{ case (topic,cats) =>
-      topicCategoriesForTraining.update(topic,
-                Set[DBpediaCategory]() ++
-                cats.filter(category => topicCategoriesForTraining(topic).contains(category._1)).toList.sortBy(-_._2).take(nrOfExamples.toInt).map(_._1).toSet
-        ) }
-
-    LOG.info("Writing new corpus for training topical classifier")
-    //SplitOccsByCategories$.splitOccs(pathToTempFlattenedHierarchy,pathToSortedArticlesCategories,pathToSortedOccs,pathToTempSplittedOccs)
-    val tmpTopicsWriter = new PrintWriter(new FileWriter(tempTopicsPath))
-    tmpTopicsWriter.println(topicCategories.keySet.toList.map(_.getName).sorted.reduceLeft( _+","+_ ))
-    scala.io.Source.fromFile(pathToTrainingCorpusCategories).getLines().foreach( category => {
-      var topicsString = ""
-      topicCategoriesForTraining.foreach { case (topic, categories)=>
-        if (categories.contains(new DBpediaCategory(category))) {
-          topicsString += ","+topic.getName
-        }
-      }
-      if (topicsString.isEmpty)
-        topicsString = ",_ignore"
-      tmpTopicsWriter.println(topicsString.substring(1))
-    })
-
-    tmpTopicsWriter.close()
-
-    VowpalToArff.writeVowpalToArff(dictionary, pathToTrainingCorpus,tempTopicsPath,tempArffPath,normalize)
-
-    LOG.info("Training model")
-    WekaSingleLabelClassifier.trainModel(tempArffPath, tempModelPath)
-
-    LOG.info("Assign categories to topics with new model")
-    val classifier = new WekaSingleLabelClassifier(dictionary, new File(tempModelPath), topicCategories.keySet.toList)
-
-    val lines = scala.io.Source.fromFile(pathToEvaluationCorpus).getLines()
-    val topicLines = scala.io.Source.fromFile(pathToEvaluationCorpusCategories).getLines()
-
-    var ctr = 0
-
-    lines.foreach((fileLine) => {
-      val category = new DBpediaCategory(topicLines.next())
-      pattern.reset(category.getCategory)
-      if (!alreadyProcessed.contains(category) && !pattern.matches()) {
-        // Try first trivial assignments using keyword matching
-        val catNameAsSet = Set() ++ vectorizer.getWordCountVector(category.getCategory.toLowerCase.replaceAll("[^a-z]", " ")).keySet
-        val selectedTopics = Map[Topic, Double]()
-
-        topicDescriptions.foreach( description => {
-          var sum = 0.0
-          description.keywords.foreach( keyword => sum += getScore(catNameAsSet,keyword) )
-
-          if (sum >=1.0) {
-            selectedTopics += (description.topic -> sum)
-          }
+        val topicCategoriesForTraining = Map[Topic, Set[DBpediaCategory]]()
+        scala.io.Source.fromFile(trainingCorpusCategories).getLines().foreach(category => {
+            topicCategories.foreach {
+                case (topic, categories) =>
+                    if (categories.keySet.contains(new DBpediaCategory(category))) {
+                        if (topicCategoriesForTraining.contains(topic))
+                            topicCategoriesForTraining(topic) += (new DBpediaCategory(category))
+                        else
+                            topicCategoriesForTraining += (topic -> Set(new DBpediaCategory(category)))
+                    }
+            }
         })
 
-        if (selectedTopics.size > 0) {
-          var topics = selectedTopics.toList.sortBy(x => -x._2)
-          topics = topics.takeWhile { case (topic, value) => value > 0.9*topics.head._2 }
-          topics.foreach(topic => {
-            topicCategories(topics.head._1) += (category -> topics.head._2)
-          })
-          ctr +=1
-          if( ctr%100 == 0) {
-            LOG.info("Assigned "+ctr+" new categories to topics")
-            LOG.info("Latest assignment: " + category.getCategory + " -> " + topics.head._1.getName)
-          }
+        val nrOfExamples = topicCategoriesForTraining.foldLeft(Double.MaxValue)((acc, topicCats) => math.min(acc, topicCats._2.size))
+
+        topicCategories.foreach {
+            case (topic, cats) =>
+                topicCategoriesForTraining.update(topic,
+                    Set[DBpediaCategory]() ++
+                        cats.filter(category => topicCategoriesForTraining(topic).contains(category._1)).toList.sortBy(-_._2).take(nrOfExamples.toInt).map(_._1).toSet
+                )
         }
-        // if category could not be assigned trivially, try assigning with trained classifier
-        else if (classificationThreshold<1.0){
-          var values =  List[(Int,Double)]()
 
-          val split = fileLine.split(" ")
-
-          if (split.length > 2000) {
-            var word : Array[String] = null
-            var wordId = -1
-            for(i <- 1 until split.length) {
-              word = split(i).split(":")
-
-              wordId = word(0).toInt
-              if (wordId > -1)  {
-                values = (wordId, word(1).toDouble) :: values
-              }
+        LOG.info("Writing new corpus for training topical classifier")
+        //SplitOccsByCategories$.splitOccs(pathToTempFlattenedHierarchy,pathToSortedArticlesCategories,pathToSortedOccs,pathToTempSplittedOccs)
+        val tmpTopicsWriter = new PrintWriter(new FileWriter(tempTopicsPath))
+        tmpTopicsWriter.println(topicCategories.keySet.toList.map(_.getName).sorted.reduceLeft(_ + "," + _))
+        scala.io.Source.fromFile(trainingCorpusCategories).getLines().foreach(category => {
+            var topicsString = ""
+            topicCategoriesForTraining.foreach {
+                case (topic, categories) =>
+                    if (categories.contains(new DBpediaCategory(category))) {
+                        topicsString += "," + topic.getName
+                    }
             }
-            //length normalization
-            var squaredSum = 1.0
-            if (normalize)
-              squaredSum = math.sqrt(values.foldLeft(0.0)( (acc,element) => acc + element._2*element._2))
+            if (topicsString.isEmpty)
+                topicsString = ",_ignore"
+            tmpTopicsWriter.println(topicsString.substring(1))
+        })
 
-            values = values.sortBy(_._1)
+        tmpTopicsWriter.close()
 
-            val result = classifier.getPredictions(values.map[Int,List[Int]](element => element._1).toArray, values.map[Double,List[Double]](element => element._2/squaredSum).toArray)
+        VowpalToArff.writeVowpalToArff(dictionary, trainingCorpus, new File(tempTopicsPath), new File(tempArffPath), normalize)
 
-            result.foreach { case (topic, score) => {
-              if (score>=classificationThreshold) {
-                topicCategories(topic) += (category -> score)
-                ctr +=1
-                if( ctr%100 == 0) {
-                  LOG.info("Assigned "+ctr+" new categories to topics")
-                  LOG.info("Latest assignment: " + category.getCategory + " -> " + topic.getName)
+        LOG.info("Training model")
+        WekaSingleLabelClassifier.trainModel(new File(tempArffPath), new File(tempModelPath))
+
+        LOG.info("Assign categories to topics with new model")
+        val classifier = new WekaSingleLabelClassifier(dictionary, new File(tempModelPath), topicCategories.keySet.toList)
+
+        val lines = scala.io.Source.fromFile(evaluationCorpus).getLines()
+        val topicLines = scala.io.Source.fromFile(evaluationCorpusCategories).getLines()
+
+        var ctr = 0
+
+        lines.foreach((fileLine) => {
+            val category = new DBpediaCategory(topicLines.next())
+            pattern.reset(category.getCategory)
+            if (!alreadyProcessed.contains(category) && !pattern.matches()) {
+                // Try first trivial assignments using keyword matching
+                val catNameAsSet = Set() ++ vectorizer.getWordCountVector(category.getCategory.toLowerCase.replaceAll("[^a-z]", " ")).keySet
+                val selectedTopics = Map[Topic, Double]()
+
+                topicDescriptions.foreach(description => {
+                    var sum = 0.0
+                    description.categories.foreach(keyword => sum += getScore(catNameAsSet, keyword))
+
+                    if (sum >= 1.0) {
+                        selectedTopics += (description.topic -> sum)
+                    }
+                })
+
+                if (selectedTopics.size > 0) {
+                    var topics = selectedTopics.toList.sortBy(x => -x._2)
+                    topics = topics.takeWhile {
+                        case (topic, value) => value > 0.9 * topics.head._2
+                    }
+                    topics.foreach(topic => {
+                        topicCategories(topics.head._1) += (category -> topics.head._2)
+                    })
+                    ctr += 1
+                    if (ctr % 100 == 0) {
+                        LOG.info("Assigned " + ctr + " new categories to topics")
+                        LOG.info("Latest assignment: " + category.getCategory + " -> " + topics.head._1.getName)
+                    }
                 }
-              }
-            }}
-          }
+                // if category could not be assigned trivially, try assigning with trained classifier
+                else if (classificationThreshold < 1.0) {
+                    var values = List[(Int, Double)]()
+
+                    val split = fileLine.split(" ")
+
+                    if (split.length > 2000) {
+                        var word: Array[String] = null
+                        var wordId = -1
+                        for (i <- 1 until split.length) {
+                            word = split(i).split(":")
+
+                            wordId = word(0).toInt
+                            if (wordId > -1) {
+                                values = (wordId, word(1).toDouble) :: values
+                            }
+                        }
+                        //length normalization
+                        var squaredSum = 1.0
+                        if (normalize)
+                            squaredSum = math.sqrt(values.foldLeft(0.0)((acc, element) => acc + element._2 * element._2))
+
+                        values = values.sortBy(_._1)
+
+                        val result = classifier.getPredictions(values.map[Int, List[Int]](element => element._1).toArray, values.map[Double, List[Double]](element => element._2 / squaredSum).toArray)
+
+                        result.foreach {
+                            case (topic, score) => {
+                                if (score >= classificationThreshold) {
+                                    topicCategories(topic) += (category -> score)
+                                    ctr += 1
+                                    if (ctr % 100 == 0) {
+                                        LOG.info("Assigned " + ctr + " new categories to topics")
+                                        LOG.info("Latest assignment: " + category.getCategory + " -> " + topic.getName)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        })
+
+        val writers = Map[Topic, PrintWriter]()
+        topicDescriptions.foreach(description => writers += (description.topic -> new PrintWriter(new FileWriter(output + "/" + description.topic.getName + ".tsv"))))
+
+        topicCategories.foreach {
+            case (topic, categories) => {
+                categories.toList.sortBy(-_._2).foreach {
+                    case (category, score) => writers(topic).println(category.getCategory + "\t" + 1 / score)
+                }
+            }
         }
-      }
-    })
 
-    val writers = Map[Topic,PrintWriter]()
-    topicDescriptions.foreach( description => writers += (description.topic -> new PrintWriter(new FileWriter(output+"/"+description.topic.getName+".tsv"))) )
-
-    topicCategories.foreach { case (topic, categories) => {
-      categories.toList.sortBy(-_._2).foreach { case (category, score) => writers(topic).println(category.getCategory+"\t"+1/score)}
-    }}
-
-    writers.foreach(_._2.close())
-  }
+        writers.foreach(_._2.close())
+    }
 
 }

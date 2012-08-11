@@ -1,7 +1,7 @@
 package org.dbpedia.spotlight.topic.convert
 
 import org.dbpedia.spotlight.db.model.WordIdDictionary
-import java.io.{FileWriter, PrintWriter}
+import java.io.{File, FileWriter, PrintWriter}
 import org.apache.commons.logging.LogFactory
 
 /**
@@ -12,9 +12,9 @@ import org.apache.commons.logging.LogFactory
 object VowpalToArff {
   private val LOG = LogFactory.getLog(getClass)
 
-  def writeVowpalToArff(dictionary:WordIdDictionary, inputCorpusPath:String, inputCorpusLabelPath:String,outputPath:String, normalize:Boolean) {
-    val lines = scala.io.Source.fromFile(inputCorpusPath).getLines()
-    val topicLines = scala.io.Source.fromFile(inputCorpusLabelPath).getLines()
+  def writeVowpalToArff(dictionary:WordIdDictionary, inputCorpus:File, inputCorpusLabelsFile:File,output:File, normalize:Boolean) {
+    val lines = scala.io.Source.fromFile(inputCorpus).getLines()
+    val topicLines = scala.io.Source.fromFile(inputCorpusLabelsFile).getLines()
 
     var split : Array[String] = null
     var word : Array[String] = null
@@ -22,7 +22,7 @@ object VowpalToArff {
     var values : List[(Int,Double)] = List()
     var topicsLine = ""
 
-    val pw : PrintWriter = new PrintWriter(new FileWriter(outputPath))
+    val pw : PrintWriter = new PrintWriter(new FileWriter(output))
     var ctr = 0
 
     pw.println("@RELATION topics")

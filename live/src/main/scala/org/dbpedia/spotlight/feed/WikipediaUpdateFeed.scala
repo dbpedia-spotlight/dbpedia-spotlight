@@ -17,6 +17,7 @@ import org.dbpedia.spotlight.model._
 
 /**
  * Feed of paragraphs of wikipedia updates, which is an implementation of wikipedia harvester's external processor.
+ * The first entry is the article the update was made in.
  */
 class WikipediaUpdateFeed extends Feed[(DBpediaResource, Set[DBpediaResourceOccurrence], Set[DBpediaCategory], Text)](false) with IExternalProcessor {
     protected var interval = Long.MaxValue

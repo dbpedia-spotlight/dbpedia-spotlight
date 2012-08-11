@@ -71,12 +71,12 @@ object RunTrecKBA {
     val corpusFeed = new TrecCorpusFeed(corpusDir, startDate, endDate, trecJudgmentsFile, clear)
     val annotationFeed = new TrecResourceAnnotationFeed(factory.annotator(), corpusFeed)
     annotationFeed.startFeed
-    val trecTopicTextFeed = new TrecTopicTextFromAnnotationsFeed(HashMapTopicalPriorStore, annotationFeed.textAnnotationFeed)
-    trecTopicTextFeed.start
+    //val trecTopicTextFeed = new TrecTopicTextFromAnnotationsFeed(HashMapTopicalPriorStore, annotationFeed.textAnnotationFeed)
+    //trecTopicTextFeed.start
 
     //Trainer
-    val topicalClassifierTrainer = new TopicLiveTrainer(factory.topicalClassifier, minimalConfidence, new File(evalFolder, "topic_training.eval"), evaluationInterval)
-    topicalClassifierTrainer.subscribeToAll
+    //val topicalClassifierTrainer = new TopicLiveTrainer(factory.topicalClassifier, minimalConfidence, new File(evalFolder, "topic_training.eval"), evaluationInterval)
+    //topicalClassifierTrainer.subscribeToAll
     val trecTargetEntityTrainer = new TrecLiveTargetEntityTrainer(targetClassifierModelDir, corpusFeed.targetEntities, new File(evalFolder, "target_entity_training.eval"), evaluationInterval)
     annotationFeed.resourceAnnotationFeed.subscribe(trecTargetEntityTrainer.feedListener)
 
@@ -99,8 +99,8 @@ object RunTrecKBA {
       Thread.sleep(1000)
 
     trecTargetEntityTrainer.stopTraining
-    topicalClassifierTrainer.stopTraining
+    //topicalClassifierTrainer.stopTraining
     trecTargetEntityTrainer.saveModel
-    topicalClassifierTrainer.saveModel
+    //topicalClassifierTrainer.saveModel
   }
 }

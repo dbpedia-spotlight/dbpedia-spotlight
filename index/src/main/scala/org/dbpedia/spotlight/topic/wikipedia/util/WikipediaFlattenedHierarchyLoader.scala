@@ -13,11 +13,11 @@ object WikipediaFlattenedHierarchyLoader {
 
   private val LOG = LogFactory.getLog(getClass)
 
-  def loadFlattenedHierarchy(pathToFlattenedHierarchy: String): Map[Topic, Map[DBpediaCategory,Double]] = {
+  def loadFlattenedHierarchy(flattenedHierarchyDir: File): Map[Topic, Map[DBpediaCategory,Double]] = {
     var flattenedHierarchy = Map[Topic, Map[DBpediaCategory,Double]]()
-    val parentDir = new File(pathToFlattenedHierarchy)
-    if (parentDir.exists()) {
-      parentDir.listFiles().foreach( topicFile => {
+
+    if (flattenedHierarchyDir.exists()) {
+      flattenedHierarchyDir.listFiles().foreach( topicFile => {
         LOG.info("Loading "+topicFile.getAbsolutePath)
         var set = Map[DBpediaCategory,Double]()
         Source.fromFile(topicFile).getLines().foreach( line => {

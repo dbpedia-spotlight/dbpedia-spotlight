@@ -13,8 +13,8 @@ import io.Source
  * To change this template use File | Settings | File Templates.
  */
 
-class WordIdDictionary(private val pathToDictionary: String, private var maxSize: Int, var isPhonetic: Boolean = false) {
-  def this(pathToDic: String) = this(pathToDic, 0)
+class WordIdDictionary(private val dictionaryFile: File, private var maxSize: Int, var isPhonetic: Boolean = false) {
+  def this(dictionaryFile: File) = this(dictionaryFile, 0)
 
   private val LOG = LogFactory.getLog(getClass)
 
@@ -23,7 +23,7 @@ class WordIdDictionary(private val pathToDictionary: String, private var maxSize
   {
     try {
       var firstLine = true
-      Source.fromFile(pathToDictionary).getLines().foreach(thisLine => {
+      Source.fromFile(dictionaryFile).getLines().foreach(thisLine => {
         if (firstLine) {
           if (thisLine.trim.equals("@phonetic"))
             isPhonetic = true
@@ -52,7 +52,7 @@ class WordIdDictionary(private val pathToDictionary: String, private var maxSize
 
   def persist() {
     try {
-      val pw: PrintWriter = new PrintWriter(new FileWriter(pathToDictionary))
+      val pw: PrintWriter = new PrintWriter(new FileWriter(dictionaryFile))
       if (isPhonetic)
         pw.println("@phonetic")
 

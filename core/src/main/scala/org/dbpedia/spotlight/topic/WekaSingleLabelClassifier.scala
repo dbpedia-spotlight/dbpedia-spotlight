@@ -26,11 +26,11 @@ object WekaSingleLabelClassifier {
             new File(properties.getProperty("org.dbpedia.spotlight.topic.model.path")))
 
 
-    def trainModel(arff: String, modelOut: String) {
+    def trainModel(arff: File, modelOut: File) {
         LOG.info("Training model on dataset " + arff + " and persist it at " + modelOut)
         // load data
         val loader: ArffLoader = new ArffLoader()
-        loader.setFile(new File(arff))
+        loader.setFile(arff)
         val structure = loader.getStructure
         structure.setClassIndex(structure.numAttributes() - 1)
 
@@ -50,10 +50,10 @@ object WekaSingleLabelClassifier {
         oos.close()
     }
 
-    def trainModel(arff: String, structure: Instances, modelOut: String) {
+    def trainModel(arff: File, structure: Instances, modelOut: File) {
         // load data
         val loader: ArffLoader = new ArffLoader()
-        loader.setFile(new File(arff))
+        loader.setFile(arff)
 
         structure.setClassIndex(structure.numAttributes() - 1)
 

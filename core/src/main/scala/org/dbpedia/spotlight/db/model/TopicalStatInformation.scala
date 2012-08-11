@@ -2,7 +2,7 @@ package org.dbpedia.spotlight.db.model
 
 import org.dbpedia.spotlight.model.Topic
 import io.Source
-import java.io.{FileWriter, PrintWriter, IOException, FileNotFoundException}
+import java.io._
 import org.apache.commons.logging.LogFactory
 import scala.collection.mutable._
 import collection.mutable
@@ -30,7 +30,7 @@ object TopicalStatInformation {
   }
 }
 
-class TopicalStatInformation(private val pathToInformation: String) {
+class TopicalStatInformation(private val infoFile: File) {
   private val LOG = LogFactory.getLog(getClass)
 
   private var wordFrequencies = Map[Topic, Map[String, (Double, Double)]]()
@@ -39,9 +39,9 @@ class TopicalStatInformation(private val pathToInformation: String) {
   var loaded = false
 
   {
-    if (pathToInformation != null && pathToInformation != "")
+    if (infoFile != null)
       try {
-        Source.fromFile(pathToInformation).getLines().foreach(thisLine => {
+        Source.fromFile(infoFile).getLines().foreach(thisLine => {
           val (topic, docCount, frequencies) = TopicalStatInformation.fromLine(thisLine)
           wordFrequencies += (topic -> frequencies)
           docCounts += (topic -> docCount)
@@ -92,7 +92,7 @@ class TopicalStatInformation(private val pathToInformation: String) {
   def getTopics = wordFrequencies.keySet
 
   def persist {
-    val pw: PrintWriter = new PrintWriter(new FileWriter(pathToInformation))
+    val pw: PrintWriter = new PrintWriter(new FileWriter(infoFile))
 
     wordFrequencies.foreach {
       case (topic, frequencies) => {

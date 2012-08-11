@@ -41,7 +41,7 @@ object SplitOccsByCategories {
   }
 
   def splitOccs(pathToFlattenedHierarchy: String, pathToSortedArticlesCategories: String, pathToSortedOccsFile: String, outputPath: String) {
-    val flattenedHierarchy = WikipediaFlattenedHierarchyLoader.loadFlattenedHierarchy(pathToFlattenedHierarchy)
+    val flattenedHierarchy = WikipediaFlattenedHierarchyLoader.loadFlattenedHierarchy(new File(pathToFlattenedHierarchy))
 
     new File(outputPath).mkdirs()
     val writers = Map[Topic, PrintWriter]()

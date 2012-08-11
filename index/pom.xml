@@ -55,6 +55,13 @@
                           <jvmArg>-Xmx16G</jvmArg>
                         </jvmArgs>
                       </launcher>
+                      <launcher>
+                        <id>splitoccs</id>
+                        <mainClass>org.dbpedia.spotlight.topic.SplitOccsSemiSupervised</mainClass>
+                        <jvmArgs>
+                          <jvmArg>-Xmx10G</jvmArg>
+                        </jvmArgs>
+                      </launcher>
                         <launcher>
                             <id>enrichtypes</id>
                             <mainClass>org.dbpedia.spotlight.lucene.index.AddTypesToIndex</mainClass>

@@ -2,6 +2,7 @@ package org.dbpedia.spotlight.model
 
 import java.net.URL
 import xml.XML
+import java.io.File
 
 /**
  * Loads a topic description xml file.<br>
@@ -17,12 +18,12 @@ import xml.XML
  */
 object TopicDescription {
 
-  def fromDescriptionFile(file: String): Seq[TopicDescription] = {
+  def fromDescriptionFile(file: File): Seq[TopicDescription] = {
     val xml = XML.loadFile(file)
 
     for (topicItem <- xml \\ "topic") yield {
       val topic = new Topic((topicItem \\ "@name").head.text)
-      val keywords = (topicItem \\ "keywords").head.text.split(",").map(_.trim)
+      val categories = (topicItem \\ "categories").head.text.split(",").map(_.trim)
       var iptcTopics = Set[String]()
       for (iptcItem <- topicItem \\ "iptc")
         iptcTopics += (iptcItem \\ "@mediatopic").head.text
@@ -31,9 +32,9 @@ object TopicDescription {
       for (feedItem <- topicItem \\ "feed")
         feeds += new URL((feedItem \\ "@url").head.text)
 
-      new TopicDescription(topic, keywords, iptcTopics, feeds)
+      new TopicDescription(topic, categories, iptcTopics, feeds)
     }
   }
 }
 
-class TopicDescription(val topic: Topic, val keywords: Seq[String], val iptcTopics: Set[String], val rssFeeds: Set[URL])
+class TopicDescription(val topic: Topic, val categories: Seq[String], val iptcTopics: Set[String], val rssFeeds: Set[URL])

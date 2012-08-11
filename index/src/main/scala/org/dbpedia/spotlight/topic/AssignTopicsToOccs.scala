@@ -9,7 +9,7 @@ import util.TopicUtil
 
 /**
  * This object takes any occs.tsv file and splits it with the specified topical classification configuration into topics to the output
- * directory similar to the SplitOccs* classes.
+ * directory similar to the SplitOccs* classes. It is able to append new assignments to existing splits.
  *
  * @see SplitOccsByCategories$
  *
@@ -25,20 +25,20 @@ object AssignTopicsToOccs {
    *             3rd: min confidence of assigning, 4th: output, 5th: append (true|false)
    */
   def main(args: Array[String]) {
-    assignTopics(args(0), new TopicalClassificationConfiguration(args(1)).getClassifier, args(2).toDouble, args(3),args(4).toBoolean)
+    assignTopics(new File(args(0)), new TopicalClassificationConfiguration(args(1)).getClassifier, args(2).toDouble, new File(args(3)),args(4).toBoolean)
   }
 
-  def assignTopics(pathToOccsFile: String, model:TopicalClassifier, minimalConfidence: Double, outputPath: String, append:Boolean) {
+  def assignTopics(occsFile: File, model:TopicalClassifier, minimalConfidence: Double, output: File, append:Boolean) {
     val writers = Map[Topic, PrintWriter]()
 
-    model.getTopics.foreach(topic => writers += (topic -> new PrintWriter(new FileWriter(outputPath + "/" + topic.getName + ".tsv",append))))
-    val otherWriter = new PrintWriter(new FileWriter(outputPath + TopicUtil.CATCH_TOPIC.getName +".tsv",append))
+    model.getTopics.foreach(topic => writers += (topic -> new PrintWriter(new FileWriter(new File(output, topic.getName + ".tsv"),append))))
+    val otherWriter = new PrintWriter(new FileWriter(new File(output,TopicUtil.CATCH_TOPIC.getName +".tsv"),append))
     var predictions: Array[(Topic, Double)] = null
     var written = false
 
     var ctr = 0
     var assignments = 0
-    FileOccurrenceSource.fromFile(new File(pathToOccsFile)).foreach(occ => {
+    FileOccurrenceSource.fromFile(occsFile).foreach(occ => {
       predictions = model.getPredictions(occ.context)
       written = false
       predictions.foreach {
@@ -48,7 +48,7 @@ object AssignTopicsToOccs {
             written = true
             assignments += 1
             if (assignments % 10000 == 0)
-              LOG.info(assignments+"-th assignment: "+occ.resource.uri+"->"+topic.getName)
+              LOG.info(assignments+"-th assignment: "+occ.id+", "+occ.resource.uri+"->"+topic.getName)
           }
         }
       }

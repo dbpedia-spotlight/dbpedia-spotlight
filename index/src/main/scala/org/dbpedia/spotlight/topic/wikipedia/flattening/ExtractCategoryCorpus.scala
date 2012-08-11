@@ -38,7 +38,7 @@ object ExtractCategoryCorpus {
     }
 
     if (args(0) == "merge") {
-      mergeSortedSplittedVectors(args(1), args(2), args(3).toInt,config.get("org.dbpedia.spotlight.topic.cluster.dictionary"), args(5).toDouble)
+      mergeSortedSplittedVectors(new File(args(1)), new File(args(2)), args(3).toInt,new File(config.get("org.dbpedia.spotlight.topic.cluster.dictionary")), args(5).toDouble)
     }
   }
 
@@ -46,12 +46,12 @@ object ExtractCategoryCorpus {
    * Merges splittet vectors written by this class (from call 'extract') back together after sorting the output file and
    * applies to each vector tf/idf transformation and cuts
    * @param input file of sorted splitted vectors produced by 'ectract'
-   * @param outputPath output path
+   * @param output output path
    * @param maxNrOfCats number of categories to keep (keep those with the greatest wordvectors, because some categories are really sparse)
-   * @param pathToDictionary path to word->id dictionary
+   * @param dictionaryFile path to word->id dictionary
    * @param normalization scaling factor (new word count = old count / factor)
    */
-  def mergeSortedSplittedVectors(input: String, outputPath: String, maxNrOfCats: Int, pathToDictionary:String,normalization:Double) {
+  def mergeSortedSplittedVectors(input: File, output: File, maxNrOfCats: Int, dictionaryFile:File,normalization:Double) {
     var frequencies = Map[String, Array[Double]]()
 
     var categoryContentSize = Map[String, Double]()
@@ -66,7 +66,7 @@ object ExtractCategoryCorpus {
     var wordVector: Map[String, Double] = null
 
     var docsum = 0
-    var writer = new PrintWriter(new FileWriter(outputPath + ".writing"))
+    var writer = new PrintWriter(new FileWriter(output.getAbsolutePath + ".writing"))
     var word: Array[String] = null
     var value = 0.0
     val patternMatcher = Pattern.compile("[a-z]{3,}").matcher("")
@@ -74,7 +74,7 @@ object ExtractCategoryCorpus {
     var tempFreq: List[(String, Array[Double])] = null
 
     //using scanner because size of lines is huge
-    var scanner = new Scanner(new File(input))
+    var scanner = new Scanner(input)
     scanner.useDelimiter("\\s")
 
     if (scanner.hasNext)
@@ -142,7 +142,7 @@ object ExtractCategoryCorpus {
     wordVector = null
     writer.close()
 
-    val dictionary = new WordIdDictionary(pathToDictionary,100000)
+    val dictionary = new WordIdDictionary(dictionaryFile,100000)
 
     val clone: Map[String, Array[Double]] = frequencies.clone()
     val bound = 100000
@@ -161,18 +161,18 @@ object ExtractCategoryCorpus {
     counter = 0
 
     //write input
-    writer = new PrintWriter(new FileWriter(outputPath))
-    val catWriter = new PrintWriter(new FileWriter(new File(outputPath).getParentFile.getAbsolutePath + "/categories.list"))
+    writer = new PrintWriter(new FileWriter(output))
+    val catWriter = new PrintWriter(new FileWriter(new File(output.getParentFile,  "categories.list")))
 
-    val restWriter = new PrintWriter(new FileWriter(outputPath+".rest"))
-    val restCatWriter = new PrintWriter(new FileWriter(new File(outputPath).getParentFile.getAbsolutePath + "/categories.list.rest"))
+    val restWriter = new PrintWriter(new FileWriter(output.getAbsolutePath+".rest"))
+    val restCatWriter = new PrintWriter(new FileWriter(new File(output.getParentFile, "categories.list.rest")))
 
     var wordId = -1
     var values: List[(Int, Double)] = List()
     var iterator: Iterator[(Int, Double)] = null
     var element: (Int, Double) = null
 
-    scanner = new Scanner(new File(outputPath + ".writing"))
+    scanner = new Scanner(new File(output.getAbsolutePath + ".writing"))
     scanner.useDelimiter("\\s")
 
     var kept = true
@@ -240,7 +240,7 @@ object ExtractCategoryCorpus {
     restWriter.close()
     restCatWriter.close()
 
-    new File(outputPath + ".writing").delete()
+    new File(output.getAbsolutePath + ".writing").delete()
   }
 
 
