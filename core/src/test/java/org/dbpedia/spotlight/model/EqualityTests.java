@@ -33,7 +33,7 @@ public class EqualityTests {
 
     DBpediaResource r1 = new DBpediaResource("DBpedia");
     DBpediaResource r2 = new DBpediaResource("DBpedia");
-    DBpediaResource r3 = new DBpediaResource("http://dbpedia.org/resource/DBpedia");
+    DBpediaResource r3 = new DBpediaResource(SpotlightConfiguration.DEFAULT_NAMESPACE +"DBpedia");
 
     @Test
     public void testDBpediaResourceEquals() {

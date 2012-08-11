@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.exceptions.AnnotationException;
 import org.dbpedia.spotlight.exceptions.AuthenticationException;
 import org.dbpedia.spotlight.model.DBpediaResource;
+import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.Text;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -51,7 +52,7 @@ import java.util.Vector;
  */
 public class OntosClient extends AnnotationClient {
 
-    public static final String dbpediaPrefix = "http://dbpedia.org/resource/";
+    //public static final String dbpediaPrefix = "http://dbpedia.org/resource/";
 
     public Log LOG = LogFactory.getLog(this.getClass());
 
@@ -199,8 +200,8 @@ public class OntosClient extends AnnotationClient {
                String uri = sameAsIds.getString(i);
                sameAs.add(uri);
                // If there is a proper link, then we add it.
-               if (uri.startsWith(dbpediaPrefix))
-                dbpediaSameAs = new DBpediaResource(uri.replace(dbpediaPrefix, ""));
+               if (uri.startsWith(SpotlightConfiguration.DEFAULT_NAMESPACE))
+                dbpediaSameAs = new DBpediaResource(uri.replace(SpotlightConfiguration.DEFAULT_NAMESPACE, ""));
            }
        } catch (JSONException e) {
            LOG.error(e.getMessage());

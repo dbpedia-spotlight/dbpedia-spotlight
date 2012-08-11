@@ -25,6 +25,7 @@ import net.sf.json.xml.XMLSerializer;
 import org.dbpedia.spotlight.exceptions.OutputException;
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence;
 import org.dbpedia.spotlight.model.OntologyType;
+import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SurfaceForm;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -110,14 +111,14 @@ public class OutputManager {
 
     protected void getResourcesXml(List<DBpediaResourceOccurrence> occList, TransformerHandler hd, AttributesImpl atts) throws SAXException {
         int i=0;
-        String dbpediaPrefix = "http://dbpedia.org/resource/";
+
         for (DBpediaResourceOccurrence occ : occList){
             if (i==0){
                 atts.clear();
                 hd.startElement("","","Resources",atts);
             }
 
-            atts.addAttribute("","","URI","CDATA",dbpediaPrefix+occ.resource().uri());
+            atts.addAttribute("","","URI","CDATA", SpotlightConfiguration.DEFAULT_NAMESPACE+occ.resource().uri());
             atts.addAttribute("","","support","CDATA",String.valueOf(occ.resource().support()));
             atts.addAttribute("","","types","CDATA",(occ.resource().types()).mkString(","));
             // support and types should go to resource
@@ -157,7 +158,6 @@ public class OutputManager {
             //atts.addAttribute("","","coreferenceResolution","CDATA",String.valueOf(coreferenceResolution));
             hd.startElement("","","Annotation",atts);
             int i=0;
-            String dbpediaPrefix = "http://dbpedia.org/resource/";
             for (SurfaceForm sf : candidateMap.keySet()){
                 if (i==0){
                     atts.clear();

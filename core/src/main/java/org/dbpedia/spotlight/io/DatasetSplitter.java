@@ -23,6 +23,7 @@ import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.lucene.LuceneManager;
 import org.dbpedia.spotlight.lucene.search.LuceneCandidateSearcher;
 import org.dbpedia.spotlight.model.DBpediaResource;
+import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SurfaceForm;
 import org.semanticweb.yars.nx.Node;
 import org.semanticweb.yars.nx.parser.NxParser;
@@ -256,13 +257,13 @@ public abstract class DatasetSplitter {
     public static Set<String> getConfusableSurfaceForms(String targetType, File instancesFile, LuceneCandidateSearcher surrogateSearcher) throws IOException, ParseException {
         System.err.println("Getting all surface forms for "+targetType+"s...");
         Set<String> surfaceForms = new HashSet<String>();
-        if (!targetType.startsWith("http://dbpedia.org/ontology/"))
-            targetType = "http://dbpedia.org/ontology/"+ targetType;
+        if (!targetType.startsWith(SpotlightConfiguration.DEFAULT_ONTOLOGY_PREFIX))
+            targetType = SpotlightConfiguration.DEFAULT_ONTOLOGY_PREFIX+ targetType;
         NxParser parser = new NxParser(new FileInputStream(instancesFile));
         while (parser.hasNext()) {
             Node[] triple = parser.next();
             if (triple[2].toString().equals(targetType)) {
-                String targetUri = triple[0].toString().replace("http://dbpedia.org/resource/", "");
+                String targetUri = triple[0].toString().replace(SpotlightConfiguration.DEFAULT_NAMESPACE, "");
                 try {
                     Set<SurfaceForm> surfaceFormsForURI = surrogateSearcher.getSurfaceForms(new DBpediaResource(targetUri));
                     for (SurfaceForm sf : surfaceFormsForURI) {
