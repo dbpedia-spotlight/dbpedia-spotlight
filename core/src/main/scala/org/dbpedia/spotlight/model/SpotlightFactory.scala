@@ -93,7 +93,7 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
 
     val spotters = new java.util.HashMap[SpotterConfiguration.SpotterPolicy,Spotter]()
     val disambiguators = new java.util.HashMap[SpotlightConfiguration.DisambiguationPolicy,ParagraphDisambiguatorJ]()
-    val topicalClassifier = configuration.getClassificationConfiguration.getClassifier
+    val topicalClassifier = configuration.getTopicalClassificationConfiguration.getClassifier
 
     //populate
     LOG.info("Initiating spotters...")

@@ -17,51 +17,51 @@ import util.TopicUtil
  */
 object AssignTopicsToOccs {
 
-  private val LOG = LogFactory.getLog(getClass)
+    private val LOG = LogFactory.getLog(getClass)
 
-  /**
-   *
-   * @param args 1st: path to input occs, 2nd: path to topical classification configuration file,
-   *             3rd: min confidence of assigning, 4th: output, 5th: append (true|false)
-   */
-  def main(args: Array[String]) {
-    assignTopics(new File(args(0)), new TopicalClassificationConfiguration(args(1)).getClassifier, args(2).toDouble, new File(args(3)),args(4).toBoolean)
-  }
+    /**
+     *
+     * @param args 1st: path to input occs, 2nd: path to topical classification configuration file,
+     *             3rd: min confidence of assigning, 4th: output, 5th: append (true|false)
+     */
+    def main(args: Array[String]) {
+        assignTopics(new File(args(0)), new TopicalClassificationConfiguration(args(1)).getClassifier, args(2).toDouble, new File(args(3)), args(4).toBoolean)
+    }
 
-  def assignTopics(occsFile: File, model:TopicalClassifier, minimalConfidence: Double, output: File, append:Boolean) {
-    val writers = Map[Topic, PrintWriter]()
+    def assignTopics(occsFile: File, model: TopicalClassifier, minimalConfidence: Double, output: File, append: Boolean) {
+        val writers = Map[Topic, PrintWriter]()
 
-    model.getTopics.foreach(topic => writers += (topic -> new PrintWriter(new FileWriter(new File(output, topic.getName + ".tsv"),append))))
-    val otherWriter = new PrintWriter(new FileWriter(new File(output,TopicUtil.CATCH_TOPIC.getName +".tsv"),append))
-    var predictions: Array[(Topic, Double)] = null
-    var written = false
+        model.getTopics.foreach(topic => writers += (topic -> new PrintWriter(new FileWriter(new File(output, topic.getName + ".tsv"), append))))
+        val otherWriter = new PrintWriter(new FileWriter(new File(output, TopicUtil.CATCH_TOPIC.getName + ".tsv"), append))
+        var predictions: Array[(Topic, Double)] = null
+        var written = false
 
-    var ctr = 0
-    var assignments = 0
-    FileOccurrenceSource.fromFile(occsFile).foreach(occ => {
-      predictions = model.getPredictions(occ.context)
-      written = false
-      predictions.foreach {
-        case (topic, prediction) => {
-          if (prediction >= minimalConfidence) {
-            writers(topic).println(occ.toTsvString)
-            written = true
-            assignments += 1
-            if (assignments % 10000 == 0)
-              LOG.info(assignments+"-th assignment: "+occ.id+", "+occ.resource.uri+"->"+topic.getName)
-          }
-        }
-      }
-      if (!written)
-        otherWriter.println(occ.toTsvString)
+        var ctr = 0
+        var assignments = 0
+        FileOccurrenceSource.fromFile(occsFile).foreach(occ => {
+            predictions = model.getPredictions(occ.context)
+            written = false
+            predictions.foreach {
+                case (topic, prediction) => {
+                    if (prediction >= minimalConfidence) {
+                        writers(topic).println(occ.toTsvString)
+                        written = true
+                        assignments += 1
+                        if (assignments % 10000 == 0)
+                            LOG.info(assignments + "-th assignment: " + occ.id + ", " + occ.resource.uri + "->" + topic.getName)
+                    }
+                }
+            }
+            if (!written)
+                otherWriter.println(occ.toTsvString)
 
-      ctr += 1
-      if (ctr % 100000 == 0)
-        LOG.info(ctr + " occs processed")
-    })
+            ctr += 1
+            if (ctr % 100000 == 0)
+                LOG.info(ctr + " occs processed")
+        })
 
-    writers.foreach(_._2.close())
-    otherWriter.close()
-  }
+        writers.foreach(_._2.close())
+        otherWriter.close()
+    }
 
 }

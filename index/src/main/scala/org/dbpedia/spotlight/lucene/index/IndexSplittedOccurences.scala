@@ -8,13 +8,10 @@ import org.dbpedia.spotlight.lucene.LuceneManager
 import org.apache.lucene.store.FSDirectory
 
 /**
- * Created with IntelliJ IDEA.
- * User: dirk
- * Date: 7/7/12
- * Time: 2:07 PM
- * To change this template use File | Settings | File Templates.
+ * This class writes splitted indexes for splitted occurrences (this can be done topically, see package topic).
+ *
+ * @author dirk
  */
-
 object IndexSplittedOccurences {
   private val LOG = LogFactory.getLog(this.getClass)
 

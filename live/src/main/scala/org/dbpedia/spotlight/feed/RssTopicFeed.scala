@@ -17,63 +17,63 @@ import org.dbpedia.spotlight.model.{Text, RssItem, Topic}
  */
 class RssTopicFeed(val topic: Topic, val feedUrls: Array[URL], protected var interval: Long) extends Feed[(Topic, RssItem)](false) {
 
-  private val LOG = LogFactory.getLog(this.getClass)
-  protected var lastUpdate = new Date(Long.MinValue)
+    private val LOG = LogFactory.getLog(this.getClass)
+    protected var lastUpdate = new Date(Long.MinValue)
 
-  def changeInterval(refreshInterval: Long) {
-    interval = refreshInterval
-  }
+    def changeInterval(refreshInterval: Long) {
+        interval = refreshInterval
+    }
 
-  def act() {
-    loop {
-      receiveWithin(interval) {
-        case TIMEOUT => {
-          var ctr = 0
-          getRssFeeds(feedUrls).foreach {
-            case (channel, items) =>
-              items.filter(item => item.date.compareTo(lastUpdate) > 0).foreach(item => {
-                notifyListeners((topic, item))
-                ctr += 1
-              })
-          }
-          lastUpdate = new util.Date(System.currentTimeMillis())
-          LOG.info("Received: " + ctr + " items, Topic: " + topic.getName)
+    def act() {
+        loop {
+            receiveWithin(interval) {
+                case TIMEOUT => {
+                    var ctr = 0
+                    getRssFeeds(feedUrls).foreach {
+                        case (channel, items) =>
+                            items.filter(item => item.date.compareTo(lastUpdate) > 0).foreach(item => {
+                                notifyListeners((topic, item))
+                                ctr += 1
+                            })
+                    }
+                    lastUpdate = new util.Date(System.currentTimeMillis())
+                    LOG.info("Received: " + ctr + " items, Topic: " + topic.getName)
+                }
+            }
         }
-      }
     }
-  }
 
-  private def getRssFeeds(feeds: Seq[URL]): List[(String, Seq[RssItem])] = {
-    var baseList: List[(String, Seq[RssItem])] = List()
-    feeds.map(extractRss).foldLeft(baseList) {
-      (l, r) => l ::: r.toList
+    private def getRssFeeds(feeds: Seq[URL]): List[(String, Seq[RssItem])] = {
+        var baseList: List[(String, Seq[RssItem])] = List()
+        feeds.map(extractRss).foldLeft(baseList) {
+            (l, r) => l ::: r.toList
+        }
     }
-  }
 
-  private def extractRss(url: URL): Seq[(String, Seq[RssItem])] = {
-    // Given a URL, returns a Seq of RSS data in the form:
-    // ("channel", ["article 1", "article 2"])
-    val conn = url.openConnection
-    val xml = XML.load(conn.getInputStream)
+    private def extractRss(url: URL): Seq[(String, Seq[RssItem])] = {
+        // Given a URL, returns a Seq of RSS data in the form:
+        // ("channel", ["article 1", "article 2"])
+        val conn = url.openConnection
+        val xml = XML.load(conn.getInputStream)
 
-    for (channel <- xml \\ "channel")
-    yield {
-      val channelTitle = (channel \ "title").text
-      val items = extractRssItems(channel)
-      (channelTitle, items)
+        for (channel <- xml \\ "channel")
+        yield {
+            val channelTitle = (channel \ "title").text
+            val items = extractRssItems(channel)
+            (channelTitle, items)
+        }
     }
-  }
 
-  private def extractRssItems(channel: Node): Seq[RssItem] = {
-    // Given a channel node from an RSS feed, returns all of the article names
-    for (item <- (channel \\ "item")) yield
-      new RssItem(
-        new Text((item \\ "title").head.text),
-        DateUtils.parseDate((item \\ "pubDate").head.text, Array("EEE, dd MMM yyyy HH:mm:ss zzz", "EEE, dd MMM yyyy HH:mm zzz")),
-        new Text((item \\ "description").head.text.replaceAll("<!\\[CDATA\\[|\\]\\]>", "").replaceAll("<[^>]*>", "")),
-        new URL((item \\ "link").head.text))
-  }
+    private def extractRssItems(channel: Node): Seq[RssItem] = {
+        // Given a channel node from an RSS feed, returns all of the article names
+        for (item <- (channel \\ "item")) yield
+            new RssItem(
+                new Text((item \\ "title").head.text),
+                DateUtils.parseDate((item \\ "pubDate").head.text, Array("EEE, dd MMM yyyy HH:mm:ss zzz", "EEE, dd MMM yyyy HH:mm zzz")),
+                new Text((item \\ "description").head.text.replaceAll("<!\\[CDATA\\[|\\]\\]>", "").replaceAll("<[^>]*>", "")),
+                new URL((item \\ "link").head.text))
+    }
 
-  override def toString: String = "RssTopicFeed[" + feedUrls.foldLeft("")(_ + "," + _.getPath).substring(1) + "]"
+    override def toString: String = "RssTopicFeed[" + feedUrls.foldLeft("")(_ + "," + _.getPath).substring(1) + "]"
 
 }

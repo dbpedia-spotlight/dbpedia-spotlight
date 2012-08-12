@@ -8,14 +8,14 @@ import io.Source
  */
 object TopicalConceptLoader {
 
-  def loadTopicalConcepts(path:String) : Set[DBpediaCategory] = {
-    var result = Set[DBpediaCategory]()
+    def loadTopicalConcepts(path: String): Set[DBpediaCategory] = {
+        var result = Set[DBpediaCategory]()
 
-    Source.fromFile(path).getLines().foreach(line => {
-      result += (new DBpediaCategory(line.substring(line.indexOf("<")+1,line.indexOf(">")).replaceAll(".+/","")))
-    })
+        Source.fromFile(path).getLines().foreach(line => {
+            result += (new DBpediaCategory(line.substring(line.indexOf("<") + 1, line.indexOf(">")).replaceAll(".+/", "")))
+        })
 
-    result
-  }
+        result
+    }
 
 }

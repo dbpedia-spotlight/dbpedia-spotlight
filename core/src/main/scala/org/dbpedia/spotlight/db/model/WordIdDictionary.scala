@@ -6,11 +6,13 @@ import collection.mutable._
 import io.Source
 
 /**
- * Created with IntelliJ IDEA.
- * User: dirk
- * Date: 6/13/12
- * Time: 4:33 PM
- * To change this template use File | Settings | File Templates.
+ * Utility class which handles all word to id dictionary related functions.
+ *
+ * @param dictionaryFile
+ * @param maxSize maximal allowed size of this dictionary
+ * @param isPhonetic if dictionary contains phonetics as entries
+ *
+ * @author dirk
  */
 
 class WordIdDictionary(private val dictionaryFile: File, private var maxSize: Int, var isPhonetic: Boolean = false) {

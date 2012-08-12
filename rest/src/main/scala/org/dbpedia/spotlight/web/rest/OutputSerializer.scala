@@ -43,7 +43,7 @@ object OutputSerializer {
             <Topics>
                 {for ((topic,score) <- tags) yield <Topic score={score.toString} mediatopics={
                     if (descriptions!=null)
-                        descriptions.find(_.topic.equals(topic)).getOrElse(new TopicDescription(null,null,Set[String](),null)).iptcTopics.reduceLeft(_ +","+_)
+                        descriptions.find(_.topic.equals(topic)).getOrElse(new TopicDescription(null,null,null,Set[String](),null)).iptcTopics.reduceLeft(_ +","+_)
                     else
                         "No iptc mediatopics found"
             }>{topic.getName}</Topic> }

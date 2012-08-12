@@ -5,13 +5,11 @@ import scala.collection.mutable._
 import org.dbpedia.spotlight.string.ModifiedWikiUtil
 
 /**
- * Created with IntelliJ IDEA.
- * User: dirk
- * Date: 6/6/12
- * Time: 3:48 PM
- * To change this template use File | Settings | File Templates.
+ * String wrapper class for dbpedia categories
+ * @param category
+ *
+ * @author dirk
  */
-
 class DBpediaCategory(private var category: String) {
 
   category = category.replace(DBpediaCategory.DBPEDIA_CATEGORY_PREFIX, "")

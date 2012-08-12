@@ -150,7 +150,7 @@ public class SpotlightConfiguration {
 
     protected TopicalClassificationConfiguration classificationConfiguration;
 
-    public TopicalClassificationConfiguration getClassificationConfiguration() {
+    public TopicalClassificationConfiguration getTopicalClassificationConfiguration() {
         return classificationConfiguration;
     }
 

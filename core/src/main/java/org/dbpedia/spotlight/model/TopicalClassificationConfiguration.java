@@ -9,6 +9,7 @@ import org.dbpedia.spotlight.topic.TopicalClassifier;
 import org.dbpedia.spotlight.topic.WekaMultiLabelClassifier;
 import org.dbpedia.spotlight.topic.WekaSingleLabelClassifier;
 import org.dbpedia.spotlight.topic.util.TopicUtil;
+import scala.collection.Seq;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -16,11 +17,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 /**
- * Created with IntelliJ IDEA.
- * User: dirk
- * Date: 6/24/12
- * Time: 11:58 AM
- * To change this template use File | Settings | File Templates.
+ * Configuration class for topical classification
  */
 public class TopicalClassificationConfiguration {
 
@@ -33,8 +30,10 @@ public class TopicalClassificationConfiguration {
     static String DICTIONARY="org.dbpedia.spotlight.topic.dictionary";
     static String DICTIONARY_MAXSIZE="org.dbpedia.spotlight.topic.dictionary.maxsize";
     static String TOPICAL_PRIORS="org.dbpedia.spotlight.topic.priors";
+    static String TOPIC_DESCRIPTION="org.dbpedia.spotlight.topic.description";
 
     private static TopicalClassifier classifier;
+    private static Seq<TopicDescription> descriptions;
 
     //public enum DisambiguationPolicy { Document,Occurrences,CuttingEdge,Default }
 
@@ -54,6 +53,12 @@ public class TopicalClassificationConfiguration {
             LOG.warn("Topical priors were not loaded!");
         else
             HashMapTopicalPriorStore.fromDir(priors);
+
+        File topicDescription =  new File(config.getProperty(TOPIC_DESCRIPTION));
+        if(!topicDescription.exists())
+            LOG.warn("Topical descriptions were not loaded!");
+        else
+            descriptions = TopicDescription.fromDescriptionFile(topicDescription);
 
         classifier = loadClassifier();
     }
@@ -80,6 +85,10 @@ public class TopicalClassificationConfiguration {
 
     public TopicalClassifier getClassifier() {
         return classifier;
+    }
+
+    public Seq<TopicDescription> getDescription(){
+        return descriptions;
     }
 
 }

@@ -81,12 +81,10 @@ object FlattenHierarchySemiSupervised {
         dictionary.setMaxSize(dictionary.getSize)
         var topicCategories = WikipediaFlattenedHierarchyLoader.loadFlattenedHierarchy(output).transform((topic, categories) => categories.transform((category, distance) => 1.0 / distance)) //Map[Topic,Map[DBpediaCategory,Double]]()
         val alreadyProcessed = Set[DBpediaCategory]()
-        //TODO topicinfo.xml
 
         val vectorizer = new TextVectorizer()
 
         //do not allow years as categories, e.g. 1830_births, 1830_deaths -> too many of them - bring a lot of confusion, People_by People_from
-        // bla_people_o_
         LOG.info("Categories starting with a year or consisting of the word 'people' will not be assigned!")
         val pattern = Pattern.compile("(\\d\\d+|People.*|.*people|.*expatriates).*").matcher("")
 
@@ -108,7 +106,7 @@ object FlattenHierarchySemiSupervised {
 
                     topicDescriptions.foreach(description => {
                         var sum = 0.0
-                        description.categories.foreach(keyword => sum += getScore(catNameAsSet, keyword))
+                        description.keywords.foreach(keyword => sum += getScore(catNameAsSet, keyword))
 
                         if (sum >= 1.0) {
                             selectedTopics += (description.topic -> sum)
@@ -221,7 +219,7 @@ object FlattenHierarchySemiSupervised {
 
                 topicDescriptions.foreach(description => {
                     var sum = 0.0
-                    description.categories.foreach(keyword => sum += getScore(catNameAsSet, keyword))
+                    description.keywords.foreach(keyword => sum += getScore(catNameAsSet, keyword))
 
                     if (sum >= 1.0) {
                         selectedTopics += (description.topic -> sum)

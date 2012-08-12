@@ -7,13 +7,10 @@ import io.Source
 import org.apache.commons.logging.LogFactory
 
 /**
- * Created with IntelliJ IDEA.
- * User: dirk
- * Date: 8/6/12
- * Time: 7:29 PM
- * To change this template use File | Settings | File Templates.
+ * this class loads topical vectors for resources into memory which where created by CalculateResourceTopicVectors
+ *
+ * @author dirk
  */
-
 trait ResourceTopicsStore {
     def pTopicGivenResource(resource: DBpediaResource, topic: Topic) : Double
     def pTopicGivenResource(resource: DBpediaResource) : Map[Topic,Double]

@@ -87,7 +87,8 @@ object WekaMultiLabelClassifier {
             var counter = 0
             val label = topicLabels(i)
             while ( {
-                current = loader.getNextInstance(structure); current != null
+                current = loader.getNextInstance(structure);
+                current != null
             }) {
                 if (current.stringValue(structure.classIndex()) == label || threshold <= random.nextDouble()) {
                     classFilter.input(current)
@@ -98,8 +99,8 @@ object WekaMultiLabelClassifier {
                 }
             }
 
-            val outputModelFile = new File(modelOut , label + ".model")
-            LOG.info("Writing model for " + label + " to " +outputModelFile.getAbsolutePath)
+            val outputModelFile = new File(modelOut, label + ".model")
+            LOG.info("Writing model for " + label + " to " + outputModelFile.getAbsolutePath)
             val oos = new ObjectOutputStream(
                 new FileOutputStream(outputModelFile))
             oos.writeObject(nb)
@@ -200,7 +201,7 @@ class WekaMultiLabelClassifier(dictionary: WordIdDictionary,
         topicsInfo.persist
     }
 
-    def updateNegative(text: Text, topic: Topic, increaseVocabulary: Int = 0)  {
+    def updateNegative(text: Text, topic: Topic, increaseVocabulary: Int = 0) {
         update(text, new Topic(NEGATIVE_TOPIC_PREFIX + topic.getName), increaseVocabulary)
     }
 

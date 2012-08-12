@@ -13,33 +13,33 @@ import java.io.FileNotFoundException
  */
 object WikipediaHierarchyLoader {
 
-  private val LOG = LogFactory.getLog(getClass)
+    private val LOG = LogFactory.getLog(getClass)
 
-  def loadCategoryHierarchy(pathToWikiCategories: String): Map[DBpediaCategory, Set[DBpediaCategory]] = {
-    LOG.info("Loading wikipedia hierarchy")
-    var result: Map[DBpediaCategory, Set[DBpediaCategory]] = Map()
+    def loadCategoryHierarchy(pathToWikiCategories: String): Map[DBpediaCategory, Set[DBpediaCategory]] = {
+        LOG.info("Loading wikipedia hierarchy")
+        var result: Map[DBpediaCategory, Set[DBpediaCategory]] = Map()
 
-    try {
-        Source.fromFile(pathToWikiCategories).getLines().foreach(line => {
-          val split = line.split(" ")
-          if (split.length >= 3 && split(1).equals("<http://www.w3.org/2004/02/skos/core#broader>")) {
-            val category = new DBpediaCategory(split(0).replace("<", "").replace(">", ""))
-            val parent = new DBpediaCategory(split(2).replace("<", "").replace(">", ""))
-            if (!result.contains(parent))
-              result += (parent -> Set())
-            if (!result.contains(category))
-              result += (category -> Set())
+        try {
+            Source.fromFile(pathToWikiCategories).getLines().foreach(line => {
+                val split = line.split(" ")
+                if (split.length >= 3 && split(1).equals("<http://www.w3.org/2004/02/skos/core#broader>")) {
+                    val category = new DBpediaCategory(split(0).replace("<", "").replace(">", ""))
+                    val parent = new DBpediaCategory(split(2).replace("<", "").replace(">", ""))
+                    if (!result.contains(parent))
+                        result += (parent -> Set())
+                    if (!result.contains(category))
+                        result += (category -> Set())
 
-            result(parent) += (category)
-          }
-        })
+                    result(parent) += (category)
+                }
+            })
+        }
+        catch {
+            case _: FileNotFoundException =>
+                throw new FileNotFoundException("File of wikipedia hierarchy could not be found, please check your configuration or command line arguments!")
+        }
+
+        result
     }
-    catch {
-        case _:FileNotFoundException =>
-            throw new FileNotFoundException("File of wikipedia hierarchy could not be found, please check your configuration or command line arguments!")
-    }
-
-    result
-  }
 
 }

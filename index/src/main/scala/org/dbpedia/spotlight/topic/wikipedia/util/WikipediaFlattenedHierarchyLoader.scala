@@ -11,28 +11,28 @@ import scala.collection.mutable._
  */
 object WikipediaFlattenedHierarchyLoader {
 
-  private val LOG = LogFactory.getLog(getClass)
+    private val LOG = LogFactory.getLog(getClass)
 
-  def loadFlattenedHierarchy(flattenedHierarchyDir: File): Map[Topic, Map[DBpediaCategory,Double]] = {
-    var flattenedHierarchy = Map[Topic, Map[DBpediaCategory,Double]]()
+    def loadFlattenedHierarchy(flattenedHierarchyDir: File): Map[Topic, Map[DBpediaCategory, Double]] = {
+        var flattenedHierarchy = Map[Topic, Map[DBpediaCategory, Double]]()
 
-    if (flattenedHierarchyDir.exists()) {
-      flattenedHierarchyDir.listFiles().foreach( topicFile => {
-        LOG.info("Loading "+topicFile.getAbsolutePath)
-        var set = Map[DBpediaCategory,Double]()
-        Source.fromFile(topicFile).getLines().foreach( line => {
-          set += (new DBpediaCategory(line.split("\t")(0)) -> line.split("\t")(1).toDouble)
-        })
+        if (flattenedHierarchyDir.exists()) {
+            flattenedHierarchyDir.listFiles().foreach(topicFile => {
+                LOG.info("Loading " + topicFile.getAbsolutePath)
+                var set = Map[DBpediaCategory, Double]()
+                Source.fromFile(topicFile).getLines().foreach(line => {
+                    set += (new DBpediaCategory(line.split("\t")(0)) -> line.split("\t")(1).toDouble)
+                })
 
-        val name = topicFile.getName.substring(0,topicFile.getName.length-4)
-        flattenedHierarchy += (new Topic(name) -> set)
-      })
-      LOG.info("Flattened hierarchy was loaded!")
+                val name = topicFile.getName.substring(0, topicFile.getName.length - 4)
+                flattenedHierarchy += (new Topic(name) -> set)
+            })
+            LOG.info("Flattened hierarchy was loaded!")
+        }
+        else
+            LOG.warn("Flattened hierarchy was not found, loaded empty flattened hierarchy!")
+
+        flattenedHierarchy
     }
-    else
-      LOG.warn("Flattened hierarchy was not found, loaded empty flattened hierarchy!")
-
-    flattenedHierarchy
-  }
 
 }

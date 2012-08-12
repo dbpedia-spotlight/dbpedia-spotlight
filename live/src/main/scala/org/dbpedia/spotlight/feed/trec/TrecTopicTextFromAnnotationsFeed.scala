@@ -13,25 +13,26 @@ import org.apache.commons.logging.LogFactory
  * @param topicalPriors Loaded topical priors (see: TopicalPriorStore)
  * @param feed Should be a TrecResourceAnnotationFeed
  */
-class TrecTopicTextFromAnnotationsFeed(topicalPriors: TopicalPriorStore, feed: Feed[(Set[DBpediaResource],Text, Map[DBpediaResource,Double])])
-  extends DecoratorFeed[(Set[DBpediaResource],Text, Map[DBpediaResource,Double]),(Map[Topic,Double],Text)](feed, true) {
+class TrecTopicTextFromAnnotationsFeed(topicalPriors: TopicalPriorStore, feed: Feed[(Set[DBpediaResource], Text, Map[DBpediaResource, Double])])
+    extends DecoratorFeed[(Set[DBpediaResource], Text, Map[DBpediaResource, Double]), (Map[Topic, Double], Text)](feed, true) {
 
-  private val topicInferrer = new TopicInferrer(topicalPriors)
-  private val LOG = LogFactory.getLog(getClass)
+    private val topicInferrer = new TopicInferrer(topicalPriors)
+    private val LOG = LogFactory.getLog(getClass)
 
-  def processFeedItem(item: (Set[DBpediaResource], Text, Map[DBpediaResource,Double])) {
-    LOG.debug("Annotating DBpediaResources+Text with Topic...")
+    def processFeedItem(item: (Set[DBpediaResource], Text, Map[DBpediaResource, Double])) {
+        LOG.debug("Annotating DBpediaResources+Text with Topic...")
 
-    val (targets, text, annotations) = item
-    LOG.debug("Resources:"+annotations.foldLeft("")((string,annotation) => string+" "+annotation._1.uri))
+        val (targets, text, annotations) = item
+        LOG.debug("Resources:" + annotations.foldLeft("")((string, annotation) => string + " " + annotation._1.uri))
 
-    val probabilities = topicInferrer.inferTopics(annotations, targets)
-    probabilities.foreach{ case (topic, probability) =>
-      LOG.debug("Assigned topic: "+topic.getName+" -> "+probability)
+        val probabilities = topicInferrer.inferTopics(annotations, targets)
+        probabilities.foreach {
+            case (topic, probability) =>
+                LOG.debug("Assigned topic: " + topic.getName + " -> " + probability)
+        }
+        if (probabilities.size > 0)
+            notifyListeners((probabilities, text))
     }
-    if(probabilities.size > 0)
-      notifyListeners((probabilities, text))
-  }
 
 
 }

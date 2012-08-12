@@ -11,15 +11,15 @@ package org.dbpedia.spotlight.feed
  */
 abstract class DecoratorFeed[A <: Product, B <: Product](val feed: Feed[A], synchronous: Boolean)(implicit mA: Manifest[A], mB: Manifest[B]) extends Feed[B](synchronous) {
 
-  val feedListener = new FeedListener[A]() {
-    def update(item: A) {
-      processFeedItem(item)
+    val feedListener = new FeedListener[A]() {
+        def update(item: A) {
+            processFeedItem(item)
+        }
     }
-  }
 
-  def act {
-    feed.subscribe(feedListener)
-  }
+    def act {
+        feed.subscribe(feedListener)
+    }
 
-  def processFeedItem(item: A)
+    def processFeedItem(item: A)
 }

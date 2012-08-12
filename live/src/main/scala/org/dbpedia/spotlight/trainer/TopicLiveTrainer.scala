@@ -82,8 +82,8 @@ class TopicLiveTrainer(val classifier: TopicalClassifier, minimalConfidence: Dou
                         //this does nothing for a single label classifier
                         if (doEvaluation && updateCtr % evalInterval == 0)
                             evalWriter.print(" not_" + topic.getName)
-                        if(classifier.isInstanceOf[MultiLabelClassifier])
-                        classifier.asInstanceOf[MultiLabelClassifier].updateNegative(text, topic)
+                        if (classifier.isInstanceOf[MultiLabelClassifier])
+                            classifier.asInstanceOf[MultiLabelClassifier].updateNegative(text, topic)
                     }
                     else {
                         if (doEvaluation && updateCtr % evalInterval == 0)

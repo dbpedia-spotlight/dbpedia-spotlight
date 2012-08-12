@@ -11,35 +11,35 @@ import org.apache.commons.logging.LogFactory
  */
 object VowpalWCScalingFilter {
 
-  private val LOG = LogFactory.getLog(getClass)
+    private val LOG = LogFactory.getLog(getClass)
 
-  def main(args:Array[String]) {
-    reduceElementFeatures(args(0),args(1), args(2).toDouble)
-  }
+    def main(args: Array[String]) {
+        reduceElementFeatures(args(0), args(1), args(2).toDouble)
+    }
 
-  def reduceElementFeatures(pathToCorpus:String, output:String, normalization:Double) {
-    val writer = new PrintWriter(new FileWriter(output))
-    var ctr = 0
-    var split:Array[String] = null
-    //var words:LinkedList[(Int,Long)] = null
-    var count:Long = 0
+    def reduceElementFeatures(pathToCorpus: String, output: String, normalization: Double) {
+        val writer = new PrintWriter(new FileWriter(output))
+        var ctr = 0
+        var split: Array[String] = null
+        //var words:LinkedList[(Int,Long)] = null
+        var count: Long = 0
 
-    Source.fromFile(pathToCorpus).getLines().foreach( line => {
-      writer.print("|")
-      line.split(" ").drop(1).foreach ( word => {
-        split = word.split(":")
-        count = split(1).toLong
-        if(count>normalization/2)
-          writer.print(" "+split(0)+":"+math.round(count / normalization))
-      })
+        Source.fromFile(pathToCorpus).getLines().foreach(line => {
+            writer.print("|")
+            line.split(" ").drop(1).foreach(word => {
+                split = word.split(":")
+                count = split(1).toLong
+                if (count > normalization / 2)
+                    writer.print(" " + split(0) + ":" + math.round(count / normalization))
+            })
 
-      writer.println()
+            writer.println()
 
-      ctr += 1
-      if (ctr % 10000==0)
-        LOG.info(ctr+" filtered examples written!")
-    })
-    writer.close()
-  }
+            ctr += 1
+            if (ctr % 10000 == 0)
+                LOG.info(ctr + " filtered examples written!")
+        })
+        writer.close()
+    }
 
 }

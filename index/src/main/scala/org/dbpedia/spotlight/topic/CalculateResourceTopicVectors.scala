@@ -8,8 +8,8 @@ import org.apache.commons.logging.LogFactory
 import java.util.Properties
 
 /**
- * Calculates topic priors of resources from index for all concept uris given a topical classifier. This class was only used
- * for calculating topical priors for resources from their contexts.
+ * Calculates topic priors of resources from index for all concept uris, given a topical classifier. This class was only implemented
+ * for test purposes to calculate topical priors for resources from their contexts.
  */
 object CalculateResourceTopicVectors {
 
@@ -20,7 +20,7 @@ object CalculateResourceTopicVectors {
      * @param args spotlight config (with at least topical information, index dir information, analyzer information and
      *             cachesize), conceptURIs file, output file
      */
-    def main(args:Array[String]) {
+    def main(args: Array[String]) {
         val config = new SpotlightConfiguration(args(0))
 
         val properties = new Properties()
@@ -37,17 +37,17 @@ object CalculateResourceTopicVectors {
         Source.fromFile(args(1)).getLines().foreach(resName => {
             val resource = new DBpediaResource(resName)
 
-            val text = new Text(searcher.getContextWords(resource).toList.take(100).foldLeft("")((text, entry) => (entry.getKey+" ") * entry.getValue))
-            if (text.text.length>0) {
+            val text = new Text(searcher.getContextWords(resource).toList.take(100).foldLeft("")((text, entry) => (entry.getKey + " ") * entry.getValue))
+            if (text.text.length > 0) {
                 val predictions = classifier.getPredictions(text)
 
-                writer.println(resName + predictions.foldLeft("")((acc,prediction) => acc+" "+prediction._1.getName+":"+prediction._2))
+                writer.println(resName + predictions.foldLeft("")((acc, prediction) => acc + " " + prediction._1.getName + ":" + prediction._2))
             }
 
             ctr += 1
 
-            if(ctr%10000==0)
-                LOG.info(ctr+" resources processed")
+            if (ctr % 10000 == 0)
+                LOG.info(ctr + " resources processed")
         })
 
         writer.close()

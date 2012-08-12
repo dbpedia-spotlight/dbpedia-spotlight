@@ -39,7 +39,8 @@ object WekaSingleLabelClassifier {
         nb.buildClassifier(structure)
         var current: Instance = null
         while ( {
-            current = loader.getNextInstance(structure); current != null
+            current = loader.getNextInstance(structure);
+            current != null
         })
             nb.updateClassifier(current)
 
@@ -62,7 +63,8 @@ object WekaSingleLabelClassifier {
         nb.buildClassifier(structure)
         var current: Instance = null
         while ( {
-            current = loader.getNextInstance(structure); current != null
+            current = loader.getNextInstance(structure);
+            current != null
         })
             nb.updateClassifier(current)
 
@@ -88,7 +90,7 @@ class WekaSingleLabelClassifier(dictionary: WordIdDictionary,
                                 val topicsInfo: TopicalStatInformation,
                                 var modelFile: File,
                                 var topics: List[Topic],
-                                var transformInput: Boolean = true) extends TopicalClassifier  {
+                                var transformInput: Boolean = true) extends TopicalClassifier {
     if (transformInput.equals(true))
         transformInput = (topicsInfo.getWordFrequencies(topicsInfo.getTopics.head).size > 0)
 

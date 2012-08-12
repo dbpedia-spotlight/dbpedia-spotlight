@@ -16,63 +16,63 @@ import ClassManifest.fromClass
  * @tparam T Type of feed item that will be consumed
  */
 abstract class FeedListener[T <: Product](implicit m: Manifest[T]) extends Actor {
-  private val LOG = LogFactory.getLog(getClass)
+    private val LOG = LogFactory.getLog(getClass)
 
-  protected def update(item: T)
+    protected def update(item: T)
 
-  def subscribeTo(feed: Feed[_]) {
-    feed.subscribe(this)
-  }
-
-  def unSubscribeTo(feed: Feed[_]) {
-    feed.unSubscribe(this)
-  }
-
-  //TODO possible mailbox overflow??
-  def act {
-    loop {
-      receive {
-        case item: (Product, Manifest[_]) => notify(item._1, item._2)
-        case _ => LOG.error("Received wrong feed item!")
-      }
+    def subscribeTo(feed: Feed[_]) {
+        feed.subscribe(this)
     }
-  }
 
-  def notify(item: Product, iMan: Manifest[_]) {
-    if (iMan.equals(m))
-      update(item.asInstanceOf[T])
-    else {
-      val iManIt = iMan.typeArguments.iterator
-      var possibleArgs = item.productIterator.foldLeft(List[(Object, Manifest[_])]())((list, element) => list.::((element.asInstanceOf[Object], iManIt.next()))).reverse
-      //try {
-      val args =
-        m.typeArguments.foldLeft(List[Object]())((list, manifest) => {
-          val obj = possibleArgs.find(element =>
-            element._2.equals(manifest)
-          ).get
-          possibleArgs = possibleArgs.diff(List(obj))
-          list.::(obj._1)
-        }).reverse.toArray
-
-      if (m.typeArguments.length.equals(args.length)) {
-        val constructor = m.erasure.getConstructors()(0)
-        update(constructor.newInstance(args: _*).asInstanceOf[T])
-      }
-      //  }
+    def unSubscribeTo(feed: Feed[_]) {
+        feed.unSubscribe(this)
     }
-  }
 
-  def subscribeToAllFeeds {
-    FeedRegistry.getFeedsByManifest(m).foreach(
-      _.subscribe(this)
-    )
-  }
+    //TODO possible mailbox overflow??
+    def act {
+        loop {
+            receive {
+                case item: (Product, Manifest[_]) => notify(item._1, item._2)
+                case _ => LOG.error("Received wrong feed item!")
+            }
+        }
+    }
 
-  def unSubscribeToAllFeeds {
-    FeedRegistry.getFeedsByManifest(m).foreach(
-      _.unSubscribe(this)
-    )
-  }
+    def notify(item: Product, iMan: Manifest[_]) {
+        if (iMan.equals(m))
+            update(item.asInstanceOf[T])
+        else {
+            val iManIt = iMan.typeArguments.iterator
+            var possibleArgs = item.productIterator.foldLeft(List[(Object, Manifest[_])]())((list, element) => list.::((element.asInstanceOf[Object], iManIt.next()))).reverse
+            //try {
+            val args =
+                m.typeArguments.foldLeft(List[Object]())((list, manifest) => {
+                    val obj = possibleArgs.find(element =>
+                        element._2.equals(manifest)
+                    ).get
+                    possibleArgs = possibleArgs.diff(List(obj))
+                    list.::(obj._1)
+                }).reverse.toArray
 
-  this.start()
+            if (m.typeArguments.length.equals(args.length)) {
+                val constructor = m.erasure.getConstructors()(0)
+                update(constructor.newInstance(args: _*).asInstanceOf[T])
+            }
+            //  }
+        }
+    }
+
+    def subscribeToAllFeeds {
+        FeedRegistry.getFeedsByManifest(m).foreach(
+            _.subscribe(this)
+        )
+    }
+
+    def unSubscribeToAllFeeds {
+        FeedRegistry.getFeedsByManifest(m).foreach(
+            _.unSubscribe(this)
+        )
+    }
+
+    this.start()
 }

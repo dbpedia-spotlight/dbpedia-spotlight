@@ -83,9 +83,9 @@ class WikipediaUpdateFeed extends Feed[(DBpediaResource, Set[DBpediaResourceOccu
                     case (set, (resource, (begin, end))) => {
                         occCount += 1
                         set + new DBpediaResourceOccurrence(
-                            article.uri + "-p" + paragraphCtr + "l" +occCount,
+                            article.uri + "-p" + paragraphCtr + "l" + occCount,
                             resource,
-                            new SurfaceForm(text.substring(begin,end+1)),
+                            new SurfaceForm(text.substring(begin, end + 1)),
                             new Text(paragraph),
                             begin - offset,
                             Provenance.Wikipedia

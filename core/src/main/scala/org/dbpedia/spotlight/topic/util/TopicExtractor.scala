@@ -35,53 +35,53 @@ import org.dbpedia.spotlight.model.Topic
 
 object TopicExtractor {
 
-  val client = new HttpClient
-  val url_pattern = "http://160.45.137.73:2222/rest/topic?text=%s"
+    val client = new HttpClient
+    val url_pattern = "http://160.45.137.73:2222/rest/topic?text=%s"
 
-  def getTopics(text: String): Map[Topic, Double] = {
+    def getTopics(text: String): Map[Topic, Double] = {
 
-    val url = String.format(url_pattern, URLEncoder.encode(text, "UTF8"))
-    val method = new GetMethod(url)
-    method.getParams.setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler(3, false))
+        val url = String.format(url_pattern, URLEncoder.encode(text, "UTF8"))
+        val method = new GetMethod(url)
+        method.getParams.setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler(3, false))
 
-    var response = ""
-    try {
-      val statusCode: Int = client.executeMethod(method)
-      if (statusCode != HttpStatus.SC_OK) {
-        println("Method failed: " + method.getStatusLine)
-      }
-      val responseBody: Array[Byte] = method.getResponseBody
-      response = new String(responseBody)
+        var response = ""
+        try {
+            val statusCode: Int = client.executeMethod(method)
+            if (statusCode != HttpStatus.SC_OK) {
+                println("Method failed: " + method.getStatusLine)
+            }
+            val responseBody: Array[Byte] = method.getResponseBody
+            response = new String(responseBody)
+        }
+        catch {
+            case e: HttpException => {
+                println("Fatal protocol violation: " + e.getMessage)
+            }
+            case e: IOException => {
+                println("Fatal transport error: " + e.getMessage)
+                println(method.getQueryString)
+            }
+        }
+        finally {
+            method.releaseConnection
+        }
+
+        val parsed = parse(response)
+        val pairs = (parsed \\ "topic" \\ classOf[JField])
+        val topics = pairs.filter(_._1.equals("@topic")).map(p => new Topic(p._2.toString))
+        val scores = pairs.filter(_._1.equals("@score")).map(p => p._2.toString.toDouble)
+        val map = topics.zip(scores).toMap[Topic, Double]
+        map
     }
-    catch {
-      case e: HttpException => {
-        println("Fatal protocol violation: " + e.getMessage)
-      }
-      case e: IOException => {
-        println("Fatal transport error: " + e.getMessage)
-        println(method.getQueryString)
-      }
+
+    def main(args: Array[String]) {
+
+        val text = "basketball michael jordan"
+
+        val response = getTopics(text)
+        println("Response: " + response)
+
+
     }
-    finally {
-      method.releaseConnection
-    }
-
-    val parsed = parse(response)
-    val pairs = (parsed \\ "topic" \\ classOf[JField])
-    val topics = pairs.filter(_._1.equals("@topic")).map(p => new Topic(p._2.toString))
-    val scores = pairs.filter(_._1.equals("@score")).map(p => p._2.toString.toDouble)
-    val map = topics.zip(scores).toMap[Topic, Double]
-    map
-  }
-
-  def main(args: Array[String]) {
-
-    val text = "basketball michael jordan"
-
-    val response = getTopics(text)
-    println("Response: " + response)
-
-
-  }
 
 }

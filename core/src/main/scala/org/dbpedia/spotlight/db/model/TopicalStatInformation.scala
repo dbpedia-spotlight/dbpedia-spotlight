@@ -8,13 +8,8 @@ import scala.collection.mutable._
 import collection.mutable
 
 /**
- * Created with IntelliJ IDEA.
- * User: dirk
- * Date: 7/17/12
- * Time: 11:36 AM
- * To change this template use File | Settings | File Templates.
+ * Class that handles word count information produced during corpus generation.
  */
-
 object TopicalStatInformation {
   def fromLine(line: String): (Topic, Double, Map[String, (Double, Double)]) = {
     val scanner = new java.util.Scanner(line).useDelimiter(" |:")

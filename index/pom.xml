@@ -59,7 +59,7 @@
                         <id>splitoccs</id>
                         <mainClass>org.dbpedia.spotlight.topic.SplitOccsSemiSupervised</mainClass>
                         <jvmArgs>
-                          <jvmArg>-Xmx10G</jvmArg>
+                          <jvmArg>-Xmx2G</jvmArg>
                         </jvmArgs>
                       </launcher>
                         <launcher>
