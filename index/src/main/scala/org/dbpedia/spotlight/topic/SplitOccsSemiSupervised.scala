@@ -50,7 +50,7 @@ object SplitOccsSemiSupervised {
                   tmpDir: File, threshold: Double, iterations: Int, outputFile: File) {
         tmpDir.mkdirs()
         val tmpCorpus = new File(tmpDir, "corpus.tsv")
-        val tmpTopics = new File(tmpDir, "copics.info")
+        val tmpTopics = new File(tmpDir, "topics.info")
         val tmpDic = new File(tmpDir, "word_id.dic")
         val tmpArff = new File(tmpDir, "corpus.arff")
         val tmpModel = new File(tmpDir, "model.dat")

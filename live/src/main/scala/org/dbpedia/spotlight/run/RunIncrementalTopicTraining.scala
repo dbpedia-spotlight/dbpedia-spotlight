@@ -24,19 +24,19 @@ object RunIncrementalTopicTraining {
      *             optional: evaluation file, optional: evaluation interval
      */
     def main(args: Array[String]) {
-        val descriptions = TopicDescription.fromDescriptionFile(args(1))
+        val descriptions = TopicDescription.fromDescriptionFile(new File(args(1)))
 
-        //val config = new TopicalClassificationConfiguration(args(0))
-        //val classifier = config.getClassifier
+        val config = new TopicalClassificationConfiguration(args(0))
+        val classifier = config.getClassifier
         val languageTag = args(2)
 
-        /*var trainer: TopicLiveTrainer = null
-if (args.length>6)
-  trainer = new TopicLiveTrainer(classifier,args(4).toDouble, new File(args(5)), args(6).toInt)
-else if (args.length>5)
-  trainer = new TopicLiveTrainer(classifier,args(4).toDouble, new File(args(5)))
-else
-  trainer = new TopicLiveTrainer(classifier,args(4).toDouble)   */
+        var trainer: TopicLiveTrainer = null
+        if (args.length>6)
+          trainer = new TopicLiveTrainer(classifier,args(4).toDouble, new File(args(5)), args(6).toInt)
+        else if (args.length>5)
+          trainer = new TopicLiveTrainer(classifier,args(4).toDouble, new File(args(5)))
+        else
+          trainer = new TopicLiveTrainer(classifier,args(4).toDouble)
 
 
         val wikiUpdateConfig = getClass.getClassLoader.getResource("pedia_uima_harvester/descriptors/CPE/HTTPCR_parser_wst_category_externalConsumer_CPE.xml").getPath
