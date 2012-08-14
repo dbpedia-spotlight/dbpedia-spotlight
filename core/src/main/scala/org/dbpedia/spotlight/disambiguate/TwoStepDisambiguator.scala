@@ -118,14 +118,15 @@ class TwoStepDisambiguator(val candidateSearcher: CandidateSearcher,
 
         LOG.debug("Running bestK for paragraph %s.".format(paragraph.id))
 
-        if (paragraph.occurrences.size==0) return Map[SurfaceFormOccurrence,List[DBpediaResourceOccurrence]]()
-
 //        val m1 = if (candLuceneManager.getDBpediaResourceFactory == null) "lucene" else "jdbc"
 //        val m2 = if (contextLuceneManager.getDBpediaResourceFactory == null) "lucene" else "jdbc"
 
         // step1: get candidates for all surface forms
         //       (TODO here building allCandidates directly, but could extract from occs)
-        var allCandidates = CompactHashSet[DBpediaResource]();
+        var allCandidates = CompactHashSet[DBpediaResource]()
+
+        if (paragraph.occurrences.size==0 || allCandidates.isEmpty) return Map[SurfaceFormOccurrence,List[DBpediaResourceOccurrence]]()
+
         val occs = getCandidates(paragraph,allCandidates)
 
         val s2 = System.nanoTime()
