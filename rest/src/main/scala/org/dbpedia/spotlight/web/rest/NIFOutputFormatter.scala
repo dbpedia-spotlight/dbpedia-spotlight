@@ -1,5 +1,5 @@
 /**
- * Copyright 2011 Pablo Mendes, Max Jakob
+ * Copyright 2011 DBpedia Spotlight Development Team
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@ package org.dbpedia.spotlight.web.rest
 
 import scala.collection.JavaConversions._
 import scala.xml.{Node,PrettyPrinter}
-import java.net.URLEncoder
-import java.net.InetAddress
+import java.net.{URLEncoder,InetAddress}
 import org.apache.commons.codec.digest.DigestUtils
 
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
