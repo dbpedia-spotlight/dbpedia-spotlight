@@ -185,10 +185,9 @@ object Factory {
 
         try{
           val analyzerClass = Class.forName(analyzerName)
-          val version = Version.valueOf(luceneVersion);
-          val instanceAnalyzerClass = analyzerClass.getConstructor(classOf[Version],
-            classOf[java.util.Set[String]]).newInstance(version, stopWords)
-
+          val version = Version.valueOf(luceneVersion)
+          val instanceAnalyzerClass = if(stopWords != null) analyzerClass.getConstructor(classOf[Version],classOf[java.util.Set[String]]).newInstance(version, stopWords) else
+                                                            analyzerClass.getConstructor(classOf[Version]).newInstance(version)
           instanceAnalyzerClass match {
             case instanceAnalyzerClass: Analyzer => instanceAnalyzerClass
             case _ => throw new ClassCastException
