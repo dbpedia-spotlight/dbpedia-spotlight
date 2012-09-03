@@ -38,16 +38,9 @@ import org.apache.commons.logging.LogFactory
 import java.util.Properties
 import io.Source
 import scala.collection.JavaConversions._
-import org.apache.lucene.search.{DefaultSimilarity, Similarity}
-import org.dbpedia.spotlight.lucene.similarity.InvCandFreqSimilarity
-import org.apache.lucene.misc.SweetSpotSimilarity
-import org.apache.lucene.analysis.snowball.SnowballAnalyzer
-import org.apache.lucene.util.Version
-import org.apache.lucene.analysis.{Analyzer, StopAnalyzer}
+import org.apache.lucene.analysis.Analyzer
 import org.dbpedia.spotlight.exceptions.ConfigurationException
 import java.io._
-import collection.immutable.List._
-import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.dbpedia.spotlight.model.Factory
 
 /**
@@ -110,7 +103,7 @@ class IndexingConfiguration(val configFile: File) {
 
     def getAnalyzer : Analyzer = {
         val lang = get("org.dbpedia.spotlight.language")
-        Factory.Analyzer.from(get("org.dbpedia.spotlight.lucene.analyzer"),lang, getStopWords(lang))
+        Factory.Analyzer.from(get("org.dbpedia.spotlight.lucene.analyzer"),get("org.dbpedia.spotlight.lucene.version"), getStopWords(lang))
     }
 
     private def validate { //TODO move validation to finer grained factory classes that have specific purposes (e.g. candidate mapping, lucene indexing, etc.)
