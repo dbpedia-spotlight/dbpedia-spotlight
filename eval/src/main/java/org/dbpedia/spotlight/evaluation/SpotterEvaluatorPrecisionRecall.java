@@ -104,22 +104,22 @@ public class SpotterEvaluatorPrecisionRecall {
 		 * No selection:
          */
         File lexSpotterGoldFile = new File("/home/pablo/eval/csaw/gold/surfaceForms.set.spotterDictionary");
-        Spotter lexSpotterGold = new LingPipeSpotter(lexSpotterGoldFile);
+        Spotter lexSpotterGold = new LingPipeSpotter(lexSpotterGoldFile , configuration.getAnalyzer());
         lexSpotterGold.setName("\\lexspot{gold}        ");
         latexTable.append(getLatexTableRow(lexSpotterGold, documents, goldSurfaceFormOccurrences,baseResult));
 
         File lexSpotterT3File = new File("/home/pablo/web/dbpedia36data/2.9.3/surface_forms-Wikipedia-TitRedDis.thresh3.spotterDictionary");
-        Spotter lexSpotterT3 = new LingPipeSpotter(lexSpotterT3File);
+        Spotter lexSpotterT3 = new LingPipeSpotter(lexSpotterT3File, configuration.getAnalyzer());
         lexSpotterT3.setName("\\lexspot{>3}        ");
         latexTable.append(getLatexTableRow(lexSpotterT3, documents, goldSurfaceFormOccurrences,baseResult));
 
 		File lexSpotterT10File = new File("/home/pablo/web/dbpedia36data/2.9.3/surface_forms-Wikipedia-TitRedDis.uriThresh10.tsv.spotterDictionary");
-        Spotter lexSpotterT10 = new LingPipeSpotter(lexSpotterT10File);
+        Spotter lexSpotterT10 = new LingPipeSpotter(lexSpotterT10File, configuration.getAnalyzer());
         lexSpotterT10.setName("\\lexspot{>10}        ");
         latexTable.append(getLatexTableRow(lexSpotterT10, documents, goldSurfaceFormOccurrences,baseResult));
 
         File lexSpotterT75File = new File("/home/pablo/web/dbpedia36data/2.9.3/surface_forms-Wikipedia-TitRedDis.uriThresh75.tsv.spotterDictionary");
-        Spotter lexSpotterT75 = new LingPipeSpotter(lexSpotterT75File);
+        Spotter lexSpotterT75 = new LingPipeSpotter(lexSpotterT75File, configuration.getAnalyzer());
         lexSpotterT75.setName("\\lexspot{>75}        ");
         latexTable.append(getLatexTableRow(lexSpotterT75, documents, goldSurfaceFormOccurrences,baseResult));
 

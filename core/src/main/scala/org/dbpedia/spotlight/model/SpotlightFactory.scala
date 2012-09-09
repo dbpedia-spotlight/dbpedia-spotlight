@@ -106,7 +106,7 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
         if (policy == SpotterConfiguration.SpotterPolicy.Default) {
             spotters.getOrElse(policy, spotter(SpotterConfiguration.SpotterPolicy.LingPipeSpotter)); // if no default, use lingpipe
         } else if(policy == SpotterConfiguration.SpotterPolicy.LingPipeSpotter) {
-            spotters.getOrElse(policy, new LingPipeSpotter(spotDict))
+            spotters.getOrElse(policy, new LingPipeSpotter(spotDict,analyzer))
         } else if (policy == SpotterConfiguration.SpotterPolicy.AtLeastOneNounSelector) {
             spotters.getOrElse(policy, SpotterWithSelector.getInstance(spotter(SpotterConfiguration.SpotterPolicy.LingPipeSpotter),new AtLeastOneNounSelector(),taggedTokenProvider()))
         } else if (policy == SpotterConfiguration.SpotterPolicy.CoOccurrenceBasedSelector) {

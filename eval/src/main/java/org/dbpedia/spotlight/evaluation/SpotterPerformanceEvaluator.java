@@ -49,7 +49,7 @@ public class SpotterPerformanceEvaluator {
 		///**
 		// * No selection:
 		// */
-		Spotter spotter = new LingPipeSpotter(new File(configuration.getSpotterConfiguration().getSpotterFile()));
+		Spotter spotter = new LingPipeSpotter(new File(configuration.getSpotterConfiguration().getSpotterFile()), configuration.getAnalyzer());
 		//
 		//extract(jsonObject, spotter);
 

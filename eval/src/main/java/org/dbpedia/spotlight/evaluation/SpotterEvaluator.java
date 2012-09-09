@@ -70,7 +70,7 @@ public class SpotterEvaluator {
 		/**
 		 * No selection:
 		 */
-		Spotter spotter = new LingPipeSpotter(new File(configuration.getSpotterConfiguration().getSpotterFile()));
+		Spotter spotter = new LingPipeSpotter(new File(configuration.getSpotterConfiguration().getSpotterFile()), configuration.getAnalyzer());
 		SelectorResult spotterBaseResult = getSelectorResult(spotter, evaluationCorpus);
 		spotterBaseResult.printResult(baseResult);
 		

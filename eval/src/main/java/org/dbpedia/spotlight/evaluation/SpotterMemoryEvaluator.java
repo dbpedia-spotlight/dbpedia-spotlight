@@ -24,6 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.InitializationException;
 import org.dbpedia.spotlight.exceptions.SpottingException;
+import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.Text;
 import org.dbpedia.spotlight.spot.OpenNLPUtil;
 import org.dbpedia.spotlight.spot.Spotter;
@@ -53,6 +54,16 @@ public class SpotterMemoryEvaluator {
 
         Spotter spotter = null;
 
+        //
+        if (args.length==0)
+        {
+            LOG.error("server.properties is requested to continue...");
+           return;
+        }
+
+        SpotlightConfiguration configuration = new SpotlightConfiguration(args[0]);
+
+
         int spotterNr = 0;
 
         switch(spotterNr) {
@@ -65,7 +76,7 @@ public class SpotterMemoryEvaluator {
                 break;
             }
             case 1: {
-                spotter = new LingPipeSpotter(dictionary);
+                spotter = new LingPipeSpotter(dictionary, configuration.getAnalyzer());
                 break;
             }
         }

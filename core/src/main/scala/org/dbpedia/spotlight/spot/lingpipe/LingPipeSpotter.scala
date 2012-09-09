@@ -16,13 +16,18 @@
 
 package org.dbpedia.spotlight.spot.lingpipe
 
-import org.dbpedia.spotlight.model.{SurfaceForm, Text, SurfaceFormOccurrence}
+import org.dbpedia.spotlight.model.{SpotlightConfiguration, SurfaceForm, Text, SurfaceFormOccurrence}
 import scala.collection.JavaConversions._
 import com.aliasi.util.AbstractExternalizable
 import org.apache.commons.logging.LogFactory
 import com.aliasi.dict.{Dictionary, ExactDictionaryChunker}
 import java.io.File
-import org.dbpedia.spotlight.spot.Spotter
+import org.dbpedia.spotlight.spot.{JAnnotationTokenizerFactory, Spotter}
+import org.apache.lucene.analysis.br.BrazilianAnalyzer
+import javax.sound.sampled.LineUnavailableException
+import org.apache.lucene.util.Version
+import org.apache.lucene.analysis.Analyzer
+import org.dbpedia.spotlight.lucene.LuceneManager.DBpediaResourceField
 
 /**
  * Spotter using LingPipe (http://alias-i.com/lingpipe/demos/tutorial/ne/read-me.html)
@@ -34,10 +39,9 @@ import org.dbpedia.spotlight.spot.Spotter
  *     you need at least 3500M of Java heap space (3G is too little)
  *
  * @author maxjakob
- * @modified-date 24.08.2010
- */
+ **/
 
-class LingPipeSpotter(val dictionary : Dictionary[String], val overlap : Boolean=false, val caseSensitive : Boolean=false)
+class LingPipeSpotter(val dictionary : Dictionary[String], analyzer:Analyzer, val overlap : Boolean=false, val caseSensitive : Boolean=false)
         extends Spotter
 {
     private val LOG = LogFactory.getLog(this.getClass)
@@ -45,14 +49,14 @@ class LingPipeSpotter(val dictionary : Dictionary[String], val overlap : Boolean
 
     var name = ""
 
-    def this(dictionaryFile : File, overlap : Boolean, caseSensitive : Boolean) = {
-        this(AbstractExternalizable.readObject(dictionaryFile).asInstanceOf[Dictionary[String]], overlap, caseSensitive)
+    def this(dictionaryFile : File, analyzer:Analyzer, overlap : Boolean, caseSensitive : Boolean) = {
+        this(AbstractExternalizable.readObject(dictionaryFile).asInstanceOf[Dictionary[String]],analyzer, overlap, caseSensitive)
         fileName = dictionaryFile.getAbsolutePath
         LOG.debug("Dictionary: "+dictionaryFile)
     }
 
-    def this(dictionaryFile : File) = {
-        this(AbstractExternalizable.readObject(dictionaryFile).asInstanceOf[Dictionary[String]])
+    def this(dictionaryFile : File, analyzer:Analyzer) = {
+        this(AbstractExternalizable.readObject(dictionaryFile).asInstanceOf[Dictionary[String]],analyzer)
         fileName = dictionaryFile.getAbsolutePath
         LOG.debug("Dictionary: "+dictionaryFile)
     }
@@ -60,8 +64,8 @@ class LingPipeSpotter(val dictionary : Dictionary[String], val overlap : Boolean
     LOG.info("Initiating LingPipeSpotter ... ("+fileName+")")
     val dictionaryChunker = new ExactDictionaryChunker(dictionary,
                                                        //IndoEuropeanTokenizerFactory.INSTANCE,  // splits "don't" into "don", "'" and "t"
-                                                        new JAnnotationTokenizerFactory(),
-                                                      // AnnotationTokenizerFactory,
+                                                       // AnnotationTokenizerFactory, //English only
+                                                        new JAnnotationTokenizerFactory(analyzer),
                                                        overlap,        // find all matches, including overlapping ones?
                                                        caseSensitive)  // case-sensitive matching?
     LOG.info("Done.")
