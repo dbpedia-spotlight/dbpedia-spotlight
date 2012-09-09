@@ -60,7 +60,8 @@ class LingPipeSpotter(val dictionary : Dictionary[String], val overlap : Boolean
     LOG.info("Initiating LingPipeSpotter ... ("+fileName+")")
     val dictionaryChunker = new ExactDictionaryChunker(dictionary,
                                                        //IndoEuropeanTokenizerFactory.INSTANCE,  // splits "don't" into "don", "'" and "t"
-                                                       AnnotationTokenizerFactory,
+                                                        new JAnnotationTokenizerFactory(),
+                                                      // AnnotationTokenizerFactory,
                                                        overlap,        // find all matches, including overlapping ones?
                                                        caseSensitive)  // case-sensitive matching?
     LOG.info("Done.")
