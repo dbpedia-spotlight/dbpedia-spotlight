@@ -18,31 +18,25 @@
 
 package org.dbpedia.spotlight.model
 
-import org.apache.lucene.util.Version
-import org.apache.lucene.analysis.{StopAnalyzer, Analyzer}
 import org.apache.commons.logging.LogFactory
-import org.dbpedia.spotlight.exceptions.ConfigurationException
-import org.apache.lucene.store.Directory
 import org.dbpedia.spotlight.lucene.LuceneManager
-import org.apache.lucene.search.Similarity
 import org.dbpedia.spotlight.lucene.similarity.{JCSTermCache, CachedInvCandFreqSimilarity}
 import com.aliasi.sentences.IndoEuropeanSentenceModel
 import org.dbpedia.spotlight.disambiguate._
 import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter
 import java.io.File
 import org.dbpedia.spotlight.spot._
-import opennlp.{SurfaceFormDictionary, ProbabilisticSurfaceFormDictionary, OpenNLPChunkerSpotter}
+import opennlp.{ProbabilisticSurfaceFormDictionary, OpenNLPChunkerSpotter}
 import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters
 import org.dbpedia.spotlight.tagging.lingpipe.{LingPipeTextUtil, LingPipeTaggedTokenProvider, LingPipeFactory}
 import collection.JavaConversions._
-import org.dbpedia.spotlight.annotate.{DefaultAnnotator, DefaultParagraphAnnotator}
+import org.dbpedia.spotlight.annotate.DefaultAnnotator
 import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy
 import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy
 import org.dbpedia.spotlight.lucene.search.{LuceneCandidateSearcher, MergedOccurrencesContextSearcher}
 import com.aliasi.util.AbstractExternalizable
-import com.aliasi.dict.{DictionaryEntry, Dictionary}
-import java.util
+import com.aliasi.dict.Dictionary
 
 /**
  * This class contains many of the "defaults" for DBpedia Spotlight.
@@ -112,12 +106,12 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
         } else if (policy == SpotterConfiguration.SpotterPolicy.CoOccurrenceBasedSelector) {
             spotters.getOrElse(policy, SpotterWithSelector.getInstance(spotter(SpotterConfiguration.SpotterPolicy.LingPipeSpotter),new CoOccurrenceBasedSelector(configuration.getSpotterConfiguration, taggedTokenProvider()), taggedTokenProvider()))
         } else if (policy == SpotterConfiguration.SpotterPolicy.NESpotter) {
-            spotters.getOrElse(policy, new NESpotter(configuration.getSpotterConfiguration.getOpenNLPModelDir))
+            spotters.getOrElse(policy, new NESpotter(configuration.getSpotterConfiguration.getOpenNLPModelDir+"/"+configuration.language.toLowerCase+"/",configuration.getI18nLanguageCode.toLowerCase, configuration.getSparqlMainGraph))
         } else if (policy == SpotterConfiguration.SpotterPolicy.KeyphraseSpotter) {
             spotters.getOrElse(policy, new KeaSpotter(configuration.getSpotterConfiguration.getKeaModel, configuration.getSpotterConfiguration.getKeaMaxNumberOfPhrases, configuration.getSpotterConfiguration.getKeaCutoff))
         } else if (policy == SpotterConfiguration.SpotterPolicy.OpenNLPChunkerSpotter) {
             val dict = ProbabilisticSurfaceFormDictionary.fromLingPipeDictionary(spotDict, false) //TODO with new configuration in place, we can load from file into a more compact dictionary
-            spotters.getOrElse(policy, OpenNLPChunkerSpotter.fromDir(configuration.getSpotterConfiguration.getOpenNLPModelDir+"/"+configuration.language.toLowerCase+"/", dict, configuration.getStopWords))
+            spotters.getOrElse(policy, OpenNLPChunkerSpotter.fromDir(configuration.getSpotterConfiguration.getOpenNLPModelDir+"/"+configuration.language.toLowerCase+"/",configuration.getI18nLanguageCode.toLowerCase , dict, configuration.getStopWords))
         } else if (policy == SpotterConfiguration.SpotterPolicy.SpotXmlParser) {
           new SpotXmlParser
         } else if (policy == SpotterConfiguration.SpotterPolicy.WikiMarkupSpotter) {

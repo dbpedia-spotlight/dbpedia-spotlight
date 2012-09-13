@@ -20,13 +20,10 @@ package org.dbpedia.spotlight.spot;
 
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.TokenNameFinderModel;
-import opennlp.tools.postag.POSModel;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.tokenize.SimpleTokenizer;
 import opennlp.tools.tokenize.Tokenizer;
-import opennlp.tools.tokenize.TokenizerModel;
-import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.model.BaseModel;
 import org.apache.commons.lang.StringUtils;
@@ -34,14 +31,17 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.SpottingException;
-import org.dbpedia.spotlight.model.*;
+import org.dbpedia.spotlight.model.Feature;
+import org.dbpedia.spotlight.model.SurfaceForm;
+import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
+import org.dbpedia.spotlight.model.Text;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Spotter that uses Named Entity Recognition (NER) models from OpenNLP. Only spots People, Organisations and Locations.
@@ -62,20 +62,20 @@ public class NESpotter implements Spotter {
         }
     };
 
-    public NESpotter(String onlpModelDir) throws ConfigurationException {
+    public NESpotter(String onlpModelDir, String i18nLanguageCode, String dbpediaSite) throws ConfigurationException {
 
         try {
             if (NESpotter.sentenceModel == null) {
-                NESpotter.sentenceModel  = OpenNLPUtil.loadModel(onlpModelDir, "english/en-sent.zip", OpenNLPUtil.OpenNlpModels.SentenceModel.toString());
+                NESpotter.sentenceModel  = OpenNLPUtil.loadModel(onlpModelDir, i18nLanguageCode + "-sent.zip", OpenNLPUtil.OpenNlpModels.SentenceModel.toString());
             }
             if (NESpotter.entityTypes.get(OpenNLPUtil.OpenNlpModels.person.toString()) == null) {
-                buildNameModel(onlpModelDir, OpenNLPUtil.OpenNlpModels.person.toString(),  new URI("http://dbpedia.org/ontology/Person"));
+                buildNameModel(onlpModelDir,OpenNLPUtil.OpenNlpModels.person.toString(),  new URI(dbpediaSite + "/ontology/Person"),i18nLanguageCode);
             }
             if (NESpotter.entityTypes.get(OpenNLPUtil.OpenNlpModels.location.toString()) == null) {
-                buildNameModel(onlpModelDir, OpenNLPUtil.OpenNlpModels.location.toString(), new URI("http://dbpedia.org/ontology/Place"));
+                buildNameModel(onlpModelDir, OpenNLPUtil.OpenNlpModels.location.toString(), new URI(dbpediaSite + "/ontology/Place"),i18nLanguageCode);
             }
             if (NESpotter.entityTypes.get(OpenNLPUtil.OpenNlpModels.organization.toString()) == null) {
-                buildNameModel(onlpModelDir, OpenNLPUtil.OpenNlpModels.organization.toString(), new URI("http://dbpedia.org/ontology/Organisation"));
+                buildNameModel(onlpModelDir, OpenNLPUtil.OpenNlpModels.organization.toString(), new URI(dbpediaSite + "/ontology/Organisation"),i18nLanguageCode);
             }
         } catch (Exception e) {
             throw new ConfigurationException("Error initializing NESpotter", e);
@@ -83,9 +83,9 @@ public class NESpotter implements Spotter {
 
     }
 
-    protected BaseModel buildNameModel(String directoryPath, String modelType, URI typeUri) throws IOException, ConfigurationException {
+    protected BaseModel buildNameModel(String directoryPath, String modelType, URI typeUri, String i18nLanguageCode) throws IOException, ConfigurationException {
         String fname = OpenNLPUtil.OpenNlpModels.valueOf(modelType).filename();
-        String modelRelativePath = String.format("english/%s.zip", fname);
+        String modelRelativePath = String.format("%s.zip", i18nLanguageCode + fname);
         BaseModel model = OpenNLPUtil.loadModel(directoryPath, modelRelativePath, modelType);
         entityTypes.put(modelType, new Object[] { typeUri, model });
         return model;

@@ -50,13 +50,40 @@ public class SpotlightConfiguration {
     public final static String DEFAULT_SPARQL = "";
     public final static String DEFAULT_POLICY = "whitelist";
     public final static String DEFAULT_COREFERENCE_RESOLUTION = "true";
+    @Deprecated
     public static String DEFAULT_NAMESPACE = "http://dbpedia.org/resource/";
+    @Deprecated
     public static String DEFAULT_ONTOLOGY_PREFIX = "http://dbpedia.org/ontology/";
+    @Deprecated
     public static String DEFAULT_LANGUAGE_I18N_CODE = "en";
 
     public enum DisambiguationPolicy {Document, Occurrences, CuttingEdge, Default}
 
+    public String dbpediaResource="http://dbpedia.org/resource/";
+
+    public String dbpediaOntology="http://dbpedia.org/ontology/";
+
     public String language;
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public String getDbpediaResource() {
+        return dbpediaResource;
+    }
+
+    public String getDbpediaOntology() {
+        return dbpediaOntology;
+    }
+
+
+    public String i18nLanguageCode = "en";
+
+
+    public String getI18nLanguageCode() {
+        return i18nLanguageCode;
+    }
 
     protected String contextIndexDirectory = "";
     protected String candidateMapDirectory = "";
@@ -166,8 +193,13 @@ public class SpotlightConfiguration {
         }
 
         DEFAULT_NAMESPACE = config.getProperty("org.dbpedia.spotlight.default_namespace", DEFAULT_NAMESPACE);
+        dbpediaResource = config.getProperty("org.dbpedia.spotlight.default_namespace", dbpediaResource);
+
         DEFAULT_ONTOLOGY_PREFIX = config.getProperty("org.dbpedia.spotlight.default_ontology", DEFAULT_ONTOLOGY_PREFIX);
+        dbpediaOntology =config.getProperty("org.dbpedia.spotlight.default_ontology", dbpediaOntology);
+
         DEFAULT_LANGUAGE_I18N_CODE = config.getProperty("org.dbpedia.spotlight.language_i18n_code", DEFAULT_LANGUAGE_I18N_CODE);
+        i18nLanguageCode = config.getProperty("org.dbpedia.spotlight.language_i18n_code", "en");
 
         //Read the spotter configuration from the properties file
         spotterConfiguration = new SpotterConfiguration(fileName);
@@ -205,6 +237,7 @@ public class SpotlightConfiguration {
         }
 
         language = config.getProperty("org.dbpedia.spotlight.language", "English");
+
 
         stopWordsFile = config.getProperty("org.dbpedia.spotlight.data.stopWords." + language.toLowerCase(), "").trim();
         if ((stopWordsFile == null) || !new File(stopWordsFile.trim()).isFile()) {

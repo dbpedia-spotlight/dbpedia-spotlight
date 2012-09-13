@@ -47,13 +47,13 @@ public class OpenNLPUtil {
 
 
     public enum OpenNlpModels {
-        SentenceModel("en-sent"),
-        ChunkModel("en-chunker"),
-        TokenizerModel("en-token"),
-        POSModel("en-pos-maxent"),
-        person("en-ner-person"),
-        organization("en-ner-organization"),
-        location("en-ner-location");
+        SentenceModel("-sent"),
+        ChunkModel("-chunker"),
+        TokenizerModel("-token"),
+        POSModel("-pos-maxent"),
+        person("-ner-person"),
+        organization("-ner-organization"),
+        location("-ner-location");
 
         private final String name; // filename
         OpenNlpModels(String fname) {
