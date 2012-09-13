@@ -18,13 +18,11 @@ package org.dbpedia.spotlight.util
 
 import org.apache.commons.logging.LogFactory
 import scala.collection.JavaConversions._
-import java.io.File
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.disambiguate.{DefaultDisambiguator, Disambiguator}
 import org.dbpedia.spotlight.string.ParseSurfaceFormText
 import org.dbpedia.spotlight.sparql.SparqlQueryExecuter
 import org.dbpedia.spotlight.exceptions.InputException
-import java.net.URLEncoder
 
 @deprecated("please use org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters")
 class AnnotationFilter(val config: SpotlightConfiguration)
@@ -254,7 +252,7 @@ class AnnotationFilter(val config: SpotlightConfiguration)
 //        val plainText = scala.io.Source.fromFile(inputFile).mkString
         val plainText = "Presidents [[Obama]], [[Jim Bacon]] called political philosophy a [[Jackson]], arguing that the policy provides more generous assistance. bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla bla "
 
-        var config = new SpotlightConfiguration("conf/server.properties");
+        var config = SpotlightConfiguration.getInstance("conf/server.properties");
 
         val factory = new SpotlightFactory(config);
         val disambiguator : Disambiguator = new DefaultDisambiguator(factory.contextSearcher)

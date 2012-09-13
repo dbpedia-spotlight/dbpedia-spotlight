@@ -40,7 +40,7 @@ object EvaluateTagExtraction
 {
     private val LOG = LogFactory.getLog(this.getClass)
 
-    val configuration = new SpotlightConfiguration("conf/eval.properties");
+    val configuration = SpotlightConfiguration.getInstance("conf/eval.properties");
 //    val confidence = 0.0;
 //    val support = 0;
     val factory = new SpotlightFactory(configuration)

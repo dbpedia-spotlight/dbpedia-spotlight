@@ -41,10 +41,9 @@ import org.dbpedia.spotlight.model.{SpotlightConfiguration, SurfaceForm}
 import java.util.Scanner
 import org.semanticweb.yars.nx.parser.NxParser
 import org.dbpedia.spotlight.string.ModifiedWikiUtil
-import org.semanticweb.yars.nx.{Node, Literal, Resource, Triple}
+import org.semanticweb.yars.nx.{Literal, Resource, Triple}
 import collection.JavaConversions._
 import util.matching.Regex
-import java.net.URI
 
 /**
  * Functions to create Concept URIs (possible targets of disambiguations)
@@ -400,6 +399,12 @@ object ExtractCandidateMap
         val indexingConfigFileName = args(0)
         val config = new IndexingConfiguration(indexingConfigFileName)
 
+        //Initializing SpotlightConfiguration to support i18n
+        //This isn't the best approach.... Is possible to have an unique class and properties file(index and server)?
+        SpotlightConfiguration.getInstance(indexingConfigFileName);
+
+
+
         val language = config.getLanguage().toLowerCase
 
         // DBpedia input
@@ -414,8 +419,6 @@ object ExtractCandidateMap
 
         maximumSurfaceFormLength = config.get("org.dbpedia.spotlight.data.maxSurfaceFormLength").toInt
 
-        //DBpedia config
-        SpotlightConfiguration.DEFAULT_NAMESPACE=config.get("org.dbpedia.spotlight.default_namespace",SpotlightConfiguration.DEFAULT_NAMESPACE)
 
 
         //Bad URIs -- will exclude any URIs that match these patterns. Used for Lists, disambiguations, etc.
@@ -424,7 +427,10 @@ object ExtractCandidateMap
 
         //Stopwords (bad surface forms)
         val stopWordsFileName = config.get("org.dbpedia.spotlight.data.stopWords."+language)
+
+
         val stopWords = Source.fromFile(stopWordsFileName, "UTF-8").getLines.toSet
+
 
         // get concept URIs
         saveConceptURIs

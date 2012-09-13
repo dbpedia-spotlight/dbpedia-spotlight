@@ -18,8 +18,6 @@ package org.dbpedia.spotlight.filter.annotations
 
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
 import org.apache.commons.logging.LogFactory
-import org.dbpedia.spotlight.exceptions.InputException
-import org.dbpedia.spotlight.filter.annotations.AnnotationFilter
 import org.dbpedia.spotlight.filter.Filter
 
 class PercentageOfSecondFilter(val confidence : Double) extends AnnotationFilter with Filter {

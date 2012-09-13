@@ -25,7 +25,7 @@ object ExtractTags {
         OutputSerializer.tagsAsXml(text,values)
     }
 
-    val configuration: SpotlightConfiguration = new SpotlightConfiguration("conf/eval.properties")
+    val configuration: SpotlightConfiguration = SpotlightConfiguration.getInstance("conf/eval.properties")
     val contextIndexDir = LuceneManager.pickDirectory(new File(configuration.getContextIndexDirectory))
     //val contextLuceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(contextIndexDir) // use this if all surface forms in the index are lower-cased
     val contextLuceneManager = new LuceneManager.PhoneticSurfaceForms(contextIndexDir) // use this for searches that use phonetic values of strings

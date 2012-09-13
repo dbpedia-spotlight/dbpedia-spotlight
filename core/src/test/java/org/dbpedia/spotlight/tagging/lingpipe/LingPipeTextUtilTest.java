@@ -1,8 +1,8 @@
 package org.dbpedia.spotlight.tagging.lingpipe;
 
 import junit.framework.TestCase;
-import org.dbpedia.spotlight.model.SpotlightFactory;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
+import org.dbpedia.spotlight.model.SpotlightFactory;
 import org.dbpedia.spotlight.tagging.TextUtil;
 
 /**
@@ -26,7 +26,7 @@ public class LingPipeTextUtilTest extends TestCase {
     public void setUp() throws Exception {
         super.setUp();
 
-		SpotlightFactory luceneFactory = new SpotlightFactory(new SpotlightConfiguration("conf/server.properties"));
+		SpotlightFactory luceneFactory = new SpotlightFactory(SpotlightConfiguration.getInstance("conf/server.properties"));
 		textUtil = luceneFactory.textUtil();
     }
 

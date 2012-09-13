@@ -26,7 +26,6 @@ import org.dbpedia.spotlight.exceptions.InitializationException;
 import org.dbpedia.spotlight.exceptions.SpottingException;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.Text;
-import org.dbpedia.spotlight.spot.OpenNLPUtil;
 import org.dbpedia.spotlight.spot.Spotter;
 import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter;
 import org.dbpedia.spotlight.spot.opennlp.ExactSurfaceFormDictionary;
@@ -61,7 +60,7 @@ public class SpotterMemoryEvaluator {
            return;
         }
 
-        SpotlightConfiguration configuration = new SpotlightConfiguration(args[0]);
+        SpotlightConfiguration configuration = SpotlightConfiguration.getInstance(args[0]);
 
 
         int spotterNr = 0;

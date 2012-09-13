@@ -19,6 +19,7 @@ package org.dbpedia.spotlight.util
 import io.Source
 import java.io.{PrintStream, File}
 import org.dbpedia.spotlight.string.ModifiedWikiUtil
+import org.dbpedia.spotlight.model.SpotlightConfiguration
 
 /**
  * Created by IntelliJ IDEA.
@@ -33,17 +34,17 @@ object CreateLexicalizations {
     val MIN_PAIR_COUNT = 5
 
 
-    val scoresNamedGraph = "<http://dbepdia.org/spotlight/score>"
+    val scoresNamedGraph = "<" + SpotlightConfiguration.getInstance("").getSparqlMainGraph + "/spotlight/score>"
 
-    val namedGraphPrefix = "<http://dbepdia.org/spotlight/id/"
+    val namedGraphPrefix = "<" + SpotlightConfiguration.getInstance("").getSparqlMainGraph + "/spotlight/id/"
 
-    val pmiScoreRelation            = "<http://dbpedia.org/spotlight/score#pmi>"
-    val sfGivenUriScoreRelation     = "<http://dbpedia.org/spotlight/score#sfGivenUri>"
-    val uriGivenSfScoreRelation     = "<http://dbpedia.org/spotlight/score#uriGivenSf>"
-    val uriProbabilityScoreRelation = "<http://dbpedia.org/spotlight/score#uriProbability>"
-    val uriCountScoreRelation       = "<http://dbpedia.org/spotlight/score#uriCount>"
+    val pmiScoreRelation            = "<" + SpotlightConfiguration.getInstance("").getSparqlMainGraph + "/spotlight/score#pmi>"
+    val sfGivenUriScoreRelation     = "<" + SpotlightConfiguration.getInstance("").getSparqlMainGraph + "/spotlight/score#sfGivenUri>"
+    val uriGivenSfScoreRelation     = "<" + SpotlightConfiguration.getInstance("").getSparqlMainGraph + "/spotlight/score#uriGivenSf>"
+    val uriProbabilityScoreRelation = "<" + SpotlightConfiguration.getInstance("").getSparqlMainGraph + "/spotlight/score#uriProbability>"
+    val uriCountScoreRelation       = "<" + SpotlightConfiguration.getInstance("").getSparqlMainGraph + "/spotlight/score#uriCount>"
 
-    val resourcePrefix = "<http://dbpedia.org/resource/"
+    val resourcePrefix = "<" + SpotlightConfiguration.getInstance("").getDefaultNamespace
     val lexvoLabelRelation = "<http://lexvo.org/ontology#label>"
 
 

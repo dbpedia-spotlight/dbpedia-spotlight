@@ -115,7 +115,7 @@ class IndexingConfiguration(val configFile: File) {
 
         val stopwordsFile = new File(get("org.dbpedia.spotlight.data.stopWords."+language.toLowerCase))
         if(!stopwordsFile.isFile) {
-            throw new ConfigurationException("specified stop words file not found: "+stopwordsFile)
+            //throw new ConfigurationException("specified stop words file not found: "+stopwordsFile)
         }
 
         val analyzerName = get("org.dbpedia.spotlight.lucene.analyzer")

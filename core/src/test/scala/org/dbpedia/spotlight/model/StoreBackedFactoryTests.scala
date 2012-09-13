@@ -29,7 +29,7 @@ import org.dbpedia.spotlight.exceptions.ItemNotFoundException
 
 class StoreBackedFactoryTests {
 
-    val configuration: SpotlightConfiguration = new SpotlightConfiguration("conf/server.properties")
+    val configuration: SpotlightConfiguration = SpotlightConfiguration.getInstance("conf/server.properties")
     val spotlightFactory: SpotlightFactory = new SpotlightFactory(configuration)
 
     @Test

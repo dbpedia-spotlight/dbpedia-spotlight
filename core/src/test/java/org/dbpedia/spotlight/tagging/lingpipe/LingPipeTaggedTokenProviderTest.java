@@ -39,7 +39,7 @@ public class LingPipeTaggedTokenProviderTest extends TestCase {
 	public void setUp() throws Exception {
 		super.setUp();
 
-		SpotlightConfiguration configuration = new SpotlightConfiguration("conf/dev.properties");
+		SpotlightConfiguration configuration = SpotlightConfiguration.getInstance("conf/dev.properties");
         LingPipeFactory lingPipeFactory = new LingPipeFactory(new File(configuration.getTaggerFile()), new IndoEuropeanSentenceModel());
 
 		lingPipeTaggedTokenProvider1 = new LingPipeTaggedTokenProvider(lingPipeFactory);

@@ -40,7 +40,10 @@ import org.dbpedia.spotlight.spot.opennlp.SurfaceFormDictionary;
 import org.dbpedia.spotlight.tagging.lingpipe.LingPipeFactory;
 import org.dbpedia.spotlight.tagging.lingpipe.LingPipeTaggedTokenProvider;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.util.*;
 
 
@@ -57,7 +60,7 @@ public class SpotterEvaluatorPrecisionRecall {
 	public static void main(String[] args) throws IOException, JSONException, ConfigurationException, InitializationException, org.json.JSONException {
 
 
-		SpotlightConfiguration configuration = new SpotlightConfiguration("conf/dev.properties");
+		SpotlightConfiguration configuration = SpotlightConfiguration.getInstance("conf/dev.properties");
 
         LingPipeFactory lingPipeFactory = new LingPipeFactory(new File(configuration.getTaggerFile()), new IndoEuropeanSentenceModel());
 
@@ -205,7 +208,7 @@ public class SpotterEvaluatorPrecisionRecall {
         /**
          * NER
          */
-        Spotter neSpotter = new NESpotter(configuration.getSpotterConfiguration().getOpenNLPModelDir());
+        Spotter neSpotter = new NESpotter(configuration.getSpotterConfiguration().getOpenNLPModelDir(), configuration.getSparqlMainGraph());
         neSpotter.setName("\\ner                           ");
         latexTable.append(getLatexTableRow(neSpotter, documents, goldSurfaceFormOccurrences,baseResult));
 

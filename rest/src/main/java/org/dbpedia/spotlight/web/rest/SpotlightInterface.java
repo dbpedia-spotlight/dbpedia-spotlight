@@ -18,11 +18,10 @@
 
 package org.dbpedia.spotlight.web.rest;
 
-import de.l3s.boilerpipe.BoilerpipeProcessingException;
-import de.l3s.boilerpipe.extractors.ArticleExtractor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ;
+import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.exceptions.SpottingException;
@@ -31,8 +30,6 @@ import org.dbpedia.spotlight.filter.annotations.PercentageOfSecondFilter;
 import org.dbpedia.spotlight.model.*;
 import org.dbpedia.spotlight.spot.Spotter;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,11 +46,21 @@ public class SpotlightInterface  {
     // Name of the REST api so that we can announce it in the log (can be disambiguate, annotate, candidates)
     String apiName;
 
-    private OutputManager outputManager = new OutputManager();
+    private OutputManager outputManager;
 
     public SpotlightInterface(String apiName) {
         this.apiName = apiName;
+
+        try {
+            // At this point, the configFileName is blank because I have loaded
+            // SpotlightConfiguration on Server startup
+            outputManager =  new OutputManager(SpotlightConfiguration.getInstance(""));
+        } catch (ConfigurationException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
+
 
     public List<DBpediaResourceOccurrence> disambiguate(List<SurfaceFormOccurrence> spots, ParagraphDisambiguatorJ disambiguator) throws SearchException, InputException, SpottingException {
         List<DBpediaResourceOccurrence> resources = new ArrayList<DBpediaResourceOccurrence>();

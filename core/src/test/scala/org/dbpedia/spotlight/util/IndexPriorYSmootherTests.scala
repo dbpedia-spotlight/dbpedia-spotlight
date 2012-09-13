@@ -32,7 +32,7 @@ import org.dbpedia.spotlight.model.{SpotlightConfiguration, DBpediaResource}
 
 class IndexPriorYSmootherTests {
 
-    val extractor = new KeywordExtractor(new SpotlightConfiguration("conf/eval.properties"))
+    val extractor = new KeywordExtractor(SpotlightConfiguration.getInstance("conf/eval.properties"))
 
     @Test
     def uriToKeywords {

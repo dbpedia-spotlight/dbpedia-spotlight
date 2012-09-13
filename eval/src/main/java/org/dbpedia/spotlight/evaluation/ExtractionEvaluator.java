@@ -37,7 +37,7 @@ public class ExtractionEvaluator {
 
 	public static void main(String[] args) throws IOException, ConfigurationException, JSONException, InputException, CacheException {
 
-		SpotlightConfiguration configuration = new SpotlightConfiguration("conf/server.properties");
+		SpotlightConfiguration configuration = SpotlightConfiguration.getInstance("conf/server.properties");
 		SpotlightFactory spotlightFactory = new SpotlightFactory(configuration);
 
 		AnnotatedDataset evaluationCorpus =
