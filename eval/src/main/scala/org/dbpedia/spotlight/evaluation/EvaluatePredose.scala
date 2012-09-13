@@ -2,9 +2,9 @@ package org.dbpedia.spotlight.evaluation
 
 import org.dbpedia.spotlight.model.{DBpediaResourceOccurrence, SpotlightFactory, SpotlightConfiguration}
 import org.dbpedia.spotlight.disambiguate.TwoStepDisambiguator
-import org.dbpedia.spotlight.corpus.PredoseCorpus
+import org.dbpedia.spotlight.corpus.{PredoseCorpus}
 import java.io.{PrintWriter, File}
-import org.dbpedia.spotlight.filter.occurrences.{RedirectResolveFilter, OccurrenceFilter}
+import org.dbpedia.spotlight.filter.occurrences.{RedirectResolveFilter, UriWhitelistFilter, OccurrenceFilter}
 import org.dbpedia.spotlight.io.TSVOutputGenerator
 
 /**
@@ -16,7 +16,7 @@ class EvaluatePredose {
 
     def main(args : Array[String]) {
 
-        val config = SpotlightConfiguration.getInstance("conf/predose.properties");
+        val config = new SpotlightConfiguration("conf/predose.properties");
         val factory = new SpotlightFactory(config)
 
         //val topics = HashMapTopicalPriorStore.fromDir(new File("data/topics"))

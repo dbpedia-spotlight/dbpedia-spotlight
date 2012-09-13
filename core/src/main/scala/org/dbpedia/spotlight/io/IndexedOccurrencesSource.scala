@@ -4,7 +4,10 @@ import org.apache.lucene.document.Document
 import org.dbpedia.spotlight.lucene.LuceneManager
 import java.io.File
 import org.dbpedia.spotlight.model._
+import org.junit.Test
 import org.apache.lucene.store.Directory
+import org.apache.lucene.search.Similarity
+import org.dbpedia.spotlight.lucene.similarity.{JCSTermCache, CachedInvCandFreqSimilarity}
 import org.dbpedia.spotlight.lucene.search.{BaseSearcher, MergedOccurrencesContextSearcher}
 
 /**
@@ -21,7 +24,7 @@ import org.dbpedia.spotlight.lucene.search.{BaseSearcher, MergedOccurrencesConte
 object IndexedOccurrencesSource {
 
     def fromConfigFile(configFile : File) : OccurrenceSource = {
-        val factory = new SpotlightFactory(SpotlightConfiguration.getInstance(configFile.getAbsolutePath))
+        val factory = new SpotlightFactory(new SpotlightConfiguration(configFile.getAbsolutePath))
         new IndexedOccurrencesSource(factory.contextSearcher)
     }
 

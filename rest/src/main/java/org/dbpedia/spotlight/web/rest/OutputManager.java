@@ -52,9 +52,6 @@ import java.util.Map;
  */
 public class OutputManager {
 
-
-    private SpotlightConfiguration configuration = null;
-
     private TransformerHandler initXMLDoc(ByteArrayOutputStream out) throws SAXException, TransformerConfigurationException {
         StreamResult streamResult = new StreamResult(out);
         SAXTransformerFactory tf = (SAXTransformerFactory) SAXTransformerFactory.newInstance();
@@ -67,12 +64,6 @@ public class OutputManager {
         hd.setResult(streamResult);
         hd.startDocument();
         return hd;
-    }
-
-
-    public OutputManager(SpotlightConfiguration configuration)
-    {
-        this.configuration = configuration;
     }
 
     private String getText(String t, List<DBpediaResourceOccurrence> occList) {  //WTF?
@@ -127,7 +118,7 @@ public class OutputManager {
                 hd.startElement("","","Resources",atts);
             }
 
-            atts.addAttribute("","","URI","CDATA", configuration.getDefaultNamespace() +occ.resource().uri());
+            atts.addAttribute("","","URI","CDATA", SpotlightConfiguration.DEFAULT_NAMESPACE+occ.resource().uri());
             atts.addAttribute("","","support","CDATA",String.valueOf(occ.resource().support()));
             atts.addAttribute("","","types","CDATA",(occ.resource().types()).mkString(","));
             // support and types should go to resource

@@ -10,7 +10,7 @@ import org.junit.Test
 class DBpediaResourceFactoryTests {
 
 
-  val configuration: SpotlightConfiguration = SpotlightConfiguration.getInstance("conf/server.properties")
+  val configuration: SpotlightConfiguration = new SpotlightConfiguration("conf/server.properties")
   val factory: SpotlightFactory = new SpotlightFactory(configuration)
 
   //val dbpediaResourceFactory = new DBpediaResourceFactoryLucene(spotlightFactory.luceneManager, spotlightFactory.searcher)

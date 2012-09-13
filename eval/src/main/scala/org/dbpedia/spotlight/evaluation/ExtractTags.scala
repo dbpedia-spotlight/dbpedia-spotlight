@@ -20,7 +20,7 @@ object ExtractTags {
     val LOG = LogFactory.getLog(this.getClass)
 
     def main(args: Array[String]) {
-        val configuration = SpotlightConfiguration.getInstance(args(0))
+        val configuration = new SpotlightConfiguration(args(0))
 //        val baseDir = args(1)
 //        val nTags = if (args.size > 2) args(2) else 100
 

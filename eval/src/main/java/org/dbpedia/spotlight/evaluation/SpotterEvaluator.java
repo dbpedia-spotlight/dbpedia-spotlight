@@ -48,7 +48,7 @@ public class SpotterEvaluator {
 
 	public static void main(String[] args) throws IOException, ConfigurationException, JSONException, InitializationException, SpottingException, org.json.JSONException {
 
-		SpotlightConfiguration configuration = SpotlightConfiguration.getInstance("conf/server.properties");
+		SpotlightConfiguration configuration = new SpotlightConfiguration("conf/server.properties");
 
         LingPipeFactory lingPipeFactory = new LingPipeFactory(new File(configuration.getTaggerFile()), new IndoEuropeanSentenceModel());
 

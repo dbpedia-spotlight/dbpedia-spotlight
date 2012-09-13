@@ -26,7 +26,7 @@ object GetDBpediaResourceCandidates {
         val surfaceFormSetFile = args(1)
         val uriSetFile = surfaceFormSetFile+".uris"
 
-        val configuration = SpotlightConfiguration.getInstance(spotlightConfigFileName);
+        val configuration = new SpotlightConfiguration(spotlightConfigFileName);
 
         val factory = new SpotlightFactory(configuration)
         val searcher = factory.contextSearcher

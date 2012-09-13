@@ -18,25 +18,31 @@
 
 package org.dbpedia.spotlight.model
 
+import org.apache.lucene.util.Version
+import org.apache.lucene.analysis.{StopAnalyzer, Analyzer}
 import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.exceptions.ConfigurationException
+import org.apache.lucene.store.Directory
 import org.dbpedia.spotlight.lucene.LuceneManager
+import org.apache.lucene.search.Similarity
 import org.dbpedia.spotlight.lucene.similarity.{JCSTermCache, CachedInvCandFreqSimilarity}
 import com.aliasi.sentences.IndoEuropeanSentenceModel
 import org.dbpedia.spotlight.disambiguate._
 import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter
 import java.io.File
 import org.dbpedia.spotlight.spot._
-import opennlp.{ProbabilisticSurfaceFormDictionary, OpenNLPChunkerSpotter}
+import opennlp.{SurfaceFormDictionary, ProbabilisticSurfaceFormDictionary, OpenNLPChunkerSpotter}
 import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters
 import org.dbpedia.spotlight.tagging.lingpipe.{LingPipeTextUtil, LingPipeTaggedTokenProvider, LingPipeFactory}
 import collection.JavaConversions._
-import org.dbpedia.spotlight.annotate.DefaultAnnotator
+import org.dbpedia.spotlight.annotate.{DefaultAnnotator, DefaultParagraphAnnotator}
 import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy
 import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy
 import org.dbpedia.spotlight.lucene.search.{LuceneCandidateSearcher, MergedOccurrencesContextSearcher}
 import com.aliasi.util.AbstractExternalizable
-import com.aliasi.dict.Dictionary
+import com.aliasi.dict.{DictionaryEntry, Dictionary}
+import java.util
 
 /**
  * This class contains many of the "defaults" for DBpedia Spotlight.
@@ -106,7 +112,7 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
         } else if (policy == SpotterConfiguration.SpotterPolicy.CoOccurrenceBasedSelector) {
             spotters.getOrElse(policy, SpotterWithSelector.getInstance(spotter(SpotterConfiguration.SpotterPolicy.LingPipeSpotter),new CoOccurrenceBasedSelector(configuration.getSpotterConfiguration, taggedTokenProvider()), taggedTokenProvider()))
         } else if (policy == SpotterConfiguration.SpotterPolicy.NESpotter) {
-            spotters.getOrElse(policy, new NESpotter(configuration.getSpotterConfiguration.getOpenNLPModelDir, configuration.getSparqlMainGraph))
+            spotters.getOrElse(policy, new NESpotter(configuration.getSpotterConfiguration.getOpenNLPModelDir))
         } else if (policy == SpotterConfiguration.SpotterPolicy.KeyphraseSpotter) {
             spotters.getOrElse(policy, new KeaSpotter(configuration.getSpotterConfiguration.getKeaModel, configuration.getSpotterConfiguration.getKeaMaxNumberOfPhrases, configuration.getSpotterConfiguration.getKeaCutoff))
         } else if (policy == SpotterConfiguration.SpotterPolicy.OpenNLPChunkerSpotter) {

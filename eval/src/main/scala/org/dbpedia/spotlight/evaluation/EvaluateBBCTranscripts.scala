@@ -21,10 +21,14 @@ package org.dbpedia.spotlight.evaluation
 import org.apache.commons.logging.LogFactory
 import scala.io.Source
 import org.dbpedia.spotlight.util.AnnotationFilter
+import org.dbpedia.spotlight.string.WikiLinkParser
+import scala.collection.JavaConversions._
 import java.io.{PrintStream, File}
 import org.dbpedia.spotlight.model._
+import org.dbpedia.spotlight.annotate.DefaultParagraphAnnotator
 import org.dbpedia.spotlight.disambiguate.{ParagraphDisambiguatorJ, TwoStepDisambiguator}
-import org.dbpedia.spotlight.extract.LuceneTagExtractor
+import org.dbpedia.spotlight.extract.{LuceneTagExtractor, TagExtractorFromAnnotator}
+import javax.swing.filechooser.FileNameExtensionFilter
 import org.dbpedia.spotlight.model.Factory.OntologyType
 import scala._
 
@@ -40,7 +44,7 @@ object EvaluateBBCTranscripts {
 
     private val LOG = LogFactory.getLog(this.getClass)
 
-    val configuration = SpotlightConfiguration.getInstance("conf/bbc.properties");
+    val configuration = new SpotlightConfiguration("conf/bbc.properties");
     //    val confidence = 0.0;
     //    val support = 0;
     val factory = new SpotlightFactory(configuration)

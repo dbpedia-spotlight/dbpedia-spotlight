@@ -41,7 +41,7 @@ object ExtractTopicSignatures {
         val stopwordsFile = args(2)           // set of words to exclude from the topic signature
         val nKeywords = args(3).toInt         // number of keywords to include in the topic signature
 
-        val sConfig = SpotlightConfiguration.getInstance(spotlightConfigFileName);
+        val sConfig = new SpotlightConfiguration(spotlightConfigFileName);
         val extractor = new KeywordExtractor(sConfig, nKeywords)
         val signatures = new PrintWriter(uriSetFile+".topicsig")
         val uriSet = Source.fromFile(uriSetFile).getLines

@@ -5,20 +5,21 @@ import au.com.bytecode.opencsv.CSVWriter;
 import com.aliasi.sentences.IndoEuropeanSentenceModel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.InputException;
-import org.dbpedia.spotlight.model.*;
 import org.dbpedia.spotlight.spot.cooccurrence.classification.SpotClass;
 import org.dbpedia.spotlight.spot.cooccurrence.filter.Filter;
+import org.dbpedia.spotlight.exceptions.ConfigurationException;
+import org.dbpedia.spotlight.model.*;
 import org.dbpedia.spotlight.tagging.lingpipe.LingPipeFactory;
 import org.dbpedia.spotlight.tagging.lingpipe.LingPipeTaggedTokenProvider;
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -424,7 +425,7 @@ public class AnnotatedDataset {
             throw new InputException("Error in parameters provided in command line.",e);
         }
 
-        SpotlightConfiguration configuration = SpotlightConfiguration.getInstance(configFile);
+        SpotlightConfiguration configuration = new SpotlightConfiguration(configFile);
         LingPipeFactory lingPipeFactory = new LingPipeFactory(new File(configuration.getTaggerFile()), new IndoEuropeanSentenceModel());
         LOG.info("Reading gold standard.");
 

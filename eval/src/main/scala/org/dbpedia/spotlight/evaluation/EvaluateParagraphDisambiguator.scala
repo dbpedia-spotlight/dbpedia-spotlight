@@ -21,8 +21,9 @@ import org.dbpedia.spotlight.io._
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.disambiguate._
 import java.io.{PrintWriter, File}
-import org.dbpedia.spotlight.corpus.{PredoseCorpus, AidaCorpus}
+import org.dbpedia.spotlight.corpus.{PredoseCorpus, MilneWittenCorpus, AidaCorpus}
 
+import scalaj.collection.Imports._
 
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.filter.occurrences.{UriWhitelistFilter, RedirectResolveFilter, OccurrenceFilter}
@@ -115,7 +116,7 @@ object EvaluateParagraphDisambiguator {
 
     def main(args : Array[String]) {
         //val indexDir: String = args(0)  //"e:\\dbpa\\data\\index\\index-that-works\\Index.wikipediaTraining.Merged."
-        val config = SpotlightConfiguration.getInstance(args(0));
+        val config = new SpotlightConfiguration(args(0));
 
         //val testFileName: String = args(1)  //"e:\\dbpa\\data\\index\\dbpedia36data\\test\\test100k.tsv"
         //val paragraphs = AnnotatedTextSource

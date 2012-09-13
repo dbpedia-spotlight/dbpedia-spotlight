@@ -40,13 +40,19 @@ import java.util.*;
  */
 public class SpotlightConfiguration {
 
-
-    private static volatile SpotlightConfiguration instance = null;
-
-    private String defaultNamespace= "http://dbpedia.org/resource/";
-    private String defaultOntology="http://dbpedia.org/ontology/";;
-    private String defaultLanguageI18NCode = "en";
-
+    private static Log LOG = LogFactory.getLog(SpotlightConfiguration.class);
+    //TODO could get all of these from configuration file
+    public final static String DEFAULT_TEXT = "";
+    public final static String DEFAULT_URL = "";
+    public final static String DEFAULT_CONFIDENCE = "0.1";
+    public final static String DEFAULT_SUPPORT = "10";
+    public final static String DEFAULT_TYPES = "";
+    public final static String DEFAULT_SPARQL = "";
+    public final static String DEFAULT_POLICY = "whitelist";
+    public final static String DEFAULT_COREFERENCE_RESOLUTION = "true";
+    public static String DEFAULT_NAMESPACE = "http://dbpedia.org/resource/";
+    public static String DEFAULT_ONTOLOGY_PREFIX = "http://dbpedia.org/ontology/";
+    public static String DEFAULT_LANGUAGE_I18N_CODE = "en";
 
     public enum DisambiguationPolicy {Document, Occurrences, CuttingEdge, Default}
 
@@ -78,63 +84,6 @@ public class SpotlightConfiguration {
             "they", "this", "to", "was", "will", "with"
     )); // copied from StopAnalyzer
 
-    Analyzer analyzer = null;
-    DBpediaResourceFactory dbpediaResourceFactory = null;
-
-    /**
-     * The Spotter configuration is read with the SpotlightConfiguration.
-     * However, to make the configuration more modular and readable, the
-     * configuration for Spotter and spot selection are stored in this object.
-     */
-    protected SpotterConfiguration spotterConfiguration;
-
-    /**
-     * SpotlightConfiguration singleton
-     * @param configFileName
-     * @return an instance of SpotlightConfiguration
-     * @throws ConfigurationException
-     */
-    public static SpotlightConfiguration getInstance(String configFileName) throws ConfigurationException {
-        if (instance == null) {
-            if (instance == null) {
-                instance = new SpotlightConfiguration(configFileName);
-            }
-        }
-        return instance;
-    }
-
-
-    private static Log LOG = LogFactory.getLog(SpotlightConfiguration.class);
-    //TODO could get all of these from configuration file
-
-    public final static String DEFAULT_TEXT = "";
-    public final static String DEFAULT_URL = "";
-    public final static String DEFAULT_CONFIDENCE = "0.1";
-    public final static String DEFAULT_SUPPORT = "10";
-    public final static String DEFAULT_TYPES = "";
-    public final static String DEFAULT_SPARQL = "";
-    public final static String DEFAULT_POLICY = "whitelist";
-    public final static String DEFAULT_COREFERENCE_RESOLUTION = "true";
-    @Deprecated
-    public static String DEFAULT_NAMESPACE = "http://dbpedia.org/resource/";
-    @Deprecated
-    public static String DEFAULT_ONTOLOGY_PREFIX = "http://dbpedia.org/ontology/";
-    @Deprecated
-    public static String DEFAULT_LANGUAGE_I18N_CODE = "en";
-
-    public String getDefaultNamespace() {
-        return defaultNamespace;
-    }
-
-
-    public String getDefaultOntology() {
-        return defaultOntology;
-    }
-
-
-    public String getDefaultLanguageI18NCode() {
-        return defaultLanguageI18NCode;
-    }
 
     public String getServerURI() {
         return serverURI;
@@ -172,7 +121,7 @@ public class SpotlightConfiguration {
         return maxCacheSize;
     }
 
-
+    DBpediaResourceFactory dbpediaResourceFactory = null;
 
     public DBpediaResourceFactory getDBpediaResourceFactory() {
         return dbpediaResourceFactory;
@@ -181,6 +130,16 @@ public class SpotlightConfiguration {
     public void createDBpediaResourceFactory(String driver, String connector, String user, String password) {
         dbpediaResourceFactory = new DBpediaResourceFactorySQL(driver, connector, user, password);
     }
+
+    Analyzer analyzer = null;
+
+    /**
+     * The Spotter configuration is read with the SpotlightConfiguration.
+     * However, to make the configuration more modular and readable, the
+     * configuration for Spotter and spot selection are stored in this object.
+     */
+    protected SpotterConfiguration spotterConfiguration;
+
 
     public SpotterConfiguration getSpotterConfiguration() {
         return spotterConfiguration;
@@ -196,7 +155,7 @@ public class SpotlightConfiguration {
         return analyzer;
     }
 
-    private SpotlightConfiguration(String fileName) throws ConfigurationException {
+    public SpotlightConfiguration(String fileName) throws ConfigurationException {
 
         //read config properties
         Properties config = new Properties();
@@ -209,13 +168,6 @@ public class SpotlightConfiguration {
         DEFAULT_NAMESPACE = config.getProperty("org.dbpedia.spotlight.default_namespace", DEFAULT_NAMESPACE);
         DEFAULT_ONTOLOGY_PREFIX = config.getProperty("org.dbpedia.spotlight.default_ontology", DEFAULT_ONTOLOGY_PREFIX);
         DEFAULT_LANGUAGE_I18N_CODE = config.getProperty("org.dbpedia.spotlight.language_i18n_code", DEFAULT_LANGUAGE_I18N_CODE);
-
-
-        defaultNamespace = config.getProperty("org.dbpedia.spotlight.default_namespace", defaultNamespace);
-        defaultOntology=config.getProperty("org.dbpedia.spotlight.default_ontology", defaultNamespace);
-        defaultLanguageI18NCode = config.getProperty("org.dbpedia.spotlight.language_i18n_code", defaultNamespace);
-
-
 
         //Read the spotter configuration from the properties file
         spotterConfiguration = new SpotterConfiguration(fileName);

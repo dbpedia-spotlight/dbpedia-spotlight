@@ -4,8 +4,8 @@ import junit.framework.TestCase;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.InitializationException;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
-import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SpotlightFactory;
+import org.dbpedia.spotlight.model.SpotlightConfiguration;
 
 import java.util.Arrays;
 import java.util.List;
@@ -23,7 +23,7 @@ public class OccurrenceDataProviderSQLTest extends TestCase {
 
 	public OccurrenceDataProviderSQLTest(String name) throws InitializationException, ConfigurationException {
         super(name);
-        SpotlightConfiguration config = SpotlightConfiguration.getInstance("conf/server.properties");
+        SpotlightConfiguration config = new SpotlightConfiguration("conf/server.properties");
 		SpotlightFactory luceneFactory = new SpotlightFactory(config);
 
 

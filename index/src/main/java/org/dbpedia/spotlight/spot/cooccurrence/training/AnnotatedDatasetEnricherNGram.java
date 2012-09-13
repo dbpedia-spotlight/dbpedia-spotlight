@@ -1,13 +1,13 @@
 package org.dbpedia.spotlight.spot.cooccurrence.training;
 
-import org.dbpedia.spotlight.exceptions.ConfigurationException;
-import org.dbpedia.spotlight.exceptions.InitializationException;
-import org.dbpedia.spotlight.model.SpotlightConfiguration;
-import org.dbpedia.spotlight.model.SpotlightFactory;
 import org.dbpedia.spotlight.spot.cooccurrence.InstanceBuilderFactory;
 import org.dbpedia.spotlight.spot.cooccurrence.features.data.OccurrenceDataProviderSQL;
 import org.dbpedia.spotlight.spot.cooccurrence.filter.FilterPattern;
 import org.dbpedia.spotlight.spot.cooccurrence.filter.FilterTermsize;
+import org.dbpedia.spotlight.exceptions.ConfigurationException;
+import org.dbpedia.spotlight.exceptions.InitializationException;
+import org.dbpedia.spotlight.model.SpotlightConfiguration;
+import org.dbpedia.spotlight.model.SpotlightFactory;
 import org.json.JSONException;
 import weka.core.Instances;
 
@@ -59,7 +59,7 @@ public class AnnotatedDatasetEnricherNGram extends AnnotatedDatasetEnricher {
 	
 	public static void main(String[] args) throws ConfigurationException, IOException, JSONException, InitializationException {
 
-		SpotlightConfiguration configuration = SpotlightConfiguration.getInstance("conf/server.properties");
+		SpotlightConfiguration configuration = new SpotlightConfiguration("conf/server.properties");
 
 
 		AnnotatedDatasetEnricherNGram annotatedDatasetEnricherNGram = new AnnotatedDatasetEnricherNGram(configuration);

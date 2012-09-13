@@ -1,13 +1,13 @@
 package org.dbpedia.spotlight.evaluation;
 
+import org.dbpedia.spotlight.exceptions.SpottingException;
+import org.dbpedia.spotlight.spot.CoOccurrenceBasedSelector;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.InitializationException;
-import org.dbpedia.spotlight.exceptions.SpottingException;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SpotlightFactory;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 import org.dbpedia.spotlight.model.Text;
-import org.dbpedia.spotlight.spot.CoOccurrenceBasedSelector;
 import org.dbpedia.spotlight.spot.Spotter;
 import org.dbpedia.spotlight.spot.SpotterWithSelector;
 import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter;
@@ -31,7 +31,7 @@ public class SpotterPerformanceEvaluator {
 
 	public static void main(String[] args) throws InitializationException, ConfigurationException, IOException, JSONException, SpottingException {
 
-		SpotlightConfiguration configuration = SpotlightConfiguration.getInstance("conf/server.properties");
+		SpotlightConfiguration configuration = new SpotlightConfiguration("conf/server.properties");
 		SpotlightFactory spotlightFactory = new SpotlightFactory(configuration);
 
 
