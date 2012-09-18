@@ -59,7 +59,7 @@ public class OpenNLPUtil {
         OpenNlpModels(String fname) {
             this.name = fname;
         }
-        public String filename()   { return name; }
+        public String filename()   { return name + ".bin"; }
         public File file()   { return new File(name); }
 
     }

@@ -23,14 +23,12 @@ import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.spot.CoOccurrenceBasedSelector;
 import org.dbpedia.spotlight.spot.NESpotter;
+import org.dbpedia.spotlight.spot.OpenNLPUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Configuration for Spotter and Spot Selection.
@@ -44,8 +42,12 @@ public class SpotterConfiguration {
 
     public final String PREFIX_COOCCURRENCE_SELECTOR = "org.dbpedia.spotlight.spot.cooccurrence.";
 
+    private final String PREFIX_OPENNLP = "org.dbpedia.spotlight.spot.opennlp.";
+
     Properties config = new Properties();
     protected String spotterFile    = "";
+
+    private Map<String, String> openNLPModelsURI = new HashMap<String, String>(3);
 
     public enum SpotterPolicy {Default,
         UserProvidedSpots,
@@ -132,9 +134,24 @@ public class SpotterConfiguration {
         if (spotters.contains(SpotterPolicy.NESpotter)) {
             if (!new File(getOpenNLPModelDir()).exists())
                 throw new ConfigurationException(String.format("OpenNLP model directory was not found. It is required by %s.", NESpotter.class));
+            setOpenNLPModelsURI();
         }
 
     }
+
+
+    private void setOpenNLPModelsURI()
+    {
+        openNLPModelsURI.put(OpenNLPUtil.OpenNlpModels.person.toString(), getOpenNLPPerson());
+        openNLPModelsURI.put(OpenNLPUtil.OpenNlpModels.organization.toString(), getOpenNLPOrganization() );
+        openNLPModelsURI.put(OpenNLPUtil.OpenNlpModels.location.toString(),getOpenNLPLocation() );
+    }
+
+    public Map<String, String> getOpenNLPModelsURI()
+    {
+        return openNLPModelsURI;
+    }
+
 
     public String getCoOcSelectorDatabaseDriver() {
         return config.getProperty(PREFIX_COOCCURRENCE_SELECTOR + "database.jdbcdriver");
@@ -169,8 +186,25 @@ public class SpotterConfiguration {
     }
 
     public String getOpenNLPModelDir() {
-        return config.getProperty("org.dbpedia.spotlight.spot.opennlp.dir");
+        return config.getProperty(PREFIX_OPENNLP + "dir");
     }
+
+    private String getOpenNLPPerson()
+    {
+        return config.getProperty(PREFIX_OPENNLP + "person", "http://dbpedia.org/ontology/Person");
+    }
+
+    private String getOpenNLPOrganization()
+    {
+        return config.getProperty(PREFIX_OPENNLP + "organization", "http://dbpedia.org/ontology/Organisation");
+    }
+
+
+    public String getOpenNLPLocation()
+    {
+        return config.getProperty(PREFIX_OPENNLP + "location", "http://dbpedia.org/ontology/Place");
+    }
+
 
     // /data/spotlight/3.7/kea/keaModel-1-3-1
     public String getKeaModel() {

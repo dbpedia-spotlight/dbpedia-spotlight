@@ -59,11 +59,12 @@ public class SpotlightConfiguration {
 
     public enum DisambiguationPolicy {Document, Occurrences, CuttingEdge, Default}
 
-    public String dbpediaResource="http://dbpedia.org/resource/";
+    private String dbpediaResource="http://dbpedia.org/resource/";
 
-    public String dbpediaOntology="http://dbpedia.org/ontology/";
+    private String dbpediaOntology="http://dbpedia.org/ontology/";
 
-    public String language;
+    private String language;
+
 
     public String getLanguage() {
         return language;
@@ -78,7 +79,7 @@ public class SpotlightConfiguration {
     }
 
 
-    public String i18nLanguageCode = "en";
+    private String i18nLanguageCode = "en";
 
 
     public String getI18nLanguageCode() {

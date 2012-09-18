@@ -62,20 +62,20 @@ public class NESpotter implements Spotter {
         }
     };
 
-    public NESpotter(String onlpModelDir, String i18nLanguageCode, String dbpediaSite) throws ConfigurationException {
+    public NESpotter(String onlpModelDir, String i18nLanguageCode, Map<String, String> openNLPModelsURI) throws ConfigurationException {
 
         try {
             if (NESpotter.sentenceModel == null) {
-                NESpotter.sentenceModel  = OpenNLPUtil.loadModel(onlpModelDir, i18nLanguageCode + "-sent.zip", OpenNLPUtil.OpenNlpModels.SentenceModel.toString());
+                NESpotter.sentenceModel  = OpenNLPUtil.loadModel(onlpModelDir, i18nLanguageCode + OpenNLPUtil.OpenNlpModels.SentenceModel.filename(), OpenNLPUtil.OpenNlpModels.SentenceModel.toString());
             }
             if (NESpotter.entityTypes.get(OpenNLPUtil.OpenNlpModels.person.toString()) == null) {
-                buildNameModel(onlpModelDir,OpenNLPUtil.OpenNlpModels.person.toString(),  new URI(dbpediaSite + "/ontology/Person"),i18nLanguageCode);
+                buildNameModel(onlpModelDir,OpenNLPUtil.OpenNlpModels.person.toString(),  new URI(openNLPModelsURI.get(OpenNLPUtil.OpenNlpModels.person.toString())),i18nLanguageCode);
             }
             if (NESpotter.entityTypes.get(OpenNLPUtil.OpenNlpModels.location.toString()) == null) {
-                buildNameModel(onlpModelDir, OpenNLPUtil.OpenNlpModels.location.toString(), new URI(dbpediaSite + "/ontology/Place"),i18nLanguageCode);
+                buildNameModel(onlpModelDir, OpenNLPUtil.OpenNlpModels.location.toString(), new URI(openNLPModelsURI.get(OpenNLPUtil.OpenNlpModels.location.toString())),i18nLanguageCode);
             }
             if (NESpotter.entityTypes.get(OpenNLPUtil.OpenNlpModels.organization.toString()) == null) {
-                buildNameModel(onlpModelDir, OpenNLPUtil.OpenNlpModels.organization.toString(), new URI(dbpediaSite + "/ontology/Organisation"),i18nLanguageCode);
+                buildNameModel(onlpModelDir, OpenNLPUtil.OpenNlpModels.organization.toString(), new URI(openNLPModelsURI.get(OpenNLPUtil.OpenNlpModels.organization.toString())),i18nLanguageCode);
             }
         } catch (Exception e) {
             throw new ConfigurationException("Error initializing NESpotter", e);
@@ -85,7 +85,7 @@ public class NESpotter implements Spotter {
 
     protected BaseModel buildNameModel(String directoryPath, String modelType, URI typeUri, String i18nLanguageCode) throws IOException, ConfigurationException {
         String fname = OpenNLPUtil.OpenNlpModels.valueOf(modelType).filename();
-        String modelRelativePath = String.format("%s.zip", i18nLanguageCode + fname);
+        String modelRelativePath = i18nLanguageCode + fname;
         BaseModel model = OpenNLPUtil.loadModel(directoryPath, modelRelativePath, modelType);
         entityTypes.put(modelType, new Object[] { typeUri, model });
         return model;

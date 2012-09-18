@@ -209,14 +209,14 @@ public class SpotterEvaluatorPrecisionRecall {
         /**
          * NER
          */
-        Spotter neSpotter = new NESpotter(configuration.getSpotterConfiguration().getOpenNLPModelDir(), configuration.getI18nLanguageCode(), configuration.getSparqlMainGraph());
+        Spotter neSpotter = new NESpotter(configuration.getSpotterConfiguration().getOpenNLPModelDir(), configuration.getI18nLanguageCode(), configuration.getSpotterConfiguration().getOpenNLPModelsURI());
         neSpotter.setName("\\ner                           ");
         latexTable.append(getLatexTableRow(neSpotter, documents, goldSurfaceFormOccurrences,baseResult));
 
         /**
          * NER+NP
          */
-        Spotter onlpSpotter = new OpenNLPNGramSpotter(configuration.getSpotterConfiguration().getOpenNLPModelDir());
+        Spotter onlpSpotter = new OpenNLPNGramSpotter(configuration.getSpotterConfiguration().getOpenNLPModelDir()+ "/"  + configuration.getLanguage().toLowerCase(), configuration.getI18nLanguageCode());
         onlpSpotter.setName("\\nerNP                     ");
         latexTable.append(getLatexTableRow(onlpSpotter, documents, goldSurfaceFormOccurrences,baseResult));
 

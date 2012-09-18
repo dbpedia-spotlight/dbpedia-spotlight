@@ -108,10 +108,10 @@ object OpenNLPChunkerSpotter {
     }
 
     def fromDir(openNLPDir: String, i18nLanguageCode:String, sfDict: SurfaceFormDictionary, stopwords: java.util.Set[String]) : OpenNLPChunkerSpotter = {
-        new OpenNLPChunkerSpotter(new File(openNLPDir, i18nLanguageCode + OpenNLPUtil.OpenNlpModels.SentenceModel.filename + ".bin"),
-              new File(openNLPDir, i18nLanguageCode + OpenNLPUtil.OpenNlpModels.TokenizerModel.filename + ".bin"),
-              new File(openNLPDir, i18nLanguageCode + OpenNLPUtil.OpenNlpModels.POSModel.filename + ".bin"),
-              new File(openNLPDir, i18nLanguageCode + OpenNLPUtil.OpenNlpModels.ChunkModel.filename + ".bin"),
+        new OpenNLPChunkerSpotter(new File(openNLPDir, i18nLanguageCode + OpenNLPUtil.OpenNlpModels.SentenceModel.filename),
+              new File(openNLPDir, i18nLanguageCode + OpenNLPUtil.OpenNlpModels.TokenizerModel.filename),
+              new File(openNLPDir, i18nLanguageCode + OpenNLPUtil.OpenNlpModels.POSModel.filename),
+              new File(openNLPDir, i18nLanguageCode + OpenNLPUtil.OpenNlpModels.ChunkModel.filename),
                       sfDict,
                       stopwords)
     }

@@ -106,12 +106,12 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
         } else if (policy == SpotterConfiguration.SpotterPolicy.CoOccurrenceBasedSelector) {
             spotters.getOrElse(policy, SpotterWithSelector.getInstance(spotter(SpotterConfiguration.SpotterPolicy.LingPipeSpotter),new CoOccurrenceBasedSelector(configuration.getSpotterConfiguration, taggedTokenProvider()), taggedTokenProvider()))
         } else if (policy == SpotterConfiguration.SpotterPolicy.NESpotter) {
-            spotters.getOrElse(policy, new NESpotter(configuration.getSpotterConfiguration.getOpenNLPModelDir+"/"+configuration.language.toLowerCase+"/",configuration.getI18nLanguageCode.toLowerCase, configuration.getSparqlMainGraph))
+            spotters.getOrElse(policy, new NESpotter(configuration.getSpotterConfiguration.getOpenNLPModelDir+"/"+configuration.getLanguage.toLowerCase+"/",configuration.getI18nLanguageCode.toLowerCase, configuration.getSpotterConfiguration.getOpenNLPModelsURI))
         } else if (policy == SpotterConfiguration.SpotterPolicy.KeyphraseSpotter) {
             spotters.getOrElse(policy, new KeaSpotter(configuration.getSpotterConfiguration.getKeaModel, configuration.getSpotterConfiguration.getKeaMaxNumberOfPhrases, configuration.getSpotterConfiguration.getKeaCutoff))
         } else if (policy == SpotterConfiguration.SpotterPolicy.OpenNLPChunkerSpotter) {
             val dict = ProbabilisticSurfaceFormDictionary.fromLingPipeDictionary(spotDict, false) //TODO with new configuration in place, we can load from file into a more compact dictionary
-            spotters.getOrElse(policy, OpenNLPChunkerSpotter.fromDir(configuration.getSpotterConfiguration.getOpenNLPModelDir+"/"+configuration.language.toLowerCase+"/",configuration.getI18nLanguageCode.toLowerCase , dict, configuration.getStopWords))
+            spotters.getOrElse(policy, OpenNLPChunkerSpotter.fromDir(configuration.getSpotterConfiguration.getOpenNLPModelDir+"/"+configuration.getLanguage.toLowerCase+"/",configuration.getI18nLanguageCode.toLowerCase , dict, configuration.getStopWords))
         } else if (policy == SpotterConfiguration.SpotterPolicy.SpotXmlParser) {
           new SpotXmlParser
         } else if (policy == SpotterConfiguration.SpotterPolicy.WikiMarkupSpotter) {
