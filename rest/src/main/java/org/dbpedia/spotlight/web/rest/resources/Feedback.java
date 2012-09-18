@@ -60,13 +60,13 @@ public class Feedback {
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces({MediaType.TEXT_XML,MediaType.APPLICATION_XML})
-    public Response getXML(@DefaultValue("") @FormParam("text") String text,
-                           @DefaultValue("") @FormParam("doc_url") String docUrlString,
-                           @DefaultValue("") @FormParam("entity_uri") String entityUri,
-                           @DefaultValue("") @FormParam("surface_form") String surfaceForm,
-                           @DefaultValue("") @FormParam("systems") String systemIds,
-                           @DefaultValue("0") @FormParam("offset") int offset,
-                           @DefaultValue("") @FormParam("feedback") String feedback,
+    public Response getXML(@DefaultValue("") @QueryParam("text") String text,
+                           @DefaultValue("") @QueryParam("doc_url") String docUrlString,
+                           @DefaultValue("") @QueryParam("entity_uri") String entityUri,
+                           @DefaultValue("") @QueryParam("surface_form") String surfaceForm,
+                           @DefaultValue("") @QueryParam("systems") String systemIds,
+                           @DefaultValue("0") @QueryParam("offset") int offset,
+                           @DefaultValue("") @QueryParam("feedback") String feedback,
                             @Context HttpServletRequest request) {
 
         String clientIp = request.getRemoteAddr();
