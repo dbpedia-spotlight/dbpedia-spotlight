@@ -248,8 +248,8 @@ public class Candidates {
             @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
             @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @FormParam("policy") String policy,
             @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @FormParam("coreferenceResolution") boolean coreferenceResolution,
-            @DefaultValue("Default") @QueryParam("spotter") String spotter,
-            @DefaultValue("Default") @QueryParam("disambiguator") String disambiguatorName,
+            @DefaultValue("Default") @FormParam("spotter") String spotter,
+            @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
             @Context HttpServletRequest request
     ) {
         return getXML(text,inUrl,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,spotter,disambiguatorName,request);
@@ -267,8 +267,8 @@ public class Candidates {
             @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
             @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @FormParam("policy") String policy,
             @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @FormParam("coreferenceResolution") boolean coreferenceResolution,
-            @DefaultValue("Default") @QueryParam("spotter") String spotter,
-            @DefaultValue("Default") @QueryParam("disambiguator") String disambiguatorName,
+            @DefaultValue("Default") @FormParam("spotter") String spotter,
+            @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
             @Context HttpServletRequest request
     ) {
         return getJSON(text,inUrl,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,spotter,disambiguatorName,request);
