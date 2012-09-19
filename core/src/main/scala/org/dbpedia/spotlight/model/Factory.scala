@@ -21,32 +21,18 @@ package org.dbpedia.spotlight.model
 import org.dbpedia.spotlight.string.ModifiedWikiUtil
 import org.dbpedia.spotlight.lucene.LuceneManager
 import org.apache.lucene.util.Version
-import org.apache.lucene.analysis.{StopAnalyzer, Analyzer}
-import java.io.File
-import org.apache.lucene.store.Directory
-import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter
-import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters
+import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.document.Document
 import org.dbpedia.spotlight.lucene.LuceneManager.DBpediaResourceField
 import collection.JavaConversions._
-import org.dbpedia.spotlight.lucene.search.{BaseSearcher, MergedOccurrencesContextSearcher}
-import org.dbpedia.spotlight.spot._
-import com.aliasi.sentences.IndoEuropeanSentenceModel
-import org.dbpedia.spotlight.tagging.lingpipe.{LingPipeTextUtil, LingPipeTaggedTokenProvider, LingPipeFactory}
+import org.dbpedia.spotlight.lucene.search.BaseSearcher
 import org.dbpedia.spotlight.exceptions.{ItemNotFoundException, ConfigurationException}
-import java.util.HashMap
-import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
 import org.apache.commons.logging.LogFactory
 import org.apache.lucene.analysis.standard.StandardAnalyzer
-import org.apache.lucene.analysis.snowball.SnowballAnalyzer
-import org.dbpedia.spotlight.lucene.similarity.{InvCandFreqSimilarity, CachedInvCandFreqSimilarity, JCSTermCache}
+import org.dbpedia.spotlight.lucene.similarity.InvCandFreqSimilarity
 import org.apache.lucene.misc.SweetSpotSimilarity
 import org.apache.lucene.search.{DefaultSimilarity, ScoreDoc, Similarity}
-import org.dbpedia.spotlight.disambiguate._
-import org.dbpedia.spotlight.annotate.{DefaultParagraphAnnotator, DefaultAnnotator}
 import scalaj.collection.Imports._
-import org.dbpedia.spotlight.lucene.analysis.PhoneticAnalyzer
-import java.util
 
 /**
  * Class containing methods to create model objects in many different ways
@@ -189,16 +175,59 @@ object Factory {
 
     def analyzer() = this.Analyzer //TODO for compatibility with java
     object Analyzer {
-        def from(analyzerName : String, language: String, stopWords: java.util.Set[String]) : Analyzer = {
-            (new StandardAnalyzer(Version.LUCENE_36, stopWords) ::
-             new SnowballAnalyzer(Version.LUCENE_36, language, stopWords) ::
-             new PhoneticAnalyzer(Version.LUCENE_36, stopWords) ::
-             Nil
-             ).map(a => (a.getClass.getSimpleName, a))
-                .toMap
-                .get(analyzerName)
-                .getOrElse(throw new ConfigurationException("Unknown Analyzer: "+analyzerName))
+
+      def defaultAnalyzer(stopWords: java.util.Set[String]) :Analyzer = {
+        LOG.warn("Using Lucene StandardAnalyzer/ Version.LUCENE_36 by default...")
+        new StandardAnalyzer(Version.LUCENE_36,stopWords)
+      }
+
+      def from(analyzerName : String, luceneVersion: String, stopWords: java.util.Set[String]) : Analyzer = {
+
+        try{
+          val analyzerClass = Class.forName(analyzerName)
+          val version = Version.valueOf(luceneVersion)
+          val instanceAnalyzerClass = if(stopWords != null) analyzerClass.getConstructor(classOf[Version],classOf[java.util.Set[String]]).newInstance(version, stopWords) else
+                                                            analyzerClass.getConstructor(classOf[Version]).newInstance(version)
+          instanceAnalyzerClass match {
+            case instanceAnalyzerClass: Analyzer => instanceAnalyzerClass
+            case _ => throw new ClassCastException
+          }
         }
+        catch {
+
+          case cnfe: ClassNotFoundException => {
+            LOG.error("I can't found a class with the name " + analyzerName +" or lucene version "+ luceneVersion)
+            LOG.error("Try to use in org.dbpedia.spotlight.lucene.analyzer property a complete name, such :")
+            LOG.error(" - org.apache.lucene.analysis.de.GermanAnalyzer for German;")
+            LOG.error(" - org.apache.lucene.analysis.fr.FrenchAnalyzer for French;")
+            LOG.error(" - org.apache.lucene.analysis.br.BrazilianAnalyzer for Brazilian Portuguese;")
+            LOG.error("etc...")
+            LOG.error("For org.dbpedia.spotlight.lucene.version property, try to use such:")
+            LOG.error(" - LUCENE_36 - Lucene Version 3.6")
+
+            defaultAnalyzer(stopWords)
+
+          }
+
+          case cce: ClassCastException => {
+            LOG.error("I found a class with the name " + analyzerName + ", but this class isn't an Analyzer class.")
+            LOG.error("Please check org.dbpedia.spotlight.lucene.analyzer and org.dbpedia.spotlight.lucene.version " +
+              "properties in your server.properties file.")
+            defaultAnalyzer(stopWords)
+
+          }
+          case e: Exception => {
+            LOG.error("Something went wrong. Please check your server.properties file.")
+            LOG.error("If the problem persists,please send the stacktrace below to DBPedia Developers")
+            LOG.error("[BOF]*************************Stacktrace error:*************************")
+            e.printStackTrace()
+            LOG.error("[EOF]*************************Stacktrace error:*************************")
+            defaultAnalyzer(stopWords)
+
+          }
+
+        }
+      }
     }
 
     object Similarity {
