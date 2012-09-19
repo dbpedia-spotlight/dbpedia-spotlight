@@ -17,9 +17,14 @@
 package org.dbpedia.spotlight.web.rest
 
 import scala.collection.JavaConversions._
-import scala.xml.{Node,PrettyPrinter}
+import scala.Predef._
+import scala.xml.Node
 import java.net.{URLEncoder,InetAddress}
+import java.io.ByteArrayOutputStream
 import org.apache.commons.codec.digest.DigestUtils
+import org.apache.any23.Any23
+import org.apache.any23.writer.{NTriplesWriter,TurtleWriter,TripleHandler}
+import org.apache.any23.source.{DocumentSource,StringDocumentSource}
 
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
 
@@ -31,15 +36,9 @@ import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
  */
 class NIFOutputFormatter(options: java.util.HashMap[String,_]){
   // default options for nif processing
-//     var options = Map(
-//       "format" -> "rdfxml",
-//       "prefix" -> "http://example.com/placeholder#",
-//       "urirecipe" -> "offset",
-//       "context-length" -> 10,
-//       "debug" -> false
-//     )
   val prefix = options.getOrElse("prefix", InetAddress.getLocalHost.getHostName + "#")
   val recipe = options.getOrElse("urirecipe", "offset").toString
+  val format = options.getOrElse("format", "rdfxml")
 
   /**
    * Method for processing the spotlight annotations to NIF format.
@@ -50,10 +49,7 @@ class NIFOutputFormatter(options: java.util.HashMap[String,_]){
    */
   def outputNIFFromText(text: String, occs: java.util.List[DBpediaResourceOccurrence]): String = {
     // set of all occurrence URIs collected for the substring properties
-    var occUris: Set[String] = Set()
-
-    // sequence holding all nodes of the resource occurrences
-    var result = Seq[Node]()
+    var occRes: Set[Pair[String,String]] = Set()
 
     // rdf type of the processed string
     var rdfType = "http://nlp2rdf.lod2.eu/schema/string/"
@@ -70,18 +66,12 @@ class NIFOutputFormatter(options: java.util.HashMap[String,_]){
       catch {
 	case iae : IllegalArgumentException => println(iae.getMessage) // TODO error handling
       }
-      // add the URI to the collection of occurrence URIs
-      occUris += occUri
 
       // uri of the appropriate DBpedia resource
       val dbpediaResUri = "http://dbpedia.org/resource/" + occ.resource.uri
 
-      // append the rdf output of this occurrence
-      result = result union
-	<rdf:Description rdf:about={occUri}>
-	  <itsrdf:disambigIdentRef rdf:resource={dbpediaResUri} />
-	  <rdf:type rdf:resource={rdfType} />
-	</rdf:Description>
+      // add the URI to the collection of occurrence URIs
+      occRes += Pair(occUri, dbpediaResUri)
     }
 
     // document specific output
@@ -93,22 +83,42 @@ class NIFOutputFormatter(options: java.util.HashMap[String,_]){
       case iae : IllegalArgumentException => println(iae.getMessage) // TODO error handling
     }
 
-    // build final rdfxml output
-    result = <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-		      xmlns:itsrdf="http://www.w3.org/2005/11/its/rdf#"
-		      xmlns:str="http://nlp2rdf.lod2.eu/schema/string/">
-	       <rdf:Description rdf:about={docUri}>
-		 <str:sourceString>{text}</str:sourceString>
-                 {for (occUri <- occUris) yield <str:subString rdf:resource={occUri} />}
-                 <rdf:type rdf:resource={rdfType} />
-                 <rdf:type rdf:resource="http://nlp2rdf.lod2.eu/schema/string/Document"/>
-               </rdf:Description>
-               {result}
-	     </rdf:RDF>
- 
-    //val prettyPrinter = new PrettyPrinter(80,2)
-    //prettyPrinter.format(result)
-    result toString
+    val result =  
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	       xmlns:itsrdf="http://www.w3.org/2005/11/its/rdf#"
+	       xmlns:str="http://nlp2rdf.lod2.eu/schema/string/">
+	<rdf:Description rdf:about={docUri}>
+	  <str:sourceString>{text}</str:sourceString>
+	  {for (occ <- occRes) yield <str:subString rdf:resource={occ._1} />}
+	  <rdf:type rdf:resource={rdfType} />
+	  <rdf:type rdf:resource="http://nlp2rdf.lod2.eu/schema/string/Document"/>
+	</rdf:Description>
+	{for (occ <- occRes) yield
+          <rdf:Description rdf:about={occ._1}>
+            <itsrdf:disambigIdentRef rdf:resource={occ._2} />
+            <rdf:type rdf:resource={rdfType} />
+          </rdf:Description>}
+      </rdf:RDF>
+
+    // convert and output the result in the given format
+    val runner:Any23 = new Any23()
+    val source:DocumentSource = new StringDocumentSource(result.toString, docUri)
+    val out:ByteArrayOutputStream = new ByteArrayOutputStream()
+    var handler:TripleHandler = null
+
+    format match {
+      case "rdfxml" => return result toString
+      case "ntriples" => handler = new NTriplesWriter(out)
+      case "turtle" => handler = new TurtleWriter(out)
+      case _ => throw new IllegalArgumentException("Unsupported format type given.")
+    }
+
+    try {
+      runner.extract(source, handler)
+    } finally {
+      handler close
+    }
+    out toString
   }
 
   /**
