@@ -41,10 +41,10 @@ import org.dbpedia.spotlight.model.{SpotlightConfiguration, SurfaceForm}
 import java.util.Scanner
 import org.semanticweb.yars.nx.parser.NxParser
 import org.dbpedia.spotlight.string.ModifiedWikiUtil
-import org.semanticweb.yars.nx.{Node, Literal, Resource, Triple}
+import org.semanticweb.yars.nx.{Literal, Resource, Triple}
 import collection.JavaConversions._
 import util.matching.Regex
-import java.net.URI
+import org.dbpedia.spotlight.BzipUtils
 
 /**
  * Functions to create Concept URIs (possible targets of disambiguations)
@@ -403,9 +403,9 @@ object ExtractCandidateMap
         val language = config.getLanguage().toLowerCase
 
         // DBpedia input
-        titlesFileName          = config.get("org.dbpedia.spotlight.data.labels")
-        redirectsFileName       = config.get("org.dbpedia.spotlight.data.redirects")
-        disambiguationsFileName = config.get("org.dbpedia.spotlight.data.disambiguations")
+        titlesFileName          = BzipUtils.extract(config.get("org.dbpedia.spotlight.data.labels"))
+        redirectsFileName       = BzipUtils.extract(config.get("org.dbpedia.spotlight.data.redirects"))
+        disambiguationsFileName = BzipUtils.extract(config.get("org.dbpedia.spotlight.data.disambiguations"))
 
         // output
         conceptURIsFileName     = config.get("org.dbpedia.spotlight.data.conceptURIs")

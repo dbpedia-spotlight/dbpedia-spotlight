@@ -18,15 +18,11 @@
 
 package org.dbpedia.spotlight.lucene.index
 
-import scalaj.collection.Imports._
-import org.dbpedia.spotlight.lucene.LuceneManager
-import io.Source
-import org.dbpedia.spotlight.model.DBpediaResource
-import org.apache.lucene.store.FSDirectory
 import org.apache.avalon.framework.configuration.ConfigurationException
 import org.apache.commons.logging.{LogFactory, Log}
-import java.io.{FileInputStream, File}
-import org.dbpedia.spotlight.util.{ExtractCandidateMap, TypesLoader, IndexingConfiguration}
+import java.io.File
+import org.dbpedia.spotlight.util.IndexingConfiguration
+import org.dbpedia.spotlight.BzipUtils
 
 /**
  * This script goes over the index and adds surface forms, counts and DBpedia Types as provided in input files.
@@ -54,7 +50,7 @@ object PatchIndex {
         val config = new IndexingConfiguration(indexingConfigFileName)
         val sourceIndexFileName = config.get("org.dbpedia.spotlight.index.dir")
         val targetIndexFileName = sourceIndexFileName+"-withAllPatched"
-        val instanceTypesFileName = config.get("org.dbpedia.spotlight.data.instanceTypes")
+        val instanceTypesFileName = BzipUtils.extract(config.get("org.dbpedia.spotlight.data.instanceTypes"))
         val surfaceFormsFileName = config.get("org.dbpedia.spotlight.data.surfaceForms")
 
         if (!new File(countsFileName).exists)

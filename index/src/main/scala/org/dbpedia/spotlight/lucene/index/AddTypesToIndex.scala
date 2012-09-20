@@ -18,12 +18,9 @@
 
 package org.dbpedia.spotlight.lucene.index
 
-import org.dbpedia.spotlight.lucene.LuceneManager
-import org.apache.lucene.store.FSDirectory
-import org.dbpedia.spotlight.io.{TypeAdder, FileOccurrenceSource}
-import org.dbpedia.spotlight.model.{DBpediaType, DBpediaResource}
 import java.io.{FileInputStream, File}
 import org.dbpedia.spotlight.util.{IndexingConfiguration, TypesLoader}
+import org.dbpedia.spotlight.BzipUtils
 
 /**
  * Reads file instance_types_en.nt from DBpedia in order to add Ontology Resource Types to the index.
@@ -43,12 +40,13 @@ object AddTypesToIndex {
     }
 
     def main(args : Array[String]) {
+
         val indexingConfigFileName = args(0)
+        val sourceIndexFileName = args(1)
 
         val config = new IndexingConfiguration(indexingConfigFileName)
-        val sourceIndexFileName = config.get("org.dbpedia.spotlight.index.dir")
-        val targetIndexFileName = sourceIndexFileName+"-withTypes"
-        val instanceTypesFileName = config.get("org.dbpedia.spotlight.data.instanceTypes")
+        val targetIndexFileName = sourceIndexFileName+"-withSF-withTypes"
+        val instanceTypesFileName =BzipUtils.extract(config.get("org.dbpedia.spotlight.data.instanceTypes"))
 
         val typesIndexer = new IndexEnricher(sourceIndexFileName,targetIndexFileName, config)
 
