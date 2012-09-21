@@ -48,7 +48,7 @@ object CompressIndex
         val sourceIndexFileName = args(2)
 
         val config = new IndexingConfiguration(indexingConfigFileName)
-        val targetIndexFileName = sourceIndexFileName+"-withSF-withTypes-compressed"
+        val targetIndexFileName = sourceIndexFileName+"-compressed"
         
         val compressor = new IndexEnricher(sourceIndexFileName, targetIndexFileName, config)
         compressor.unstore(unstoreFields, optimizeSegments, minCount)

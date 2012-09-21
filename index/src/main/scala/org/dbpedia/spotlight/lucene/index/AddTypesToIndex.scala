@@ -45,7 +45,7 @@ object AddTypesToIndex {
         val sourceIndexFileName = args(1)
 
         val config = new IndexingConfiguration(indexingConfigFileName)
-        val targetIndexFileName = sourceIndexFileName+"-withSF-withTypes"
+        val targetIndexFileName = sourceIndexFileName+"-withTypes"
         val instanceTypesFileName =BzipUtils.extract(config.get("org.dbpedia.spotlight.data.instanceTypes"))
 
         val typesIndexer = new IndexEnricher(sourceIndexFileName,targetIndexFileName, config)

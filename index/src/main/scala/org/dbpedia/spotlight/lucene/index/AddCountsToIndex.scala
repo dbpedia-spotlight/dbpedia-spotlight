@@ -86,7 +86,7 @@ object AddCountsToIndex {
         val sourceIndexFileName = args(2)
 
         val config = new IndexingConfiguration(indexingConfigFileName)
-        val targetIndexFileName = sourceIndexFileName+"-withSF-withTypes-withCounts"
+        val targetIndexFileName = sourceIndexFileName+"-withCounts"
 
         if (!new File(countsFileName).exists)
             throw new ConfigurationException("counts file "+countsFileName+" does not exist; can't add counts")

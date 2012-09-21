@@ -45,7 +45,7 @@ cp -R $DBPEDIA_WORKSPACE/data/output/index $DBPEDIA_WORKSPACE/data/output/index-
 #            in the example below we scan paragraphs for uri->sf mappings that occurred together more than 3 times.
 ../bin/getSurfaceFormMapFromOccs.sh
 cp $DBPEDIA_WORKSPACE/data/output/surfaceForms.tsv $DBPEDIA_WORKSPACE/data/output/surfaceForms-fromTitRedDis.tsv
-cat $DBPEDIA_WORKSPACE/data/output/surfaceForms-fromTitRedDis.tsv $DBPEDIA_WORKSPACE/data/output/surfaceForms-fromOccs.tsv > output/surfaceForms.tsv
+cat $DBPEDIA_WORKSPACE/data/output/surfaceForms-fromTitRedDis.tsv $DBPEDIA_WORKSPACE/data/output/surfaceForms-fromOccs.tsv > $DBPEDIA_WORKSPACE/data/output/surfaceForms.tsv
 
 # add surface forms to index
  mvn scala:run -DmainClass=org.dbpedia.spotlight.lucene.index.AddSurfaceFormsToIndex "-DaddArgs=$INDEX_CONFIG_FILE|$DBPEDIA_WORKSPACE/data/output/index"
