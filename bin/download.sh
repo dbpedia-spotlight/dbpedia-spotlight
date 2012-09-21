@@ -1,15 +1,23 @@
+#!/bin/bash
 #+------------------------------------------------------------------------------------------------------------------------------+
 #| DBpedia Spotlight - Download script                                                                                          |
 #| @author @sandroacoelho                                                                                                       |
 #+------------------------------------------------------------------------------------------------------------------------------+
+PROGNAME=$(basename $0)
 
 #Config parameters (adjust according your target language and folder)
 export lang_i18n=pt
 export language=portuguese
-export dbpedia_workspace=/usr/local/spotlight
+export dbpedia_workspace=/var/local/spotlight
 export dbpedia_version=3.8
 
-touch $dbpedia_workspace/foo && rm -f $dbpedia_workspace/foo || echo "ERROR: The directory '$dbpedia_workspace' is not writable! Change its permissions or choose another 'dbpedia_workspace' in download.sh"; exit
+# error_exit function by William Shotts. http://stackoverflow.com/questions/64786/error-handling-in-bash
+function error_exit
+{
+    echo "${PROGNAME}: ${1:-"Unknown Error"}" 1>&2
+    exit 1
+}
+touch $dbpedia_workspace/foo && rm -f $dbpedia_workspace/foo || error_exit "ERROR: The directory '$dbpedia_workspace' is not writable! Change its permissions or choose another 'dbpedia_workspace' in download.sh"
 
 set -e
 # Creating directories
