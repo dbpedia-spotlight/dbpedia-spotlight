@@ -36,10 +36,14 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import java.io.ByteArrayOutputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
+import org.dbpedia.spotlight.web.rest.NIFOutputFormatter;
 // SAX classes.
 //JAXP 1.1
 //JSON classes
@@ -106,6 +110,27 @@ public class OutputManager {
 
         }
         return xml;
+    }
+
+    protected String makeNIF(String text, List<DBpediaResourceOccurrence> occList, String format, String prefix, String recipe, int ctxLength) throws OutputException {
+	// setting default prefix
+	if (prefix == null){
+	    try{
+		prefix = InetAddress.getLocalHost().getHostName() + "#";
+	    }
+	    catch (UnknownHostException uhe){
+		prefix = "http://unknown.host#"; // TODO
+	    }
+	}
+
+	HashMap<String, Object> options = new HashMap<String, Object>();
+	options.put("prefix", prefix);
+	options.put("format", format);
+	options.put("urirecipe", recipe);
+	options.put("context-length", ctxLength);
+	
+	NIFOutputFormatter nof = new NIFOutputFormatter(options);
+	return nof.outputNIFFromText(text, occList);
     }
 
     protected void getResourcesXml(List<DBpediaResourceOccurrence> occList, TransformerHandler hd, AttributesImpl atts) throws SAXException {

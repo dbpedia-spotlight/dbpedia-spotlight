@@ -257,6 +257,34 @@ public class SpotlightInterface  {
         return result;
     }
 
+    public String getNIF(String text,
+                         String inUrl,
+                         double confidence,
+                         int support,
+                         String dbpediaTypesString,
+                         String sparqlQuery,
+                         String policy,
+                         boolean coreferenceResolution,
+                         String clientIp,
+                         String spotter,
+                         String disambiguator,
+			 String format,
+			 String prefix,
+			 String recipe,
+			 int ctxLength
+   ) throws Exception {
+        String result;
+        String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
+
+	List<DBpediaResourceOccurrence> occs = getOccurrences(textToProcess, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter,disambiguator);
+	result = outputManager.makeNIF(textToProcess, occs, format, prefix, recipe, ctxLength);
+
+	LOG.info("NIF format: " + format);
+        LOG.debug("****************************************************************");
+
+        return result;
+    }
+    
     //FIXME
     public String getCandidateXML(String text,
                                   String inUrl,

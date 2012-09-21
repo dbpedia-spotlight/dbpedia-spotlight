@@ -36,9 +36,9 @@ import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
  */
 class NIFOutputFormatter(options: java.util.HashMap[String,_]){
   // default options for nif processing
-  val prefix = options.getOrElse("prefix", InetAddress.getLocalHost.getHostName + "#")
-  val recipe = options.getOrElse("urirecipe", "offset").toString
-  val format = options.getOrElse("format", "rdfxml")
+  val prefix = options.get("prefix")
+  val recipe = options.get("urirecipe")
+  val format = options.get("format")
 
   /**
    * Method for processing the spotlight annotations to NIF format.
