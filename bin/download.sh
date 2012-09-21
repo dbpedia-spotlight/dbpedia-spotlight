@@ -88,12 +88,12 @@ set +e
 echo 'Getting DBpedia Files...'
 wget http://downloads.dbpedia.org/$dbpedia_version/$lang_i18n/labels_$lang_i18n.nt.bz2 --directory-prefix=$dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n
 wget http://downloads.dbpedia.org/$dbpedia_version/$lang_i18n/redirects_$lang_i18n.nt.bz2 --directory-prefix=$dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n
-wget http://downloads.dbpedia.org/$dbpedia_version/$lang_i18n/disambiguations_$lang_i18n.nt.bz2
-wget http://downloads.dbpedia.org/$dbpedia_version/$lang_i18n/instance_types_$lang_i18n.nt.bz2
+wget http://downloads.dbpedia.org/$dbpedia_version/$lang_i18n/disambiguations_$lang_i18n.nt.bz2 --directory-prefix=$dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n
+wget http://downloads.dbpedia.org/$dbpedia_version/$lang_i18n/instance_types_$lang_i18n.nt.bz2 --directory-prefix=$dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n
 echo 'done!'
 
 echo 'Getting Wikipedia Dump...'
-wget "http://dumps.wikimedia.org/"$lang_i18n"wiki/latest/"$lang_i18n"wiki-latest-pages-articles.xml.bz2"
+wget "http://dumps.wikimedia.org/"$lang_i18n"wiki/latest/"$lang_i18n"wiki-latest-pages-articles.xml.bz2" --directory-prefix=$dbpedia_workspace/dbpedia_data/original/wikipedia/$lang_i18n
 echo 'done!'
 
 echo 'Getting LingPipe Spotter...'
@@ -171,14 +171,6 @@ fi
 
 echo 'done!'
 
-#-------------------------------------DBPedia Dumps -------------------------------------------------
-mv labels_$lang_i18n.nt.bz2 $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n
-mv redirects_$lang_i18n.nt.bz2 $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n
-mv disambiguations_$lang_i18n.nt.bz2 $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n
-mv instance_types_$lang_i18n.nt.bz2 $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n
-#-------------------------------------Wikipedia Dumps -------------------------------------------------
-#Moving files
-mv $lang_i18n"wiki-latest-pages-articles.xml.bz2" $dbpedia_workspace/dbpedia_data/original/wikipedia/$lang_i18n
 #------------------------------------- Runtime Files --------------------------------------------------
 mv spotter.dict $dbpedia_workspace/dbpedia_data/data
 mv pos-en-general-brown.HiddenMarkovModel $dbpedia_workspace/dbpedia_data/data
