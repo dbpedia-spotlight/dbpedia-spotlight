@@ -19,8 +19,6 @@
 package org.dbpedia.spotlight.lucene.index
 
 import org.dbpedia.spotlight.lucene.LuceneManager
-import org.apache.lucene.store.FSDirectory
-import java.io.File
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.util.IndexingConfiguration
 
@@ -47,9 +45,9 @@ object CompressIndex
     def main(args : Array[String]) {
         val indexingConfigFileName = args(0)
         val minCount = if (args.length>1) args(1).toInt else 0;
+        val sourceIndexFileName = args(2)
 
         val config = new IndexingConfiguration(indexingConfigFileName)
-        val sourceIndexFileName = config.get("org.dbpedia.spotlight.index.dir")
         val targetIndexFileName = sourceIndexFileName+"-compressed"
         
         val compressor = new IndexEnricher(sourceIndexFileName, targetIndexFileName, config)
