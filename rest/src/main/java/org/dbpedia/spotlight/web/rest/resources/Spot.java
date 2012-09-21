@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 import org.dbpedia.spotlight.model.Text;
+import org.dbpedia.spotlight.web.rest.NIFOutputFormatter;
 import org.dbpedia.spotlight.web.rest.Server;
 import org.dbpedia.spotlight.web.rest.ServerUtils;
 import org.dbpedia.spotlight.web.rest.SpotlightInterface;
@@ -35,6 +36,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -80,6 +82,96 @@ public class Spot {
     }
 
     @GET
+    @Produces("text/turtle")
+    public Response getTurtle(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
+                           @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @QueryParam("url") String inUrl,
+			   @DefaultValue("Default") @QueryParam("spotter") String spotterName,
+			   @QueryParam("prefix") String prefix,
+			   @DefaultValue("offset") @QueryParam("urirecipe") String recipe,
+			   @DefaultValue("10") @QueryParam("context-length") int ctxLength,
+                            @Context HttpServletRequest request) {
+
+        String clientIp = request.getRemoteAddr();
+
+        try {
+            String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
+            List<SurfaceFormOccurrence> spots = annotationInterface.spot(spotterName, new Text(textToProcess));
+
+	    HashMap<String, Object> options = new HashMap<String, Object>();
+	    options.put("prefix", prefix);
+	    options.put("format", "turtle");
+	    options.put("urirecipe", recipe);
+	    options.put("context-length", ctxLength);
+	    NIFOutputFormatter nof = new NIFOutputFormatter(options);
+	    String response = nof.outputNIFFromSurfaceOcc(text, spots);
+            return ServerUtils.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type("text/turtle").build());
+        }
+    }
+
+    @GET
+    @Produces("text/plain")
+    public Response getNTriples(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
+				@DefaultValue(SpotlightConfiguration.DEFAULT_URL) @QueryParam("url") String inUrl,
+				@DefaultValue("Default") @QueryParam("spotter") String spotterName,
+				@QueryParam("prefix") String prefix,
+				@DefaultValue("offset") @QueryParam("urirecipe") String recipe,
+				@DefaultValue("10") @QueryParam("context-length") int ctxLength,
+				@Context HttpServletRequest request) {
+
+        String clientIp = request.getRemoteAddr();
+
+        try {
+            String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
+            List<SurfaceFormOccurrence> spots = annotationInterface.spot(spotterName, new Text(textToProcess));
+
+	    HashMap<String, Object> options = new HashMap<String, Object>();
+	    options.put("prefix", prefix);
+	    options.put("format", "ntriples");
+	    options.put("urirecipe", recipe);
+	    options.put("context-length", ctxLength);
+	    NIFOutputFormatter nof = new NIFOutputFormatter(options);
+	    String response = nof.outputNIFFromSurfaceOcc(text, spots);
+            return ServerUtils.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type("text/plain").build());
+        }
+    }
+
+    @GET
+    @Produces("application/rdf+xml")
+    public Response getRdfXML(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
+			      @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @QueryParam("url") String inUrl,
+			      @DefaultValue("Default") @QueryParam("spotter") String spotterName,
+			      @QueryParam("prefix") String prefix,
+			      @DefaultValue("offset") @QueryParam("urirecipe") String recipe,
+			      @DefaultValue("10") @QueryParam("context-length") int ctxLength,
+			      @Context HttpServletRequest request) {
+
+        String clientIp = request.getRemoteAddr();
+
+        try {
+            String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
+            List<SurfaceFormOccurrence> spots = annotationInterface.spot(spotterName, new Text(textToProcess));
+
+	    HashMap<String, Object> options = new HashMap<String, Object>();
+	    options.put("prefix", prefix);
+	    options.put("format", "rdfxml");
+	    options.put("urirecipe", recipe);
+	    options.put("context-length", ctxLength);
+	    NIFOutputFormatter nof = new NIFOutputFormatter(options);
+	    String response = nof.outputNIFFromSurfaceOcc(text, spots);
+            return ServerUtils.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type("application/rdf+xml").build());
+        }
+    }
+    
+    @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getJSON(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
                             @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @QueryParam("url") String inUrl,
@@ -123,6 +215,99 @@ public class Spot {
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.TEXT_HTML).build());
         }
     }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces("text/turtle")
+    public Response postTurtle(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
+			       @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @FormParam("url") String inUrl,
+			       @DefaultValue("Default") @FormParam("spotter") String spotterName,
+			       @FormParam("prefix") String prefix,
+			       @DefaultValue("offset") @FormParam("urirecipe") String recipe,
+			       @DefaultValue("10") @FormParam("context-length") int ctxLength,
+			       @Context HttpServletRequest request) {
+
+        String clientIp = request.getRemoteAddr();
+
+        try {
+            String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
+            List<SurfaceFormOccurrence> spots = annotationInterface.spot(spotterName, new Text(textToProcess));
+
+	    HashMap<String, Object> options = new HashMap<String, Object>();
+	    options.put("prefix", prefix);
+	    options.put("format", "turtle");
+	    options.put("urirecipe", recipe);
+	    options.put("context-length", ctxLength);
+	    NIFOutputFormatter nof = new NIFOutputFormatter(options);
+	    String response = nof.outputNIFFromSurfaceOcc(text, spots);
+            return ServerUtils.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type("text/turtle").build());
+        }
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces("text/plain")
+    public Response postNTriples(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
+				 @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @FormParam("url") String inUrl,
+				 @DefaultValue("Default") @FormParam("spotter") String spotterName,
+				 @FormParam("prefix") String prefix,
+				 @DefaultValue("offset") @FormParam("urirecipe") String recipe,
+				 @DefaultValue("10") @FormParam("context-length") int ctxLength,
+				 @Context HttpServletRequest request) {
+
+        String clientIp = request.getRemoteAddr();
+
+        try {
+            String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
+            List<SurfaceFormOccurrence> spots = annotationInterface.spot(spotterName, new Text(textToProcess));
+
+	    HashMap<String, Object> options = new HashMap<String, Object>();
+	    options.put("prefix", prefix);
+	    options.put("format", "ntriples");
+	    options.put("urirecipe", recipe);
+	    options.put("context-length", ctxLength);
+	    NIFOutputFormatter nof = new NIFOutputFormatter(options);
+	    String response = nof.outputNIFFromSurfaceOcc(text, spots);
+            return ServerUtils.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type("text/plain").build());
+        }
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces("application/rdf+xml")
+    public Response postRdfXML(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
+			       @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @FormParam("url") String inUrl,
+			       @DefaultValue("Default") @FormParam("spotter") String spotterName,
+			       @FormParam("prefix") String prefix,
+			       @DefaultValue("offset") @FormParam("urirecipe") String recipe,
+			       @DefaultValue("10") @FormParam("context-length") int ctxLength,
+			       @Context HttpServletRequest request) {
+
+        String clientIp = request.getRemoteAddr();
+
+        try {
+            String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
+            List<SurfaceFormOccurrence> spots = annotationInterface.spot(spotterName, new Text(textToProcess));
+
+	    HashMap<String, Object> options = new HashMap<String, Object>();
+	    options.put("prefix", prefix);
+	    options.put("format", "rdfxml");
+	    options.put("urirecipe", recipe);
+	    options.put("context-length", ctxLength);
+	    NIFOutputFormatter nof = new NIFOutputFormatter(options);
+	    String response = nof.outputNIFFromSurfaceOcc(text, spots);
+            return ServerUtils.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type("application/rdf+xml").build());
+        }
+    }    
 
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)

@@ -130,7 +130,7 @@ public class OutputManager {
 	options.put("context-length", ctxLength);
 	
 	NIFOutputFormatter nof = new NIFOutputFormatter(options);
-	return nof.outputNIFFromText(text, occList);
+	return nof.outputNIFFromDBpediaOcc(text, occList);
     }
 
     protected void getResourcesXml(List<DBpediaResourceOccurrence> occList, TransformerHandler hd, AttributesImpl atts) throws SAXException {
