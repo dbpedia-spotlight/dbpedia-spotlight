@@ -9,10 +9,77 @@ export language=portuguese
 export dbpedia_workspace=/usr/local/spotlight
 export dbpedia_version=3.8
 
+touch $dbpedia_workspace/foo && rm -f $dbpedia_workspace/foo || echo "ERROR: The directory '$dbpedia_workspace' is not writable! Change its permissions or choose another 'dbpedia_workspace' in download.sh"; exit
+
+set -e
+# Creating directories
+echo 'Creating directories...'
+if [ -e $dbpedia_workspace/dbpedia_data ]; then 
+    echo "$dbpedia_workspace"'/dbpedia_data/ already exists.'
+else
+    mkdir $dbpedia_workspace/dbpedia_data
+fi
+
+if [ -e $dbpedia_workspace/dbpedia_data/original ]; then 
+    echo "$dbpedia_workspace"'/dbpedia_data/original already exists.'
+else
+    mkdir $dbpedia_workspace/dbpedia_data/original
+fi
+
+if [ -e $dbpedia_workspace/dbpedia_data/original/wikipedia/  ]; then 
+    echo "$dbpedia_workspace"'/dbpedia_data/original/wikipedia/ already exists.'
+else
+    mkdir $dbpedia_workspace/dbpedia_data/original/wikipedia/
+fi
+
+if [ -e $dbpedia_workspace/dbpedia_data/original/wikipedia/$lang_i18n  ]; then 
+    echo "$dbpedia_workspace"'/dbpedia_data/original/wikipedia/'"$lang_i18n"' already exists.'
+else
+    mkdir $dbpedia_workspace/dbpedia_data/original/wikipedia/$lang_i18n
+fi
+
+if [ -e $dbpedia_workspace/dbpedia_data/original/dbpedia  ]; then 
+    echo "$dbpedia_workspace"'/dbpedia_data/original/dbpedia already exists.'
+else
+    mkdir $dbpedia_workspace/dbpedia_data/original/dbpedia
+fi
+
+if [ -e $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n  ]; then 
+    echo "$dbpedia_workspace"'/dbpedia_data/original/dbpedia/'"$lang_i18n"'already exists.'
+else
+    mkdir $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n
+fi
+
+if [ -e $dbpedia_workspace/dbpedia_data/data  ]; then 
+    echo "$dbpedia_workspace"'/data already exists.'
+else
+    mkdir $dbpedia_workspace/dbpedia_data/data
+fi
+
+
+if [ -e $dbpedia_workspace/dbpedia_data/data/output  ]; then
+    echo "$dbpedia_workspace"'/data/output already exists.'
+else
+    mkdir $dbpedia_workspace/dbpedia_data/data/output
+fi
+
+if [ -e $dbpedia_workspace/dbpedia_data/data/opennlp  ]; then 
+    echo "$dbpedia_workspace"'/data/opennlp already exists.'
+else
+    mkdir $dbpedia_workspace/dbpedia_data/data/opennlp
+fi
+
+if [ -e $dbpedia_workspace/dbpedia_data/data/opennlp/$language  ]; then 
+    echo "$dbpedia_workspace"'/data/opennlp already exists.'
+else
+    mkdir $dbpedia_workspace/dbpedia_data/data/opennlp/$language
+fi
+set +e
+
 
 echo 'Getting DBpedia Files...'
-wget http://downloads.dbpedia.org/$dbpedia_version/$lang_i18n/labels_$lang_i18n.nt.bz2
-wget http://downloads.dbpedia.org/$dbpedia_version/$lang_i18n/redirects_$lang_i18n.nt.bz2
+wget http://downloads.dbpedia.org/$dbpedia_version/$lang_i18n/labels_$lang_i18n.nt.bz2 --directory-prefix=$dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n
+wget http://downloads.dbpedia.org/$dbpedia_version/$lang_i18n/redirects_$lang_i18n.nt.bz2 --directory-prefix=$dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n
 wget http://downloads.dbpedia.org/$dbpedia_version/$lang_i18n/disambiguations_$lang_i18n.nt.bz2
 wget http://downloads.dbpedia.org/$dbpedia_version/$lang_i18n/instance_types_$lang_i18n.nt.bz2
 echo 'done!'
@@ -95,69 +162,6 @@ else
 fi
 
 echo 'done!'
-
-# Creating directories
-echo 'Creating directories...'
-if [ -e $dbpedia_workspace/dbpedia_data ]; then 
-    echo "$dbpedia_workspace"'/dbpedia_data/ already exist.'
-else
-    mkdir $dbpedia_workspace/dbpedia_data
-fi
-
-if [ -e $dbpedia_workspace/dbpedia_data/original ]; then 
-    echo "$dbpedia_workspace"'/dbpedia_data/original already exist.'
-else
-    mkdir $dbpedia_workspace/dbpedia_data/original
-fi
-
-if [ -e $dbpedia_workspace/dbpedia_data/original/wikipedia/  ]; then 
-    echo "$dbpedia_workspace"'/dbpedia_data/original/wikipedia/ already exist.'
-else
-    mkdir $dbpedia_workspace/dbpedia_data/original/wikipedia/
-fi
-
-if [ -e $dbpedia_workspace/dbpedia_data/original/wikipedia/$lang_i18n  ]; then 
-    echo "$dbpedia_workspace"'/dbpedia_data/original/wikipedia/'"$lang_i18n"' already exist.'
-else
-    mkdir $dbpedia_workspace/dbpedia_data/original/wikipedia/$lang_i18n
-fi
-
-if [ -e $dbpedia_workspace/dbpedia_data/original/dbpedia  ]; then 
-    echo "$dbpedia_workspace"'/dbpedia_data/original/dbpedia already exist.'
-else
-    mkdir $dbpedia_workspace/dbpedia_data/original/dbpedia
-fi
-
-if [ -e $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n  ]; then 
-    echo "$dbpedia_workspace"'/dbpedia_data/original/dbpedia/'"$lang_i18n"'already exist.'
-else
-    mkdir $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n
-fi
-
-if [ -e $dbpedia_workspace/dbpedia_data/data  ]; then 
-    echo "$dbpedia_workspace"'/data already exist.'
-else
-    mkdir $dbpedia_workspace/dbpedia_data/data
-fi
-
-
-if [ -e $dbpedia_workspace/dbpedia_data/data/output  ]; then
-    echo "$dbpedia_workspace"'/data/output already exist.'
-else
-    mkdir $dbpedia_workspace/dbpedia_data/data/output
-fi
-
-if [ -e $dbpedia_workspace/dbpedia_data/data/opennlp  ]; then 
-    echo "$dbpedia_workspace"'/data/opennlp already exist.'
-else
-    mkdir $dbpedia_workspace/dbpedia_data/data/opennlp
-fi
-
-if [ -e $dbpedia_workspace/dbpedia_data/data/opennlp/$language  ]; then 
-    echo "$dbpedia_workspace"'/data/opennlp already exist.'
-else
-    mkdir $dbpedia_workspace/dbpedia_data/data/opennlp/$language
-fi
 
 #-------------------------------------DBPedia Dumps -------------------------------------------------
 mv labels_$lang_i18n.nt.bz2 $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n

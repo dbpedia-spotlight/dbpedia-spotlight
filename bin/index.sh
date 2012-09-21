@@ -11,6 +11,8 @@ export DBPEDIA_WORKSPACE=/usr/local/spotlight/dbpedia_data
 export INDEX_CONFIG_FILE=../conf/indexing.properties
 
 # the indexing process merges occurrences in memory to speed up the process. the more memory the better
+# NOTE: If setting the variables below is not correctly increasing your heap size, try setting it in the <jvmArg> in index/pom.xml
+# See: https://groups.google.com/forum/?fromgroups=#!topic/scalatest-users/P6lXSxI4Nmg
 ulimit -v unlimited
 export JAVA_OPTS="-Xmx14G  -XX:+UseConcMarkSweepGC -XX:MaxPermSize=7G"
 export MAVEN_OPTS="-Xmx14G -XX:+UseConcMarkSweepGC -XX:MaxPermSize=7G"
@@ -49,6 +51,9 @@ cp -R $DBPEDIA_WORKSPACE/data/output/index $DBPEDIA_WORKSPACE/data/output/index-
 ../bin/getSurfaceFormMapFromOccs.sh
 cp $DBPEDIA_WORKSPACE/data/output/surfaceForms.tsv $DBPEDIA_WORKSPACE/data/output/surfaceForms-fromTitRedDis.tsv
 cat $DBPEDIA_WORKSPACE/data/output/surfaceForms-fromTitRedDis.tsv $DBPEDIA_WORKSPACE/data/output/surfaceForms-fromOccs.tsv > $DBPEDIA_WORKSPACE/data/output/surfaceForms.tsv
+
+# now that we have our set of surfaceForms, we can build a simple dictionary-based spotter from them
+mvn scala:run -DmainClass= org.dbpedia.spotlight.spot.lingpipe.IndexLingPipeSpotter "-DaddArgs=$INDEX_CONFIG_FILE"
 
 # add surface forms to index
  mvn scala:run -DmainClass=org.dbpedia.spotlight.lucene.index.AddSurfaceFormsToIndex "-DaddArgs=$INDEX_CONFIG_FILE|$DBPEDIA_WORKSPACE/data/output/index"
