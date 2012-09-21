@@ -11,9 +11,12 @@ export DBPEDIA_WORKSPACE=/usr/local/spotlight/dbpedia_data
 export INDEX_CONFIG_FILE=../conf/indexing.properties
 
 # the indexing process merges occurrences in memory to speed up the process. the more memory the better
-export JAVA_OPTS="-Xmx7G"
-export MAVEN_OPTS="-Xmx7G"
-export SCALA_OPTS="-Xmx7G"
+ulimit -v unlimited
+export JAVA_OPTS="-Xmx14G  -XX:+UseConcMarkSweepGC -XX:MaxPermSize=7G"
+export MAVEN_OPTS="-Xmx14G -XX:+UseConcMarkSweepGC -XX:MaxPermSize=7G"
+export SCALA_OPTS="-Xmx14G -XX:+UseConcMarkSweepGC -XX:MaxPermSize=7G"
+
+ulimit -v unlimited
 
 # you have to run maven2 from the module that contains the indexing classes
 cd ../index
