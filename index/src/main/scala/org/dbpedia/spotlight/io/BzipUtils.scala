@@ -21,6 +21,11 @@ import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 import org.apache.commons.logging.{LogFactory, Log}
 
 
+
+/**
+ * This class is only used for uncompressing the WikipediaDump, but I think this is something we should require for the user to do, or we should patch the DEF's XMLSource to accept InputStream objects as input.
+ */
+@Deprecated
 object BzipUtils {
 
   val LOG: Log = LogFactory.getLog(this.getClass)
@@ -32,7 +37,7 @@ object BzipUtils {
     var tempFileName = filename.split("/")
 
     var newFilename = "/tmp/" + tempFileName.last.replace(".bz2","")
-
+    LOG.info("Extracting compressed file into %s...".format(newFilename))
     try {
       val fin: FileInputStream = new FileInputStream(filename)
       val in: BufferedInputStream = new BufferedInputStream(fin)
@@ -46,7 +51,8 @@ object BzipUtils {
     }
     catch {
       case e: IOException => {
-        LOG.error("")
+        LOG.error(e.getMessage)
+        e.printStackTrace()
       }
     }
     finally {

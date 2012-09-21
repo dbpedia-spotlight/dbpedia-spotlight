@@ -37,6 +37,7 @@ object AllOccurrenceSource
     val splitParagraphsRegex = """(\n|(<br\s?/?>))(</?\w+?\s?/?>)?(\n|(<br\s?/?>))+"""
     val splitDisambiguationsRegex = """\n"""
 
+    //TODO Add fromInputStream requires that XMLSource from the DEF supports that. Currently only supports fromFile and fromXML
 
     /**
      * Creates an DBpediaResourceOccurrence Source from a dump file.

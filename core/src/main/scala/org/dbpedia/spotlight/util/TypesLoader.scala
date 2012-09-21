@@ -54,14 +54,11 @@ object TypesLoader
         typesMap
     }
 
-    def getTypesMapFromTSV_java(typeDictFile : File) : java.util.Map[String,java.util.LinkedHashSet[OntologyType]] = {
+    def getTypesMapFromTSV_java(input: InputStream) : java.util.Map[String,java.util.LinkedHashSet[OntologyType]] = {
         LOG.info("Loading types map...")
-        if (!(typeDictFile.getName.toLowerCase endsWith ".tsv"))
-            throw new IllegalArgumentException("types mapping only accepted in tsv format so far! can't parse "+typeDictFile)
-
         var typesMap = Map[String,java.util.LinkedHashSet[OntologyType]]()
         var i = 0;
-        for (line <- Source.fromFile(typeDictFile, "UTF-8").getLines) {
+        for (line <- Source.fromInputStream(input, "UTF-8").getLines) {
             val elements = line.split("\t")
             val uri = new DBpediaResource(elements(0)).uri
             val typeUri = elements(1)

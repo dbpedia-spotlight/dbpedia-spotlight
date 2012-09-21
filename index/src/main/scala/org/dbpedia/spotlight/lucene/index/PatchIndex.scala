@@ -50,7 +50,7 @@ object PatchIndex {
         val config = new IndexingConfiguration(indexingConfigFileName)
         val sourceIndexFileName = config.get("org.dbpedia.spotlight.index.dir")
         val targetIndexFileName = sourceIndexFileName+"-withAllPatched"
-        val instanceTypesFileName = BzipUtils.extract(config.get("org.dbpedia.spotlight.data.instanceTypes"))
+        val instanceTypesFileName = config.get("org.dbpedia.spotlight.data.instanceTypes")
         val surfaceFormsFileName = config.get("org.dbpedia.spotlight.data.surfaceForms")
 
         if (!new File(countsFileName).exists)

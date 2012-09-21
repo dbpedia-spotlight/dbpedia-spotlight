@@ -21,22 +21,24 @@ package org.dbpedia.spotlight.lucene.index
 import java.io.{FileInputStream, File}
 import org.dbpedia.spotlight.util.{IndexingConfiguration, TypesLoader}
 import org.dbpedia.spotlight.BzipUtils
+import org.apache.commons.compress.archivers.{ArchiveInputStream, ArchiveStreamFactory}
 
 /**
  * Reads file instance_types_en.nt from DBpedia in order to add Ontology Resource Types to the index.
  *
- * Usage:
+ * Usage: see bin/index.sh
  *
- *
- * @author maxjakob, Joachim Daiber (allows reading from TSV: used for DBpedia+Schema+Freebase types)
  */
 object AddTypesToIndex {
 
     def loadTypes(instanceTypesFileName: String) = {
-        instanceTypesFileName.endsWith(".tsv") match {
-          case true  => TypesLoader.getTypesMapFromTSV_java(new File(instanceTypesFileName))
-          case false => TypesLoader.getTypesMap_java(new FileInputStream(instanceTypesFileName))
+        val input = new ArchiveStreamFactory().createArchiveInputStream(new FileInputStream(instanceTypesFileName))
+        val typesMap = instanceTypesFileName.contains(".tsv") match {
+          case true  => TypesLoader.getTypesMapFromTSV_java(input)
+          case false => TypesLoader.getTypesMap_java(input)
         }
+        input.close()
+        typesMap
     }
 
     def main(args : Array[String]) {
@@ -46,7 +48,7 @@ object AddTypesToIndex {
 
         val config = new IndexingConfiguration(indexingConfigFileName)
         val targetIndexFileName = sourceIndexFileName+"-withTypes"
-        val instanceTypesFileName =BzipUtils.extract(config.get("org.dbpedia.spotlight.data.instanceTypes"))
+        val instanceTypesFileName = config.get("org.dbpedia.spotlight.data.instanceTypes")
 
         val typesIndexer = new IndexEnricher(sourceIndexFileName,targetIndexFileName, config)
 

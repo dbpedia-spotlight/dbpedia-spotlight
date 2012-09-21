@@ -18,21 +18,6 @@
 
 package org.dbpedia.spotlight.util
 
-/**
- * Copyright 2011 Pablo Mendes, Max Jakob
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 import io.Source
 import org.apache.commons.logging.LogFactory
@@ -45,6 +30,7 @@ import org.semanticweb.yars.nx.{Literal, Resource, Triple}
 import collection.JavaConversions._
 import util.matching.Regex
 import org.dbpedia.spotlight.BzipUtils
+import org.apache.commons.compress.archivers.ArchiveStreamFactory
 
 /**
  * Functions to create Concept URIs (possible targets of disambiguations)
@@ -54,7 +40,6 @@ import org.dbpedia.spotlight.BzipUtils
  *
  * Contains logic of what to index wrt. URIs and SurfaceForms.
  *
- * //TODO rename to ExtractCandidateMap.
  *
  * @author maxjakob
  * @author pablomendes (created blacklisted URI patterns for language-specific stuff (e.g. List_of, etc.)
@@ -92,17 +77,20 @@ object ExtractCandidateMap
         LOG.info("  collecting bad URIs from redirects in "+redirectsFileName+" and disambiguations in "+disambiguationsFileName+" ...")
         // redirects and disambiguations are bad URIs
         for (fileName <- List(redirectsFileName, disambiguationsFileName)) {
-            for(triple <- new NxParser(new FileInputStream(fileName))) {
+            val input = new ArchiveStreamFactory().createArchiveInputStream(new FileInputStream(fileName))
+            for(triple <- new NxParser(input)) {
                 val badUri = triple(0).toString.replace(SpotlightConfiguration.DEFAULT_NAMESPACE, "")
                 badURIs += badUri
                 badURIStream.println(badUri)
             }
+            input.close()
         }
         badURIStream.close
 
         LOG.info("  collecting concept URIs from titles in "+titlesFileName+", without redirects and disambiguations...")
+        val titlesInputStream = new ArchiveStreamFactory().createArchiveInputStream(new FileInputStream(titlesFileName))
         // get titles without bad URIs
-        val parser = new NxParser(new FileInputStream(titlesFileName))
+        val parser = new NxParser(titlesInputStream)
         while (parser.hasNext) {
             val triple = parser.next
             val uri = triple(0).toString.replace(SpotlightConfiguration.DEFAULT_NAMESPACE, "")
@@ -110,6 +98,7 @@ object ExtractCandidateMap
                 conceptURIStream.println(uri)
         }
         conceptURIStream.close
+        titlesInputStream.close
 
         LOG.info("Done.")
 //        conceptURIsFileName = conceptURIsFile.getAbsolutePath
@@ -140,20 +129,22 @@ object ExtractCandidateMap
         if (!new File(conceptURIsFileName).isFile) {
             throw new IllegalStateException("concept URIs not created yet; call saveConceptURIs first or set concept URIs file")
         }
-        LOG.info("Creating redirects transitive closure file "+redirectsFileName+" ...")
+        LOG.info("Creating redirects transitive closure file "+redirectTCFileName+" ...")
 
         LOG.info("  loading concept URIs from "+conceptURIsFileName+"...")
-        val conceptURIs = Source.fromFile(conceptURIsFileName, "UTF-8").getLines.toSet
+        val conceptURIs = Source.fromInputStream(new ArchiveStreamFactory().createArchiveInputStream(new FileInputStream(conceptURIsFileName)), "UTF-8").getLines.toSet
 
         LOG.info("  loading redirects from "+redirectsFileName+"...")
         var linkMap = Map[String,String]()
-        val parser = new NxParser(new FileInputStream(redirectsFileName))
+        val redirectsInput = new ArchiveStreamFactory().createArchiveInputStream(new FileInputStream(redirectsFileName))
+        val parser = new NxParser(redirectsInput)
         while (parser.hasNext) {
             val triple = parser.next
             val subj = triple(0).toString.replace(SpotlightConfiguration.DEFAULT_NAMESPACE, "")
             val obj = triple(2).toString.replace(SpotlightConfiguration.DEFAULT_NAMESPACE, "")
             linkMap = linkMap.updated(subj, obj)
         }
+        redirectsInput.close()
 
         val redURIstream = new PrintStream(redirectTCFileName, "UTF-8")
 
@@ -230,7 +221,8 @@ object ExtractCandidateMap
 
         LOG.info("  storing titles of redirect and disambiguation URIs...")
         for (fileName <- List(redirectsFileName, disambiguationsFileName)) {
-            val parser = new NxParser(new FileInputStream(fileName))
+            val input = new ArchiveStreamFactory().createArchiveInputStream(new FileInputStream(fileName))
+            val parser = new NxParser(input)
             while (parser.hasNext) {
                 val triple = parser.next
                 val surfaceFormUri = triple(0).toString.replace(SpotlightConfiguration.DEFAULT_NAMESPACE, "")
@@ -243,6 +235,7 @@ object ExtractCandidateMap
                     }
                 }
             }
+            input.close()
         }
 
         surfaceFormsStream.close
@@ -278,13 +271,15 @@ object ExtractCandidateMap
         // make reverse map of redirects and disambiguations
         var linkMap = Map[String,List[String]]()
         for (fileName <- List(redirectsFileName, disambiguationsFileName)) {
-            val parser = new NxParser(new FileInputStream(fileName))
+            val input = new ArchiveStreamFactory().createArchiveInputStream(new FileInputStream(fileName))
+            val parser = new NxParser(input)
             while (parser.hasNext) {
                 val triple = parser.next
                 val subj = triple(0).toString.replace(SpotlightConfiguration.DEFAULT_NAMESPACE, "")
                 val obj = triple(2).toString.replace(SpotlightConfiguration.DEFAULT_NAMESPACE, "")
                 linkMap = linkMap.updated(obj, linkMap.get(obj).getOrElse(List[String]()) ::: List(subj))
             }
+            input.close()
         }
 
         LOG.info("  collecting surface forms from map...")
@@ -403,9 +398,9 @@ object ExtractCandidateMap
         val language = config.getLanguage().toLowerCase
 
         // DBpedia input
-        titlesFileName          = BzipUtils.extract(config.get("org.dbpedia.spotlight.data.labels"))
-        redirectsFileName       = BzipUtils.extract(config.get("org.dbpedia.spotlight.data.redirects"))
-        disambiguationsFileName = BzipUtils.extract(config.get("org.dbpedia.spotlight.data.disambiguations"))
+        titlesFileName          = config.get("org.dbpedia.spotlight.data.labels")
+        redirectsFileName       = config.get("org.dbpedia.spotlight.data.redirects")
+        disambiguationsFileName = config.get("org.dbpedia.spotlight.data.disambiguations")
 
         // output
         conceptURIsFileName     = config.get("org.dbpedia.spotlight.data.conceptURIs")
