@@ -18,7 +18,6 @@
 
 package org.dbpedia.spotlight.lucene.index
 
-import io.Source
 import java.io.File
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.string.ContextExtractor
@@ -26,6 +25,7 @@ import org.dbpedia.spotlight.util.IndexingConfiguration
 import org.dbpedia.spotlight.filter.occurrences.{RedirectResolveFilter, UriWhitelistFilter, ContextNarrowFilter}
 import org.dbpedia.spotlight.io._
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
+import org.dbpedia.spotlight.BzipUtils
 
 /**
  * Saves Occurrences to a TSV file.
@@ -48,7 +48,7 @@ object ExtractOccsFromWikipedia {
         val targetFileName = args(1)
 
         val config = new IndexingConfiguration(indexingConfigFileName)
-        val wikiDumpFileName    = config.get("org.dbpedia.spotlight.data.wikipediaDump")
+        val wikiDumpFileName    = BzipUtils.extract(config.get("org.dbpedia.spotlight.data.wikipediaDump"))
         val conceptURIsFileName = config.get("org.dbpedia.spotlight.data.conceptURIs")
         val redirectTCFileName  = config.get("org.dbpedia.spotlight.data.redirectsTC")
         val maxContextWindowSize  = config.get("org.dbpedia.spotlight.data.maxContextWindowSize").toInt

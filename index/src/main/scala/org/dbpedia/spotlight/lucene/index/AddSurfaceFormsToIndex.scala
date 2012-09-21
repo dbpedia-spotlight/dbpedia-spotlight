@@ -18,13 +18,12 @@
 
 package org.dbpedia.spotlight.lucene.index
 
-import org.dbpedia.spotlight.lucene.LuceneManager
-import org.apache.lucene.store.FSDirectory
+
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.model.SurfaceForm
-import org.dbpedia.spotlight.util.{IndexingConfiguration, ExtractCandidateMap}
+import org.dbpedia.spotlight.util.IndexingConfiguration
 import java.util.Scanner
-import java.io.{FileInputStream, File}
+import java.io.FileInputStream
 import org.apache.commons.logging.{LogFactory, Log}
 import scalaj.collection.Imports._
 
@@ -100,14 +99,16 @@ object AddSurfaceFormsToIndex
     }
 
     def main(args : Array[String]) {
+
         val indexingConfigFileName = args(0)
+        val sourceIndexFileName = args(1)
+
         val lowerCased : Boolean = if (args.size>1) args(1).toLowerCase().contains("lowercase") else false
         val alternatives = if (args.size>1) args(1).toLowerCase().contains("alternative") else false
 
         println("alternatives is %s".format(alternatives.toString))
 
         val config = new IndexingConfiguration(indexingConfigFileName)
-        val sourceIndexFileName = config.get("org.dbpedia.spotlight.index.dir")
         val targetIndexFileName = sourceIndexFileName+"-withSF"
         val surfaceFormsFileName = config.get("org.dbpedia.spotlight.data.surfaceForms")
 
