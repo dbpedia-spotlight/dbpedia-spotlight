@@ -29,8 +29,7 @@ import org.dbpedia.spotlight.string.ModifiedWikiUtil
 import org.semanticweb.yars.nx.{Literal, Resource, Triple}
 import collection.JavaConversions._
 import util.matching.Regex
-import org.dbpedia.spotlight.BzipUtils
-import org.apache.commons.compress.archivers.ArchiveStreamFactory
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 
 /**
  * Functions to create Concept URIs (possible targets of disambiguations)
@@ -77,7 +76,7 @@ object ExtractCandidateMap
         LOG.info("  collecting bad URIs from redirects in "+redirectsFileName+" and disambiguations in "+disambiguationsFileName+" ...")
         // redirects and disambiguations are bad URIs
         for (fileName <- List(redirectsFileName, disambiguationsFileName)) {
-            val input = new ArchiveStreamFactory().createArchiveInputStream(new FileInputStream(fileName))
+            val input = new BZip2CompressorInputStream(new FileInputStream(fileName), true)
             for(triple <- new NxParser(input)) {
                 val badUri = triple(0).toString.replace(SpotlightConfiguration.DEFAULT_NAMESPACE, "")
                 badURIs += badUri
@@ -88,7 +87,7 @@ object ExtractCandidateMap
         badURIStream.close
 
         LOG.info("  collecting concept URIs from titles in "+titlesFileName+", without redirects and disambiguations...")
-        val titlesInputStream = new ArchiveStreamFactory().createArchiveInputStream(new FileInputStream(titlesFileName))
+        val titlesInputStream = new BZip2CompressorInputStream(new FileInputStream(titlesFileName), true)
         // get titles without bad URIs
         val parser = new NxParser(titlesInputStream)
         while (parser.hasNext) {
@@ -132,11 +131,12 @@ object ExtractCandidateMap
         LOG.info("Creating redirects transitive closure file "+redirectTCFileName+" ...")
 
         LOG.info("  loading concept URIs from "+conceptURIsFileName+"...")
-        val conceptURIs = Source.fromInputStream(new ArchiveStreamFactory().createArchiveInputStream(new FileInputStream(conceptURIsFileName)), "UTF-8").getLines.toSet
+        val conceptURIs = Source.fromFile(conceptURIsFileName, "UTF-8").getLines.toSet
 
         LOG.info("  loading redirects from "+redirectsFileName+"...")
         var linkMap = Map[String,String]()
-        val redirectsInput = new ArchiveStreamFactory().createArchiveInputStream(new FileInputStream(redirectsFileName))
+        val redirectsInput = new BZip2CompressorInputStream(new FileInputStream(redirectsFileName), true)
+
         val parser = new NxParser(redirectsInput)
         while (parser.hasNext) {
             val triple = parser.next
@@ -221,7 +221,7 @@ object ExtractCandidateMap
 
         LOG.info("  storing titles of redirect and disambiguation URIs...")
         for (fileName <- List(redirectsFileName, disambiguationsFileName)) {
-            val input = new ArchiveStreamFactory().createArchiveInputStream(new FileInputStream(fileName))
+            val input = new BZip2CompressorInputStream(new FileInputStream(fileName), true)
             val parser = new NxParser(input)
             while (parser.hasNext) {
                 val triple = parser.next
@@ -271,7 +271,7 @@ object ExtractCandidateMap
         // make reverse map of redirects and disambiguations
         var linkMap = Map[String,List[String]]()
         for (fileName <- List(redirectsFileName, disambiguationsFileName)) {
-            val input = new ArchiveStreamFactory().createArchiveInputStream(new FileInputStream(fileName))
+            val input = new BZip2CompressorInputStream(new FileInputStream(fileName), true)
             val parser = new NxParser(input)
             while (parser.hasNext) {
                 val triple = parser.next

@@ -22,7 +22,6 @@ import org.apache.avalon.framework.configuration.ConfigurationException
 import org.apache.commons.logging.{LogFactory, Log}
 import java.io.File
 import org.dbpedia.spotlight.util.IndexingConfiguration
-import org.dbpedia.spotlight.BzipUtils
 
 /**
  * This script goes over the index and adds surface forms, counts and DBpedia Types as provided in input files.
