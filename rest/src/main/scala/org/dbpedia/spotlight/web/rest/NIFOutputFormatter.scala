@@ -29,20 +29,14 @@ import org.apache.any23.source.{DocumentSource,StringDocumentSource}
 import org.dbpedia.spotlight.model.{DBpediaResourceOccurrence,SurfaceFormOccurrence,SurfaceForm}
 
 /**
- * Class that handles the conversion of DBpedia Spotlight annotations
- * to the NLP Interchange Format (NIF).
+ * Class that handles the output of DBpedia Spotlight annotations
+ * in the NLP Interchange Format (NIF).
  * 
  * @author Marcus Nitzschke
  */
-class NIFOutputFormatter(options: java.util.HashMap[String,_]){
-  // options for nif processing
-  val prefix = options.get("prefix")
-  val recipe = options.get("urirecipe")
-  val format = options.get("format")
+class NIFOutputFormatter{
 
-  // rdf type of the processed string
-  var rdfType = "http://nlp2rdf.lod2.eu/schema/string/"
-  if (recipe == "offset") rdfType += "OffsetBasedString" else rdfType += "ContextHashBasedString"
+  val runner:Any23 = new Any23()
 
   /**
    * Method for processing the spotlight annotations to NIF format.
@@ -51,9 +45,20 @@ class NIFOutputFormatter(options: java.util.HashMap[String,_]){
    * @param occs a list of the resource occurrences of the input text
    * @return the NIF representation of the annotated input text
    */
-  def fromResourceOccs(text: String, occs: java.util.List[DBpediaResourceOccurrence]): String = {
+  def fromResourceOccs(text: String, occs: java.util.List[DBpediaResourceOccurrence],
+                          options: java.util.HashMap[String,_]): String = {   
+
+    val prefix = options.get("prefix").toString
+    val recipe = options.get("urirecipe").toString
+    val format = options.get("format").toString
+    val ctxLength = options.get("context-length").toString().toInt
+
     // set of all occurrence URIs collected for the substring properties
     var occRes: Set[Pair[String,String]] = Set()
+
+    // rdf type of the processed strings
+    var rdfType = "http://nlp2rdf.lod2.eu/schema/string/"
+    if (recipe == "offset") rdfType += "OffsetBasedString" else rdfType += "ContextHashBasedString"
 
     // begin of the processing of the resource occurrences
     for (occ <- occs){
@@ -61,7 +66,7 @@ class NIFOutputFormatter(options: java.util.HashMap[String,_]){
       // build URI for this occurrence
       var occUri = ""
       try {
-        occUri = buildURI(occ.surfaceForm, occ.textOffset)
+        occUri = buildURI(occ.surfaceForm, occ.textOffset, recipe, prefix, ctxLength)
       }
       catch {
 	case iae : IllegalArgumentException => println(iae.getMessage) // TODO error handling
@@ -74,10 +79,10 @@ class NIFOutputFormatter(options: java.util.HashMap[String,_]){
       occRes += Pair(occUri, dbpediaResUri)
     }
 
-    // document specific output
+    // document specific uri
     var docUri = ""
     try {
-      docUri = buildDocURI(text)
+      docUri = buildDocURI(text, recipe, prefix, ctxLength)
     }
     catch {
       case iae : IllegalArgumentException => println(iae.getMessage) // TODO error handling
@@ -101,7 +106,7 @@ class NIFOutputFormatter(options: java.util.HashMap[String,_]){
       </rdf:RDF>
 
     // convert and output the result in the given format
-    formatRdfOutput(result toString, docUri)
+    formatRdfOutput(result toString, format, docUri)
   }
 
   /**
@@ -111,15 +116,26 @@ class NIFOutputFormatter(options: java.util.HashMap[String,_]){
    * @param occs a list of the surface occurrences of the input text
    * @return the NIF representation of the annotated input text
    */
-  def fromSurfaceFormOccs(text: String, occs: java.util.List[SurfaceFormOccurrence]): String = {   
+  def fromSurfaceFormOccs(text: String, occs: java.util.List[SurfaceFormOccurrence], 
+                          options: java.util.HashMap[String,_]): String = {   
+
+    val prefix = options.get("prefix").toString
+    val recipe = options.get("urirecipe").toString
+    val format = options.get("format").toString
+    val ctxLength = options.get("context-length").toString().toInt
+
     // set of all occurrence URIs collected for the substring properties
     var occRes: Set[Pair[String,String]] = Set()
+
+    // rdf type of the processed strings
+    var rdfType = "http://nlp2rdf.lod2.eu/schema/string/"
+    if (recipe == "offset") rdfType += "OffsetBasedString" else rdfType += "ContextHashBasedString"
 
     for (occ <- occs){
       // build URI for this occurrence
       var occUri = ""
       try {
-        occUri = buildURI(occ.surfaceForm, occ.textOffset)
+        occUri = buildURI(occ.surfaceForm, occ.textOffset, recipe, prefix, ctxLength)
       }
       catch {
 	case iae : IllegalArgumentException => println(iae.getMessage) // TODO error handling
@@ -128,10 +144,10 @@ class NIFOutputFormatter(options: java.util.HashMap[String,_]){
       occRes += Pair(occUri, occ.surfaceForm.name)
     }
 
-    // document specific output
+    // document specific uri
     var docUri = ""
     try {
-      docUri = buildDocURI(text)
+      docUri = buildDocURI(text, recipe, prefix, ctxLength)
     }
     catch {
       case iae : IllegalArgumentException => println(iae.getMessage) // TODO error handling
@@ -155,7 +171,7 @@ class NIFOutputFormatter(options: java.util.HashMap[String,_]){
       </rdf:RDF>
 
     // convert and output the result in the given format
-    formatRdfOutput(result toString, docUri)
+    formatRdfOutput(result toString, format, docUri)
   }
 
   /**
@@ -164,11 +180,11 @@ class NIFOutputFormatter(options: java.util.HashMap[String,_]){
    * This method uses the Any23 framework (http://any23.apache.org/).
    * 
    * @param result the string representing the RDF/XML statements
+   * @param the given format, e.g. "turtle" or "ntriples"
    * @param docUri a global uri needed by Any23 for the conversion
    * @return the converted result string
    */
-  def formatRdfOutput(result:String, docUri:String): String = {
-    val runner:Any23 = new Any23()
+  def formatRdfOutput(result:String, format:String, docUri:String): String = {
     val source:DocumentSource = new StringDocumentSource(result, docUri)
     val out:ByteArrayOutputStream = new ByteArrayOutputStream()
     var handler:TripleHandler = null
@@ -194,9 +210,12 @@ class NIFOutputFormatter(options: java.util.HashMap[String,_]){
    * 
    * @param sff SurfaceForm the SurfaceForm of the corresponding occurrence for which the URI should be build
    * @param offset the text offset of the occurrence
+   * @param recipe the URI recipe type
+   * @param prefix the given URI prefix
+   * @param ctxLength length of the context if the recipe is "context-hash"
    * @return URI for the specific occurrence
    */
-  def buildURI(sff: SurfaceForm, offset: Int): String = {
+  def buildURI(sff: SurfaceForm, offset: Int, recipe:String, prefix:String, ctxLength:Int): String = {
     if (recipe == "offset") {
       // calculate offset indices according to NIF2.0 spec
       val startInd = offset
@@ -204,7 +223,6 @@ class NIFOutputFormatter(options: java.util.HashMap[String,_]){
       prefix + "offset_%s_%s".format(startInd, endInd)
     }
     else if (recipe == "context-hash") {
-      val ctxLength = options.getOrElse("context-length", 10)
       val length = sff.name.length
       val ctxString = "" // TODO
       val hash = DigestUtils.md5Hex(ctxString)
@@ -220,13 +238,15 @@ class NIFOutputFormatter(options: java.util.HashMap[String,_]){
    * the NIF specification.
    * 
    * @param text Input string/document for which the URI should be build
+   * @param recipe the URI recipe type
+   * @param prefix the given URI prefix
+   * @param ctxLength length of the context if the recipe is "context-hash"
    * @return URI for the specific string/document
    */
-  def buildDocURI(text: String): String = {
+  def buildDocURI(text: String, recipe: String, prefix: String, ctxLength: Int): String = {
     if (recipe == "offset")
       prefix + "offset_0_%s".format(text.length)
     else if (recipe == "context-hash") {
-      val ctxLength = options.getOrElse("context-length", 10)
       val length = text.length
       val ctxString = "" // TODO
       val hash = DigestUtils.md5Hex(ctxString)

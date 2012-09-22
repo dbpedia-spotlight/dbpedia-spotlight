@@ -58,7 +58,8 @@ public class Spot {
     // Annotation interface
     private static SpotlightInterface annotationInterface =  new SpotlightInterface("/spot");
 
-
+    private NIFOutputFormatter outputFormatter = new NIFOutputFormatter();
+    
     @GET
     @Produces({MediaType.TEXT_XML,MediaType.APPLICATION_XML})
     public Response getXML(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
@@ -111,8 +112,7 @@ public class Spot {
 	    options.put("format", format);
 	    options.put("urirecipe", recipe);
 	    options.put("context-length", ctxLength);
-	    NIFOutputFormatter outputFormatter = new NIFOutputFormatter(options);
-	    String response = outputFormatter.fromSurfaceFormOccs(text, spots);
+	    String response = outputFormatter.fromSurfaceFormOccs(text, spots, options);
             return ServerUtils.ok(response);
         } catch (Exception e) {
             e.printStackTrace();

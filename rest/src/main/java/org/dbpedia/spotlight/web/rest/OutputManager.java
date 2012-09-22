@@ -55,6 +55,8 @@ import org.dbpedia.spotlight.web.rest.NIFOutputFormatter;
  */
 public class OutputManager {
 
+    private NIFOutputFormatter outputFormatter = new NIFOutputFormatter();
+    
     private TransformerHandler initXMLDoc(ByteArrayOutputStream out) throws SAXException, TransformerConfigurationException {
         StreamResult streamResult = new StreamResult(out);
         SAXTransformerFactory tf = (SAXTransformerFactory) SAXTransformerFactory.newInstance();
@@ -129,8 +131,7 @@ public class OutputManager {
 	options.put("urirecipe", recipe);
 	options.put("context-length", ctxLength);
 	
-	NIFOutputFormatter outputFormatter = new NIFOutputFormatter(options);
-	return outputFormatter.fromResourceOccs(text, occList);
+	return outputFormatter.fromResourceOccs(text, occList, options);
     }
 
     protected void getResourcesXml(List<DBpediaResourceOccurrence> occList, TransformerHandler hd, AttributesImpl atts) throws SAXException {
