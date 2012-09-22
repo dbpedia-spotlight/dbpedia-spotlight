@@ -76,7 +76,8 @@ object IndexLingPipeSpotter
 
     def getDictionary(surrogatesFile : File, uriCountThreshold: Int) : MapDictionary[String] = {
         LOG.info("Reading surface forms from "+surrogatesFile+"...")
-        if (surrogatesFile.getName.toLowerCase.endsWith(".tsv")) getDictionaryFromTSVSurrogates(surrogatesFile, uriCountThreshold)
+        if (surrogatesFile.getName.toLowerCase.endsWith(".tsv")) getDictionaryFromTSV(surrogatesFile)
+        else if (surrogatesFile.getName.toLowerCase.endsWith(".count")) getDictionaryFromTSVSurrogates(surrogatesFile, uriCountThreshold)
         else if (surrogatesFile.getName.toLowerCase.endsWith(".nt")) getDictionaryFromNTSurrogates(surrogatesFile)
         else getDictionaryFromList(surrogatesFile)
     }
@@ -109,6 +110,16 @@ object IndexLingPipeSpotter
             } catch {
                 case e: Exception => LOG.error("Expected input is a TSV file with <surfaceForm, uri, count>")
             }
+            val surfaceForm = fields(0)
+            dictionary.addEntry(new DictionaryEntry[String](surfaceForm, ""))  // chunk type undefined
+        }
+        dictionary
+    }
+
+    private def getDictionaryFromTSV(surrogatesTSVFile : File) : MapDictionary[String] = {
+        val dictionary = new MapDictionary[String]()
+        for (line <- Source.fromFile(surrogatesTSVFile, "UTF-8").getLines) {
+            val fields = line.split("\t")
             val surfaceForm = fields(0)
             dictionary.addEntry(new DictionaryEntry[String](surfaceForm, ""))  // chunk type undefined
         }
