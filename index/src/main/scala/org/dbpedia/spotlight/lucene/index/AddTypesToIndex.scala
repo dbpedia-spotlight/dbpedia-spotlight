@@ -20,8 +20,7 @@ package org.dbpedia.spotlight.lucene.index
 
 import java.io.{FileInputStream, File}
 import org.dbpedia.spotlight.util.{IndexingConfiguration, TypesLoader}
-import org.dbpedia.spotlight.BzipUtils
-import org.apache.commons.compress.archivers.{ArchiveInputStream, ArchiveStreamFactory}
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 
 /**
  * Reads file instance_types_en.nt from DBpedia in order to add Ontology Resource Types to the index.
@@ -32,7 +31,7 @@ import org.apache.commons.compress.archivers.{ArchiveInputStream, ArchiveStreamF
 object AddTypesToIndex {
 
     def loadTypes(instanceTypesFileName: String) = {
-        val input = new ArchiveStreamFactory().createArchiveInputStream(new FileInputStream(instanceTypesFileName))
+        val input = new BZip2CompressorInputStream(new FileInputStream(instanceTypesFileName), true)
         val typesMap = instanceTypesFileName.contains(".tsv") match {
           case true  => TypesLoader.getTypesMapFromTSV_java(input)
           case false => TypesLoader.getTypesMap_java(input)
