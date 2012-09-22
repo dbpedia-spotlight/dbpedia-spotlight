@@ -51,7 +51,7 @@ class NIFOutputFormatter(options: java.util.HashMap[String,_]){
    * @param occs a list of the resource occurrences of the input text
    * @return the NIF representation of the annotated input text
    */
-  def outputNIFFromDBpediaOcc(text: String, occs: java.util.List[DBpediaResourceOccurrence]): String = {
+  def fromResourceOccs(text: String, occs: java.util.List[DBpediaResourceOccurrence]): String = {
     // set of all occurrence URIs collected for the substring properties
     var occRes: Set[Pair[String,String]] = Set()
 
@@ -111,7 +111,7 @@ class NIFOutputFormatter(options: java.util.HashMap[String,_]){
    * @param occs a list of the surface occurrences of the input text
    * @return the NIF representation of the annotated input text
    */
-  def outputNIFFromSurfaceOcc(text: String, occs: java.util.List[SurfaceFormOccurrence]): String = {   
+  def fromSurfaceFormOccs(text: String, occs: java.util.List[SurfaceFormOccurrence]): String = {   
     // set of all occurrence URIs collected for the substring properties
     var occRes: Set[Pair[String,String]] = Set()
 

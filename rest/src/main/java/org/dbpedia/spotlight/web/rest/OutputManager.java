@@ -129,8 +129,8 @@ public class OutputManager {
 	options.put("urirecipe", recipe);
 	options.put("context-length", ctxLength);
 	
-	NIFOutputFormatter nof = new NIFOutputFormatter(options);
-	return nof.outputNIFFromDBpediaOcc(text, occList);
+	NIFOutputFormatter outputFormatter = new NIFOutputFormatter(options);
+	return outputFormatter.fromResourceOccs(text, occList);
     }
 
     protected void getResourcesXml(List<DBpediaResourceOccurrence> occList, TransformerHandler hd, AttributesImpl atts) throws SAXException {

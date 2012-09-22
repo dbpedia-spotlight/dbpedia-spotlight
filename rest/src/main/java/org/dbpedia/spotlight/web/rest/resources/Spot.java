@@ -111,8 +111,8 @@ public class Spot {
 	    options.put("format", format);
 	    options.put("urirecipe", recipe);
 	    options.put("context-length", ctxLength);
-	    NIFOutputFormatter nof = new NIFOutputFormatter(options);
-	    String response = nof.outputNIFFromSurfaceOcc(text, spots);
+	    NIFOutputFormatter outputFormatter = new NIFOutputFormatter(options);
+	    String response = outputFormatter.fromSurfaceFormOccs(text, spots);
             return ServerUtils.ok(response);
         } catch (Exception e) {
             e.printStackTrace();
