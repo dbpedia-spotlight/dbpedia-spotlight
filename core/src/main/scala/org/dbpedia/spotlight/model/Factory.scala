@@ -18,7 +18,6 @@
 
 package org.dbpedia.spotlight.model
 
-import org.dbpedia.spotlight.string.ModifiedWikiUtil
 import org.dbpedia.spotlight.lucene.LuceneManager
 import org.apache.lucene.util.Version
 import org.apache.lucene.analysis.Analyzer
@@ -35,6 +34,7 @@ import org.apache.lucene.search.{DefaultSimilarity, ScoreDoc, Similarity}
 import scalaj.collection.Imports._
 import org.dbpedia.spotlight.spot.{SpotSelector, AtLeastOneNounSelector, ShortSurfaceFormSelector}
 import java.io.File
+import org.dbpedia.extraction.util.WikiUtil
 
 /**
  * Class containing methods to create model objects in many different ways
@@ -54,13 +54,19 @@ object Factory {
     }
 
     object SurfaceForm {
-        def fromDBpediaResourceURI(resource: DBpediaResource, lowercased: Boolean) = {
-            val name = ModifiedWikiUtil.cleanPageTitle(resource.uri)
-            val surfaceForm = if (lowercased) new SurfaceForm(name.toLowerCase) else new SurfaceForm(name)
-            surfaceForm;
-        }
         def fromString(name: String) = {
             new SurfaceForm(name.toString)
+        }
+        def fromDBpediaResourceURI(uri: String, lowerCased: Boolean): SurfaceForm = {
+            // decode URI and truncate trailing parentheses
+            val name = WikiUtil.wikiDecode(uri).replaceAll(""" \(.+?\)$""", "")
+            fromString(if (lowerCased) name.toLowerCase else name)
+        }
+        def fromDBpediaResourceURI(resource: DBpediaResource, lowerCased: Boolean): SurfaceForm = {
+            fromDBpediaResourceURI(resource.uri, lowerCased)
+        }
+        def fromWikiPageTitle(pageTitle: String, lowerCased: Boolean): SurfaceForm = {
+            fromDBpediaResourceURI(pageTitle, lowerCased)
         }
     }
 

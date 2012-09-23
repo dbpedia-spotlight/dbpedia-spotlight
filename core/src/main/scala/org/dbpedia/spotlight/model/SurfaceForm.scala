@@ -16,7 +16,7 @@
 
 package org.dbpedia.spotlight.model
 
-import org.dbpedia.spotlight.string.ModifiedWikiUtil
+import org.dbpedia.extraction.util.WikiUtil
 
 
 class SurfaceForm(var name : String) extends Serializable
@@ -35,13 +35,7 @@ class SurfaceForm(var name : String) extends Serializable
 
   name = name.replace("’", "'")
 
-  name = if (ModifiedWikiUtil.isEncoded(name)) {
-    ModifiedWikiUtil.wikiDecode(name)
-  }
-  else {
-    ModifiedWikiUtil.cleanSpace(name)
-  }
-
+  name = WikiUtil.cleanSpace(name)
 
   //TODO: instead of equalsIgnoreCase, fix the Spotter // (should be fixed now)
   override def equals(that : Any) = {
@@ -56,5 +50,4 @@ class SurfaceForm(var name : String) extends Serializable
   }
 
   override def toString = "SurfaceForm["+name+"]"
-
 }
