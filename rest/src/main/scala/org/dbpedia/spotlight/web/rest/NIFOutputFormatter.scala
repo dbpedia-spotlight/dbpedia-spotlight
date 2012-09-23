@@ -156,7 +156,8 @@ class NIFOutputFormatter{
     val result =  
       <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 	       xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-	       xmlns:str="http://nlp2rdf.lod2.eu/schema/string/">
+	       xmlns:str="http://nlp2rdf.lod2.eu/schema/string/"
+	       xmlns:ua="http://nlp2rdf.lod2.eu/schema/unity/unifiedannotation.ttl#">
 	<rdf:Description rdf:about={docUri}>
 	  <str:sourceString>{text}</str:sourceString>
 	  {for (occ <- occRes) yield <str:subString rdf:resource={occ._1} />}
@@ -166,6 +167,7 @@ class NIFOutputFormatter{
 	{for (occ <- occRes) yield
           <rdf:Description rdf:about={occ._1}>
             <rdf:type rdf:resource={rdfType} />
+	    <rdf:type rdf:resource="http://nlp2rdf.lod2.eu/schema/unity/unifiedannotation.ttl#DisambiguationCandidate" />
 	    <rdfs:label>{occ._2}</rdfs:label>
           </rdf:Description>}
       </rdf:RDF>
