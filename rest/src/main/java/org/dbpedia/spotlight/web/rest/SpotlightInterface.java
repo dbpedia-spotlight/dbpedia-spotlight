@@ -276,6 +276,15 @@ public class SpotlightInterface  {
         String result;
         String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
 
+	// when no prefix argument specified and url param is used the prefix
+	// is set to the given url
+	if (prefix == null && !inUrl.equals(""))
+	    prefix = inUrl + "#";
+	// when no prefix argument specified and text param is used the prefix
+	// is set to the spotlight url + the given text
+	else if (prefix == null && !text.equals(""))
+	    prefix = "http://spotlight.dbpedia.org/rest/document/?text="+text+"#";
+	
 	List<DBpediaResourceOccurrence> occs = getOccurrences(textToProcess, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter,disambiguator);
 	result = outputManager.makeNIF(textToProcess, occs, format, prefix, recipe, ctxLength);
 

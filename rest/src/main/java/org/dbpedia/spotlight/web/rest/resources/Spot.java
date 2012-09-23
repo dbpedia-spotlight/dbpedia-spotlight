@@ -96,6 +96,16 @@ public class Spot {
 
 	String format = null;
 	String accept = request.getHeader("accept");
+
+	// when no prefix argument specified and url param is used the prefix
+	// is set to the given url
+	if (prefix == null && !inUrl.equals(""))
+	    prefix = inUrl + "#";
+	// when no prefix argument specified and text param is used the prefix
+	// is set to the spotlight url + the given text
+	else if (prefix == null && !text.equals(""))
+	    prefix = "http://spotlight.dbpedia.org/rest/document/?text="+text+"#";
+
 	if (accept.equals("text/turtle"))
 	    format = "turtle";
 	else if (accept.equals("text/plain"))

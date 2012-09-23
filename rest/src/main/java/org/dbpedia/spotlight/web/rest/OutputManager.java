@@ -36,8 +36,6 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import java.io.ByteArrayOutputStream;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -115,16 +113,6 @@ public class OutputManager {
     }
 
     protected String makeNIF(String text, List<DBpediaResourceOccurrence> occList, String format, String prefix, String recipe, int ctxLength) throws OutputException {
-	// setting default prefix
-	if (prefix == null){
-	    try{
-		prefix = InetAddress.getLocalHost().getHostName() + "#";
-	    }
-	    catch (UnknownHostException uhe){
-		prefix = "http://unknown.host#"; // TODO
-	    }
-	}
-
 	HashMap<String, Object> options = new HashMap<String, Object>();
 	options.put("prefix", prefix);
 	options.put("format", format);
