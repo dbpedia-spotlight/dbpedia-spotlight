@@ -126,7 +126,7 @@ public class Disambiguate {
 			      @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
 			      @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
 			      @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution,
-			      @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
+			      @DefaultValue("Default") @QueryParam("disambiguator") String disambiguatorName,
 			      @QueryParam("prefix") String prefix,
 			      @DefaultValue("offset") @QueryParam("urirecipe") String recipe,
 			      @DefaultValue("10") @QueryParam("context-length") int ctxLength,
