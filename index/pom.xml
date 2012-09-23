@@ -43,8 +43,9 @@
         <plugins>
 
             <plugin>
-                <groupId>org.scala-tools</groupId>
-                <artifactId>maven-scala-plugin</artifactId>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>${scala.maven.plugin.version}</version>
 
                 <configuration>
                     <launchers>
