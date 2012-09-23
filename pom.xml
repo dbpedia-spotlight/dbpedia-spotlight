@@ -30,10 +30,10 @@
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.compiler.version>1.6</java.compiler.version>
-        <maven.scala.plugin.version>2.15.0</maven.scala.plugin.version>
         <maven.install.plugin.version>2.3.1</maven.install.plugin.version>
         <maven.assembly.plugin.version>2.3</maven.assembly.plugin.version>
         <scala.compiler.version>2.9.1</scala.compiler.version>
+        <scala.maven.plugin.version>3.1.0</scala.maven.plugin.version>
 
         <spotlight.basedir>${project.basedir}</spotlight.basedir>
     </properties>
@@ -55,9 +55,9 @@
         <plugins>
 
             <plugin>
-                <groupId>org.scala-tools</groupId>
-                <artifactId>maven-scala-plugin</artifactId>
-                <version>${maven.scala.plugin.version}</version>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>${scala.maven.plugin.version}</version>
 
                 <executions>
                     <execution>
@@ -98,8 +98,22 @@
                 <inherited>true</inherited>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>1.1</version>
+                <version>1.1.1</version>
                 <executions>
+                    <execution>
+                        <id>enforce-maven-3</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>3</version>
+                                </requireMavenVersion>
+                            </rules>
+                            <fail>true</fail>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>enforce-java-newer-6</id>
                         <goals>
