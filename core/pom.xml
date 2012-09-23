@@ -40,6 +40,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.dbpedia.extraction</groupId>
+            <artifactId>core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
         </dependency>
