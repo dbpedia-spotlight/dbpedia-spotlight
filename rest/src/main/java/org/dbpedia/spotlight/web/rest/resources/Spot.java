@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 import org.dbpedia.spotlight.model.Text;
+import org.dbpedia.spotlight.web.rest.NIFOutputFormatter;
 import org.dbpedia.spotlight.web.rest.Server;
 import org.dbpedia.spotlight.web.rest.ServerUtils;
 import org.dbpedia.spotlight.web.rest.SpotlightInterface;
@@ -35,6 +36,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -56,7 +58,8 @@ public class Spot {
     // Annotation interface
     private static SpotlightInterface annotationInterface =  new SpotlightInterface("/spot");
 
-
+    private NIFOutputFormatter outputFormatter = new NIFOutputFormatter();
+    
     @GET
     @Produces({MediaType.TEXT_XML,MediaType.APPLICATION_XML})
     public Response getXML(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
@@ -79,6 +82,54 @@ public class Spot {
         }
     }
 
+    @GET
+    @Produces({"text/turtle", "text/plain", "application/rdf+xml"})
+    public Response getNIF(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
+                           @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @QueryParam("url") String inUrl,
+			   @DefaultValue("Default") @QueryParam("spotter") String spotterName,
+			   @QueryParam("prefix") String prefix,
+			   @DefaultValue("offset") @QueryParam("urirecipe") String recipe,
+			   @DefaultValue("10") @QueryParam("context-length") int ctxLength,
+                            @Context HttpServletRequest request) {
+
+        String clientIp = request.getRemoteAddr();
+
+	String format = null;
+	String accept = request.getHeader("accept");
+
+	// when no prefix argument specified and url param is used the prefix
+	// is set to the given url
+	if (prefix == null && !inUrl.equals(""))
+	    prefix = inUrl + "#";
+	// when no prefix argument specified and text param is used the prefix
+	// is set to the spotlight url + the given text
+	else if (prefix == null && !text.equals(""))
+	    prefix = "http://spotlight.dbpedia.org/rest/document/?text="+text+"#";
+
+	if (accept.equals("text/turtle"))
+	    format = "turtle";
+	else if (accept.equals("text/plain"))
+	    format = "ntriples";
+	else if (accept.equals("application/rdf+xml"))
+	    format = "rdfxml";
+	
+        try {
+            String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
+            List<SurfaceFormOccurrence> spots = annotationInterface.spot(spotterName, new Text(textToProcess));
+
+	    HashMap<String, Object> options = new HashMap<String, Object>();
+	    options.put("prefix", prefix);
+	    options.put("format", format);
+	    options.put("urirecipe", recipe);
+	    options.put("context-length", ctxLength);
+	    String response = outputFormatter.fromSurfaceFormOccs(text, spots, options);
+            return ServerUtils.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(accept).build());
+        }
+    }
+    
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getJSON(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
@@ -122,6 +173,20 @@ public class Spot {
             e.printStackTrace();
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.TEXT_HTML).build());
         }
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces({"text/turtle", "text/plain", "application/rdf+xml"})
+    public Response postNIF(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
+			    @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @FormParam("url") String inUrl,
+			    @DefaultValue("Default") @FormParam("spotter") String spotterName,
+			    @FormParam("prefix") String prefix,
+			    @DefaultValue("offset") @FormParam("urirecipe") String recipe,
+			    @DefaultValue("10") @FormParam("context-length") int ctxLength,
+			    @Context HttpServletRequest request) {
+
+	return getNIF(text, inUrl, spotterName, prefix, recipe, ctxLength, request);
     }
 
     @POST

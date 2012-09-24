@@ -395,6 +395,11 @@
                 <version>1.6</version>
             </dependency>
 
+	    <dependency>
+                <groupId>org.apache.any23</groupId>
+		<artifactId>apache-any23-core</artifactId>
+		<version>0.7.0-incubating</version>
+            </dependency>
 
         </dependencies>
     </dependencyManagement>
