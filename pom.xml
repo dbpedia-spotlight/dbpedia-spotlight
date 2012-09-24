@@ -244,18 +244,25 @@
             <artifactId>scala-library</artifactId>
             <version>${scala.compiler.version}</version>
         </dependency>
-
     </dependencies>
 
     <dependencyManagement>
         <dependencies>
-
             <dependency>
                 <groupId>org.dbpedia.spotlight</groupId>
                 <artifactId>core</artifactId>
                 <version>${dbpedia.spotlight.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.dbpedia.spotlight</groupId>
+                <artifactId>eval</artifactId>
+                <version>${dbpedia.spotlight.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.dbpedia.spotlight</groupId>
+                <artifactId>index</artifactId>
+                <version>${dbpedia.spotlight.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.dbpedia.spotlight</groupId>
                 <artifactId>rest</artifactId>
@@ -267,7 +274,6 @@
                 <artifactId>log4j</artifactId>
                 <version>1.2.16</version>
             </dependency>
-
             <dependency>
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-core</artifactId>
@@ -325,19 +331,16 @@
                 </exclusions>
             </dependency>
 
-
             <dependency>
                 <groupId>xerces</groupId>
                 <artifactId>xercesImpl</artifactId>
                 <version>2.9.1</version>
             </dependency>
-
             <dependency>
                 <groupId>xerces</groupId>
                 <artifactId>xmlParserAPIs</artifactId>
                 <version>2.6.2</version>
             </dependency>
-
             <dependency>
                 <groupId>xml-apis</groupId>
                 <artifactId>xml-apis</artifactId>
@@ -357,25 +360,21 @@
                 <classifier>jdk15</classifier>
             </dependency>
 
-
             <dependency>
                 <groupId>com.sun.jersey</groupId>
                 <artifactId>jersey-server</artifactId>
                 <version>1.10</version>
             </dependency>
-
             <dependency>
                 <groupId>com.sun.jersey</groupId>
                 <artifactId>jersey-client</artifactId>
                 <version>1.10</version>
             </dependency>
-
             <dependency>
                 <groupId>com.sun.jersey</groupId>
                 <artifactId>jersey-grizzly</artifactId>
                 <version>1.10</version>
             </dependency>
-
             <dependency>
                 <groupId>com.sun.jersey</groupId>
                 <artifactId>jersey-bundle</artifactId>
@@ -413,18 +412,16 @@
                 <version>1.6</version>
             </dependency>
 
-	    <dependency>
+            <dependency>
                 <groupId>org.apache.any23</groupId>
-		<artifactId>apache-any23-core</artifactId>
-		<version>0.7.0-incubating</version>
+                <artifactId>apache-any23-core</artifactId>
+                <version>0.7.0-incubating</version>
             </dependency>
-
         </dependencies>
     </dependencyManagement>
 
 
     <repositories>
-
         <repository>
             <id>maven2-repository.dev.java.net</id>
             <name>Java.net Repository for Maven</name>

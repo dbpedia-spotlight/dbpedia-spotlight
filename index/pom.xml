@@ -20,7 +20,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    
+
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -97,10 +97,10 @@
                         <launcher>
                             <id>topicaltext</id>
                             <mainClass>org.dbpedia.spotlight.util.ExtractTopicalText</mainClass>
-			    <!--args>
-				<arg>/data/spotlight/enwiki-20101011-resolved-concepts.uriSorted.tsv</arg>
-				<arg>/home/pablo/Projects/DBpediaSpotlight/IavorJelev/uri_pairs/Politics2_uri_pairs.txt</arg>
-			    </args-->
+                            <!--args>
+                       <arg>/data/spotlight/enwiki-20101011-resolved-concepts.uriSorted.tsv</arg>
+                       <arg>/home/pablo/Projects/DBpediaSpotlight/IavorJelev/uri_pairs/Politics2_uri_pairs.txt</arg>
+                       </args-->
                             <jvmArgs>
                                 <jvmArg>-Xmx3G</jvmArg>
                             </jvmArgs>
@@ -137,6 +137,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.dbpedia.spotlight</groupId>
+            <artifactId>core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.dbpedia.extraction</groupId>
             <artifactId>core</artifactId>
             <version>2.0-SNAPSHOT</version>
@@ -147,13 +151,7 @@
             <artifactId>rio</artifactId>
             <version>1.0.10</version>
         </dependency>
-
         <dependency>
-            <groupId>org.dbpedia.spotlight</groupId>
-            <artifactId>core</artifactId>
-        </dependency>
-
-         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
             <version>3.6.0</version>
@@ -184,13 +182,11 @@
             <artifactId>commons-compress</artifactId>
             <version>1.4.1</version>
         </dependency>
-
         <dependency>
             <groupId>weka</groupId>
             <artifactId>weka</artifactId>
             <version>3.7.3</version>
         </dependency>
-
     </dependencies>
 
 </project>
