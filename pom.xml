@@ -30,8 +30,10 @@
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.compiler.version>1.6</java.compiler.version>
+        <maven.compiler.plugin.version>2.5.1</maven.compiler.plugin.version>
         <maven.install.plugin.version>2.3.1</maven.install.plugin.version>
         <maven.assembly.plugin.version>2.3</maven.assembly.plugin.version>
+        <maven.surefire.plugin.version>2.12.3</maven.surefire.plugin.version>
         <scala.compiler.version>2.9.1</scala.compiler.version>
         <scala.maven.plugin.version>3.1.0</scala.maven.plugin.version>
 
@@ -79,6 +81,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.plugin.version}</version>
                 <configuration>
                     <source>${java.compiler.version}</source>
                     <target>${java.compiler.version}</target>
@@ -89,6 +92,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven.surefire.plugin.version}</version>
                 <configuration>
                     <skipTests>true</skipTests>
                 </configuration>
