@@ -23,11 +23,7 @@ ulimit -v unlimited
 # you have to run maven2 from the module that contains the indexing classes
 cd ../index
 # the indexing process will generate files in the directory below
-if [ -e $DBPEDIA_WORKSPACE/data/output  ]; then
-    echo "$DBPEDIA_WORKSPACE"'/data/output already exist.'
-else
-    mkdir $DBPEDIA_WORKSPACE/data/output
-fi
+mkdir -p $DBPEDIA_WORKSPACE/data/output
 
 # first step is to extract valid URIs, synonyms and surface forms from DBpedia
 mvn scala:run -DmainClass=org.dbpedia.spotlight.util.ExtractCandidateMap "-DaddArgs=$INDEX_CONFIG_FILE"
