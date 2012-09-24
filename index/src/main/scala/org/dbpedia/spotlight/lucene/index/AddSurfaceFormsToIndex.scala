@@ -77,23 +77,28 @@ object AddSurfaceFormsToIndex
     // used by IndexEnricher
     // uri -> list(sf1, sf2)
     def loadSurfaceForms(surfaceFormsFileName: String, transform : String => List[String]) = {
-
+        var nWrongLines = 0
         LOG.info("Getting surface form map...")
         val reverseMap : java.util.Map[String, java.util.LinkedHashSet[SurfaceForm]] = new java.util.HashMap[String, java.util.LinkedHashSet[SurfaceForm]]()
         val separator = "\t"
         val tsvScanner = new Scanner(new FileInputStream(surfaceFormsFileName), "UTF-8")
         while (tsvScanner.hasNextLine) {
             val line = tsvScanner.nextLine.split(separator)
-            val sfAlternatives = transform(line(0)).map(sf => new SurfaceForm(sf))
-            val uri = line(1)
-            var sfSet = reverseMap.get(uri)
-            if (sfSet == null) {
-                sfSet = new java.util.LinkedHashSet[SurfaceForm]()
+            try {
+                val sfAlternatives = transform(line(0)).map(sf => new SurfaceForm(sf))
+                val uri = line(1)
+                var sfSet = reverseMap.get(uri)
+                if (sfSet == null) {
+                    sfSet = new java.util.LinkedHashSet[SurfaceForm]()
+                }
+                sfSet.addAll(sfAlternatives)
+                reverseMap.put(uri, sfSet)
+            } catch {
+                case e: ArrayIndexOutOfBoundsException => nWrongLines = nWrongLines + 1;
             }
-            sfSet.addAll(sfAlternatives)
-            reverseMap.put(uri, sfSet)
         }
         LOG.info("Done.")
+        if (nWrongLines>0) LOG.error("There were %s errors parsing the input lines. Please double check that everything went fine by inspecting the input file given to this class.")
         reverseMap
 
     }

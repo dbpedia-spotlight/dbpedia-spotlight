@@ -41,7 +41,7 @@ class ConfidenceFilter(val simThresholds : List[Double], val confidence : Double
 
     private val LOG = LogFactory.getLog(this.getClass)
 
-    val simThreshold = simThresholds(math.max(((simThresholds.length-1)*confidence).round.toInt, 0))
+    val simThreshold = if (simThresholds.length==0) 0 else simThresholds(math.max(((simThresholds.length-1)*confidence).round.toInt, 0))
     override def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
         if(occ.similarityScore < simThreshold) {
             LOG.info("(c=%s) filtered out by similarity score threshold (%.3f<%.3f): %s".format(confidence,occ.similarityScore, simThreshold, occ))
