@@ -177,9 +177,9 @@
                         <configuration>
                             <groupId>com.aliasi</groupId>
                             <artifactId>lingpipe</artifactId>
-                            <version>4.0.0</version>
+                            <version>4.1.0</version>
                             <packaging>jar</packaging>
-                            <file>${spotlight.basedir}/lib/lingpipe-4.0.0.jar</file>
+                            <file>${spotlight.basedir}/lib/lingpipe-4.1.0.jar</file>
                         </configuration>
                     </execution>
                     <execution>
