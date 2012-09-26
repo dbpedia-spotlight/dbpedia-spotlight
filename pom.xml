@@ -34,7 +34,7 @@
         <maven.install.plugin.version>2.3.1</maven.install.plugin.version>
         <maven.assembly.plugin.version>2.3</maven.assembly.plugin.version>
         <maven.surefire.plugin.version>2.12.3</maven.surefire.plugin.version>
-        <scala.compiler.version>2.9.1</scala.compiler.version>
+        <scala.compiler.version>2.9.2</scala.compiler.version>
         <scala.maven.plugin.version>3.1.0</scala.maven.plugin.version>
 
         <spotlight.basedir>${project.basedir}</spotlight.basedir>
@@ -446,8 +446,8 @@
 
             <dependency>
                 <groupId>org.scalatest</groupId>
-                <artifactId>scalatest_2.9.1</artifactId>
-                <version>1.8</version>
+                <artifactId>scalatest_2.9.2</artifactId>
+                <version>2.0.M4</version>
             </dependency>
 
             <dependency>
@@ -552,3 +552,4 @@
     </pluginRepositories>
 
 </project>
+
