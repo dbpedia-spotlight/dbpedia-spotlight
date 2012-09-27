@@ -417,7 +417,14 @@
                 <artifactId>apache-any23-core</artifactId>
                 <version>0.7.0-incubating</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.scalatest</groupId>
+                <artifactId>scalatest_2.9.1</artifactId>
+                <version>1.8</version>
+            </dependency>
         </dependencies>
+
     </dependencyManagement>
 
 
@@ -465,6 +472,11 @@
         <repository>
             <id>igetdb.sourceforge</id>
             <url>http://igetdb.sourceforge.net/maven2-repository</url>
+        </repository>
+
+        <repository>
+            <id>sonatype</id>
+            <url>http://repository.sonatype.org/content/groups/public/</url>
         </repository>
     </repositories>
 

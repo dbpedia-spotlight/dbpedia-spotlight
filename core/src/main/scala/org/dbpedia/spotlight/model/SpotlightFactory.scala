@@ -37,6 +37,7 @@ import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy
 import org.dbpedia.spotlight.lucene.search.{LuceneCandidateSearcher, MergedOccurrencesContextSearcher}
 import com.aliasi.util.AbstractExternalizable
 import com.aliasi.dict.Dictionary
+import org.dbpedia.spotlight.exceptions.ConfigurationException
 
 /**
  * This class contains many of the "defaults" for DBpedia Spotlight.
@@ -98,7 +99,15 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
 
     def spotter(policy: SpotterConfiguration.SpotterPolicy) : Spotter = {
         if (policy == SpotterConfiguration.SpotterPolicy.Default) {
-            spotters.getOrElse(policy, spotter(SpotterConfiguration.SpotterPolicy.LingPipeSpotter)); // if no default, use lingpipe
+            if (spotters.isEmpty)
+                throw new ConfigurationException("You have to specify at least one spotter implementation in the configuration file.")
+            val spotSelectors = Factory.SpotSelector.fromNameList(configuration.getSpotterConfiguration.config.getOrElse("org.dbpedia.spotlight.spot.selectors", ""))
+            val defaultSpotter = if (spotSelectors.isEmpty) {
+                spotter(SpotterConfiguration.SpotterPolicy.LingPipeSpotter)
+            } else {
+                SpotterWithSelector.getInstance(spotters.head._2, new ChainedSelector(spotSelectors))
+            }
+            defaultSpotter
         } else if(policy == SpotterConfiguration.SpotterPolicy.LingPipeSpotter) {
             val overlap = configuration.getSpotterConfiguration.config.getOrElse("org.dbpedia.spotlight.spot.allowOverlap", "false").equals("true")
             val caseSensitive = configuration.getSpotterConfiguration.config.getOrElse("org.dbpedia.spotlight.spot.caseSensitive", "false").equals("true")
@@ -126,9 +135,10 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
     def spotter() : Spotter = {
         val spotterPolicies = configuration.getSpotterConfiguration.getSpotterPolicies
         spotterPolicies.foreach( policy => {
-            spotters.put(policy, spotter(policy))
+            if (policy != SpotterPolicy.Default)
+                spotters.put(policy, spotter(policy))
         })
-        val default = spotter(spotterPolicies.get(0)) // default is first in configuration list
+        val default = spotter(SpotterPolicy.Default)
         spotters.put(SpotterPolicy.Default, default)
         default
     }

@@ -17,25 +17,31 @@
 
 package org.dbpedia.spotlight.spot
 
+import scalaj.collection.Imports._
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.model._
-import scala.collection.JavaConversions._
+import scala.io.Source._
+import scala.collection.mutable.HashSet
+
 
 /**
+ * Only allows surface forms that are in the dictionary.
+ * This class can be used for testing and for plugging to spotters that are not lexicalized.
+ * For spotters based on a dictionary, it is obviously better to just index the whitelisted surface forms in the dictionary in the first place.
+ *
  * @author <a href="mailto:scott@onespot.com">scott white</a>
  */
-class ChainedSelector(selectors : List[SpotSelector]) extends UntaggedSpotSelector {
+
+class SurfaceFormWhitelistSelector(filename : String) extends SpotSelector {
 
     private val LOG = LogFactory.getLog(this.getClass)
-
-    LOG.info("Creating a chained surface form selector with %s.".format(selectors))
+    val lines = fromFile(filename).getLines
+    private val mentionDictionary = new HashSet[String]
+    lines.foreach(line => mentionDictionary += line)
 
     def select(occurrences: java.util.List[SurfaceFormOccurrence]) : java.util.List[SurfaceFormOccurrence] = {
-        var occs = occurrences
-        selectors.foreach(selector =>
-          occs = selector.select(occs)
-        )
-        occs
+        val occs = occurrences.asScala
+        occs.filter(o => mentionDictionary.contains(o.surfaceForm.name)).asJava
     }
 
 }

@@ -17,6 +17,8 @@ import org.dbpedia.spotlight.io.WortschatzParser
  * It currently packs also a parser and a serializer besides the filter.
  * TODO factor out the parser/serializer to a class in io or util.
  *
+ * See also: SurfaceFormWhitelistSelector
+ *
  * @author pablomendes
  */
 class NonCommonWordSelector(val filename: String, val load: Boolean = true) extends UntaggedSpotSelector {
