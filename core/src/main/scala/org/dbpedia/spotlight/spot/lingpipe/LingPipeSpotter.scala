@@ -50,6 +50,9 @@ class LingPipeSpotter(val dictionary : Dictionary[String], analyzer:Analyzer, va
 
     var name = ""
 
+    LOG.debug("Allow overlap: "+overlap)
+    LOG.debug("Case sensitive: "+caseSensitive)
+
     def this(dictionaryFile : File, analyzer:Analyzer, overlap : Boolean, caseSensitive : Boolean) = {
         this(AbstractExternalizable.readObject(dictionaryFile).asInstanceOf[Dictionary[String]],analyzer, overlap, caseSensitive)
         fileName = dictionaryFile.getAbsolutePath
