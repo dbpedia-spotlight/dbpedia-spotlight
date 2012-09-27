@@ -28,6 +28,7 @@ import javax.sound.sampled.LineUnavailableException
 import org.apache.lucene.util.Version
 import org.apache.lucene.analysis.Analyzer
 import org.dbpedia.spotlight.lucene.LuceneManager.DBpediaResourceField
+import com.aliasi.tokenizer.IndoEuropeanTokenizerFactory
 
 /**
  * Spotter using LingPipe (http://alias-i.com/lingpipe/demos/tutorial/ne/read-me.html)
@@ -63,9 +64,9 @@ class LingPipeSpotter(val dictionary : Dictionary[String], analyzer:Analyzer, va
 
     LOG.info("Initiating LingPipeSpotter ... ("+fileName+")")
     val dictionaryChunker = new ExactDictionaryChunker(dictionary,
-                                                       //IndoEuropeanTokenizerFactory.INSTANCE,  // splits "don't" into "don", "'" and "t"
+                                                       IndoEuropeanTokenizerFactory.INSTANCE,  // splits "don't" into "don", "'" and "t"
                                                        // AnnotationTokenizerFactory, //English only
-                                                        new JAnnotationTokenizerFactory(analyzer),
+                                                       //new JAnnotationTokenizerFactory(analyzer),
                                                        overlap,        // find all matches, including overlapping ones?
                                                        caseSensitive)  // case-sensitive matching?
     LOG.info("Done.")
