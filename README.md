@@ -1,7 +1,7 @@
 # DBpedia Spotlight
 #### Shedding Light on the Web of Documents
 
-DBpedia Spotlight looks for ~3.5M things of ~320 types in text and tries to link them to their global unique identifiers in [DBpedia](http://dbpedia.org). 
+DBpedia Spotlight looks for ~3.5M things of ~320 types (or unknown type) in text and tries to link them to their global unique identifiers in [DBpedia](http://dbpedia.org). 
 
 #### Demonstration
 
