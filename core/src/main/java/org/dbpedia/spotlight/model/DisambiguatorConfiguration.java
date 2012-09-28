@@ -47,7 +47,11 @@ public class DisambiguatorConfiguration {
 
     protected String contextIndexDirectory = "";
 
-    //public enum DisambiguationPolicy { Document,Occurrences,CuttingEdge,Default }
+    public boolean isContextIndexInMemory() {
+        return contextIndexInMemory;
+    }
+
+    protected boolean contextIndexInMemory = false;
 
     public DisambiguatorConfiguration(String configFileName) throws ConfigurationException {
 
@@ -72,7 +76,7 @@ public class DisambiguatorConfiguration {
 			throw new ConfigurationException(String.format("The value %s=%s does not exist or is not a directory. Please update your config in %s.", CONFIG_CONTEXT_INDEX_DIR, contextIndexDirectory, configFileName));
 		}
 
-
+        contextIndexInMemory = config.getProperty("org.dbpedia.spotlight.candidateMap.loadToMemory", "false").trim().equals("true");
 
 
     }

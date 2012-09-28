@@ -25,7 +25,7 @@ import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.document.Document
 import org.dbpedia.spotlight.lucene.LuceneManager.DBpediaResourceField
 import collection.JavaConversions._
-import org.dbpedia.spotlight.lucene.search.BaseSearcher
+import org.dbpedia.spotlight.lucene.search.{LuceneCandidateSearcher, BaseSearcher}
 import org.dbpedia.spotlight.exceptions.{ItemNotFoundException, ConfigurationException}
 import org.apache.commons.logging.LogFactory
 import org.apache.lucene.analysis.standard.StandardAnalyzer
@@ -34,6 +34,7 @@ import org.apache.lucene.misc.SweetSpotSimilarity
 import org.apache.lucene.search.{DefaultSimilarity, ScoreDoc, Similarity}
 import scalaj.collection.Imports._
 import org.dbpedia.spotlight.spot.{SpotSelector, AtLeastOneNounSelector, ShortSurfaceFormSelector}
+import java.io.File
 
 /**
  * Class containing methods to create model objects in many different ways
@@ -219,7 +220,7 @@ object Factory {
           }
           case e: Exception => {
             LOG.error("Something went wrong. Please check your server.properties file.")
-            LOG.error("If the problem persists,please send the stacktrace below to DBPedia Developers")
+            LOG.error("If the problem persists, please send the stacktrace below to the dev team.")
             LOG.error("[BOF]*************************Stacktrace error:*************************")
             e.printStackTrace()
             LOG.error("[EOF]*************************Stacktrace error:*************************")
@@ -301,6 +302,19 @@ object Factory {
                 case "AtLeastOneNounSelector" => new AtLeastOneNounSelector
                 case _ => throw new ConfigurationException("SpotSelector of name %s has not been configured in the properties file.".format(name))
             }
+        }
+    }
+
+    object CandidateSearcher {
+        def fromLuceneIndex(configuration: SpotlightConfiguration) = {
+            val inMemory = configuration.isCandidateMapInMemory
+            val candidateIndexDir = LuceneManager.pickDirectory(new File(configuration.getCandidateIndexDirectory))
+            //candLuceneManager = new LuceneManager.CaseSensitiveSurfaceForms(candidateIndexDir) // or we can provide different functionality for surface forms (e.g. n-gram search)
+            var candLuceneManager : LuceneManager = new LuceneManager(candidateIndexDir)
+            candLuceneManager.setDBpediaResourceFactory(configuration.getDBpediaResourceFactory)
+            val candidateSearcher = new LuceneCandidateSearcher(candLuceneManager,inMemory)
+            LOG.info("CandidateSearcher initiated (inMemory=%s) from %s".format(candidateIndexDir,inMemory))
+            candidateSearcher
         }
     }
 }

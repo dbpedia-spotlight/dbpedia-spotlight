@@ -87,7 +87,14 @@ public class SpotlightConfiguration {
     }
 
     protected String contextIndexDirectory = "";
+    public boolean isContextIndexInMemory() {
+        return disambiguatorConfiguration.isContextIndexInMemory();
+    }
     protected String candidateMapDirectory = "";
+    protected boolean candidateMapInMemory = true;
+    public boolean isCandidateMapInMemory() {
+        return candidateMapInMemory;
+    }
 
     protected List<Double> similarityThresholds;
     protected String similarityThresholdsFile = "similarity-thresholds.txt";
@@ -102,7 +109,7 @@ public class SpotlightConfiguration {
 
     protected long maxCacheSize = Long.MAX_VALUE;
 
-    //Lucene's analyzers have a default stopworlds
+    //Lucene's analyzers have default stopwords
     @Deprecated
     public static final Set<String> DEFAULT_STOPWORDS = new HashSet(Arrays.asList(
             "a", "an", "and", "are", "as", "at", "be", "but", "by",
@@ -210,12 +217,14 @@ public class SpotlightConfiguration {
         //set spotterFile, indexDir...
         contextIndexDirectory = disambiguatorConfiguration.contextIndexDirectory;
 
+
         //optionally use separate candidate map
         candidateMapDirectory = config.getProperty("org.dbpedia.spotlight.candidateMap.dir", "").trim();
         if (candidateMapDirectory == null || !new File(candidateMapDirectory).isDirectory()) {
-            LOG.info("Could not use candidateMap.dir, using index.dir both for context and candidate searching.");
+            LOG.warn("Could not use the candidateMap.dir provided. Will use index.dir both for context and candidate searching.");
             candidateMapDirectory = contextIndexDirectory;
         }
+        candidateMapInMemory = config.getProperty("org.dbpedia.spotlight.candidateMap.loadToMemory", "false").trim().equals("true");
 
         try {
             BufferedReader r = new BufferedReader(new FileReader(new File(contextIndexDirectory, similarityThresholdsFile)));

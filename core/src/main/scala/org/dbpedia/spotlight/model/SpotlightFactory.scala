@@ -58,23 +58,18 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
     contextLuceneManager.setContextSimilarity(similarity)        // set most successful Similarity
     contextLuceneManager.setDBpediaResourceFactory(configuration.getDBpediaResourceFactory)
     contextLuceneManager.setDefaultAnalyzer(configuration.getAnalyzer)
-    val contextSearcher : MergedOccurrencesContextSearcher = new MergedOccurrencesContextSearcher(contextLuceneManager)
+    val contextSearcher : MergedOccurrencesContextSearcher = new MergedOccurrencesContextSearcher(contextLuceneManager, configuration.getDisambiguatorConfiguration.isContextIndexInMemory)
 
-    var candidateSearcher : CandidateSearcher = null //TODO move to factory
-    var candLuceneManager : LuceneManager = contextLuceneManager;
-    if (configuration.getCandidateIndexDirectory!=configuration.getContextIndexDirectory) {
-        val candidateIndexDir = LuceneManager.pickDirectory(new File(configuration.getCandidateIndexDirectory))
-        //candLuceneManager = new LuceneManager.CaseSensitiveSurfaceForms(candidateIndexDir)
-        candLuceneManager = new LuceneManager(candidateIndexDir)
-        candLuceneManager.setDBpediaResourceFactory(configuration.getDBpediaResourceFactory)
-        candidateSearcher = new LuceneCandidateSearcher(candLuceneManager,true) // or we can provide different functionality for surface forms (e.g. n-gram search)
-        LOG.info("CandidateSearcher initialized from %s".format(candidateIndexDir))
-    } else {
-        candidateSearcher = contextSearcher match {
-            case cs: CandidateSearcher => cs
-            case _ => new LuceneCandidateSearcher(contextLuceneManager, false) // should never happen
+    var candidateSearcher : CandidateSearcher =
+        if (configuration.getCandidateIndexDirectory!=configuration.getContextIndexDirectory) {
+            Factory.CandidateSearcher.fromLuceneIndex(configuration)
+        } else {
+            contextSearcher match {
+                case cs: CandidateSearcher => cs // do not load the same index twice
+                case _ => new LuceneCandidateSearcher(contextLuceneManager, false) // should never happen
+            }
         }
-    }
+
 
     val lingPipeFactory : LingPipeFactory = new LingPipeFactory(new File(configuration.getTaggerFile), new IndoEuropeanSentenceModel())
 
@@ -100,12 +95,13 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
     def spotter(policy: SpotterConfiguration.SpotterPolicy) : Spotter = {
         if (policy == SpotterConfiguration.SpotterPolicy.Default) {
             if (spotters.isEmpty)
-                throw new ConfigurationException("You have to specify at least one spotter implementation in the configuration file.")
+                throw new ConfigurationException("You have to specify at least one spotter implementation (besides Default) in the configuration file.")
+            val innerSpotter = spotters.head._2
             val spotSelectors = Factory.SpotSelector.fromNameList(configuration.getSpotterConfiguration.config.getOrElse("org.dbpedia.spotlight.spot.selectors", ""))
             val defaultSpotter = if (spotSelectors.isEmpty) {
-                spotter(SpotterConfiguration.SpotterPolicy.LingPipeSpotter)
+                innerSpotter
             } else {
-                SpotterWithSelector.getInstance(spotters.head._2, new ChainedSelector(spotSelectors))
+                SpotterWithSelector.getInstance(innerSpotter, new ChainedSelector(spotSelectors))
             }
             defaultSpotter
         } else if(policy == SpotterConfiguration.SpotterPolicy.LingPipeSpotter) {

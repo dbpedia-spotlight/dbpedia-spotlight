@@ -60,7 +60,7 @@ public class LuceneCandidateSearcher extends BaseSearcher implements org.dbpedia
             LOG.info("Creating in-memory LuceneCandidateSearcher.");
             this.mLucene.mContextIndexDir = new RAMDirectory(this.mLucene.mContextIndexDir);
         }
-        this.mReader = IndexReader.open(this.mLucene.mContextIndexDir, true); // read-only=true
+        this.mReader = IndexReader.open(this.mLucene.mContextIndexDir); // read-only=true
         this.mSearcher = new IndexSearcher(this.mReader);
         LOG.info(String.format("Opened LuceneCandidateSearcher from %s.", this.mLucene.mContextIndexDir));
     }

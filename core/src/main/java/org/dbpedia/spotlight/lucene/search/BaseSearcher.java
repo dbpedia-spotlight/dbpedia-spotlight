@@ -27,6 +27,7 @@ import org.apache.lucene.document.MapFieldSelector;
 import org.apache.lucene.index.*;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.*;
+import org.apache.lucene.store.RAMDirectory;
 import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.exceptions.TimeoutException;
 import org.dbpedia.spotlight.lucene.LuceneFeatureVector;
@@ -58,7 +59,15 @@ public class BaseSearcher implements Closeable {
     public long objectCreationTime = 0;
 
     public BaseSearcher(LuceneManager lucene) throws IOException {
+        this(lucene,false);
+    }
+
+    public BaseSearcher(LuceneManager lucene, boolean inMemory) throws IOException {
         this.mLucene = lucene;
+        if (inMemory) {
+            LOG.info("Creating in-memory lucene searcher... (may take 2-3 minutes and several GB of RAM)");
+            this.mLucene.mContextIndexDir = new RAMDirectory(this.mLucene.mContextIndexDir);
+        }
         LOG.info("Using index at: "+this.mLucene.mContextIndexDir);
         this.mReader = LuceneManager.openIndexReader(this.mLucene.mContextIndexDir); //will open single or multireader
         this.mSearcher = new IndexSearcher(this.mReader);
