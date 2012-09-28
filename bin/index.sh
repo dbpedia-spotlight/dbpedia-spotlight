@@ -1,4 +1,3 @@
-#!/bin/bash
 # You are expected to run the commands in this script from inside the bin directory in your DBpedia Spotlight installation
 # Adjust the paths here if you don't. This script is meant more as a step-by-step guidance than a real automated run-all.
 # If this is your first time running the script, we advise you to copy/paste commands from here, closely watching the messages
@@ -6,24 +5,26 @@
 #
 # @author maxjakob, pablomendes
 
-export DBPEDIA_WORKSPACE=/var/local/spotlight/dbpedia_data
+export DBPEDIA_WORKSPACE=/usr/local/spotlight/dbpedia_data
 
 
 export INDEX_CONFIG_FILE=../conf/indexing.properties
 
 # the indexing process merges occurrences in memory to speed up the process. the more memory the better
-# NOTE: If setting the variables below is not correctly increasing your heap size, try setting it in the <jvmArg> in index/pom.xml
-# See: https://groups.google.com/forum/?fromgroups=#!topic/scalatest-users/P6lXSxI4Nmg
 ulimit -v unlimited
-set JAVA_OPTS="-Xmx10G  -XX:+UseConcMarkSweepGC -XX:MaxPermSize=7G"; export JAVA_OPTS;
-set MAVEN_OPTS="-Xmx10G -XX:+UseConcMarkSweepGC -XX:MaxPermSize=7G"; export MAVEN_OPTS;
-set SCALA_OPTS="-Xmx10G -XX:+UseConcMarkSweepGC -XX:MaxPermSize=7G"; export SCALA_OPTS;
+export JAVA_OPTS="-Xmx14G  -XX:+UseConcMarkSweepGC -XX:MaxPermSize=7G"
+export MAVEN_OPTS="-Xmx14G -XX:+UseConcMarkSweepGC -XX:MaxPermSize=7G"
+export SCALA_OPTS="-Xmx14G -XX:+UseConcMarkSweepGC -XX:MaxPermSize=7G"
 ulimit -v unlimited
 
 # you have to run maven2 from the module that contains the indexing classes
 cd ../index
 # the indexing process will generate files in the directory below
-mkdir -p $DBPEDIA_WORKSPACE/data/output
+if [ -e $DBPEDIA_WORKSPACE/data/output  ]; then
+    echo "$DBPEDIA_WORKSPACE"'/data/output already exist.'
+else
+    mkdir -p $DBPEDIA_WORKSPACE/data/output
+fi
 
 # first step is to extract valid URIs, synonyms and surface forms from DBpedia
 mvn scala:run -DmainClass=org.dbpedia.spotlight.util.ExtractCandidateMap "-DaddArgs=$INDEX_CONFIG_FILE"
@@ -44,10 +45,10 @@ sort $DBPEDIA_WORKSPACE/data/output/surfaceForms-fromOccs.tsv | uniq -c > $DBPED
 grep -Pv "      [123] " $DBPEDIA_WORKSPACE/data/output/surfaceForms-fromOccs.count | sed -r "s|\s+[0-9]+\s(.+)|\1|" > $DBPEDIA_WORKSPACE/data/output/surfaceForms-fromOccs-thresh3.tsv
 
 cp $DBPEDIA_WORKSPACE/data/output/surfaceForms.tsv $DBPEDIA_WORKSPACE/data/output/surfaceForms-fromTitRedDis.tsv
-cat $DBPEDIA_WORKSPACE/data/output/surfaceForms-fromTitRedDis.tsv $DBPEDIA_WORKSPACE/data/output/surfaceForms-fromOccs-thresh3.tsv | sort -u > $DBPEDIA_WORKSPACE/data/output/surfaceForms.tsv
+cat $DBPEDIA_WORKSPACE/data/output/surfaceForms-fromTitRedDis.tsv $DBPEDIA_WORKSPACE/data/output/surfaceForms-fromOccs.tsv > $DBPEDIA_WORKSPACE/data/output/surfaceForms.tsv
 
 # now that we have our set of surfaceForms, we can build a simple dictionary-based spotter from them
-mvn scala:run -DmainClass=org.dbpedia.spotlight.spot.lingpipe.IndexLingPipeSpotter "-DaddArgs=$INDEX_CONFIG_FILE"
+mvn scala:run -DmainClass= org.dbpedia.spotlight.spot.lingpipe.IndexLingPipeSpotter "-DaddArgs=$INDEX_CONFIG_FILE"
 
 set -e
 # create a lucene index out of the occurrences
