@@ -81,8 +81,8 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
     contextLuceneManager.setDBpediaResourceFactory(dbpediaResourceFactory)
 
 
-    val spotters = new java.util.HashMap[SpotterConfiguration.SpotterPolicy,Spotter]()
-    val disambiguators = new java.util.HashMap[SpotlightConfiguration.DisambiguationPolicy,ParagraphDisambiguatorJ]()
+    val spotters = new java.util.LinkedHashMap[SpotterConfiguration.SpotterPolicy,Spotter]() // LinkedHashMap used to preserve order (needed in spotter())
+    val disambiguators = new java.util.LinkedHashMap[SpotlightConfiguration.DisambiguationPolicy,ParagraphDisambiguatorJ]()
 
     //populate
     LOG.info("Initiating spotters...")

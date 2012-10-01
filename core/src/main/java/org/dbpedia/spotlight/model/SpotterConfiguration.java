@@ -50,7 +50,6 @@ public class SpotterConfiguration {
     private Map<String, String> openNLPModelsURI = new HashMap<String, String>(3);
 
     public enum SpotterPolicy {Default,
-        UserProvidedSpots,
         LingPipeSpotter,
         AtLeastOneNounSelector,
         CoOccurrenceBasedSelector,
