@@ -53,7 +53,7 @@
                                 <arg>../conf/disambigonly.properties</arg>
                             </args>
                             <jvmArgs>
-                                <jvmArg>-Xmx14G</jvmArg>
+                                <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
                             </jvmArgs>
                         </launcher>
                         <launcher>
@@ -63,14 +63,14 @@
                                 <arg>../conf/eval.properties</arg>
                             </args>
                             <jvmArgs>
-                                <jvmArg>-Xmx14G</jvmArg>
+                                <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
                             </jvmArgs>
                         </launcher>
                         <launcher>
                             <id>spottereval</id>
                             <mainClass>org.dbpedia.spotlight.evaluation.SpotterEvaluatorPrecisionRecall</mainClass>
                             <jvmArgs>
-                                <jvmArg>${heapspace.Xmx.server}</jvmArg>
+                                <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
                             </jvmArgs>
                         </launcher>
                     </launchers>

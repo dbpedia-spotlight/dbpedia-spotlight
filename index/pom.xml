@@ -53,7 +53,7 @@
                             <id>enrichtypes</id>
                             <mainClass>org.dbpedia.spotlight.lucene.index.AddTypesToIndex</mainClass>
                             <jvmArgs>
-                                <jvmArg>-Xmx8G</jvmArg>
+                                <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
                             </jvmArgs>
                             <args>
                                 <arg>../conf/indexing-3.8.properties</arg>
@@ -63,7 +63,7 @@
                             <id>indexer</id>
                             <mainClass>org.dbpedia.spotlight.lucene.index.IndexMergedOccurrences</mainClass>
                             <jvmArgs>
-                                <jvmArg>-Xmx14G</jvmArg>
+                                <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
                             </jvmArgs>
                             <args>
                                 <arg>../conf/indexing-3.8.properties</arg>
@@ -75,7 +75,7 @@
                             <id>enrichsf</id>
                             <mainClass>org.dbpedia.spotlight.lucene.index.AddSurfaceFormsToIndex</mainClass>
                             <jvmArgs>
-                                <jvmArg>-Xmx14G</jvmArg>
+                                <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
                             </jvmArgs>
                             <args>
                                 <arg>../conf/indexing-3.8.properties</arg>
@@ -90,7 +90,7 @@
                                 <arg>/data/spotlight/3.7/conceptURIs.list</arg>
                             </args>
                             <jvmArgs>
-                                <jvmArg>-Xmx14G</jvmArg>
+                                <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
                             </jvmArgs>
                         </launcher>
 
@@ -102,7 +102,7 @@
                        <arg>/home/pablo/Projects/DBpediaSpotlight/IavorJelev/uri_pairs/Politics2_uri_pairs.txt</arg>
                        </args-->
                             <jvmArgs>
-                                <jvmArg>-Xmx3G</jvmArg>
+                                <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
                             </jvmArgs>
                         </launcher>
                     </launchers>
