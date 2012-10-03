@@ -49,22 +49,22 @@
                         <launcher>
                             <id>pareval</id>
                             <mainClass>org.dbpedia.spotlight.evaluation.EvaluateParagraphDisambiguator</mainClass>
-                            <args>
-                                <arg>../conf/disambigonly.properties</arg>
-                            </args>
                             <jvmArgs>
                                 <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
                             </jvmArgs>
+                            <!--args>
+                                <arg>../conf/disambigonly.properties</arg>
+                            </args-->
                         </launcher>
                         <launcher>
                             <id>stats</id>
                             <mainClass>org.dbpedia.spotlight.corpora.StatsCommonVsNoCommonCompressed</mainClass>
-                            <args>
-                                <arg>../conf/eval.properties</arg>
-                            </args>
                             <jvmArgs>
                                 <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
                             </jvmArgs>
+                            <!--args>
+                                <arg>../conf/eval.properties</arg>
+                            </args-->
                         </launcher>
                         <launcher>
                             <id>spottereval</id>

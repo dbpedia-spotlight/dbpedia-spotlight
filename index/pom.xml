@@ -55,9 +55,9 @@
                             <jvmArgs>
                                 <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
                             </jvmArgs>
-                            <args>
+                            <!--args>
                                 <arg>../conf/indexing-3.8.properties</arg>
-                            </args>
+                            </args-->
                         </launcher>
                         <launcher>
                             <id>indexer</id>
@@ -65,11 +65,11 @@
                             <jvmArgs>
                                 <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
                             </jvmArgs>
-                            <args>
+                            <!--args>
                                 <arg>../conf/indexing-3.8.properties</arg>
                                 <arg>/data/spotlight/3.7/occs.uriSorted.tsv</arg>
                                 <arg>overwrite</arg>
-                            </args>
+                            </args-->
                         </launcher>
                         <launcher>
                             <id>enrichsf</id>
@@ -77,33 +77,33 @@
                             <jvmArgs>
                                 <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
                             </jvmArgs>
-                            <args>
+                            <!--args>
                                 <arg>../conf/indexing-3.8.properties</arg>
-                            </args>
+                            </args-->
                         </launcher>
                         <launcher>
                             <id>topicsignatures</id>
                             <mainClass>org.dbpedia.spotlight.util.GetWebPriors</mainClass>
-                            <args>
-                                <arg>../conf/indexing-3.7.properties</arg>
-                                <arg>../conf/dev.properties</arg>
-                                <arg>/data/spotlight/3.7/conceptURIs.list</arg>
-                            </args>
                             <jvmArgs>
                                 <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
                             </jvmArgs>
+                            <!--args>
+                                <arg>../conf/indexing-3.7.properties</arg>
+                                <arg>../conf/dev.properties</arg>
+                                <arg>/data/spotlight/3.7/conceptURIs.list</arg>
+                            </args-->
                         </launcher>
 
                         <launcher>
                             <id>topicaltext</id>
                             <mainClass>org.dbpedia.spotlight.util.ExtractTopicalText</mainClass>
-                            <!--args>
-                       <arg>/data/spotlight/enwiki-20101011-resolved-concepts.uriSorted.tsv</arg>
-                       <arg>/home/pablo/Projects/DBpediaSpotlight/IavorJelev/uri_pairs/Politics2_uri_pairs.txt</arg>
-                       </args-->
                             <jvmArgs>
                                 <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
                             </jvmArgs>
+                            <!--args>
+                                <arg>/data/spotlight/enwiki-20101011-resolved-concepts.uriSorted.tsv</arg>
+                                <arg>/home/pablo/Projects/DBpediaSpotlight/IavorJelev/uri_pairs/Politics2_uri_pairs.txt</arg>
+                            </args-->
                         </launcher>
                     </launchers>
                 </configuration>
