@@ -35,7 +35,7 @@
     <name>DBpedia Spotlight Indexing</name>
 
     <properties>
-        <heapspace.Xmx.indexer>-Xmx14g</heapspace.Xmx.indexer>
+        <javaOpts.Xmx>4g</javaOpts.Xmx> <!-- default that can be adjusted on the command line with -DjavaOpts.Xmx=... -->
         <spotlight.basedir>${project.basedir}/..</spotlight.basedir>
     </properties>
 

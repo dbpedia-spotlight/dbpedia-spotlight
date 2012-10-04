@@ -34,6 +34,7 @@
     <name>DBpedia Spotlight Evaluation</name>
 
     <properties>
+        <javaOpts.Xmx>4g</javaOpts.Xmx> <!-- default that can be adjusted on the command line with -DjavaOpts.Xmx=... -->
         <spotlight.basedir>${project.basedir}/..</spotlight.basedir>
     </properties>
 
