@@ -47,7 +47,7 @@
                 <configuration>
                     <launchers>
                         <launcher>
-                            <id>pareval</id>
+                            <id>EvaluateParagraphDisambiguator</id>
                             <mainClass>org.dbpedia.spotlight.evaluation.EvaluateParagraphDisambiguator</mainClass>
                             <jvmArgs>
                                 <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
@@ -57,7 +57,7 @@
                             </args-->
                         </launcher>
                         <launcher>
-                            <id>stats</id>
+                            <id>StatsCommonVsNoCommonCompressed</id>
                             <mainClass>org.dbpedia.spotlight.corpora.StatsCommonVsNoCommonCompressed</mainClass>
                             <jvmArgs>
                                 <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
@@ -67,7 +67,7 @@
                             </args-->
                         </launcher>
                         <launcher>
-                            <id>spottereval</id>
+                            <id>SpotterEvaluatorPrecisionRecall</id>
                             <mainClass>org.dbpedia.spotlight.evaluation.SpotterEvaluatorPrecisionRecall</mainClass>
                             <jvmArgs>
                                 <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>

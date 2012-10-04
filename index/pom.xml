@@ -50,7 +50,7 @@
                 <configuration>
                     <launchers>
                         <launcher>
-                            <id>enrichtypes</id>
+                            <id>AddTypesToIndex</id>
                             <mainClass>org.dbpedia.spotlight.lucene.index.AddTypesToIndex</mainClass>
                             <jvmArgs>
                                 <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
@@ -60,7 +60,7 @@
                             </args-->
                         </launcher>
                         <launcher>
-                            <id>indexer</id>
+                            <id>IndexMergedOccurrences</id>
                             <mainClass>org.dbpedia.spotlight.lucene.index.IndexMergedOccurrences</mainClass>
                             <jvmArgs>
                                 <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
@@ -72,7 +72,7 @@
                             </args-->
                         </launcher>
                         <launcher>
-                            <id>enrichsf</id>
+                            <id>AddSurfaceFormsToIndex</id>
                             <mainClass>org.dbpedia.spotlight.lucene.index.AddSurfaceFormsToIndex</mainClass>
                             <jvmArgs>
                                 <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
@@ -82,7 +82,7 @@
                             </args-->
                         </launcher>
                         <launcher>
-                            <id>topicsignatures</id>
+                            <id>GetWebPriors</id>
                             <mainClass>org.dbpedia.spotlight.util.GetWebPriors</mainClass>
                             <jvmArgs>
                                 <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
@@ -95,7 +95,7 @@
                         </launcher>
 
                         <launcher>
-                            <id>topicaltext</id>
+                            <id>ExtractTopicalText</id>
                             <mainClass>org.dbpedia.spotlight.util.ExtractTopicalText</mainClass>
                             <jvmArgs>
                                 <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
