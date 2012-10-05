@@ -29,7 +29,7 @@ import org.dbpedia.spotlight.lucene.search.{LuceneCandidateSearcher, BaseSearche
 import org.dbpedia.spotlight.exceptions.{ItemNotFoundException, ConfigurationException}
 import org.apache.commons.logging.LogFactory
 import org.apache.lucene.analysis.standard.StandardAnalyzer
-import org.dbpedia.spotlight.lucene.similarity.InvCandFreqSimilarity
+import org.dbpedia.spotlight.lucene.similarity.{CachedInvCandFreqSimilarity, JCSTermCache, InvCandFreqSimilarity}
 import org.apache.lucene.misc.SweetSpotSimilarity
 import org.apache.lucene.search.{DefaultSimilarity, ScoreDoc, Similarity}
 import scalaj.collection.Imports._
@@ -239,6 +239,12 @@ object Factory {
                 .toMap
                 .get(similarityName)
                 .getOrElse(throw new ConfigurationException("Unknown Similarity: "+similarityName))
+        }
+        def fromConfig(configuration: SpotlightConfiguration, contextLuceneManager: LuceneManager) = {
+            if (configuration.getDisambiguatorConfiguration.isContextIndexInMemory)
+                new InvCandFreqSimilarity
+            else
+                new CachedInvCandFreqSimilarity(JCSTermCache.getInstance(contextLuceneManager, configuration.getMaxCacheSize))
         }
     }
 

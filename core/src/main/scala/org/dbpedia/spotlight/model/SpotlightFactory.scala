@@ -54,7 +54,7 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
 
     val contextIndexDir = LuceneManager.pickDirectory(new File(configuration.getContextIndexDirectory))
     val contextLuceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(contextIndexDir) // use this if all surface forms in the index are lower-cased
-    val similarity = new CachedInvCandFreqSimilarity(JCSTermCache.getInstance(contextLuceneManager, configuration.getMaxCacheSize))
+    val similarity = Factory.Similarity.fromConfig(configuration, contextLuceneManager)
     contextLuceneManager.setContextSimilarity(similarity)        // set most successful Similarity
     contextLuceneManager.setDBpediaResourceFactory(configuration.getDBpediaResourceFactory)
     contextLuceneManager.setDefaultAnalyzer(configuration.getAnalyzer)
