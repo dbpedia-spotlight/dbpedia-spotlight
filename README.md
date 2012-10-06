@@ -115,5 +115,5 @@ This work has been partially funded by:
   * [Neofonie GmbH](http://www.neofonie.de/), a Berlin-based company offering leading technologies in the area of Web search, social media and mobile applications. (Jun 2010-Jun 2011)
   * The European Commission through the projects:
     * [LOD2 - Creating Knowledge out of Linked Data](http://lod2.eu/). (Jun 2010-Oct 2012)
-    * [IKS - Interactive Knowledge Stack](http://www.iks-project.eu/). (Jun 2011)
+    * [IKS - Interactive Knowledge Stack](http://www.iks-project.eu/) via the Early Adopters Program. (Jun 2011)
   * Google Summer of Code 2012, with 4 students. (May 2012-Sep 2012)
