@@ -224,6 +224,20 @@
                             <file>${spotlight.basedir}/lib/weka-trunk.jar</file>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>install-jdbm-jar</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>jdbm</groupId>
+                            <artifactId>jdbm</artifactId>
+                            <version>3.0-SNAPSHOT</version>
+                            <packaging>jar</packaging>
+                            <file>${spotlight.basedir}/lib/JDBM-3.0-alpha3.jar</file>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
 
@@ -274,6 +288,7 @@
                 <artifactId>log4j</artifactId>
                 <version>1.2.16</version>
             </dependency>
+
             <dependency>
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-core</artifactId>
@@ -394,6 +409,12 @@
             </dependency>
 
             <dependency>
+                <groupId>commons-httpclient</groupId>
+                <artifactId>commons-httpclient</artifactId>
+                <version>3.1</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>
                 <version>1.0</version>
@@ -423,12 +444,43 @@
                 <artifactId>scalatest_2.9.1</artifactId>
                 <version>1.8</version>
             </dependency>
-        </dependencies>
 
+            <dependency>
+                <groupId>org.scalaj</groupId>
+                <artifactId>scalaj-collection_2.9.1</artifactId>
+                <version>1.2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>trove</groupId>
+                <artifactId>trove</artifactId>
+                <version>1.1-beta-5</version>
+            </dependency>
+
+            <dependency>
+                <groupId>jdbm</groupId>
+                <artifactId>jdbm</artifactId>
+                <version>3.0-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.mahout</groupId>
+                <artifactId>mahout-collections</artifactId>
+                <version>1.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.esotericsoftware.kryo</groupId>
+                <artifactId>kryo</artifactId>
+                <version>2.20</version>
+            </dependency>
+
+        </dependencies>
     </dependencyManagement>
 
 
     <repositories>
+
         <repository>
             <id>maven2-repository.dev.java.net</id>
             <name>Java.net Repository for Maven</name>
@@ -436,11 +488,11 @@
             <layout>default</layout>
         </repository>
 
-        <repository>
-            <id>java.net-Public</id>
-            <name>Maven Java Net Snapshots and Releases</name>
-            <url>https://maven.java.net/content/groups/public/</url>
-        </repository>
+    <repository>
+        <id>java.net-Public</id>
+        <name>Maven Java Net Snapshots and Releases</name>
+        <url>https://maven.java.net/content/groups/public/</url>
+    </repository>
 
 
         <repository>

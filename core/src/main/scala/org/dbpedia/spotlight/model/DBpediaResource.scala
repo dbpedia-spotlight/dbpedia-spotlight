@@ -27,6 +27,8 @@ class DBpediaResource(var uri : String,
                       var prior : Double = 0.0,
                       var types : List[OntologyType] = List[OntologyType]())
 {
+    var id: Int = 0
+
     require(uri != null)
 
     uri = uri.replace(SpotlightConfiguration.DEFAULT_NAMESPACE, "")
@@ -102,3 +104,4 @@ class DBpediaResource(var uri : String,
     }
 
 }
+

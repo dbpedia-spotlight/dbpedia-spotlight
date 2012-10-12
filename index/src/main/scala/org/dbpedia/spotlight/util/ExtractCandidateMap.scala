@@ -76,7 +76,7 @@ object ExtractCandidateMap
         LOG.info("  collecting bad URIs from redirects in "+redirectsFileName+" and disambiguations in "+disambiguationsFileName+" ...")
         // redirects and disambiguations are bad URIs
         for (fileName <- List(redirectsFileName, disambiguationsFileName)) {
-            val input = new BZip2CompressorInputStream(new FileInputStream(fileName), true)
+            val input = new BZip2CompressorInputStream(new FileInputStream(fileName))
             for(triple <- new NxParser(input)) {
                 val badUri = triple(0).toString.replace(SpotlightConfiguration.DEFAULT_NAMESPACE, "")
                 badURIs += badUri
@@ -87,7 +87,7 @@ object ExtractCandidateMap
         badURIStream.close
 
         LOG.info("  collecting concept URIs from titles in "+titlesFileName+", without redirects and disambiguations...")
-        val titlesInputStream = new BZip2CompressorInputStream(new FileInputStream(titlesFileName), true)
+        val titlesInputStream = new BZip2CompressorInputStream(new FileInputStream(titlesFileName))
         // get titles without bad URIs
         val parser = new NxParser(titlesInputStream)
         while (parser.hasNext) {
@@ -135,7 +135,7 @@ object ExtractCandidateMap
 
         LOG.info("  loading redirects from "+redirectsFileName+"...")
         var linkMap = Map[String,String]()
-        val redirectsInput = new BZip2CompressorInputStream(new FileInputStream(redirectsFileName), true)
+        val redirectsInput = new BZip2CompressorInputStream(new FileInputStream(redirectsFileName))
 
         val parser = new NxParser(redirectsInput)
         while (parser.hasNext) {
@@ -221,7 +221,7 @@ object ExtractCandidateMap
 
         LOG.info("  storing titles of redirect and disambiguation URIs...")
         for (fileName <- List(redirectsFileName, disambiguationsFileName)) {
-            val input = new BZip2CompressorInputStream(new FileInputStream(fileName), true)
+            val input = new BZip2CompressorInputStream(new FileInputStream(fileName))
             val parser = new NxParser(input)
             while (parser.hasNext) {
                 val triple = parser.next
@@ -271,7 +271,7 @@ object ExtractCandidateMap
         // make reverse map of redirects and disambiguations
         var linkMap = Map[String,List[String]]()
         for (fileName <- List(redirectsFileName, disambiguationsFileName)) {
-            val input = new BZip2CompressorInputStream(new FileInputStream(fileName), true)
+            val input = new BZip2CompressorInputStream(new FileInputStream(fileName))
             val parser = new NxParser(input)
             while (parser.hasNext) {
                 val triple = parser.next

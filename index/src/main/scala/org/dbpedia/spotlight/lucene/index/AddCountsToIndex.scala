@@ -41,8 +41,8 @@ import org.dbpedia.spotlight.util.IndexingConfiguration
 import java.io.File
 import io.Source
 import org.dbpedia.spotlight.model.DBpediaResource
-import org.apache.avalon.framework.configuration.ConfigurationException
 import org.apache.commons.logging.{LogFactory, Log}
+import org.dbpedia.spotlight.exceptions.ConfigurationException
 
 /**
  * If you indexed occurrences without storing counts and want to add them to the index.

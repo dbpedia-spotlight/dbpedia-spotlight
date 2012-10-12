@@ -40,7 +40,7 @@ class TypeAdder(val occSource : OccurrenceSource, var typesMap : Map[String,List
     override def foreach[U](f : DBpediaResourceOccurrence => U) {
         for (occ <- occSource) {
             if (occ.resource.types.isEmpty) {
-                occ.resource.setTypes(typesMap.get(occ.resource.uri).getOrElse(List[OntologyType]()))
+                occ.resource.setTypes(typesMap.get(occ.resource.uri).getOrElse(List[OntologyType]()).asInstanceOf[List[OntologyType]])
                 f( new DBpediaResourceOccurrence(occ.id,
                                                  occ.resource,
                                                  occ.surfaceForm,

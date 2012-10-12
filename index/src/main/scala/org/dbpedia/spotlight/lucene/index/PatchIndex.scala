@@ -18,7 +18,12 @@
 
 package org.dbpedia.spotlight.lucene.index
 
-import org.apache.avalon.framework.configuration.ConfigurationException
+import scalaj.collection.Imports._
+import org.dbpedia.spotlight.lucene.LuceneManager
+import io.Source
+import org.dbpedia.spotlight.model.DBpediaResource
+import org.apache.lucene.store.FSDirectory
+import org.dbpedia.spotlight.exceptions.ConfigurationException
 import org.apache.commons.logging.{LogFactory, Log}
 import java.io.File
 import org.dbpedia.spotlight.util.IndexingConfiguration

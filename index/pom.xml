@@ -81,6 +81,30 @@
                                 <arg>../conf/indexing-3.8.properties</arg>
                             </args-->
                         </launcher>
+                        <launcher>
+                            <id>topicsignatures</id>
+                            <mainClass>org.dbpedia.spotlight.util.GetWebPriors</mainClass>
+                            <args>
+                                <arg>../conf/indexing-3.7.properties</arg>
+                                <arg>../conf/dev.properties</arg>
+                                <arg>/data/spotlight/3.7/conceptURIs.list</arg>
+                            </args>
+                            <jvmArgs>
+                                <jvmArg>-Xmx14G</jvmArg>
+                            </jvmArgs>
+                        </launcher>
+
+                        <launcher>
+                            <id>topicaltext</id>
+                            <mainClass>org.dbpedia.spotlight.util.ExtractTopicalText</mainClass>
+			                <!--args>
+                				<arg>/data/spotlight/enwiki-20101011-resolved-concepts.uriSorted.tsv</arg>
+                				<arg>/home/pablo/Projects/DBpediaSpotlight/IavorJelev/uri_pairs/Politics2_uri_pairs.txt</arg>
+			                </args-->
+                            <jvmArgs>
+                                <jvmArg>-Xmx3G</jvmArg>
+                            </jvmArgs>
+                        </launcher>
                     </launchers>
                 </configuration>
             </plugin>
@@ -163,6 +187,38 @@
             <artifactId>weka</artifactId>
             <version>3.7.3</version>
         </dependency>
+
+
+        <dependency>
+            <groupId>trove</groupId>
+            <artifactId>trove</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>jdbm</groupId>
+            <artifactId>jdbm</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.scalaj</groupId>
+            <artifactId>scalaj-collection_2.9.1</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.mahout</groupId>
+            <artifactId>mahout-collections</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.esotericsoftware.kryo</groupId>
+            <artifactId>kryo</artifactId>
+        </dependency>
+
+        <dependency>
+        	<groupId>org.apache.commons</groupId>
+        	<artifactId>commons-compress</artifactId>
+        </dependency>
+
     </dependencies>
 
 </project>

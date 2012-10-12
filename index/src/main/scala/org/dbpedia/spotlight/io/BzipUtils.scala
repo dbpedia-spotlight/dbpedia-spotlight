@@ -42,7 +42,7 @@ object BzipUtils {
       val fin: FileInputStream = new FileInputStream(filename)
       val in: BufferedInputStream = new BufferedInputStream(fin)
       out = new FileOutputStream(newFilename)
-      bzIn = new BZip2CompressorInputStream(in, true)
+      bzIn = new BZip2CompressorInputStream(in)
       val buffer: Array[Byte] = new Array[Byte](buffersize)
       var n: Int = 0
       while (-1 != ({ n = bzIn.read(buffer); n })) {

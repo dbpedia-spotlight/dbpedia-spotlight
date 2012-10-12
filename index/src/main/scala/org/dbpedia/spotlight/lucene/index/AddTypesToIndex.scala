@@ -31,7 +31,7 @@ import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 object AddTypesToIndex {
 
     def loadTypes(instanceTypesFileName: String) = {
-        val input = new BZip2CompressorInputStream(new FileInputStream(instanceTypesFileName), true)
+        val input = new BZip2CompressorInputStream(new FileInputStream(instanceTypesFileName))
         val typesMap = instanceTypesFileName.contains(".tsv") match {
           case true  => TypesLoader.getTypesMapFromTSV_java(input)
           case false => TypesLoader.getTypesMap_java(input)
