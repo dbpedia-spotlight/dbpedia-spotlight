@@ -7,8 +7,8 @@ import org.apache.commons.logging.LogFactory
 import collection.immutable.ListSet
 import scala.Predef._
 import org.dbpedia.spotlight.exceptions.NotADBpediaResourceException
-import org.dbpedia.spotlight.string.ModifiedWikiUtil
 import java.net.URLDecoder
+import org.dbpedia.extraction.util.WikiUtil
 
 /**
  * Parts of this are taken from
@@ -67,7 +67,7 @@ class WikipediaToDBpediaClosure (
       case WikiURL(language, title) => {
 
         //use only the part before the anchor, URL encode it
-        ModifiedWikiUtil.wikiEncode(
+        WikiUtil.wikiEncode(
           URLDecoder.decode(
             title.takeWhile( p => p != '#' ) match {
               case t: String if t.startsWith("/") => t.tail
