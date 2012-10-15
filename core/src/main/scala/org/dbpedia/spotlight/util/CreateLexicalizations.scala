@@ -18,7 +18,7 @@ package org.dbpedia.spotlight.util
 
 import io.Source
 import java.io.{PrintStream, File}
-import org.dbpedia.spotlight.string.ModifiedWikiUtil
+import org.dbpedia.extraction.util.WikiUtil
 
 /**
  * Created by IntelliJ IDEA.
@@ -179,11 +179,11 @@ object CreateLexicalizations {
         escapeString(sb, sf)
         sb append '"'
         sb append "@en "
-        sb append namedGraphPrefix append uri append "---" append ModifiedWikiUtil.wikiEncode(sf) append ">"
+        sb append namedGraphPrefix append uri append "---" append WikiUtil.wikiEncode(sf) append ">"
         sb append " ."
         sb append "\n"
 
-        sb append namedGraphPrefix append uri append "---" append ModifiedWikiUtil.wikiEncode(sf) append ">"
+        sb append namedGraphPrefix append uri append "---" append WikiUtil.wikiEncode(sf) append ">"
         sb append " "
         sb append scoreRel append " \"" append score append "\"" append getDataType(score).get
         sb append " "

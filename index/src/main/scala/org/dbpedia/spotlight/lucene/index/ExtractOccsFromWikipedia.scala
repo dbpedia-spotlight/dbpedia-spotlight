@@ -26,6 +26,7 @@ import org.dbpedia.spotlight.filter.occurrences.{RedirectResolveFilter, UriWhite
 import org.dbpedia.spotlight.io._
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
 import org.dbpedia.spotlight.BzipUtils
+import org.dbpedia.extraction.util.Language
 
 /**
  * Saves Occurrences to a TSV file.
@@ -54,6 +55,7 @@ object ExtractOccsFromWikipedia {
         val redirectTCFileName  = config.get("org.dbpedia.spotlight.data.redirectsTC")
         val maxContextWindowSize  = config.get("org.dbpedia.spotlight.data.maxContextWindowSize").toInt
         val minContextWindowSize  = config.get("org.dbpedia.spotlight.data.minContextWindowSize").toInt
+        val languageCode = config.get("org.dbpedia.spotlight.language_i18n_code")
 
 
         if (wikiDumpFileName.endsWith(".bz2")) {
@@ -71,7 +73,7 @@ object ExtractOccsFromWikipedia {
 
         val filters = (conceptUriFilter :: redirectResolver :: contextNarrowFilter :: Nil)
 
-        val occSource : Traversable[DBpediaResourceOccurrence] = AllOccurrenceSource.fromXMLDumpFile(new File(wikiDumpFileName))
+        val occSource : Traversable[DBpediaResourceOccurrence] = AllOccurrenceSource.fromXMLDumpFile(new File(wikiDumpFileName), Language(languageCode))
         //val filter = new OccurrenceFilter(redirectsTC = redirectsTCMap, conceptURIs = conceptUrisSet, contextExtractor = narrowContext)
         //val occs = filter.filter(occSource)
 

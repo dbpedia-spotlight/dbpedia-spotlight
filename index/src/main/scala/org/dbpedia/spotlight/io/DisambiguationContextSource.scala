@@ -19,11 +19,11 @@ package org.dbpedia.spotlight.io
 import org.dbpedia.spotlight.string.WikiMarkupStripper
 import org.dbpedia.spotlight.model._
 import org.dbpedia.extraction.wikiparser._
-import org.dbpedia.extraction.sources.{Source, XMLSource}
+import org.dbpedia.extraction.sources.{WikiPage, Source, XMLSource}
 import org.apache.commons.logging.LogFactory
 import java.io.{File}
 import xml.{XML, Elem}
-import org.dbpedia.extraction.mappings.DisambiguationExtractor
+import org.dbpedia.extraction.util.Language
 
 /**
  * Loads descriptive text that occurs around entries in disambiguation pages from a wiki dump.
@@ -36,34 +36,38 @@ object DisambiguationContextSource
     /**
      * Creates an DBpediaResourceOccurrence Source from a dump file.
      */
-    def fromXMLDumpFile(dumpFile : File) : OccurrenceSource =
+    def fromXMLDumpFile(dumpFile : File, language: Language) : OccurrenceSource =
     {
-        new DisambiguationContextSource(XMLSource.fromFile(dumpFile, _.namespace == WikiTitle.Namespace.Main))
+        new DisambiguationContextSource(XMLSource.fromFile(dumpFile, language, _.namespace == Namespace.Main))
     }
 
     /**
      * Creates an DBpediaResourceOccurrence Source from a dump file. This Source returns each Occurrence n times!
      */
-    def fromXMLDumpFile(dumpFile : File, n : Int) : OccurrenceSource =
+    def fromXMLDumpFile(dumpFile : File, n : Int, language: Language) : OccurrenceSource =
     {
-        new DisambiguationContextSource(XMLSource.fromFile(dumpFile, _.namespace == WikiTitle.Namespace.Main), n)
+        new DisambiguationContextSource(XMLSource.fromFile(dumpFile, language, _.namespace == Namespace.Main), n)
     }
 
     /**
      * Creates an DBpediaResourceOccurrence Source from an XML root element.
      */
-    def fromXML(xml : Elem) : OccurrenceSource  =
+    def fromXML(xml : Elem, language: Language) : OccurrenceSource  =
     {
-        new DisambiguationContextSource(XMLSource.fromXML(xml))
+        new DisambiguationContextSource(XMLSource.fromXML(xml, language))
     }
 
     /**
      * Creates an DBpediaResourceOccurrence Source from an XML root element string.
      */
-    def fromXML(xmlString : String) : OccurrenceSource  =
+    def fromXML(xmlString : String, language: Language) : OccurrenceSource  =
     {
         val xml : Elem = XML.loadString("<dummy>" + xmlString + "</dummy>")  // dummy necessary: when a string "<page><b>text</b></page>" is given, <page> is the root tag and can't be found with the command  xml \ "page"
-        new DisambiguationContextSource(XMLSource.fromXML(xml))
+        new DisambiguationContextSource(XMLSource.fromXML(xml, language))
+    }
+
+    def wikiPageCopy(wikiPage: WikiPage, newSource: String) = {
+        new WikiPage(wikiPage.title, wikiPage.redirect, wikiPage.id, wikiPage.revision, wikiPage.timestamp, newSource)
     }
 
     /**
@@ -86,7 +90,7 @@ object DisambiguationContextSource
                 val cleanSource = WikiMarkupStripper.stripEverythingButBulletPoints(wikiPage.source)
 
                 // parse the (clean) wiki page
-                val pageNode = wikiParser( wikiPage.copy(source = cleanSource) )
+                val pageNode = wikiParser( WikiPageUtil.copyWikiPage(wikiPage, cleanSource) )
 
                 if (pageNode.isDisambiguation) {
                     val surfaceForm = new SurfaceForm(wikiPage.title.decoded.replace(" (disambiguation)", "")) //TODO language-specific
@@ -118,7 +122,7 @@ object DisambiguationContextSource
     }
 
     private def isDisambiguationUri(destination : WikiTitle, surfaceForm : SurfaceForm) : Boolean = {
-        destination.namespace == WikiTitle.Namespace.Main &&
+        destination.namespace == Namespace.Main &&
             // same heuristic as in DBpeida extraction
             (destination.decoded.contains(surfaceForm.name) || isAcronym(surfaceForm.name, destination.decoded))    
     }
@@ -184,7 +188,7 @@ object DisambiguationContextSource
 
     //test
     def main(args : Array[String]) {
-        val disambiguationSource = fromXMLDumpFile(new File("c:\\wikipediaDump\\en\\20100312\\enwiki-20100312-pages-articles.xml"))
+        val disambiguationSource = fromXMLDumpFile(new File("c:\\wikipediaDump\\en\\20100312\\enwiki-20100312-pages-articles.xml"), Language("en"))
         FileOccurrenceSource.writeToFile(disambiguationSource, new File("data/disambiguationOccurrences.tsv"))
     }
 

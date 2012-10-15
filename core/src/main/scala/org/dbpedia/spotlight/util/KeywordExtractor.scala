@@ -18,7 +18,6 @@
 
 package org.dbpedia.spotlight.util
 
-import org.dbpedia.spotlight.string.ModifiedWikiUtil
 import org.apache.commons.logging.LogFactory
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.model.{SpotlightFactory, SpotlightConfiguration, DBpediaResource}
@@ -26,6 +25,8 @@ import org.dbpedia.spotlight.model.{SpotlightFactory, SpotlightConfiguration, DB
 import java.net.{URLEncoder, Socket}
 import io.Source
 import java.io._
+import org.dbpedia.extraction.util.WikiUtil
+import org.dbpedia.extraction.config.mappings.DisambiguationExtractorConfig
 
 /**
  * Queries the Web to obtain prior probability counts for each resource
@@ -46,7 +47,20 @@ class KeywordExtractor(val configuration: SpotlightConfiguration, val nKeywords 
      * Adds quotes and a plus to indicate this is a MUST query.
      */
     def createKeywordsFromDBpediaResourceURI(resource: DBpediaResource) = {
-        ModifiedWikiUtil.getKeywordsFromPageTitle(resource.uri);
+        def cleanDisambiguation(title : String) = {
+            //TODO all languages are taken here; get language from config
+            DisambiguationExtractorConfig.disambiguationTitlePartMap.values.foldLeft(title) (
+                (acc,s) => title.replaceAll(""" \(%s\)$""".format(s), "")
+            )
+        }
+
+        val disambiguatedTitle = """(.+?) \((.+?)\)$""".r
+        //val simpleTitle = """(.+?)$""".r
+        val decoded = WikiUtil.wikiDecode(resource.uri) // remove wikiurl encoded chars
+        cleanDisambiguation(decoded) match {
+            case disambiguatedTitle(title, explanation) => String.format("+\"%s\" +\"%s\"",title,explanation) // remove parenthesis, add quotes and plus
+            case title : String => String.format("+\"%s\"",title)
+        }
     }
 
     /**

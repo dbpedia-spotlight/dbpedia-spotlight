@@ -22,14 +22,14 @@ package org.dbpedia.spotlight.util
 import io.Source
 import org.apache.commons.logging.LogFactory
 import java.io._
-import org.dbpedia.spotlight.model.{SpotlightConfiguration, SurfaceForm}
+import org.dbpedia.spotlight.model.{Factory, SpotlightConfiguration, SurfaceForm}
 import java.util.Scanner
 import org.semanticweb.yars.nx.parser.NxParser
-import org.dbpedia.spotlight.string.ModifiedWikiUtil
 import org.semanticweb.yars.nx.{Literal, Resource, Triple}
 import collection.JavaConversions._
 import util.matching.Regex
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
+import org.dbpedia.extraction.util.WikiUtil
 
 /**
  * Functions to create Concept URIs (possible targets of disambiguations)
@@ -314,17 +314,8 @@ object ExtractCandidateMap
 
     // Returns a cleaned surface form if it is considered to be worth keeping
     def getCleanSurfaceForm(surfaceForm : String, stopWords : Set[String], lowerCased : Boolean=false) : Option[String] = {
-        var cleanedSurfaceForm = ModifiedWikiUtil.cleanPageTitle(surfaceForm)
-        //TODO also clean quotation marks??
-        if (lowerCased) {
-            cleanedSurfaceForm = cleanedSurfaceForm.toLowerCase
-        }
-        if (isGoodSurfaceForm(cleanedSurfaceForm, stopWords)) {
-            Some(cleanedSurfaceForm)
-        }
-        else {
-            None
-        }
+        val cleanedSurfaceForm = Factory.SurfaceForm.fromWikiPageTitle(surfaceForm, lowerCased).name
+        if (isGoodSurfaceForm(cleanedSurfaceForm, stopWords)) Some(cleanedSurfaceForm) else None
     }
 
     // map from URI to list of surface forms
@@ -383,7 +374,7 @@ object ExtractCandidateMap
         for (line <- Source.fromFile(surfaceFormsFileName, "UTF-8").getLines) {
             val elements = line.split("\t")
             val subj = new Resource(SpotlightConfiguration.DEFAULT_NAMESPACE+elements(1))
-            val obj = new Resource("http://lexvo.org/id/term/"+langString+"/"+ModifiedWikiUtil.wikiEncode(elements(0)))
+            val obj = new Resource("http://lexvo.org/id/term/"+langString+"/"+WikiUtil.wikiEncode(elements(0)))
             val triple = new Triple(subj, predicate, obj)
             ntStream.println(triple.toN3)
         }

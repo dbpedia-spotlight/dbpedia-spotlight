@@ -4,8 +4,10 @@ import com.aliasi.tokenizer.Tokenizer;
 import com.aliasi.tokenizer.TokenizerFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.TermAttribute;
+import org.apache.lucene.util.Version;
 import org.dbpedia.spotlight.lucene.LuceneManager;
 
 import java.io.CharArrayReader;
@@ -19,16 +21,26 @@ import java.io.Serializable;
  */
 public class JAnnotationTokenizerFactory implements TokenizerFactory, Serializable {
 
-    private final Analyzer mAnalyzer;
-    private final String mFieldName;
+    private Analyzer mAnalyzer;
+    private org.apache.lucene.analysis.Tokenizer mTokenizer;
+    private String mFieldName;
 
+
+    public JAnnotationTokenizerFactory()  {
+
+    }
+
+    public JAnnotationTokenizerFactory(org.apache.lucene.analysis.Tokenizer mTokenizer) {
+        this.mTokenizer = mTokenizer;
+        //Only for surface forms?!
+        mFieldName = LuceneManager.DBpediaResourceField.SURFACE_FORM.toString();
+    }
 
     public JAnnotationTokenizerFactory(Analyzer mAnalyzer) {
         this.mAnalyzer = mAnalyzer;
         //Only for surface forms?!
         mFieldName = LuceneManager.DBpediaResourceField.SURFACE_FORM.toString();
     }
-
 
     static class TokenStreamTokenizer extends Tokenizer {
         private final TokenStream mTokenStream;
@@ -39,26 +51,27 @@ public class JAnnotationTokenizerFactory implements TokenizerFactory, Serializab
 
         public TokenStreamTokenizer(TokenStream tokenStream) {
             mTokenStream = tokenStream;
-            mTermAttribute
-                    = mTokenStream.addAttribute(TermAttribute.class);
-            mOffsetAttribute
-                    = mTokenStream.addAttribute(OffsetAttribute.class);
+            mTermAttribute = mTokenStream.addAttribute(TermAttribute.class);
+            mOffsetAttribute = mTokenStream.addAttribute(OffsetAttribute.class);
         }
 
         @Override
         public String nextToken() {
             try {
                 if (mTokenStream.incrementToken()) {
-                    mLastTokenStartPosition
-                            = mOffsetAttribute.startOffset();
-                    mLastTokenEndPosition
-                            = mOffsetAttribute.endOffset();
+                    mLastTokenStartPosition = mOffsetAttribute.startOffset();
+                    mLastTokenEndPosition = mOffsetAttribute.endOffset();
+
+                    if (mTermAttribute.term().contains(" ")) {
+                        System.out.println("tokenization error:" + mLastTokenStartPosition + " " + mLastTokenStartPosition + " " + mTermAttribute.term());
+                    }
+
                     return mTermAttribute.term();
                 } else {
                     return null;
                 }
             } catch (IOException e) {
-                return null;
+                throw new RuntimeException(e);
             }
 
         }
@@ -78,9 +91,6 @@ public class JAnnotationTokenizerFactory implements TokenizerFactory, Serializab
 
     public Tokenizer tokenizer(char[] cs, int start, int len) {
         Reader reader = new CharArrayReader(cs, start, len);
-        TokenStream tokenStream
-                = mAnalyzer.tokenStream(mFieldName, reader);
-        return new TokenStreamTokenizer(tokenStream);
-
+        return new TokenStreamTokenizer(new StandardTokenizer(Version.LUCENE_36, reader));
     }
 }
