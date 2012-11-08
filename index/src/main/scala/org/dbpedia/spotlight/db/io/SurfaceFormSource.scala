@@ -99,7 +99,7 @@ object SurfaceFormSource {
     if (file.getName.endsWith("gz"))
       fromTSVInputStream(new GZIPInputStream(new FileInputStream(file)))
     else if (file.getName.endsWith("bz2"))
-      fromTSVInputStream(new BZip2CompressorInputStream(new FileInputStream(file)))
+      fromTSVInputStream(new BZip2CompressorInputStream(new FileInputStream(file), true))
     else
       fromTSVInputStream(new FileInputStream(file))
   }
