@@ -66,7 +66,7 @@ class NIFOutputFormatter{
       // build URI for this occurrence
       var occUri = ""
       try {
-        occUri = buildURI(occ.surfaceForm, occ.textOffset, recipe, prefix, ctxLength)
+        occUri = buildURI(text, occ.surfaceForm, occ.textOffset, recipe, prefix, ctxLength)
       }
       catch {
 	case iae : IllegalArgumentException => println(iae.getMessage) // TODO error handling
@@ -82,7 +82,7 @@ class NIFOutputFormatter{
     // document specific uri
     var docUri = ""
     try {
-      docUri = buildDocURI(text, recipe, prefix, ctxLength)
+      docUri = buildURI(text, new SurfaceForm(text), 0, recipe, prefix, ctxLength)
     }
     catch {
       case iae : IllegalArgumentException => println(iae.getMessage) // TODO error handling
@@ -135,7 +135,7 @@ class NIFOutputFormatter{
       // build URI for this occurrence
       var occUri = ""
       try {
-        occUri = buildURI(occ.surfaceForm, occ.textOffset, recipe, prefix, ctxLength)
+        occUri = buildURI(text, occ.surfaceForm, occ.textOffset, recipe, prefix, ctxLength)
       }
       catch {
 	case iae : IllegalArgumentException => println(iae.getMessage) // TODO error handling
@@ -147,7 +147,7 @@ class NIFOutputFormatter{
     // document specific uri
     var docUri = ""
     try {
-      docUri = buildDocURI(text, recipe, prefix, ctxLength)
+      docUri = buildURI(text, new SurfaceForm(text), 0, recipe, prefix, ctxLength)
     }
     catch {
       case iae : IllegalArgumentException => println(iae.getMessage) // TODO error handling
@@ -209,7 +209,8 @@ class NIFOutputFormatter{
   /**
    * Method that builds the URIs for the different occurrences according to
    * the NIF specification.
-   * 
+   *
+   * @param text The whole document text used for building the document URIs
    * @param sff SurfaceForm the SurfaceForm of the corresponding occurrence for which the URI should be build
    * @param offset the text offset of the occurrence
    * @param recipe the URI recipe type
@@ -217,7 +218,7 @@ class NIFOutputFormatter{
    * @param ctxLength length of the context if the recipe is "context-hash"
    * @return URI for the specific occurrence
    */
-  def buildURI(sff: SurfaceForm, offset: Int, recipe:String, prefix:String, ctxLength:Int): String = {
+  def buildURI(text: String, sff: SurfaceForm, offset: Int, recipe:String, prefix:String, ctxLength:Int): String = {
     if (recipe == "offset") {
       // calculate offset indices according to NIF2.0 spec
       val startInd = offset
@@ -226,34 +227,12 @@ class NIFOutputFormatter{
     }
     else if (recipe == "context-hash") {
       val length = sff.name.length
-      val ctxString = "" // TODO
+      var ctxString = text.slice(scala.math.max(0,offset-ctxLength),offset)
+      ctxString += "(" + sff.name + ")"
+      ctxString += text.slice(offset+length, scala.math.min(offset+length+ctxLength,text.length))
       val hash = DigestUtils.md5Hex(ctxString)
       var string = if (length < 20) sff.name else sff.name.substring(0,20)
-      string = URLEncoder.encode(string , "UTF-8")
-      prefix + "hash_%s_%s_%s_%s".format(ctxLength, length, hash, string)
-    }
-    else throw new IllegalArgumentException("Wrong uri scheme type")
-  }
-
-  /**
-   * Method that builds the URI for the whole document according to
-   * the NIF specification.
-   * 
-   * @param text Input string/document for which the URI should be build
-   * @param recipe the URI recipe type
-   * @param prefix the given URI prefix
-   * @param ctxLength length of the context if the recipe is "context-hash"
-   * @return URI for the specific string/document
-   */
-  def buildDocURI(text: String, recipe: String, prefix: String, ctxLength: Int): String = {
-    if (recipe == "offset")
-      prefix + "offset_0_%s".format(text.length)
-    else if (recipe == "context-hash") {
-      val length = text.length
-      val ctxString = "" // TODO
-      val hash = DigestUtils.md5Hex(ctxString)
-      var string = if (length < 20) text else text.substring(0,20)
-      string = URLEncoder.encode(string , "UTF-8")
+      string = URLEncoder.encode(string , "UTF-8").replaceAll("\\+", "%20");
       prefix + "hash_%s_%s_%s_%s".format(ctxLength, length, hash, string)
     }
     else throw new IllegalArgumentException("Wrong uri scheme type")
