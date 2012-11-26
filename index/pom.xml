@@ -50,8 +50,29 @@
                 <configuration>
                     <launchers>
                         <launcher>
-                            <id>AddTypesToIndex</id>
-                            <mainClass>org.dbpedia.spotlight.lucene.index.AddTypesToIndex</mainClass>
+                            <id>ExtractCandidateMap</id>
+                            <mainClass>org.dbpedia.spotlight.util.ExtractCandidateMap</mainClass>
+                            <jvmArgs>
+                                <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
+                            </jvmArgs>
+                            <!--args>
+                                <arg>../conf/indexing-3.8.properties</arg>
+                            </args-->
+                        </launcher>
+                        <launcher>
+                            <id>ExtractOccsFromWikipedia</id>
+                            <mainClass>org.dbpedia.spotlight.lucene.index.ExtractOccsFromWikipedia</mainClass>
+                            <jvmArgs>
+                                <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
+                            </jvmArgs>
+                            <!--args>
+                                <arg>../conf/indexing-3.8.properties</arg>
+                                <arg>output/occs.tsv</arg>
+                            </args-->
+                        </launcher>
+                        <launcher>
+                            <id>IndexLingPipeSpotter</id>
+                            <mainClass>org.dbpedia.spotlight.spot.lingpipe.IndexLingPipeSpotter</mainClass>
                             <jvmArgs>
                                 <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
                             </jvmArgs>
@@ -74,6 +95,36 @@
                         <launcher>
                             <id>AddSurfaceFormsToIndex</id>
                             <mainClass>org.dbpedia.spotlight.lucene.index.AddSurfaceFormsToIndex</mainClass>
+                            <jvmArgs>
+                                <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
+                            </jvmArgs>
+                            <!--args>
+                                <arg>../conf/indexing-3.8.properties</arg>
+                            </args-->
+                        </launcher>
+                        <launcher>
+                            <id>CandidateIndexer</id>
+                            <mainClass>org.dbpedia.spotlight.lucene.index.CandidateIndexer</mainClass>
+                            <jvmArgs>
+                                <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
+                            </jvmArgs>
+                            <!--args>
+                                <arg>../conf/indexing-3.8.properties</arg>
+                            </args-->
+                        </launcher>
+                        <launcher>
+                            <id>AddTypesToIndex</id>
+                            <mainClass>org.dbpedia.spotlight.lucene.index.AddTypesToIndex</mainClass>
+                            <jvmArgs>
+                                <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
+                            </jvmArgs>
+                            <!--args>
+                                <arg>../conf/indexing-3.8.properties</arg>
+                            </args-->
+                        </launcher>
+                        <launcher>
+                            <id>CompressIndex</id>
+                            <mainClass>org.dbpedia.spotlight.lucene.index.CompressIndex</mainClass>
                             <jvmArgs>
                                 <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
                             </jvmArgs>
