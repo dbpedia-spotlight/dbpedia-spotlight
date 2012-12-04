@@ -232,15 +232,10 @@
             <artifactId>mahout-collections</artifactId>
         </dependency>
 
-        <!--
-            Fixed dependency: scala-aho-corasick implementation
-        -->
         <dependency>
             <groupId>scala.ahocorasick</groupId>
-            <artifactId>library</artifactId>
+            <artifactId>spotter-aho</artifactId>
             <version>0.1</version>
-            <systemPath>${project.basedir}/../lib/scala-aho-corasick-0.1.jar</systemPath>
-            <scope>system</scope>
         </dependency>
         <dependency>
             <groupId>org.scalaz</groupId>
