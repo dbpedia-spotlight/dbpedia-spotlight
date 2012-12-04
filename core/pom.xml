@@ -232,6 +232,17 @@
             <artifactId>mahout-collections</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>scala.ahocorasick</groupId>
+            <artifactId>spotter-aho</artifactId>
+            <version>0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.scalaz</groupId>
+            <artifactId>scalaz-core_${scala.compiler.version}</artifactId>
+            <version>6.0.4</version>
+        </dependency>
+
     </dependencies>
 
 </project>
