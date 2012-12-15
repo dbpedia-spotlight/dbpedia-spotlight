@@ -11,15 +11,15 @@ import org.dbpedia.spotlight.db.WikipediaToDBpediaClosure
 import scala.Int
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.exceptions._
+import org.dbpedia.spotlight.db.memory.MemoryResourceStore
+import org.dbpedia.extraction.util.WikiUtil
 
 
 /**
- * @author Joachim Daiber
+ *  Represents a source of a candidate map that maps [[org.dbpedia.spotlight.model.SurfaceForm]]s to DBpedia resource
+ *  candidates.
  *
- */
-
-/**
- * Represents a source of a SF->Res. mapping
+ * @author Joachim Daiber
  */
 
 object CandidateMapSource {
@@ -62,7 +62,6 @@ object CandidateMapSource {
       }
     }
     LOG.info("Done.")
-
 
     LOG.warn("DBpedia resource not found: %d".format(uriNotFound) )
     LOG.warn("Invalid DBpedia resources (e.g. disambiguation page): %d".format(uriIgnored) )

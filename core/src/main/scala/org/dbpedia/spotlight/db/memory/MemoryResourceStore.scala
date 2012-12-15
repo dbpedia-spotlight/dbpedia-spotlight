@@ -1,18 +1,16 @@
 package org.dbpedia.spotlight.db.memory
 
 import org.dbpedia.spotlight.model.DBpediaResource
-import gnu.trove.TObjectIntHashMap
 import java.lang.{Short, String}
 import scala.collection.JavaConversions._
 import scala.{throws, transient}
-import org.dbpedia.spotlight.exceptions.{SurfaceFormNotFoundException, DBpediaResourceNotFoundException}
+import org.dbpedia.spotlight.exceptions.DBpediaResourceNotFoundException
 import org.dbpedia.spotlight.db.model.{OntologyTypeStore, ResourceStore}
+import java.lang.Integer
+import util.StringToIDMapFactory
 
 /**
  * @author Joachim Daiber
- *
- *
- *
  */
 
 @SerialVersionUID(1003001)
@@ -27,7 +25,7 @@ class MemoryResourceStore
   var typesForID: Array[Array[Short]] = null
 
   @transient
-  var idFromURI: TObjectIntHashMap = null
+  var idFromURI: java.util.Map[String, Integer] = null
 
   @transient
   var totalSupport = 0.0
@@ -43,8 +41,8 @@ class MemoryResourceStore
 
   def createReverseLookup() {
     if (uriForID != null) {
-      System.err.println("Creating reverse-lookup for DBpedia resources.")
-      idFromURI = new TObjectIntHashMap(uriForID.size)
+      LOG.info("Creating reverse-lookup for DBpedia resources.")
+      idFromURI = StringToIDMapFactory.createDefault(uriForID.size)
 
       var i = 0
       uriForID foreach { uri => {
@@ -82,8 +80,8 @@ class MemoryResourceStore
   @throws(classOf[DBpediaResourceNotFoundException])
   def getResourceByName(name: String): DBpediaResource = {
     idFromURI.get(name) match {
-      case id: Int if id > 0 => getResource(id)
-      case id: Int if id == 0 => throw new DBpediaResourceNotFoundException("Could not find %s".format(name))
+      case id: Integer if id > 0 => getResource(id)
+      case _ => throw new DBpediaResourceNotFoundException("Could not find %s".format(name))
     }
   }
 

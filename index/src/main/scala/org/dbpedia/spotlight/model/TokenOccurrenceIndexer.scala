@@ -10,10 +10,10 @@ import java.util.Map
 
 trait TokenOccurrenceIndexer {
 
-  def addTokenOccurrence(resource: DBpediaResource, token: Token, count: Int)
+  def addTokenOccurrence(resource: DBpediaResource, token: TokenType, count: Int)
   def addTokenOccurrence(resource: DBpediaResource, tokenCounts: Map[Int, Int])
   def addTokenOccurrences(occs: Map[DBpediaResource, Map[Int, Int]])
-  def addTokenOccurrences(occs: Iterator[Triple[DBpediaResource, Array[Token], Array[Int]]])
+  def addTokenOccurrences(occs: Iterator[Triple[DBpediaResource, Array[TokenType], Array[Int]]])
   def writeTokenOccurrences()
   def createContextStore(n: Int)
 

@@ -5,17 +5,15 @@ import org.dbpedia.spotlight.db.model.{ResourceStore, CandidateMapStore}
 import scala.Array
 
 /**
+ *
+ *
  * @author Joachim Daiber
- *
- *
- *
  */
 
 @SerialVersionUID(1005001)
 class MemoryCandidateMapStore
   extends MemoryStore
   with CandidateMapStore {
-
 
   var candidates      = Array[Array[Int]]()
   var candidateCounts = Array[Array[Int]]()

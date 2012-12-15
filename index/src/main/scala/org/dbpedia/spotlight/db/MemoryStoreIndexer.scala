@@ -15,17 +15,16 @@ import org.dbpedia.spotlight.model._
 import scala.{Array, Int}
 
 /**
+ * Implements memory-based indexing. The memory stores are serialized and deserialized using Kryo.
+ *
  * @author Joachim Daiber
- *
- *
- *
  */
 
 class MemoryStoreIndexer(val baseDir: File)
   extends SurfaceFormIndexer
   with ResourceIndexer
   with CandidateIndexer
-  with TokenIndexer
+  with TokenTypeIndexer
   with TokenOccurrenceIndexer
 {
 
@@ -37,11 +36,11 @@ class MemoryStoreIndexer(val baseDir: File)
 
   def addSurfaceForms(sfCount: Map[SurfaceForm, (Int, Int)]) {
 
-   val sfStore = new MemorySurfaceFormStore()
+    val sfStore = new MemorySurfaceFormStore()
 
-    var annotatedCountForID = new Array[Int](sfCount.size+1)
-    var totalCountForID = new Array[Int](sfCount.size+1)
-    var stringForID  = new Array[String](sfCount.size+1)
+    val annotatedCountForID = new Array[Int](sfCount.size + 1)
+    val totalCountForID = new Array[Int](sfCount.size + 1)
+    val stringForID = new Array[String](sfCount.size + 1)
 
     var i = 1
     sfCount foreach {
@@ -157,34 +156,34 @@ class MemoryStoreIndexer(val baseDir: File)
     MemoryStore.dump(candmapStore, new File(baseDir, "candmap.mem"))
   }
 
-  def addToken(token: Token, count: Int) {
+  def addTokenType(token: TokenType, count: Int) {
     throw new NotImplementedException()
   }
 
-  def addTokens(tokenCount: Map[Token, Int]) {
+  def addTokenTypes(tokenCount: Map[TokenType, Int]) {
 
-    val tokenStore = new MemoryTokenStore()
+    val tokenTypeStore = new MemoryTokenTypeStore()
 
     val tokens = new Array[String](tokenCount.size)
     val counts = new Array[Int](tokenCount.size)
 
     tokenCount.foreach {
       case (token, count) => {
-        tokens(token.id) = token.name
+        tokens(token.id) = token.tokenType
         counts(token.id) = count
       }
     }
 
-    tokenStore.tokenForId = tokens.array
-    tokenStore.counts = counts.array
+    tokenTypeStore.tokenForId = tokens.array
+    tokenTypeStore.counts = counts.array
 
-    MemoryStore.dump(tokenStore, new File(baseDir, "tokens.mem"))
+    MemoryStore.dump(tokenTypeStore, new File(baseDir, "tokens.mem"))
   }
 
 
   //TOKEN OCCURRENCES
 
-  def addTokenOccurrence(resource: DBpediaResource, token: Token, count: Int) {
+  def addTokenOccurrence(resource: DBpediaResource, token: TokenType, count: Int) {
     throw new NotImplementedException()
   }
 
@@ -208,23 +207,21 @@ class MemoryStoreIndexer(val baseDir: File)
     }
   }
 
-  def addTokenOccurrences(occs: Iterator[Triple[DBpediaResource, Array[Token], Array[Int]]]) {
+  def addTokenOccurrences(occs: Iterator[Triple[DBpediaResource, Array[TokenType], Array[Int]]]) {
     occs.filter(t => t!=null && t._1 != null).foreach{
-      t: Triple[DBpediaResource, Array[Token], Array[Int]] => {
-		val Triple(res, tokens, counts) = t
-		if (res != null) {
-		  assert (tokens.size == counts.size)
-	      if(contextStore.tokens(res.id) != null) {
-             val (mergedTokens, mergedCounts) = (tokens.map{ t: Token => t.id }.array.zip(counts.array) ++ contextStore.tokens(res.id).zip( contextStore.counts(res.id) )).groupBy(_._1).map{ case(k, v) => (k, v.map{ p => p._2}.sum ) }.unzip
-			 contextStore.tokens(res.id) = mergedTokens.toArray.array
-             contextStore.counts(res.id) = mergedCounts.toArray.array
-
-
-		  } else{
-		    contextStore.tokens(res.id) = tokens.map{ t: Token => t.id }.array
+      t: Triple[DBpediaResource, Array[TokenType], Array[Int]] => {
+        val Triple(res, tokens, counts) = t
+        if (res != null) {
+          assert (tokens.size == counts.size)
+          if(contextStore.tokens(res.id) != null) {
+            val (mergedTokens, mergedCounts) = (tokens.map{ t: TokenType => t.id }.array.zip(counts.array) ++ contextStore.tokens(res.id).zip( contextStore.counts(res.id) )).groupBy(_._1).map{ case(k, v) => (k, v.map{ p => p._2}.sum ) }.unzip
+            contextStore.tokens(res.id) = mergedTokens.toArray.array
+            contextStore.counts(res.id) = mergedCounts.toArray.array
+          } else{
+            contextStore.tokens(res.id) = tokens.map{ t: TokenType => t.id }.array
             contextStore.counts(res.id) = counts.array
           }
-		}
+        }
       }
     }
   }
@@ -240,8 +237,8 @@ class MemoryStoreIndexer(val baseDir: File)
 object MemoryStoreIndexer {
 
   def createOntologyTypeStore(types: Set[OntologyType]): MemoryOntologyTypeStore = {
-    var idFromName = new java.util.HashMap[String, Short]()
-    var ontologyTypeFromID = new java.util.HashMap[Short, OntologyType]()
+    val idFromName = new java.util.HashMap[String, Short]()
+    val ontologyTypeFromID = new java.util.HashMap[Short, OntologyType]()
 
     var i = 0.toShort
     types foreach {

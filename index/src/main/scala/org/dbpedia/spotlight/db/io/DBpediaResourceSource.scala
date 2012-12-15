@@ -19,12 +19,12 @@ import org.dbpedia.spotlight.exceptions.NotADBpediaResourceException
 
 
 /**
- * @author Joachim Daiber
+ * Represents a source of DBpediaResources.
  *
- */
-
-/**
- * Represents a source of DBpediaResources
+ * Type definitions must be prepared beforehand, see
+ *  src/main/scripts/types.sh
+ *
+ * @author Joachim Daiber
  */
 
 object DBpediaResourceSource {
@@ -119,22 +119,24 @@ object DBpediaResourceSource {
     }
 
     //Read types:
-    LOG.info("Reading types...")
-    val uriNotFound = HashSet[String]()
-    Source.fromInputStream(instanceTypes).getLines() foreach {
-      line: String => {
-        val Array(uri: String, typeURI: String) = line.trim().split('\t')
+    if (instanceTypes != null) {
+      LOG.info("Reading types...")
+      val uriNotFound = HashSet[String]()
+      Source.fromInputStream(instanceTypes).getLines() foreach {
+        line: String => {
+          val Array(uri: String, typeURI: String) = line.trim().split('\t')
 
-        try {
-          resourceByURI(new DBpediaResource(uri).uri).types ::= OntologyType.fromURI(typeURI)
-        } catch {
-          case e: java.util.NoSuchElementException =>
-            uriNotFound += uri
+          try {
+            resourceByURI(new DBpediaResource(uri).uri).types ::= OntologyType.fromURI(typeURI)
+          } catch {
+            case e: java.util.NoSuchElementException =>
+              uriNotFound += uri
+          }
         }
       }
+      LOG.warn("URI for %d type definitions not found!".format(uriNotFound.size) )
+      LOG.info("Done.")
     }
-    LOG.warn("URI for %d type definitions not found!".format(uriNotFound.size) )
-    LOG.info("Done.")
 
     resourceByURI foreach {
       case (_, res) => resourceMap.put(res, res.support)
@@ -151,7 +153,7 @@ object DBpediaResourceSource {
   ): java.util.Map[DBpediaResource, Int] = fromPigInputStreams(
     wikipediaToDBpediaClosure,
     new FileInputStream(counts),
-    new FileInputStream(instanceTypes)
+    if(instanceTypes == null) null else new FileInputStream(instanceTypes)
   )
 
 

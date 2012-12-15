@@ -1,45 +1,27 @@
 package org.dbpedia.spotlight.db.io
 
 import org.dbpedia.spotlight.io.OccurrenceSource
-import org.dbpedia.spotlight.model.{DBpediaResourceOccurrence, Token}
 import org.dbpedia.spotlight.db.model.Tokenizer
 import collection.mutable.HashMap
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 import java.io.{InputStream, FileInputStream, File}
 import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.model.{TokenType, DBpediaResourceOccurrence, Token}
 
 
 /**
+ * A source for tokens.
+ *
+ * TODO: Note that this object is currently summing total counts for tokens over all token occurrences. Eventually,
+ * this should be moved to Apache Pig.
+ *
  * @author Joachim Daiber
- *
- *
- *
  */
 
 object TokenSource {
 
   private val LOG = LogFactory.getLog(this.getClass)
-
-  def fromOccurrenceSource(os: OccurrenceSource, tokenizer: Tokenizer): java.util.Map[Token, Int] = {
-    val tokenMap = HashMap[String, Int]()
-
-    os.foreach {
-      occ: DBpediaResourceOccurrence => {
-        tokenizer.tokenize(occ.context) foreach {
-          token: String => tokenMap.put(token, tokenMap.getOrElse(token, 0) + 1)
-        }
-      }
-    }
-
-    var id = -1
-    tokenMap.map{
-      case(token, count) => {
-        id += 1
-        (new Token(id, token, count), count)
-      }
-    }.toMap.asJava
-  }
 
   def fromPigFile(tokenFile: File) = fromPigInputStream(new FileInputStream(tokenFile))
   def fromPigInputStream(tokenFile: InputStream) = {
@@ -63,7 +45,7 @@ object TokenSource {
     tokenMap.map{
       case(token, count) => {
         id += 1
-        (new Token(id, token, count), count)
+        (new TokenType(id, token, count), count)
       }
     }.toMap.asJava
   }
