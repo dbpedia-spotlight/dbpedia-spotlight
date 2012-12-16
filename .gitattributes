@@ -1,0 +1,4 @@
+# normalize all files
+# when committed they are stored with LF,
+# on checkout they are converted to the OS's native line endings
+* text
