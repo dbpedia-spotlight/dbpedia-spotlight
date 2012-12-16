@@ -18,7 +18,7 @@
 
 package org.dbpedia.spotlight.disambiguate
 
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import java.lang.UnsupportedOperationException
 import scalaj.collection.Imports._
 import org.apache.lucene.search.similar.MoreLikeThis
@@ -42,7 +42,7 @@ class TopicBiasedDisambiguator(val candidateSearcher: CandidateSearcher,
                                val topicalPriorStore: TopicalPriorStore)
     extends ParagraphDisambiguator {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     @throws(classOf[InputException])
     def disambiguate(paragraph: Paragraph): List[DBpediaResourceOccurrence] = {
@@ -89,7 +89,7 @@ class TopicBiasedDisambiguator(val candidateSearcher: CandidateSearcher,
                 try {
                     candidates = candidateSearcher.getCandidates(sfOcc.surfaceForm).asScala //.map(r => r.uri)
                 } catch {
-                    case e: ItemNotFoundException => LOG.debug(e);
+                    case e: ItemNotFoundException => LOG.debug(e.getMessage());
                 }
                 //ATTENTION there is no r.support at this point
                 //TODO if support comes from candidate index, it means c(sf,r).

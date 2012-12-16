@@ -21,7 +21,7 @@ package org.dbpedia.spotlight.web.rest
 import org.dbpedia.spotlight.lucene.LuceneManager.DBpediaResourceField
 import org.apache.lucene.search.similar.MoreLikeThis
 
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import org.dbpedia.spotlight.lucene.LuceneManager
 import org.dbpedia.spotlight.model.DBpediaResource
 import org.dbpedia.spotlight.exceptions.{SearchException, TimeoutException}
@@ -51,7 +51,7 @@ import net.liftweb.json.JsonDSL._
  */
 class RelatedResources {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     LOG.info("Initializing objects ...")
     val directory = LuceneManager.pickDirectory(new File("/data/spotlight/release-0.6/index-0.6-withTypes-withSF/"))

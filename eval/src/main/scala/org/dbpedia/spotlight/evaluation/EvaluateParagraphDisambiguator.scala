@@ -18,7 +18,7 @@
 package org.dbpedia.spotlight.evaluation
 
 import org.dbpedia.spotlight.io._
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import org.dbpedia.spotlight.disambiguate._
 import java.io.{PrintWriter, File}
 import org.dbpedia.spotlight.corpus.{PredoseCorpus, MilneWittenCorpus, AidaCorpus}
@@ -36,7 +36,7 @@ import scala.Some
  */
 object EvaluateParagraphDisambiguator {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     def filter(bestK: Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]) :  Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]] = {
         bestK;
@@ -84,7 +84,7 @@ object EvaluateParagraphDisambiguator {
                 });
                 outputs.foreach(_.flush)
             } catch {
-                case e: Exception => LOG.error(e)
+                case e: Exception => LOG.error(e.getMessage())
             }
             val mrr = if (a.occurrences.size==0) 0.0 else acc / a.occurrences.size
             LOG.info("Mean Reciprocal Rank (MRR) = %.5f".format(mrr))

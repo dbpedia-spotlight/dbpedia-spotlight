@@ -17,7 +17,7 @@ package org.dbpedia.spotlight.disambiguate
  */
 
 import mixtures.LinearRegressionMixture
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import org.dbpedia.spotlight.exceptions.{SearchException, InputException}
 import org.apache.lucene.search.Explanation
 import org.dbpedia.spotlight.model._
@@ -31,7 +31,7 @@ import scalaj.collection.Imports._
  */
 class CuttingEdgeDisambiguator(val contextSearcher: ContextSearcher) extends Disambiguator with ParagraphDisambiguator {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     LOG.info("Initializing disambiguator object ...")
     val disambiguator : Disambiguator = new MixedWeightsDisambiguator(contextSearcher, new LinearRegressionMixture())

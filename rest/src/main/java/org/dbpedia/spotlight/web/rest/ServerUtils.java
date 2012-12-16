@@ -2,8 +2,8 @@ package org.dbpedia.spotlight.web.rest;
 
 import de.l3s.boilerpipe.BoilerpipeProcessingException;
 import de.l3s.boilerpipe.extractors.ArticleExtractor;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dbpedia.spotlight.exceptions.InputException;
 
 import javax.ws.rs.core.Response;
@@ -14,7 +14,7 @@ import java.net.URL;
  * @author pablomendes
  */
 public class ServerUtils {
-    static Log LOG = LogFactory.getLog("ServerUtils");
+    static Logger LOG = LoggerFactory.getLogger("ServerUtils");
 
     // Sets the necessary headers in order to enable CORS
     public static Response ok(String response) {

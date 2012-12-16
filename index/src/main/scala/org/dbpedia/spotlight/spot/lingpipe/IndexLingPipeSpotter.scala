@@ -18,7 +18,7 @@
 
 package org.dbpedia.spotlight.spot.lingpipe
 
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import com.aliasi.util.AbstractExternalizable
 import java.io.{FileInputStream, File}
 import org.semanticweb.yars.nx.parser.NxParser
@@ -44,7 +44,7 @@ import org.dbpedia.spotlight.io.{OccurrenceSource, IndexedOccurrencesSource}
  */
 object IndexLingPipeSpotter
 {
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
 
     def getDictionary(occs : Traversable[DBpediaResourceOccurrence], lowerCased: Boolean, uriCountThreshold: Int = 0) : MapDictionary[String] = {

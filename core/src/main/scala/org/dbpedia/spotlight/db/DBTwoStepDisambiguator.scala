@@ -3,7 +3,7 @@ package org.dbpedia.spotlight.db
 import model._
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.disambiguate.mixtures.Mixture
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import scala.collection.JavaConverters._
 import similarity.{ContextSimilarity, TFICFSimilarity}
 import org.dbpedia.spotlight.disambiguate.{ParagraphDisambiguator, Disambiguator}
@@ -35,7 +35,7 @@ class DBTwoStepDisambiguator(
   contextSimilarity: ContextSimilarity
 ) extends ParagraphDisambiguator {
 
-  private val LOG = LogFactory.getLog(this.getClass)
+  private val LOG = LoggerFactory.getLogger(this.getClass)
 
   /* Tokenizer that may be used for tokenization if the text is not already tokenized. */
   var tokenizer: Tokenizer = null

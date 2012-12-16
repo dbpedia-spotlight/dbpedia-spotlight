@@ -7,7 +7,7 @@ import xml.XML
 import io.Source
 import collection.mutable.ListBuffer
 import org.dbpedia.extraction.util.WikiUtil
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 
 /**
  * Created with IntelliJ IDEA.
@@ -29,7 +29,7 @@ import org.apache.commons.logging.LogFactory
 class KBPCorpus(val queryFile:File, val answerFile:File, val sourceDir:File, val kbDir:File) extends AnnotatedTextSource {
   override def name = "KBP"
 
-  val LOG = LogFactory.getLog(this.getClass)
+  val LOG = LoggerFactory.getLogger(this.getClass)
 
   //preparing queries
   val queryMap = queryFromFile()

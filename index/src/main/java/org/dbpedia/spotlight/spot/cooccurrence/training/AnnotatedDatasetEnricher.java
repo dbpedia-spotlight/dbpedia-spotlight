@@ -1,8 +1,8 @@
 package org.dbpedia.spotlight.spot.cooccurrence.training;
 
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dbpedia.spotlight.spot.cooccurrence.weka.InstanceBuilder;
 import org.dbpedia.spotlight.spot.cooccurrence.features.data.OccurrenceDataProvider;
 import org.dbpedia.spotlight.spot.cooccurrence.filter.Filter;
@@ -33,7 +33,7 @@ import java.util.List;
 
 public abstract class AnnotatedDatasetEnricher {
 
-	Log LOG = LogFactory.getLog(this.getClass());
+	Logger LOG = LoggerFactory.getLogger(this.getClass());
 
 	protected InstanceBuilder instanceBuilder;
 	protected List<Filter> filters = new LinkedList<Filter>();

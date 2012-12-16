@@ -23,7 +23,7 @@ import java.io.File
 import org.dbpedia.spotlight.tagging.lingpipe.{LingPipeTaggedTokenProvider, LingPipeFactory}
 import scalaj.collection.Imports._
 
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import org.dbpedia.spotlight.model._
 
 
@@ -34,7 +34,7 @@ import org.dbpedia.spotlight.model._
  */
 class AtLeastOneNounSelector extends TaggedSpotSelector {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     var lastText = ""
     def select(occurrences: java.util.List[SurfaceFormOccurrence]) : java.util.List[SurfaceFormOccurrence] = {

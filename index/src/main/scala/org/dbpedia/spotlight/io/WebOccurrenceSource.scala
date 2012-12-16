@@ -20,7 +20,7 @@ import org.cyberneko.html.parsers.DOMParser
 import org.dbpedia.spotlight.model._
 import java.io._
 import io.Source
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import java.util.zip.GZIPInputStream
 import java.net.{Socket, URL}
 import org.xml.sax.InputSource
@@ -32,7 +32,7 @@ import org.dbpedia.spotlight.util.{IndexingConfiguration}
  */
 object WebOccurrenceSource
 {
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     val blacklist = Set("wikipedia.org",
                         "spacecoast-trading.ipower.com",

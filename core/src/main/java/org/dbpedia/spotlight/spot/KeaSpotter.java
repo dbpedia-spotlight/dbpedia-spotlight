@@ -22,8 +22,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dbpedia.spotlight.model.SurfaceForm;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 import org.dbpedia.spotlight.model.Text;
@@ -40,7 +40,7 @@ import com.gossinteractive.kea.KeyPhrase;
  */
 public class KeaSpotter implements Spotter {
 
-	private final Log LOG = LogFactory.getLog(this.getClass());
+	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
 	String keamodelfile = null;
 

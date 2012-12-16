@@ -34,7 +34,7 @@ package org.dbpedia.spotlight.util
  * limitations under the License.
  */
 
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import java.util.Properties
 import io.Source
 import scala.collection.JavaConversions._
@@ -52,7 +52,7 @@ import org.dbpedia.spotlight.model.Factory
 
 class IndexingConfiguration(val configFile: File) {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     def this(fileName: String) {
         this(new File(fileName))

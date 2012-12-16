@@ -20,8 +20,8 @@ package org.dbpedia.spotlight.web.rest.resources;
 
 import de.l3s.boilerpipe.BoilerpipeProcessingException;
 import de.l3s.boilerpipe.extractors.ArticleExtractor;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ;
 import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
@@ -69,7 +69,7 @@ public class Candidates {
     @Context
     private UriInfo context;
 
-    Log LOG = LogFactory.getLog(this.getClass());
+    Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     // Annotation interface
     /**

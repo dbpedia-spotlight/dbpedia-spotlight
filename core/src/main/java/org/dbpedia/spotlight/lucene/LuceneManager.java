@@ -18,8 +18,8 @@
 
 package org.dbpedia.spotlight.lucene;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.StopAnalyzer;
@@ -61,7 +61,7 @@ import java.util.*;
  */
 public class LuceneManager {
 
-    protected static final Log LOG = LogFactory.getLog(LuceneManager.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(LuceneManager.class);
 
     /*TODO yes, we know we shouldn't have public fields floating around.
     "Tips on Choosing an Access Level: (from http://download.oracle.com/docs/cd/E17409_01/javase/tutorial/java/javaOO/accesscontrol.html)

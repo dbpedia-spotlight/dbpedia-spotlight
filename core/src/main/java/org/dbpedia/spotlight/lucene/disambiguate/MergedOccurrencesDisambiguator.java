@@ -16,8 +16,8 @@
 
 package org.dbpedia.spotlight.lucene.disambiguate;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.lucene.index.TermFreqVector;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.ScoreDoc;
@@ -34,7 +34,7 @@ import java.util.*;
 
 public class MergedOccurrencesDisambiguator implements Disambiguator {
 
-    final Log LOG = LogFactory.getLog(this.getClass());
+    final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     MergedOccurrencesContextSearcher mMergedSearcher;
 

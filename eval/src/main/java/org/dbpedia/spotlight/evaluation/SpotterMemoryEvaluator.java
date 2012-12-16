@@ -19,8 +19,8 @@
 package org.dbpedia.spotlight.evaluation;
 
 import net.sf.json.JSONException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.InitializationException;
 import org.dbpedia.spotlight.exceptions.SpottingException;
@@ -45,7 +45,7 @@ import java.util.Scanner;
  */
 public class SpotterMemoryEvaluator {
 
-    private final static Log LOG = LogFactory.getLog(SpotterMemoryEvaluator.class);
+    private final static Logger LOG = LoggerFactory.getLogger(SpotterMemoryEvaluator.class);
 
     public static void main(String[] args) throws IOException, JSONException, ConfigurationException, InitializationException, org.json.JSONException, SpottingException {
 

@@ -16,7 +16,7 @@
 
 package org.dbpedia.spotlight.evaluation
 
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import org.dbpedia.spotlight.model._
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.spot.Spotter
@@ -28,7 +28,7 @@ import org.dbpedia.spotlight.exceptions.SearchException
  */
 class BatchEvaluator(val testSource : Traversable[DBpediaResourceOccurrence], val spotter : Spotter, val disambiguatorSet : Set[Disambiguator])
 {
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     def listToJavaList[T](l: List[T]) = l.foldLeft(new java.util.ArrayList[T](l.size)){(al, e) => al.add(e); al}
 

@@ -5,7 +5,7 @@ import collection.mutable
 import org.dbpedia.spotlight.db.model.TokenTypeStore
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.util.MathUtil
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 
 /**
  * Generative context similarity based on Han et. al

@@ -16,8 +16,8 @@
 
 package org.dbpedia.spotlight.lucene.similarity;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
@@ -39,7 +39,7 @@ import java.util.*;
  */
 public abstract class TermCache {
 
-    Log LOG = LogFactory.getLog(TermCache.class);
+    Logger LOG = LoggerFactory.getLogger(TermCache.class);
 
     long mMaxCacheSize;
     LuceneManager mLuceneManager;

@@ -24,7 +24,7 @@ import org.dbpedia.spotlight.model.SurfaceForm
 import org.dbpedia.spotlight.util.IndexingConfiguration
 import java.util.Scanner
 import java.io.FileInputStream
-import org.apache.commons.logging.{LogFactory, Log}
+import org.slf4j.{LoggerFactory, Logger}
 import scalaj.collection.Imports._
 
 /**
@@ -39,7 +39,7 @@ import scalaj.collection.Imports._
 
 object AddSurfaceFormsToIndex
 {
-    val LOG: Log = LogFactory.getLog(this.getClass)
+    val LOG = LoggerFactory.getLogger(this.getClass)
 
     def toLowercase(sf: String, lowerCased: Boolean) : List[String] = {
         if (lowerCased) (sf.toLowerCase :: List(sf)) else List(sf)

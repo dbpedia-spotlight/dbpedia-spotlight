@@ -1,7 +1,7 @@
 package org.dbpedia.spotlight.spot.cooccurrence.features.data;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dbpedia.spotlight.exceptions.InitializationException;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
 import org.dbpedia.spotlight.model.SpotterConfiguration;
@@ -20,7 +20,7 @@ import java.util.List;
 public class OccurrenceDataProviderSQL implements OccurrenceDataProvider {
 
 	Connection sqlConnection;
-	private final Log LOG = LogFactory.getLog(this.getClass());
+	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
 	private static OccurrenceDataProviderSQL INSTANCE;
 

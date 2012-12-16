@@ -5,7 +5,7 @@ import org.dbpedia.spotlight.model.SurfaceForm
 import scala.Array
 import java.util.zip.GZIPInputStream
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import java.io.{File, InputStream, FileInputStream}
 import scala.Predef._
 import java.util.{Map, HashMap}
@@ -22,7 +22,7 @@ import org.dbpedia.extraction.util.WikiUtil
 
 object SurfaceFormSource {
 
-  private val LOG = LogFactory.getLog(this.getClass)
+  private val LOG = LoggerFactory.getLogger(this.getClass)
 
   def fromPigInputStreams(
     sfAndTotalCounts: InputStream,

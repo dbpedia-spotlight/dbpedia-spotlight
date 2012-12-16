@@ -19,8 +19,8 @@ package org.dbpedia.spotlight.lucene.disambiguate;
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Ints;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.document.MapFieldSelector;
@@ -51,7 +51,7 @@ import java.util.*;
  */
 public class LucenePriorDisambiguator implements Disambiguator {
 
-    Log LOG = LogFactory.getLog(this.getClass());
+    Logger LOG = LoggerFactory.getLogger(this.getClass());
     String[] filter = {LuceneManager.DBpediaResourceField.URI.toString(),LuceneManager.DBpediaResourceField.URI_COUNT.toString()};
 
     MergedOccurrencesContextSearcher mSearcher;

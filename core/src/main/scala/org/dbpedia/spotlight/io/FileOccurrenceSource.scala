@@ -18,7 +18,7 @@ package org.dbpedia.spotlight.io
 
 import org.dbpedia.spotlight.model._
 import io.Source
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import java.io._
 import java.util.zip.{GZIPOutputStream, GZIPInputStream}
 import java.text.ParseException
@@ -29,7 +29,7 @@ import java.text.ParseException
 
 object FileOccurrenceSource
 {
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     /**
      * Creates an DBpediaResourceOccurrence Source from a TSV file.

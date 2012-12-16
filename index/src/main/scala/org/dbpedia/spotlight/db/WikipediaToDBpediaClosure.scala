@@ -2,7 +2,7 @@ package org.dbpedia.spotlight.db
 
 import org.semanticweb.yars.nx.parser.NxParser
 import java.io.InputStream
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import collection.immutable.ListSet
 import scala.Predef._
 import org.dbpedia.spotlight.exceptions.NotADBpediaResourceException
@@ -23,7 +23,7 @@ class WikipediaToDBpediaClosure (
   val redirectsTriples: InputStream,
   val disambiguationTriples: InputStream
 ) {
-  private val LOG = LogFactory.getLog(this.getClass)
+  private val LOG = LoggerFactory.getLogger(this.getClass)
 
   LOG.info("Loading redirects...")
   var linkMap = Map[String, String]()

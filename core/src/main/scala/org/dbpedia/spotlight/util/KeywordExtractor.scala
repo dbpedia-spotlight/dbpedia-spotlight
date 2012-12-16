@@ -18,7 +18,7 @@
 
 package org.dbpedia.spotlight.util
 
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.model.{SpotlightFactory, SpotlightConfiguration, DBpediaResource}
 
@@ -37,7 +37,7 @@ import org.dbpedia.extraction.config.mappings.DisambiguationExtractorConfig
 
 class KeywordExtractor(val configuration: SpotlightConfiguration, val nKeywords : Int = 3) {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     val factory = new SpotlightFactory(configuration)
     val searcher = factory.contextSearcher

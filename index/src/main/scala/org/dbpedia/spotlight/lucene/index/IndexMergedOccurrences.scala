@@ -20,7 +20,7 @@ package org.dbpedia.spotlight.lucene.index
 
 import java.io.File
 import org.dbpedia.spotlight.io.{FileOccurrenceSource}
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import org.apache.lucene.store.FSDirectory
 import org.dbpedia.spotlight.lucene.LuceneManager
 import org.dbpedia.spotlight.util.IndexingConfiguration
@@ -33,7 +33,7 @@ import org.dbpedia.spotlight.model.Factory
  */
 object IndexMergedOccurrences
 {
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     def index(trainingInputFile : String, indexer: OccurrenceContextIndexer ) {
         val wpOccurrences = FileOccurrenceSource.fromFile(new File(trainingInputFile))

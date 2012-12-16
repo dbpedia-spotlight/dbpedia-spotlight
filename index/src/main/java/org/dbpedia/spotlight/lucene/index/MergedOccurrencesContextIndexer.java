@@ -18,8 +18,8 @@
 
 package org.dbpedia.spotlight.lucene.index;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
 import org.dbpedia.spotlight.exceptions.IndexException;
@@ -45,7 +45,7 @@ import java.util.Map;
  */
 public class MergedOccurrencesContextIndexer extends OccurrenceContextIndexer {
 
-    Log LOG = LogFactory.getLog(this.getClass());
+    Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     /**
      * Should be set to a large number according to your memory availability.

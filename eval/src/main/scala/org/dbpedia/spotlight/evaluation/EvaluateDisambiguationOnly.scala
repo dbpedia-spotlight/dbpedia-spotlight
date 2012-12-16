@@ -21,7 +21,7 @@ package org.dbpedia.spotlight.evaluation
 import org.apache.lucene.analysis.{StopAnalyzer, Analyzer}
 import org.apache.lucene.util.Version
 import org.dbpedia.spotlight.io.{FileOccurrenceSource}
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import java.io.{PrintStream, File}
 import org.apache.lucene.misc.SweetSpotSimilarity
 import org.apache.lucene.search.{Similarity, DefaultSimilarity}
@@ -58,7 +58,7 @@ import org.dbpedia.spotlight.corpus.{MilneWittenCorpus, AidaCorpus}
 object EvaluateDisambiguationOnly
 {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
 
 

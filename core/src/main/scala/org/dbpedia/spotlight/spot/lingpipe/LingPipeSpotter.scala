@@ -19,7 +19,7 @@ package org.dbpedia.spotlight.spot.lingpipe
 import org.dbpedia.spotlight.model.{SpotlightConfiguration, SurfaceForm, Text, SurfaceFormOccurrence}
 import scala.collection.JavaConversions._
 import com.aliasi.util.AbstractExternalizable
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import com.aliasi.dict.{Dictionary, ExactDictionaryChunker}
 import java.io.File
 import org.dbpedia.spotlight.spot.{JAnnotationTokenizerFactory, Spotter}
@@ -45,7 +45,7 @@ import com.aliasi.tokenizer.IndoEuropeanTokenizerFactory
 class LingPipeSpotter(val dictionary : Dictionary[String], analyzer:Analyzer, val overlap : Boolean=false, val caseSensitive : Boolean=false)
         extends Spotter
 {
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
     var fileName = "Dictionary[String]";
 
     var name = ""

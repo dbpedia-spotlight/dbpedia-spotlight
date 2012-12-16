@@ -16,8 +16,8 @@
 
 package org.dbpedia.spotlight.lucene.index;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
@@ -36,7 +36,7 @@ import java.io.IOException;
  */
 public abstract class OccurrenceContextIndexer extends BaseIndexer<DBpediaResourceOccurrence> {
 
-    Log LOG = LogFactory.getLog(this.getClass());
+    Logger LOG = LoggerFactory.getLogger(this.getClass());
     
     /**
      * See {@link org.dbpedia.spotlight.lucene.index.BaseIndexer}

@@ -18,7 +18,7 @@
 
 package org.dbpedia.spotlight.evaluation
 
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import io.Source
 import org.dbpedia.spotlight.util.AnnotationFilter
 import org.dbpedia.spotlight.string.WikiLinkParser
@@ -38,7 +38,7 @@ import org.dbpedia.spotlight.extract.TagExtractorFromAnnotator
  */
 object EvaluateTagExtraction
 {
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     val configuration = new SpotlightConfiguration("conf/eval.properties");
 //    val confidence = 0.0;

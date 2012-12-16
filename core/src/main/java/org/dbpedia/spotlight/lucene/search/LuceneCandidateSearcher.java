@@ -16,8 +16,8 @@
 
 package org.dbpedia.spotlight.lucene.search;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
@@ -45,7 +45,7 @@ import java.util.Set;
  */
 public class LuceneCandidateSearcher extends BaseSearcher implements org.dbpedia.spotlight.model.CandidateSearcher {
 
-    final static Log LOG = LogFactory.getLog(LuceneCandidateSearcher.class);
+    final static Logger LOG = LoggerFactory.getLogger(LuceneCandidateSearcher.class);
 
     /**
      * Searches associations between surface forms and URIs

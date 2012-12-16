@@ -16,8 +16,8 @@
 
 package org.dbpedia.spotlight.io;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.lucene.store.FSDirectory;
 import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.lucene.LuceneManager;
@@ -41,7 +41,7 @@ import java.util.*;
  */
 public abstract class DatasetSplitter {
 
-    Log LOG = LogFactory.getLog(this.getClass());
+    Logger LOG = LoggerFactory.getLogger(this.getClass());
     int incrementalId = 0;
 
     Writer mTrainingSetWriter;

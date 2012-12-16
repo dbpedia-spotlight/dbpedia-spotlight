@@ -39,7 +39,7 @@ package org.dbpedia.spotlight.util
 import java.io.PrintWriter
 import io.Source
 import org.dbpedia.spotlight.model.{SpotlightConfiguration, DBpediaResource}
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 
 /**
  * Queries the Web to obtain prior probability counts for each resource
@@ -51,7 +51,7 @@ import org.apache.commons.logging.LogFactory
  * @author pablomendes
  */
 object GetWebPriors {
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     /**
      * This class obtains DBpediaResource Web occurrence counts.

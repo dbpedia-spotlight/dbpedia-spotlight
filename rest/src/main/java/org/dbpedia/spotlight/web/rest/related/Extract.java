@@ -18,8 +18,8 @@
 
 package org.dbpedia.spotlight.web.rest.related;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dbpedia.spotlight.extract.LuceneTagExtractor;
 import org.dbpedia.spotlight.extract.TagExtractor;
 import org.dbpedia.spotlight.model.Factory;
@@ -52,7 +52,7 @@ public class Extract {
 
     public static final String uri = "http://160.45.137.71:2222/";
 
-    Log LOG = LogFactory.getLog(this.getClass());
+    Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     // Sets the necessary headers in order to enable CORS
     private Response ok(String response) {

@@ -18,8 +18,8 @@ package org.dbpedia.spotlight.evaluation.external;
 
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dbpedia.spotlight.exceptions.AnnotationException;
 import org.dbpedia.spotlight.model.DBpediaResource;
 import org.dbpedia.spotlight.model.Text;
@@ -39,7 +39,7 @@ import java.util.List;
  */
 public class ZemantaClient extends AnnotationClient {
 
-    public static Log LOG = LogFactory.getLog(ZemantaClient.class);
+    public static Logger LOG = LoggerFactory.getLogger(ZemantaClient.class);
     String api_key;
 
     public ZemantaClient(String api_key) {

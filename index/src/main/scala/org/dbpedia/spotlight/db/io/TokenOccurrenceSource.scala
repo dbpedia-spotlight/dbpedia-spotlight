@@ -4,7 +4,7 @@ import java.io.{InputStream, FileInputStream, File}
 import io.Source
 import org.dbpedia.spotlight.db.WikipediaToDBpediaClosure
 import org.dbpedia.spotlight.db.model.{ResourceStore, TokenTypeStore}
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import scala.Predef._
 import scala.Array
 import org.dbpedia.spotlight.exceptions.{DBpediaResourceNotFoundException, NotADBpediaResourceException}
@@ -20,7 +20,7 @@ import util.TokenOccurrenceParser
 
 object TokenOccurrenceSource {
 
-  private val LOG = LogFactory.getLog(this.getClass)
+  private val LOG = LoggerFactory.getLogger(this.getClass)
 
   def fromPigInputStream(tokenInputStream: InputStream, tokenTypeStore: TokenTypeStore, wikipediaToDBpediaClosure: WikipediaToDBpediaClosure, resStore: ResourceStore): Iterator[Triple[DBpediaResource, Array[TokenType], Array[Int]]] = {
 

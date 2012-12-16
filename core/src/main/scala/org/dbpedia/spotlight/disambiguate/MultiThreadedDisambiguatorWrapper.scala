@@ -35,7 +35,7 @@ package org.dbpedia.spotlight.disambiguate
  */
 
 import scalaj.collection.Imports._
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import org.apache.lucene.search.Explanation
 import org.dbpedia.spotlight.model._
 import scala.actors._
@@ -53,7 +53,7 @@ import org.dbpedia.spotlight.exceptions.{DisambiguationException, SearchExceptio
  */
 class MultiThreadedDisambiguatorWrapper(val disambiguator: Disambiguator) extends Disambiguator  {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     def disambiguate(sfOccurrence: SurfaceFormOccurrence): DBpediaResourceOccurrence = {
         disambiguator.disambiguate(sfOccurrence)

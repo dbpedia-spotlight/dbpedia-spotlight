@@ -29,13 +29,14 @@ import org.apache.commons.httpclient.*;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.params.HttpMethodParams;
-import org.apache.log4j.Logger;
 import org.dbpedia.spotlight.exceptions.OutputException;
 import org.dbpedia.spotlight.exceptions.SparqlExecutionException;
 import org.dbpedia.spotlight.model.DBpediaResource;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONArray;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -47,7 +48,7 @@ import org.json.JSONArray;
  */
 public class SparqlQueryExecuter {
 
-	private final static Logger LOG = Logger.getLogger(SparqlQueryExecuter.class);
+	private final static Logger LOG = LoggerFactory.getLogger(SparqlQueryExecuter.class);
 
        // Create an instance of HttpClient.
     private static HttpClient client = new HttpClient();

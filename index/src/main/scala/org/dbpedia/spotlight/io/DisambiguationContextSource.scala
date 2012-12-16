@@ -20,7 +20,7 @@ import org.dbpedia.spotlight.string.WikiMarkupStripper
 import org.dbpedia.spotlight.model._
 import org.dbpedia.extraction.wikiparser._
 import org.dbpedia.extraction.sources.{WikiPage, Source, XMLSource}
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import java.io.{File}
 import xml.{XML, Elem}
 import org.dbpedia.extraction.util.Language
@@ -31,7 +31,7 @@ import org.dbpedia.extraction.util.Language
  */
 object DisambiguationContextSource
 {
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     /**
      * Creates an DBpediaResourceOccurrence Source from a dump file.

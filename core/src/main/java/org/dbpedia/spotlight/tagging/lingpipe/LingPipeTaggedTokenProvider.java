@@ -5,8 +5,8 @@ import com.aliasi.tag.Tagger;
 import com.aliasi.tag.Tagging;
 import com.aliasi.tokenizer.Tokenizer;
 import com.aliasi.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dbpedia.spotlight.spot.cooccurrence.filter.FilterPOS;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
 import org.dbpedia.spotlight.model.SurfaceForm;
@@ -31,7 +31,7 @@ import java.util.*;
 
 public class LingPipeTaggedTokenProvider implements TaggedTokenProvider {
 
-	private Log LOG = LogFactory.getLog(this.getClass());
+	private Logger LOG = LoggerFactory.getLogger(this.getClass());
 
 	private List<TaggedToken> taggedTokens;
 	private int[] sentenceBoundaries;

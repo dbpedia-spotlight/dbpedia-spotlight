@@ -17,8 +17,8 @@
 package org.dbpedia.spotlight.string;
 
 import com.sun.org.apache.xpath.internal.XPathAPI;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -37,7 +37,7 @@ import java.io.InputStream;
  */
 public class XmlParser {
 
-    public static Log LOG = LogFactory.getLog(XmlParser.class);
+    public static Logger LOG = LoggerFactory.getLogger(XmlParser.class);
 
     public static Element parse(String xmlText) throws IOException, SAXException, ParserConfigurationException {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();

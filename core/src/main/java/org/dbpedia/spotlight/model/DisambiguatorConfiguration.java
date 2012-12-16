@@ -18,8 +18,8 @@
 
 package org.dbpedia.spotlight.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 
 import java.io.File;
@@ -38,7 +38,7 @@ import static org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationP
  */
 public class DisambiguatorConfiguration {
 
-    private static Log LOG = LogFactory.getLog(DisambiguatorConfiguration.class);
+    private static Logger LOG = LoggerFactory.getLogger(DisambiguatorConfiguration.class);
     Properties config = new Properties();
 
     static String CONFIG_DISAMBIGUATORS = "org.dbpedia.spotlight.disambiguate.disambiguators";

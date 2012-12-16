@@ -16,8 +16,8 @@
 
 package org.dbpedia.spotlight.lucene.similarity;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.*;
@@ -33,7 +33,7 @@ import java.text.DecimalFormat;
  */
 public class NewSimilarity extends DefaultSimilarity implements CachedSimilarity {
 
-    Log LOG = LogFactory.getLog(NewSimilarity.class);
+    Logger LOG = LoggerFactory.getLogger(NewSimilarity.class);
 
     TermCache termCache;   // Will cache a bitSet for each term in the context
     public NewSimilarity(TermCache cache) {

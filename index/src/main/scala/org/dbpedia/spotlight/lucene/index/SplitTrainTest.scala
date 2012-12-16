@@ -16,7 +16,7 @@
 
 package org.dbpedia.spotlight.lucene.index
 
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
 import java.io.{PrintStream, File}
 import util.Random
@@ -31,7 +31,7 @@ import org.dbpedia.spotlight.io.{OccurrenceSource, FileOccurrenceSource}
 
 object SplitTrainTest
 {
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     def main(args : Array[String]) {
         //val trainingPercentage = 0.95

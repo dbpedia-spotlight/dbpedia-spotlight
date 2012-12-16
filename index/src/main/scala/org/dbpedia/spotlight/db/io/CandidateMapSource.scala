@@ -9,7 +9,7 @@ import java.lang.String
 import collection.mutable.HashSet
 import org.dbpedia.spotlight.db.WikipediaToDBpediaClosure
 import scala.Int
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import org.dbpedia.spotlight.exceptions._
 import org.dbpedia.spotlight.db.memory.MemoryResourceStore
 import org.dbpedia.extraction.util.WikiUtil
@@ -24,7 +24,7 @@ import org.dbpedia.extraction.util.WikiUtil
 
 object CandidateMapSource {
 
-  private val LOG = LogFactory.getLog(this.getClass)
+  private val LOG = LoggerFactory.getLogger(this.getClass)
 
   def fromPigInputStreams(
     pairCounts: InputStream,

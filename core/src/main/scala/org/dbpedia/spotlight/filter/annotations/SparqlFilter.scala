@@ -18,7 +18,7 @@
 
 package org.dbpedia.spotlight.filter.annotations
 
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import org.dbpedia.spotlight.model.{DBpediaResource, DBpediaResourceOccurrence}
 import org.dbpedia.spotlight.sparql.SparqlQueryExecuter
 import scalaj.collection.Imports._
@@ -26,7 +26,7 @@ import scalaj.collection.Imports._
 
 class SparqlFilter(val executer : SparqlQueryExecuter, val sparqlQuery: String, val listColor : FilterPolicy.ListColor) extends AnnotationFilter  {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     val uriSet =
         if(sparqlQuery != null && sparqlQuery != "") {

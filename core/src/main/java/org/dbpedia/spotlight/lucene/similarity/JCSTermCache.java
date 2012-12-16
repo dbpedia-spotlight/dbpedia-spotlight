@@ -16,8 +16,8 @@
 
 package org.dbpedia.spotlight.lucene.similarity;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.jcs.JCS;
 import org.apache.jcs.access.exception.CacheException;
 import org.apache.jcs.engine.behavior.IElementAttributes;
@@ -39,7 +39,7 @@ import java.util.Properties;
  */
 public class JCSTermCache extends TermCache {
 
-    static Log LOG = LogFactory.getLog(JCSTermCache.class);
+    static Logger LOG = LoggerFactory.getLogger(JCSTermCache.class);
 
     //Singleton
     private static JCSTermCache instance;   //TODO this could be a map from IndexReader to JCSTermCache

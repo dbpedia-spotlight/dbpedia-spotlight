@@ -26,7 +26,7 @@ import org.dbpedia.spotlight.lucene.LuceneManager.DBpediaResourceField
 import collection.JavaConversions._
 import org.dbpedia.spotlight.lucene.search.{LuceneCandidateSearcher, BaseSearcher}
 import org.dbpedia.spotlight.exceptions.{ItemNotFoundException, ConfigurationException}
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.dbpedia.spotlight.lucene.similarity.{CachedInvCandFreqSimilarity, JCSTermCache, InvCandFreqSimilarity}
 import org.apache.lucene.misc.SweetSpotSimilarity
@@ -43,7 +43,7 @@ import org.dbpedia.extraction.util.WikiUtil
  * @author Joachim Daiber (Tagger and Spotter methods)
  */
 object Factory {
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
     /*
     * I like this style for the factory. group by return type and offer many .from* methods
     */

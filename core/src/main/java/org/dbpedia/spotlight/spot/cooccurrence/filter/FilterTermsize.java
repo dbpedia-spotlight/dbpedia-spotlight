@@ -1,8 +1,8 @@
 package org.dbpedia.spotlight.spot.cooccurrence.filter;
 
 import org.apache.commons.collections.Predicate;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dbpedia.spotlight.model.SurfaceForm;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 import org.dbpedia.spotlight.model.TaggedText;
@@ -17,7 +17,7 @@ import org.dbpedia.spotlight.tagging.TextUtil;
 
 public class FilterTermsize extends Filter {
 
-	private final Log LOG = LogFactory.getLog(this.getClass());
+	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
 	private TextUtil textUtil;
 	public static enum Termsize {none, unigram, bigram, trigram, n_4, n_5, n_x}

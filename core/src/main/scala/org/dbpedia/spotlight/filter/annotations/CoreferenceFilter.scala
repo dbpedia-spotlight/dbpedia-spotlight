@@ -17,7 +17,7 @@
 package org.dbpedia.spotlight.filter.annotations
 
 import org.dbpedia.spotlight.model.{SurfaceForm, DBpediaResourceOccurrence}
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 
 /**
  * this is a heuristic and has nothing to do with proper coreference resolution!!!
@@ -27,7 +27,7 @@ import org.apache.commons.logging.LogFactory
 
 class CoreferenceFilter extends AnnotationFilter {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     override def filterOccs(occs : Traversable[DBpediaResourceOccurrence]) : Traversable[DBpediaResourceOccurrence] = {
         // this is a heuristic and has nothing to do with proper coreference resolution!!!

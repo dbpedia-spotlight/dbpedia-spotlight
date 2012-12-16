@@ -18,8 +18,8 @@
 
 package org.dbpedia.spotlight.lucene.index;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.util.Version;
@@ -39,7 +39,7 @@ import java.io.IOException;
  */
 public abstract class BaseIndexer<T> implements FeatureVectorBuilder, Closeable {
 
-    final static Log LOG = LogFactory.getLog(BaseIndexer.class);
+    final static Logger LOG = LoggerFactory.getLogger(BaseIndexer.class);
 
     LuceneManager mLucene;
     IndexWriter mWriter;

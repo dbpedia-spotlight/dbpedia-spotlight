@@ -17,12 +17,12 @@
 package org.dbpedia.spotlight.filter.annotations
 
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 
 
 class SupportFilter(val targetSupport : Int) extends AnnotationFilter  {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     override def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
         if (occ.resource.support > targetSupport) {

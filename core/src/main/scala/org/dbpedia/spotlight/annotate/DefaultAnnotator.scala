@@ -16,7 +16,7 @@
 
 package org.dbpedia.spotlight.annotate
 
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.spot.Spotter
 import org.dbpedia.spotlight.exceptions.InputException
@@ -31,7 +31,7 @@ import org.dbpedia.spotlight.disambiguate.{ParagraphDisambiguatorJ, ParagraphDis
  */
 class DefaultAnnotator(val spotter : Spotter, val disambiguator: Disambiguator) extends Annotator {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     @throws(classOf[InputException])
     def annotate(text : String) : java.util.List[DBpediaResourceOccurrence] = {
@@ -50,7 +50,7 @@ class DefaultAnnotator(val spotter : Spotter, val disambiguator: Disambiguator) 
 
 class DefaultParagraphAnnotator(val spotter : Spotter, val disambiguator: ParagraphDisambiguatorJ) extends ParagraphAnnotator {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     @throws(classOf[InputException])
     def annotate(text : String) : java.util.List[DBpediaResourceOccurrence] = {
