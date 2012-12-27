@@ -93,15 +93,16 @@ class NIFOutputFormatter{
 	       xmlns:itsrdf="http://www.w3.org/2005/11/its/rdf#"
 	       xmlns:str="http://nlp2rdf.lod2.eu/schema/string/">
 	<rdf:Description rdf:about={docUri}>
-	  <str:sourceString>{text}</str:sourceString>
-	  {for (occ <- occRes) yield <str:subString rdf:resource={occ._1} />}
+	  <str:isString>{text}</str:isString>
 	  <rdf:type rdf:resource={rdfType} />
-	  <rdf:type rdf:resource="http://nlp2rdf.lod2.eu/schema/string/Document"/>
+	  <rdf:type rdf:resource="http://nlp2rdf.lod2.eu/schema/string/Context"/>
 	</rdf:Description>
 	{for (occ <- occRes) yield
           <rdf:Description rdf:about={occ._1}>
             <itsrdf:disambigIdentRef rdf:resource={occ._2} />
             <rdf:type rdf:resource={rdfType} />
+	    <rdf:type rdf:resource="http://nlp2rdf.lod2.eu/schema/string/String"/>
+	    <str:referenceContext rdf:resource={docUri} />
           </rdf:Description>}
       </rdf:RDF>
 
@@ -156,19 +157,19 @@ class NIFOutputFormatter{
     val result =  
       <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 	       xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-	       xmlns:str="http://nlp2rdf.lod2.eu/schema/string/"
-	       xmlns:ua="http://nlp2rdf.lod2.eu/schema/unity/unifiedannotation.ttl#">
+	       xmlns:str="http://nlp2rdf.lod2.eu/schema/string/">
 	<rdf:Description rdf:about={docUri}>
-	  <str:sourceString>{text}</str:sourceString>
-	  {for (occ <- occRes) yield <str:subString rdf:resource={occ._1} />}
+	  <str:isString>{text}</str:isString>
 	  <rdf:type rdf:resource={rdfType} />
-	  <rdf:type rdf:resource="http://nlp2rdf.lod2.eu/schema/string/Document"/>
+	  <rdf:type rdf:resource="http://nlp2rdf.lod2.eu/schema/string/Context"/>
 	</rdf:Description>
 	{for (occ <- occRes) yield
           <rdf:Description rdf:about={occ._1}>
             <rdf:type rdf:resource={rdfType} />
 	    <rdf:type rdf:resource="http://nlp2rdf.lod2.eu/schema/unity/unifiedannotation.ttl#DisambiguationCandidate" />
+	    <rdf:type rdf:resource="http://nlp2rdf.lod2.eu/schema/string/String"/>
 	    <rdfs:label>{occ._2}</rdfs:label>
+	    <str:referenceContext rdf:resource={docUri} />
           </rdf:Description>}
       </rdf:RDF>
 
