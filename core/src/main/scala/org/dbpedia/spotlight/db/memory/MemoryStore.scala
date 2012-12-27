@@ -11,9 +11,12 @@ import collection.mutable.HashMap
 import org.apache.commons.logging.LogFactory
 import com.esotericsoftware.kryo.serializers.DefaultSerializers.KryoSerializableSerializer
 import com.esotericsoftware.kryo.Kryo
+import org.dbpedia.spotlight.db.model.{TokenTypeStore, ResourceStore}
 
 
 /**
+ * Base class for all memory stores.
+ *
  * @author Joachim Daiber
  */
 
@@ -23,14 +26,20 @@ abstract class MemoryStore extends Serializable {
   @transient
   protected val LOG = LogFactory.getLog(this.getClass)
 
-  def loaded() {
-    //Implementations may execute code after the store is loaded
-  }
+  /**
+   * Method called after the store has been deserialized.
+   * Implementations may override this method in order to finish setting
+   * up the store.
+   */
+  def loaded() {}
 
   def size: Int
-
 }
 
+
+/**
+ * Utility object for loading memory stores.
+ */
 object MemoryStore {
 
   private val LOG = LogFactory.getLog(this.getClass)
@@ -94,14 +103,14 @@ object MemoryStore {
   )
 
 
-  kryos.put(classOf[MemoryTokenStore].getSimpleName,
+  kryos.put(classOf[MemoryTokenTypeStore].getSimpleName,
     {
       val kryo = new Kryo()
       kryo.setRegistrationRequired(true)
 
       kryo.register(classOf[Array[Int]],    new DefaultArraySerializers.IntArraySerializer())
       kryo.register(classOf[Array[String]], new DefaultArraySerializers.StringArraySerializer())
-      kryo.register(classOf[MemoryTokenStore])
+      kryo.register(classOf[MemoryTokenTypeStore])
 
       kryo
     }
@@ -123,8 +132,8 @@ object MemoryStore {
     s
   }
 
-  def loadTokenStore(in: InputStream): MemoryTokenStore = {
-    load[MemoryTokenStore](in, classOf[MemoryTokenStore].getSimpleName)
+  def loadTokenTypeStore(in: InputStream): MemoryTokenTypeStore = {
+    load[MemoryTokenTypeStore](in, classOf[MemoryTokenTypeStore].getSimpleName)
   }
 
   def loadSurfaceFormStore(in: InputStream): MemorySurfaceFormStore = {
@@ -135,13 +144,13 @@ object MemoryStore {
     load[MemoryResourceStore](in, classOf[MemoryResourceStore].getSimpleName)
   }
 
-  def loadCandidateMapStore(in: InputStream, resourceStore: MemoryResourceStore): MemoryCandidateMapStore = {
+  def loadCandidateMapStore(in: InputStream, resourceStore: ResourceStore): MemoryCandidateMapStore = {
     val s = load[MemoryCandidateMapStore](in, classOf[MemoryCandidateMapStore].getSimpleName)
     s.resourceStore = resourceStore
     s
   }
 
-  def loadContextStore(in: InputStream, tokenStore: MemoryTokenStore): MemoryContextStore = {
+  def loadContextStore(in: InputStream, tokenStore: TokenTypeStore): MemoryContextStore = {
     val s = load[MemoryContextStore](in, classOf[MemoryContextStore].getSimpleName)
     s.tokenStore = tokenStore
     s

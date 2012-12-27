@@ -10,75 +10,55 @@ import java.io.{File, InputStream, FileInputStream}
 import scala.Predef._
 import java.util.{Map, HashMap}
 import scala.collection.JavaConversions._
+import org.dbpedia.spotlight.db.WikipediaToDBpediaClosure
+import org.dbpedia.spotlight.db.memory.MemoryResourceStore
+import org.dbpedia.extraction.util.WikiUtil
 
 /**
  * Represents a source of SurfaceForms
+ *
+ * @author Joachim Daiber
  */
 
 object SurfaceFormSource {
 
   private val LOG = LogFactory.getLog(this.getClass)
 
-  def fromPigInputStreams(sfCounts: InputStream, phraseCounts: InputStream): Map[SurfaceForm, (Int, Int)] = {
+  def fromPigInputStreams(
+    sfAndTotalCounts: InputStream,
+    wikiClosure: WikipediaToDBpediaClosure = null,
+    resStore: MemoryResourceStore = null
+  ): Map[SurfaceForm, (Int, Int)] = {
 
     LOG.info("Creating SurfaceFormSource...")
 
-    val annotatedCounts = new HashMap[SurfaceForm, Int]()
-    val totalCounts = new HashMap[SurfaceForm, Int]()
+    val sfMap = new HashMap[SurfaceForm, (Int, Int)]()
 
-    LOG.info("Reading annotated counts...")
-    Source.fromInputStream(sfCounts).getLines() foreach {
-      line: String => {
-        val Array(name, count) = line.trim().split('\t')
-        val surfaceform = new SurfaceForm(name)
+    LOG.info("Reading annotated and total counts...")
+    Source.fromInputStream(sfAndTotalCounts).getLines() foreach {
+      lineS: String => {
+        val line = lineS.trim().split('\t')
 
-        val c = annotatedCounts.get(surfaceform) match {
-          case c: Int => c
-          case _ => 0
-        }
+        val surfaceform = new SurfaceForm(line(0))
+        val countAnnotated = line(1).toInt
+        val countTotal = if( line.size == 3 ) line(2).toInt else -1
 
-        annotatedCounts.put(surfaceform, c + count.toInt)
-      }
-    }
-
-    LOG.info("Reading phrase counts...")
-    Source.fromInputStream(phraseCounts).getLines() foreach {
-      line: String => {
-        val Array(name, count) = line.trim().split('\t')
-        val surfaceform = new SurfaceForm(name)
-
-        if(annotatedCounts.containsKey(surfaceform)) {
-
-          val c = totalCounts.get(surfaceform) match {
-            case c: Int => c
-            case _ => 0
-          }
-
-          totalCounts.put(surfaceform, c + count.toInt)
-        }
+        sfMap.put(surfaceform, (countAnnotated, countTotal))
       }
     }
 
     LOG.info("Done.")
 
-    val sfMap = new HashMap[SurfaceForm, (Int, Int)]()
-
-    annotatedCounts.keySet foreach {
-      sf: SurfaceForm => {
-        val totalCount = totalCounts.get(sf) match {
-          case c: Int => c
-          case _ => 0
-        }
-        sfMap.put(sf, Pair(annotatedCounts.get(sf), totalCount))
-      }
-    }
-
     sfMap
   }
 
 
-  def fromPigFiles(sfCounts: File, totalCounts: File): Map[SurfaceForm, (Int, Int)] = {
-      fromPigInputStreams(new FileInputStream(sfCounts), new FileInputStream(totalCounts))
+  def fromPigFiles(
+    sfAndTotalCounts: File,
+    wikiClosure: WikipediaToDBpediaClosure = null,
+    resStore: MemoryResourceStore  = null
+  ): Map[SurfaceForm, (Int, Int)] = {
+    fromPigInputStreams(new FileInputStream(sfAndTotalCounts), wikiClosure, resStore)
   }
 
 
@@ -99,7 +79,7 @@ object SurfaceFormSource {
     if (file.getName.endsWith("gz"))
       fromTSVInputStream(new GZIPInputStream(new FileInputStream(file)))
     else if (file.getName.endsWith("bz2"))
-      fromTSVInputStream(new BZip2CompressorInputStream(new FileInputStream(file), true))
+      fromTSVInputStream(new BZip2CompressorInputStream(new FileInputStream(file)))
     else
       fromTSVInputStream(new FileInputStream(file))
   }

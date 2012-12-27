@@ -1,12 +1,12 @@
 package org.dbpedia.spotlight.db.memory
 
-import org.dbpedia.spotlight.model.{Token, DBpediaResource}
 import java.util.{Map, HashMap}
 import scala.collection.JavaConversions._
-import org.dbpedia.spotlight.db.model.{TokenStore, ContextStore}
+import org.dbpedia.spotlight.db.model.{TokenTypeStore, ContextStore}
 import com.esotericsoftware.kryo.io.{Input, Output}
 import org.apache.commons.lang.{SerializationException, NotImplementedException}
 import com.esotericsoftware.kryo.{KryoException, Kryo, KryoSerializable}
+import org.dbpedia.spotlight.model.{TokenType, Token, DBpediaResource}
 
 
 /**
@@ -23,20 +23,25 @@ class MemoryContextStore
   with KryoSerializable {
 
   @transient
-  var tokenStore: TokenStore = null
+  var tokenStore: TokenTypeStore = null
+
+  @transient
+  var totalTokenCounts: Array[Int] = null
 
   var tokens: Array[Array[Int]] = null
   var counts: Array[Array[Int]] = null
 
   def size = tokens.length
 
-  def getContextCount(resource: DBpediaResource, token: Token): Int = {
+  def getContextCount(resource: DBpediaResource, token: TokenType): Int = {
     throw new NotImplementedException()
   }
 
-  def getContextCounts(resource: DBpediaResource): Map[Token, Int] = {
+  def getTotalTokenCount(resource: DBpediaResource): Int = totalTokenCounts(resource.id)
 
-    val contextCounts = new HashMap[Token, Int]()
+  def getContextCounts(resource: DBpediaResource): Map[TokenType, Int] = {
+
+    val contextCounts = new HashMap[TokenType, Int]()
     val i = resource.id
 
     if (tokens(i) != null) {
@@ -44,7 +49,7 @@ class MemoryContextStore
       val c = counts(i)
 
       (0 to t.length-1) foreach { j =>
-        contextCounts.put(tokenStore.getTokenByID(t(j)), c(j))
+        contextCounts.put(tokenStore.getTokenTypeByID(t(j)), c(j))
       }
     }
 
@@ -76,6 +81,7 @@ class MemoryContextStore
 
     tokens = new Array[Array[Int]](size)
     counts = new Array[Array[Int]](size)
+    totalTokenCounts = new Array[Int](size)
 
     var i = 0
     var j = 0
@@ -96,6 +102,7 @@ class MemoryContextStore
         j = 0
         while(j < subsize) {
           counts(i)(j) = input.readInt()
+          totalTokenCounts(i) += counts(i)(j)
           j += 1
         }
      }

@@ -3,27 +3,41 @@ package org.dbpedia.spotlight.db.similarity
 import scala.collection.JavaConversions._
 
 import org.apache.commons.logging.LogFactory
-import org.dbpedia.spotlight.model.{DBpediaResource, Candidate, Token}
 import scala.Int
 import collection.immutable
 import collection.mutable
+import org.dbpedia.spotlight.model.{TokenType, DBpediaResource, Candidate, Token}
 
 /**
- * @author Joachim Daiber
+ * A context similarity model based on TF-ICF (modified TF-IDF).
  *
+ * @author Joachim Daiber
  */
 
 class TFICFSimilarity extends ContextSimilarity {
 
-  private val LOG = LogFactory.getLog(this.getClass)
-
-  def tf(token: Token, document: java.util.Map[Token, Int]): Int =
+  /**
+   * Term frequency of a token in the document.
+   *
+   * @param token the token
+   * @param document the document
+   * @return
+   */
+  def tf(token: TokenType, document: java.util.Map[TokenType, Int]): Int =
     document.get(token) match {
       case c: Int => c
       case _ => 0
     }
 
-  def icf(token: Token, document: java.util.Map[Token, Int], allDocuments: Iterable[java.util.Map[Token, Int]]): Double = {
+  /**
+   * Inverse candidate frequency of a token.
+   *
+   * @param token the token
+   * @param document the document (the context of the disambiguated DBpedia resource)
+   * @param allDocuments all candidate documents for the query
+   * @return
+   */
+  def icf(token: TokenType, document: java.util.Map[TokenType, Int], allDocuments: Iterable[java.util.Map[TokenType, Int]]): Double = {
 
     var nCand = 0
     var nCandWithToken = 0
@@ -41,12 +55,31 @@ class TFICFSimilarity extends ContextSimilarity {
       math.log(nCand / nCandWithToken.toDouble) + 1.0
   }
 
-  def tficf(token: Token, document: java.util.Map[Token, Int], allDocuments: Iterable[java.util.Map[Token, Int]]): Double = {
+  /**
+   * TF-ICF for the Token.
+   *
+   * @param token the token
+   * @param document the document (the context of the disambiguated DBpedia resource)
+   * @param allDocuments all candidate documents for the query
+   * @return
+   */
+  def tficf(token: TokenType, document: java.util.Map[TokenType, Int], allDocuments: Iterable[java.util.Map[TokenType, Int]]): Double = {
     tf(token, document).toDouble * icf(token, document, allDocuments)
   }
 
+  /**
+   * Norm value for a document.
+   *
+   * TODO: Note that this should be the TF-ICF/TF-IDF norm for all documents instead.
+   *
+   * @param document the document (the context of the disambiguated DBpedia resource)
+   * @return
+   */
+  def norm(document: java.util.Map[TokenType, Int]): Double = {
+    document.size().toDouble //math.sqrt( document.keys.map{ v: TokenType => math.pow(v.count, 2) }.sum )
+  }
 
-  def score(query: java.util.Map[Token, Int], candidateContexts: immutable.Map[DBpediaResource, java.util.Map[Token, Int]]): mutable.Map[DBpediaResource, Double] = {
+  def score(query: java.util.Map[TokenType, Int], candidateContexts: immutable.Map[DBpediaResource, java.util.Map[TokenType, Int]], totalContextCounts: Map[DBpediaResource, Int]): mutable.Map[DBpediaResource, Double] = {
 
     val allDocs = candidateContexts.values
     val scores = mutable.HashMap[DBpediaResource, Double]()
@@ -58,7 +91,7 @@ class TFICFSimilarity extends ContextSimilarity {
       }
     }
     candidateContexts.keys foreach { candRes: DBpediaResource =>
-      scores(candRes) = scores(candRes) / candidateContexts(candRes).size().toDouble
+      scores(candRes) = scores(candRes) / norm(candidateContexts(candRes))
     }
 
     scores

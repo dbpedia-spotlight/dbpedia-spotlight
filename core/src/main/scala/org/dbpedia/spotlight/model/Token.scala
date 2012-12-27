@@ -2,26 +2,19 @@ package org.dbpedia.spotlight.model
 
 /**
  * @author Joachim Daiber
- *
- *
- *
  */
 
-class Token(val id: Int, val name: String, val count: Int) {
+class Token(val token: String, val offset: Int, var tokenType: TokenType) extends HasFeatures {
 
-  override def hashCode() = name.hashCode
+  override def hashCode() = "%s, %d".format(token, offset).hashCode
 
   override def equals(obj: Any): Boolean = {
     obj match {
-      case token: Token => name.equals(token.name)
+      case token: Token => token.equals(token.token)
       case _ => false
     }
   }
 
-  override def toString = "%s (%d)".format(name, count)
+  override def toString = "%s (%s)".format(token, if(tokenType != null) tokenType.count.toString else "unknown")
 
-}
-
-object Token {
-  val UNKNOWN = new Token(0, "<<UNKNOWN>>", 1)
 }

@@ -1,13 +1,13 @@
 package org.dbpedia.spotlight.db
 
 import org.semanticweb.yars.nx.parser.NxParser
-import org.dbpedia.spotlight.model.SpotlightConfiguration
 import java.io.InputStream
 import org.apache.commons.logging.LogFactory
 import collection.immutable.ListSet
 import scala.Predef._
 import org.dbpedia.spotlight.exceptions.NotADBpediaResourceException
-import java.net.URLDecoder
+import java.net.{URLDecoder, URLEncoder}
+import org.dbpedia.spotlight.model.{SpotlightConfiguration, DBpediaResource}
 import org.dbpedia.extraction.util.WikiUtil
 
 /**
@@ -80,10 +80,14 @@ class WikipediaToDBpediaClosure (
 
   def wikipediaToDBpediaURI(wikiURL: String): String = {
 
-    val uri = if(wikiToDBPMap.size > 0) {
-      getEndOfChainURI(linkMap, wikiToDBPMap(wikiURL))
+    val uri = if(wikiURL.startsWith("http:")){
+      if(wikiToDBPMap.size > 0) {
+        getEndOfChainURI(linkMap, wikiToDBPMap(wikiURL))
+      } else {
+        getEndOfChainURI(linkMap, wikiToDBpediaURI(wikiURL))
+      }
     } else {
-      getEndOfChainURI(linkMap, wikiToDBpediaURI(wikiURL))
+      getEndOfChainURI(linkMap, wikiURL)
     }
 
     if (disambiguationsSet.contains(uri))

@@ -19,7 +19,7 @@ package org.dbpedia.spotlight.io
 import org.dbpedia.spotlight.string.WikiMarkupStripper
 import org.dbpedia.spotlight.model._
 import org.dbpedia.extraction.wikiparser._
-import org.dbpedia.extraction.sources.{Source, XMLSource}
+import org.dbpedia.extraction.sources.{MemorySource, WikiPage, Source, XMLSource}
 import org.apache.commons.logging.LogFactory
 import java.io.{PrintStream, FileOutputStream, File}
 import xml.{XML, Elem}
@@ -59,6 +59,25 @@ object WikiOccurrenceSource
     {
         val xml : Elem = XML.loadString("<dummy>" + xmlString + "</dummy>")  // dummy necessary: when a string "<page><b>text</b></page>" is given, <page> is the root tag and can't be found with the command  xml \ "page"
         new WikiOccurrenceSource(XMLSource.fromXML(xml, language))
+    }
+
+  /**
+   * Creates a DBpediaResourceOccurrence Source from a Wikipedia heldout paragraph file.
+   *
+   * @see WikipediaHeldoutCorpus in the eval module
+   *
+   * @param testFile Iterator of lines containing single MediaWiki paragraphs that
+   *                 were extracted as heldout data from the MediaWiki dump.
+   * @return
+   */
+    def fromPigHeldoutFile(testFile: Iterator[String]): OccurrenceSource = {
+      new WikiOccurrenceSource(
+        new MemorySource(
+          testFile.map{ line =>
+            new WikiPage(new WikiTitle("Test Paragraph", Namespace.Main, Language.English), line.trim())
+          }.toTraversable.asInstanceOf[scala.collection.immutable.Traversable[org.dbpedia.extraction.sources.WikiPage]]
+        )
+      )
     }
 
     /**
