@@ -18,37 +18,25 @@
 
 package org.dbpedia.spotlight.spot;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import opennlp.tools.namefind.TokenNameFinderModel;
+import opennlp.tools.chunker.ChunkerME;
+import opennlp.tools.chunker.ChunkerModel;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
-import opennlp.tools.chunker.ChunkerModel;
-import opennlp.tools.chunker.ChunkerME;
-import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.model.BaseModel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.lucene.analysis.StopAnalyzer;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SurfaceForm;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 import org.dbpedia.spotlight.model.Text;
-import org.dbpedia.spotlight.spot.Spotter;
+
+import java.util.*;
 
 /**
  * Consider as spots only the expressions marked as:
@@ -85,21 +73,21 @@ public class OpenNLPNGramSpotter implements Spotter {
 	//Need OpenNLP modles. At present they are loaded in the constructor, but they should better be loaded at the startup of
 	//dbpediaSpotlight to avoid re-loading them each time a request arrives. A singleton to hold the models would do.
 
-	public OpenNLPNGramSpotter(String opennlpmodeldir) throws ConfigurationException {
+	public OpenNLPNGramSpotter(String opennlpmodeldir,String i18nLanguageCode) throws ConfigurationException {
         //directoryPath =  null; //for reading from dependency Jar files
         String directoryPath = opennlpmodeldir;
 
         if (OpenNLPNGramSpotter.sentenceModel == null) {
-            OpenNLPNGramSpotter.sentenceModel  = OpenNLPUtil.loadModel(directoryPath, "english/en-sent.zip", OpenNLPUtil.OpenNlpModels.SentenceModel.toString());
+            OpenNLPNGramSpotter.sentenceModel  = OpenNLPUtil.loadModel(directoryPath, i18nLanguageCode +  OpenNLPUtil.OpenNlpModels.SentenceModel.filename(), OpenNLPUtil.OpenNlpModels.SentenceModel.toString());
         }
         if (OpenNLPNGramSpotter.chunkModel == null) {
-            OpenNLPNGramSpotter.chunkModel  = OpenNLPUtil.loadModel(directoryPath, "english/en-chunker.zip", OpenNLPUtil.OpenNlpModels.ChunkModel.toString());
+            OpenNLPNGramSpotter.chunkModel  = OpenNLPUtil.loadModel(directoryPath, i18nLanguageCode +  OpenNLPUtil.OpenNlpModels.ChunkModel.filename(), OpenNLPUtil.OpenNlpModels.ChunkModel.toString());
         }
         if (OpenNLPNGramSpotter.posModel == null) {
-            OpenNLPNGramSpotter.posModel  = OpenNLPUtil.loadModel(directoryPath, "english/en-pos-maxent.zip", OpenNLPUtil.OpenNlpModels.POSModel.toString());
+            OpenNLPNGramSpotter.posModel  = OpenNLPUtil.loadModel(directoryPath, i18nLanguageCode +  OpenNLPUtil.OpenNlpModels.POSModel.filename(), OpenNLPUtil.OpenNlpModels.POSModel.toString());
         }
         if (OpenNLPNGramSpotter.tokenModel == null) {
-            OpenNLPNGramSpotter.tokenModel  = OpenNLPUtil.loadModel(directoryPath, "english/en-token.zip", OpenNLPUtil.OpenNlpModels.TokenizerModel.toString());
+            OpenNLPNGramSpotter.tokenModel  = OpenNLPUtil.loadModel(directoryPath, i18nLanguageCode +   OpenNLPUtil.OpenNlpModels.TokenizerModel.filename(), OpenNLPUtil.OpenNlpModels.TokenizerModel.toString());
         }
 
     }

@@ -16,20 +16,26 @@
 
 package org.dbpedia.spotlight.model
 
-import org.dbpedia.spotlight.string.ModifiedWikiUtil
+import org.dbpedia.extraction.util.WikiUtil
 
 
-class SurfaceForm(var name : String)
+class SurfaceForm(var name : String) extends Serializable
 {
+
+  var annotatedCount: Int = 0
+  var totalCount: Int = 0
+  var id: Int = 0
+
+  def this(name: String, id: Int, annotatedCount: Int, totalCount: Int) {
+    this(name)
+    this.id = id
+    this.annotatedCount = annotatedCount
+    this.totalCount = totalCount
+  }
+
   name = name.replace("’", "'")
 
-  name = if (ModifiedWikiUtil.isEncoded(name)) {
-    ModifiedWikiUtil.wikiDecode(name)
-  }
-  else {
-    ModifiedWikiUtil.cleanSpace(name)
-  }
-
+  name = WikiUtil.cleanSpace(name)
 
   //TODO: instead of equalsIgnoreCase, fix the Spotter // (should be fixed now)
   override def equals(that : Any) = {
@@ -41,6 +47,18 @@ class SurfaceForm(var name : String)
 
   override def hashCode() : Int = {
     (if (name != null) name.hashCode else 0)
+  }
+
+  def annotationProbability: Double = {
+
+    //TODO: THIS IS HACKISH -> Since we only get the total counts for ngrams (e.g. with n = 5), not
+    // all surface forms have a total count. However, it is reasonable that long sf matches are usually
+    // annotated, therefore this 1.0
+
+    if (totalCount == -1)
+      1.0
+    else
+      annotatedCount / totalCount.toDouble
   }
 
   override def toString = "SurfaceForm["+name+"]"

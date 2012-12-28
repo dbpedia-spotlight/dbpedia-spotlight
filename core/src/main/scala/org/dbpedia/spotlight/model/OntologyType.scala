@@ -18,7 +18,7 @@
 
 package org.dbpedia.spotlight.model
 
-import java.lang.String
+import java.lang.{Short, String}
 
 /**
  * Representation of types (DBpedia, Freebase, Schema.org, etc.)
@@ -28,9 +28,11 @@ import java.lang.String
  * @author pablomendes (introduced and fixed bug for OntologyType.equals :)
  */
 
-trait OntologyType  {
-  def getFullUri : String
-  def typeID : String = "OntologyTypeUnknown"
+trait OntologyType extends Serializable {
+  def getFullUri: String
+  def typeID: String = "OntologyTypeUnknown"
+
+  var id: Short = 0.toShort
 
   override def hashCode() : Int = {
     typeID.hashCode()

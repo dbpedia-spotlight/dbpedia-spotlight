@@ -18,13 +18,12 @@
 
 package org.dbpedia.spotlight.lucene.index
 
-import org.dbpedia.spotlight.lucene.LuceneManager
-import org.apache.lucene.store.FSDirectory
+
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.model.SurfaceForm
-import org.dbpedia.spotlight.util.{IndexingConfiguration, ExtractCandidateMap}
+import org.dbpedia.spotlight.util.IndexingConfiguration
 import java.util.Scanner
-import java.io.{FileInputStream, File}
+import java.io.FileInputStream
 import org.apache.commons.logging.{LogFactory, Log}
 import scalaj.collection.Imports._
 
@@ -78,56 +77,52 @@ object AddSurfaceFormsToIndex
     // used by IndexEnricher
     // uri -> list(sf1, sf2)
     def loadSurfaceForms(surfaceFormsFileName: String, transform : String => List[String]) = {
-
+        var nWrongLines = 0
         LOG.info("Getting surface form map...")
         val reverseMap : java.util.Map[String, java.util.LinkedHashSet[SurfaceForm]] = new java.util.HashMap[String, java.util.LinkedHashSet[SurfaceForm]]()
         val separator = "\t"
         val tsvScanner = new Scanner(new FileInputStream(surfaceFormsFileName), "UTF-8")
         while (tsvScanner.hasNextLine) {
             val line = tsvScanner.nextLine.split(separator)
-            val sfAlternatives = transform(line(0)).map(sf => new SurfaceForm(sf))
-            val uri = line(1)
-            var sfSet = reverseMap.get(uri)
-            if (sfSet == null) {
-                sfSet = new java.util.LinkedHashSet[SurfaceForm]()
+            try {
+                val sfAlternatives = transform(line(0)).map(sf => new SurfaceForm(sf))
+                val uri = line(1)
+                var sfSet = reverseMap.get(uri)
+                if (sfSet == null) {
+                    sfSet = new java.util.LinkedHashSet[SurfaceForm]()
+                }
+                sfSet.addAll(sfAlternatives)
+                reverseMap.put(uri, sfSet)
+            } catch {
+                case e: ArrayIndexOutOfBoundsException => nWrongLines = nWrongLines + 1;
             }
-            sfSet.addAll(sfAlternatives)
-            reverseMap.put(uri, sfSet)
         }
         LOG.info("Done.")
+        if (nWrongLines>0) LOG.error("There were %s errors parsing the input lines. Please double check that everything went fine by inspecting the input file given to this class.")
         reverseMap
 
     }
 
     def main(args : Array[String]) {
-      val indexingConfigFileName = args(0)
-      val lowerCased : Boolean = if (args.size>1) args(1).toLowerCase().contains("lowercase") else false
-      val alternatives = if (args.size>1) args(1).toLowerCase().contains("alternative") else false
 
-      println("alternatives is %s".format(alternatives.toString))
+        val indexingConfigFileName = args(0)
+        val sourceIndexFileName = args(1)
 
-      val config = new IndexingConfiguration(indexingConfigFileName)
-      val sourceIndexFileName = config.get("org.dbpedia.spotlight.index.dir")
+        val lowerCased : Boolean = if (args.size>1) args(1).toLowerCase().contains("lowercase") else false
+        val alternatives = if (args.size>1) args(1).toLowerCase().contains("alternative") else false
 
-      val indexDir = new File(sourceIndexFileName)
-      var listOfIndexes = Seq[String](sourceIndexFileName)
+        println("alternatives is %s".format(alternatives.toString))
 
-      if (indexDir.listFiles().foldLeft(false)( _ || _.isDirectory )) {
-        listOfIndexes = indexDir.listFiles().filter( _.isDirectory ).map(_.getAbsolutePath).toSeq
-      }
-
-      val surfaceFormsFileName = config.get("org.dbpedia.spotlight.data.surfaceForms")
-      val sfMap = loadSurfaceForms(surfaceFormsFileName, fromTitlesToAlternatives)
-
-      for (sourceIndexFileName <- listOfIndexes) {
+        val config = new IndexingConfiguration(indexingConfigFileName)
         val targetIndexFileName = sourceIndexFileName+"-withSF"
+        val surfaceFormsFileName = config.get("org.dbpedia.spotlight.data.surfaceForms")
 
         val sfIndexer = new IndexEnricher(sourceIndexFileName,targetIndexFileName, config)
 
         //val sfMap = loadSurfaceForms(surfaceFormsFileName, if (alternatives) fromTitlesToAlternatives(_) else toLowercase(_,lowerCased))
+        val sfMap = loadSurfaceForms(surfaceFormsFileName, fromTitlesToAlternatives)
         sfIndexer.enrichWithSurfaceForms(sfMap)
         sfIndexer.close
-      }
     }
 
 }

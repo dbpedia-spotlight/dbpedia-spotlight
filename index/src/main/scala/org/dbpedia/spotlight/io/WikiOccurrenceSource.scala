@@ -19,10 +19,11 @@ package org.dbpedia.spotlight.io
 import org.dbpedia.spotlight.string.WikiMarkupStripper
 import org.dbpedia.spotlight.model._
 import org.dbpedia.extraction.wikiparser._
-import org.dbpedia.extraction.sources.{Source, XMLSource}
+import org.dbpedia.extraction.sources.{MemorySource, WikiPage, Source, XMLSource}
 import org.apache.commons.logging.LogFactory
 import java.io.{PrintStream, FileOutputStream, File}
 import xml.{XML, Elem}
+import org.dbpedia.extraction.util.Language
 
 /**
  * Loads Occurrences from a wiki dump.
@@ -38,26 +39,45 @@ object WikiOccurrenceSource
     /**
      * Creates an DBpediaResourceOccurrence Source from a dump file.
      */
-    def fromXMLDumpFile(dumpFile : File) : OccurrenceSource =
+    def fromXMLDumpFile(dumpFile : File, language: Language) : OccurrenceSource =
     {
-        new WikiOccurrenceSource(XMLSource.fromFile(dumpFile, _.namespace == WikiTitle.Namespace.Main))
+        new WikiOccurrenceSource(XMLSource.fromFile(dumpFile, language, _.namespace == Namespace.Main))
     }
 
     /**
      * Creates an DBpediaResourceOccurrence Source from an XML root element.
      */
-    def fromXML(xml : Elem) : OccurrenceSource  =
+    def fromXML(xml : Elem, language: Language) : OccurrenceSource  =
     {
-        new WikiOccurrenceSource(XMLSource.fromXML(xml))
+        new WikiOccurrenceSource(XMLSource.fromXML(xml, language))
     }
 
     /**
      * Creates an DBpediaResourceOccurrence Source from an XML root element string.
      */
-    def fromXML(xmlString : String) : OccurrenceSource  =
+    def fromXML(xmlString : String, language: Language) : OccurrenceSource  =
     {
         val xml : Elem = XML.loadString("<dummy>" + xmlString + "</dummy>")  // dummy necessary: when a string "<page><b>text</b></page>" is given, <page> is the root tag and can't be found with the command  xml \ "page"
-        new WikiOccurrenceSource(XMLSource.fromXML(xml))
+        new WikiOccurrenceSource(XMLSource.fromXML(xml, language))
+    }
+
+  /**
+   * Creates a DBpediaResourceOccurrence Source from a Wikipedia heldout paragraph file.
+   *
+   * @see WikipediaHeldoutCorpus in the eval module
+   *
+   * @param testFile Iterator of lines containing single MediaWiki paragraphs that
+   *                 were extracted as heldout data from the MediaWiki dump.
+   * @return
+   */
+    def fromPigHeldoutFile(testFile: Iterator[String]): OccurrenceSource = {
+      new WikiOccurrenceSource(
+        new MemorySource(
+          testFile.map{ line =>
+            new WikiPage(new WikiTitle("Test Paragraph", Namespace.Main, Language.English), line.trim())
+          }.toTraversable.asInstanceOf[scala.collection.immutable.Traversable[org.dbpedia.extraction.sources.WikiPage]]
+        )
+      )
     }
 
     /**
@@ -78,7 +98,7 @@ object WikiOccurrenceSource
                 val cleanSource = WikiMarkupStripper.stripEverything(wikiPage.source)
 
                 // parse the (clean) wiki page
-                val pageNode = wikiParser( wikiPage.copy(source = cleanSource) )
+                val pageNode = wikiParser( WikiPageUtil.copyWikiPage(wikiPage, cleanSource) )
 
                 // exclude redirect and disambiguation pages
                 if (!pageNode.isRedirect && !pageNode.isDisambiguation) {
@@ -96,10 +116,10 @@ object WikiOccurrenceSource
 
                     pageCount += 1
                     if (pageCount %5000 == 0) {
-                        LOG.debug("Processed %d Wikipedia definition pages (average %.2f links per page)".format(pageCount, occCount/pageCount.toDouble))
+                        LOG.debug("Processed %d Wikipedia definition pages (avarage %.2f links per page)".format(pageCount, occCount/pageCount.toDouble))
                     }
                     if (pageCount %100000 == 0) {
-                        LOG.info("Processed %d Wikipedia definition pages (average %.2f links per page)".format(pageCount, occCount/pageCount.toDouble))
+                        LOG.info("Processed %d Wikipedia definition pages (avarage %.2f links per page)".format(pageCount, occCount/pageCount.toDouble))
                     }
 
                 }
@@ -129,7 +149,7 @@ object WikiOccurrenceSource
 
                     paragraphText += surfaceForm
 
-                    if (internalLink.destination.namespace == WikiTitle.Namespace.Main && surfaceForm.nonEmpty) {
+                    if (internalLink.destination.namespace == Namespace.Main && surfaceForm.nonEmpty) {
                         occurrenceTriples ::= new Tuple3(internalLink.destination.encoded, surfaceForm, surfaceFormOffset)
                     }
                 }

@@ -18,30 +18,28 @@
 
 package org.dbpedia.spotlight.model
 
-import org.apache.lucene.util.Version
-import org.apache.lucene.analysis.{StopAnalyzer, Analyzer}
 import org.apache.commons.logging.LogFactory
-import org.dbpedia.spotlight.exceptions.ConfigurationException
-import org.apache.lucene.store.Directory
 import org.dbpedia.spotlight.lucene.LuceneManager
-import org.apache.lucene.search.Similarity
 import org.dbpedia.spotlight.lucene.similarity.{JCSTermCache, CachedInvCandFreqSimilarity}
 import com.aliasi.sentences.IndoEuropeanSentenceModel
 import org.dbpedia.spotlight.disambiguate._
 import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter
-import java.io.{IOException, FileNotFoundException, File}
+import java.io.File
 import org.dbpedia.spotlight.spot._
-import opennlp.{SurfaceFormDictionary, ProbabilisticSurfaceFormDictionary, OpenNLPChunkerSpotter}
+import ahocorasick.AhoCorasickSpotter
+import opennlp.{ProbabilisticSurfaceFormDictionary, OpenNLPChunkerSpotter}
 import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters
 import org.dbpedia.spotlight.tagging.lingpipe.{LingPipeTextUtil, LingPipeTaggedTokenProvider, LingPipeFactory}
 import collection.JavaConversions._
-import org.dbpedia.spotlight.annotate.{DefaultAnnotator, DefaultParagraphAnnotator}
+import org.dbpedia.spotlight.annotate.DefaultAnnotator
 import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy
 import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy
 import org.dbpedia.spotlight.lucene.search.{LuceneCandidateSearcher, MergedOccurrencesContextSearcher}
 import com.aliasi.util.AbstractExternalizable
-import com.aliasi.dict.{DictionaryEntry, Dictionary}
+import com.aliasi.dict.Dictionary
+import org.dbpedia.spotlight.exceptions.ConfigurationException
+import io.Source
 
 /**
  * This class contains many of the "defaults" for DBpedia Spotlight.
@@ -56,54 +54,24 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
     val analyzer = configuration.analyzer
     assert(analyzer!=null)
 
-    /* moved all to module "topical"
-    var topicalClassifier:TopicalClassifier = null
-
-    {
-        val config = configuration.getTopicalClassificationConfiguration
-        LOG.info("Loading topical classifier...")
-        val info = config.getTopicInfo
-        val dic = config.getDictionary
-        if (dic!=null && info!=null) {
-            if (config.getClassifierType == "org.dbpedia.spotlight.topic.WekaSingleLabelClassifier") {
-                topicalClassifier = new WekaSingleLabelClassifier(dic, info, config.getModelFile, null, info.loaded)
-            }
-            if (config.getClassifierType == "org.dbpedia.spotlight.topic.WekaMultiLabelClassifier")
-                topicalClassifier = new WekaMultiLabelClassifier(dic, info, config.getModelFile, info.loaded)
-        }
-        else
-            LOG.info("Topical classifier could not be loaded!")
-    }
-
-    try {
-        HashMapTopicalPriorStore.fromDir(configuration.getTopicalClassificationConfiguration.getPriorsDir)
-    } catch {
-        case e:IOException  => LOG.warn("No topical priors were loaded!")
-    }  */
-
     val contextIndexDir = LuceneManager.pickDirectory(new File(configuration.getContextIndexDirectory))
     val contextLuceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(contextIndexDir) // use this if all surface forms in the index are lower-cased
-    val similarity = new CachedInvCandFreqSimilarity(JCSTermCache.getInstance(contextLuceneManager, configuration.getMaxCacheSize))
+    val similarity = Factory.Similarity.fromConfig(configuration, contextLuceneManager)
     contextLuceneManager.setContextSimilarity(similarity)        // set most successful Similarity
     contextLuceneManager.setDBpediaResourceFactory(configuration.getDBpediaResourceFactory)
     contextLuceneManager.setDefaultAnalyzer(configuration.getAnalyzer)
-    val contextSearcher : MergedOccurrencesContextSearcher = new MergedOccurrencesContextSearcher(contextLuceneManager)
+    val contextSearcher : MergedOccurrencesContextSearcher = new MergedOccurrencesContextSearcher(contextLuceneManager, configuration.getDisambiguatorConfiguration.isContextIndexInMemory)
 
-    var candidateSearcher : CandidateSearcher = null //TODO move to factory
-    var candLuceneManager : LuceneManager = contextLuceneManager;
-    if (configuration.getCandidateIndexDirectory!=configuration.getContextIndexDirectory) {
-        val candidateIndexDir = LuceneManager.pickDirectory(new File(configuration.getCandidateIndexDirectory))
-        //candLuceneManager = new LuceneManager.CaseSensitiveSurfaceForms(candidateIndexDir)
-        candLuceneManager = new LuceneManager(candidateIndexDir)
-        candLuceneManager.setDBpediaResourceFactory(configuration.getDBpediaResourceFactory)
-        candidateSearcher = new LuceneCandidateSearcher(candLuceneManager,true) // or we can provide different functionality for surface forms (e.g. n-gram search)
-        LOG.info("CandidateSearcher initialized from %s".format(candidateIndexDir))
-    } else {
-        candidateSearcher = contextSearcher match {
-            case cs: CandidateSearcher => cs
-            case _ => new LuceneCandidateSearcher(contextLuceneManager, false) // should never happen
+    var candidateSearcher : CandidateSearcher =
+        if (configuration.getCandidateIndexDirectory!=configuration.getContextIndexDirectory) {
+            Factory.CandidateSearcher.fromLuceneIndex(configuration)
+        } else {
+            contextSearcher match {
+                case cs: CandidateSearcher => cs // do not load the same index twice
+                case _ => new LuceneCandidateSearcher(contextLuceneManager, false) // should never happen
+            }
         }
-    }
+
 
     val lingPipeFactory : LingPipeFactory = new LingPipeFactory(new File(configuration.getTaggerFile), new IndoEuropeanSentenceModel())
 
@@ -115,8 +83,8 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
     contextLuceneManager.setDBpediaResourceFactory(dbpediaResourceFactory)
 
 
-    val spotters = new java.util.HashMap[SpotterConfiguration.SpotterPolicy,Spotter]()
-    val disambiguators = new java.util.HashMap[SpotlightConfiguration.DisambiguationPolicy,ParagraphDisambiguatorJ]()
+    val spotters = new java.util.LinkedHashMap[SpotterConfiguration.SpotterPolicy,Spotter]() // LinkedHashMap used to preserve order (needed in spotter())
+    val disambiguators = new java.util.LinkedHashMap[SpotlightConfiguration.DisambiguationPolicy,ParagraphDisambiguatorJ]()
 
     //populate
     LOG.info("Initiating spotters...")
@@ -128,20 +96,38 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
 
     def spotter(policy: SpotterConfiguration.SpotterPolicy) : Spotter = {
         if (policy == SpotterConfiguration.SpotterPolicy.Default) {
-            spotters.getOrElse(policy, spotter(SpotterConfiguration.SpotterPolicy.LingPipeSpotter)); // if no default, use lingpipe
+            if (spotters.isEmpty)
+                throw new ConfigurationException("You have to specify at least one spotter implementation (besides Default) in the configuration file.")
+            val innerSpotter = spotters.head._2
+            val spotSelectors = Factory.SpotSelector.fromNameList(configuration.getSpotterConfiguration.config.getOrElse("org.dbpedia.spotlight.spot.selectors", ""))
+            val defaultSpotter = if (spotSelectors.isEmpty) {
+                innerSpotter
+            } else {
+                SpotterWithSelector.getInstance(innerSpotter, new ChainedSelector(spotSelectors))
+            }
+            defaultSpotter
+        } else if(policy == SpotterConfiguration.SpotterPolicy.AhoCorasickSpotter) {
+            val overlap = configuration.getSpotterConfiguration.config.getOrElse("org.dbpedia.spotlight.spot.allowOverlap", "false").equals("true")
+            val caseSensitive = configuration.getSpotterConfiguration.config.getOrElse("org.dbpedia.spotlight.spot.caseSensitive", "false").equals("true")
+            val sourceChunks = Source.fromFile(configuration.getSpotterConfiguration.getSpotterSurfaceForms)
+            val spotter = AhoCorasickSpotter.fromSurfaceForms(sourceChunks.getLines(), caseSensitive, overlap)
+            sourceChunks.close
+            spotters.getOrElse(policy,spotter)
         } else if(policy == SpotterConfiguration.SpotterPolicy.LingPipeSpotter) {
-            spotters.getOrElse(policy, new LingPipeSpotter(spotDict))
+            val overlap = configuration.getSpotterConfiguration.config.getOrElse("org.dbpedia.spotlight.spot.allowOverlap", "false").equals("true")
+            val caseSensitive = configuration.getSpotterConfiguration.config.getOrElse("org.dbpedia.spotlight.spot.caseSensitive", "false").equals("true")
+            spotters.getOrElse(policy, new LingPipeSpotter(spotDict,analyzer,overlap,caseSensitive))
         } else if (policy == SpotterConfiguration.SpotterPolicy.AtLeastOneNounSelector) {
             spotters.getOrElse(policy, SpotterWithSelector.getInstance(spotter(SpotterConfiguration.SpotterPolicy.LingPipeSpotter),new AtLeastOneNounSelector(),taggedTokenProvider()))
         } else if (policy == SpotterConfiguration.SpotterPolicy.CoOccurrenceBasedSelector) {
             spotters.getOrElse(policy, SpotterWithSelector.getInstance(spotter(SpotterConfiguration.SpotterPolicy.LingPipeSpotter),new CoOccurrenceBasedSelector(configuration.getSpotterConfiguration, taggedTokenProvider()), taggedTokenProvider()))
         } else if (policy == SpotterConfiguration.SpotterPolicy.NESpotter) {
-            spotters.getOrElse(policy, new NESpotter(configuration.getSpotterConfiguration.getOpenNLPModelDir))
+            spotters.getOrElse(policy, new NESpotter(configuration.getSpotterConfiguration.getOpenNLPModelDir+"/"+configuration.getLanguage.toLowerCase+"/",configuration.getI18nLanguageCode.toLowerCase, configuration.getSpotterConfiguration.getOpenNLPModelsURI))
         } else if (policy == SpotterConfiguration.SpotterPolicy.KeyphraseSpotter) {
             spotters.getOrElse(policy, new KeaSpotter(configuration.getSpotterConfiguration.getKeaModel, configuration.getSpotterConfiguration.getKeaMaxNumberOfPhrases, configuration.getSpotterConfiguration.getKeaCutoff))
         } else if (policy == SpotterConfiguration.SpotterPolicy.OpenNLPChunkerSpotter) {
             val dict = ProbabilisticSurfaceFormDictionary.fromLingPipeDictionary(spotDict, false) //TODO with new configuration in place, we can load from file into a more compact dictionary
-            spotters.getOrElse(policy, OpenNLPChunkerSpotter.fromDir(configuration.getSpotterConfiguration.getOpenNLPModelDir+"/"+configuration.language.toLowerCase+"/", dict, configuration.getStopWords))
+            spotters.getOrElse(policy, OpenNLPChunkerSpotter.fromDir(configuration.getSpotterConfiguration.getOpenNLPModelDir+"/"+configuration.getLanguage.toLowerCase+"/",configuration.getI18nLanguageCode.toLowerCase , dict, configuration.getStopWords))
         } else if (policy == SpotterConfiguration.SpotterPolicy.SpotXmlParser) {
           new SpotXmlParser
         } else if (policy == SpotterConfiguration.SpotterPolicy.WikiMarkupSpotter) {
@@ -154,9 +140,10 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
     def spotter() : Spotter = {
         val spotterPolicies = configuration.getSpotterConfiguration.getSpotterPolicies
         spotterPolicies.foreach( policy => {
-            spotters.put(policy, spotter(policy))
+            if (policy != SpotterPolicy.Default)
+                spotters.put(policy, spotter(policy))
         })
-        val default = spotter(spotterPolicies.get(0)) // default is first in configuration list
+        val default = spotter(SpotterPolicy.Default)
         spotters.put(SpotterPolicy.Default, default)
         default
     }
@@ -173,7 +160,7 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
 
     def disambiguator(policy: SpotlightConfiguration.DisambiguationPolicy) : ParagraphDisambiguatorJ = {
         if (policy == SpotlightConfiguration.DisambiguationPolicy.Default) {
-            disambiguator(SpotlightConfiguration.DisambiguationPolicy.Default)
+            disambiguator(SpotlightConfiguration.DisambiguationPolicy.Occurrences)
         } else if (policy == SpotlightConfiguration.DisambiguationPolicy.Document) {
             disambiguators.getOrElse(policy, new ParagraphDisambiguatorJ(new TwoStepDisambiguator(candidateSearcher,contextSearcher)))
         } else if (policy == SpotlightConfiguration.DisambiguationPolicy.Occurrences) {
@@ -186,7 +173,7 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
     }
 
     def annotator() ={
-        new DefaultParagraphAnnotator(spotters(SpotterPolicy.Default), disambiguators(DisambiguationPolicy.Default))
+        new DefaultAnnotator(spotter(), new MergedOccurrencesDisambiguator(contextSearcher))
         //new DefaultParagraphAnnotator(spotter(), disambiguator())
     }
 

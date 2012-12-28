@@ -17,8 +17,7 @@
 package org.dbpedia.spotlight.model
 
 import scala.collection.JavaConversions._
-import org.dbpedia.spotlight.string.ModifiedWikiUtil
-import java.io.Serializable
+import org.dbpedia.extraction.util.WikiUtil
 
 
 @serializable
@@ -27,17 +26,13 @@ class DBpediaResource(var uri : String,
                       var prior : Double = 0.0,
                       var types : List[OntologyType] = List[OntologyType]())
 {
+    var id: Int = 0
+
     require(uri != null)
 
     uri = uri.replace(SpotlightConfiguration.DEFAULT_NAMESPACE, "")
 
-    uri = if (ModifiedWikiUtil.isEncoded(uri)) {
-              ModifiedWikiUtil.spaceToUnderscore(uri).capitalize
-          }
-          else {
-              ModifiedWikiUtil.wikiEncode(uri)
-          }
-
+    uri = if (isEncoded(uri)) uri else WikiUtil.wikiEncode(uri)
 
     def this(uri : String) = {
         this(uri, 0, 0.0, List[OntologyType]())
@@ -53,7 +48,12 @@ class DBpediaResource(var uri : String,
 
     override def equals(obj : Any) : Boolean = {
         obj match {
-            case that: DBpediaResource => this.uri.equals(that.uri)
+            case that: DBpediaResource => {
+              if (id > 0)
+                this.id == that.id
+              else
+                this.uri.equals(that.uri)
+            }
             case _ => obj.equals(this)
         }
     }
@@ -100,5 +100,8 @@ class DBpediaResource(var uri : String,
             SpotlightConfiguration.DEFAULT_NAMESPACE + uri
         }
     }
+
+  // heuristic!!
+  private def isEncoded(s : String) = """%[0-9a-fA-F][0-9a-fA-F]""".r.findFirstIn(s) != None
 
 }

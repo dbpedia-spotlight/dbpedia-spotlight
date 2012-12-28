@@ -47,7 +47,11 @@ public class DisambiguatorConfiguration {
 
     protected String contextIndexDirectory = "";
 
-    //public enum DisambiguationPolicy { Document,Occurrences,CuttingEdge,Default }
+    public boolean isContextIndexInMemory() {
+        return contextIndexInMemory;
+    }
+
+    protected boolean contextIndexInMemory = false;
 
     public DisambiguatorConfiguration(String configFileName) throws ConfigurationException {
 
@@ -62,6 +66,9 @@ public class DisambiguatorConfiguration {
             throw new ConfigurationException(String.format("Please specify a list of disambiguators in %s within your configuration file %s.",CONFIG_DISAMBIGUATORS,configFileName));
 
         List<DisambiguationPolicy> policies = getDisambiguatorPolicies();
+        if (policies.size()==0)
+            throw new ConfigurationException(String.format("Please specify a list of disambiguators in %s within your configuration file %s.",CONFIG_DISAMBIGUATORS,configFileName));
+
         LOG.info(String.format("Will load disambiguators: %s.",policies));
 
         /* Validate parameters */
@@ -71,9 +78,7 @@ public class DisambiguatorConfiguration {
         } else if (!new File(contextIndexDirectory).isDirectory()) {
 			throw new ConfigurationException(String.format("The value %s=%s does not exist or is not a directory. Please update your config in %s.", CONFIG_CONTEXT_INDEX_DIR, contextIndexDirectory, configFileName));
 		}
-
-
-
+        contextIndexInMemory = config.getProperty("org.dbpedia.spotlight.index.loadToMemory", "false").trim().equals("true");
 
     }
 

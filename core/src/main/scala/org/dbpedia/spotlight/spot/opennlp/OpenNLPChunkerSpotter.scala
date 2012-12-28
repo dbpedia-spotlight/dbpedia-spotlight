@@ -99,19 +99,19 @@ class OpenNLPChunkerSpotter(
 
 object OpenNLPChunkerSpotter {
 
-    def fromDir(openNLPDir: String, sfDict: SurfaceFormDictionary, stopwordsFile: File) : OpenNLPChunkerSpotter = {
+    def fromDir(openNLPDir: String, i18nLanguageCode:String, sfDict: SurfaceFormDictionary, stopwordsFile: File) : OpenNLPChunkerSpotter = {
         val stopwords = new HashSet[String]()
         Source.fromFile(stopwordsFile).getLines().foreach { line =>
           stopwords.add(line.trim())
         }
-        fromDir(openNLPDir,sfDict,stopwords.toSet.asJava)
+        fromDir(openNLPDir,i18nLanguageCode,sfDict,stopwords.toSet.asJava)
     }
 
-    def fromDir(openNLPDir: String, sfDict: SurfaceFormDictionary, stopwords: java.util.Set[String]) : OpenNLPChunkerSpotter = {
-        new OpenNLPChunkerSpotter(new File(openNLPDir, OpenNLPUtil.OpenNlpModels.SentenceModel.filename + ".bin"),
-              new File(openNLPDir, OpenNLPUtil.OpenNlpModels.TokenizerModel.filename + ".bin"),
-              new File(openNLPDir, OpenNLPUtil.OpenNlpModels.POSModel.filename + ".bin"),
-              new File(openNLPDir, OpenNLPUtil.OpenNlpModels.ChunkModel.filename + ".bin"),
+    def fromDir(openNLPDir: String, i18nLanguageCode:String, sfDict: SurfaceFormDictionary, stopwords: java.util.Set[String]) : OpenNLPChunkerSpotter = {
+        new OpenNLPChunkerSpotter(new File(openNLPDir, i18nLanguageCode + OpenNLPUtil.OpenNlpModels.SentenceModel.filename),
+              new File(openNLPDir, i18nLanguageCode + OpenNLPUtil.OpenNlpModels.TokenizerModel.filename),
+              new File(openNLPDir, i18nLanguageCode + OpenNLPUtil.OpenNlpModels.POSModel.filename),
+              new File(openNLPDir, i18nLanguageCode + OpenNLPUtil.OpenNlpModels.ChunkModel.filename),
                       sfDict,
                       stopwords)
     }

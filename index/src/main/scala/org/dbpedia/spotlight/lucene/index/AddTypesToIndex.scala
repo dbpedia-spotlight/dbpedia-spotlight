@@ -18,53 +18,42 @@
 
 package org.dbpedia.spotlight.lucene.index
 
-import org.dbpedia.spotlight.lucene.LuceneManager
-import org.apache.lucene.store.FSDirectory
-import org.dbpedia.spotlight.io.{TypeAdder, FileOccurrenceSource}
-import org.dbpedia.spotlight.model.{DBpediaType, DBpediaResource}
 import java.io.{FileInputStream, File}
 import org.dbpedia.spotlight.util.{IndexingConfiguration, TypesLoader}
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 
 /**
  * Reads file instance_types_en.nt from DBpedia in order to add Ontology Resource Types to the index.
  *
- * Usage:
+ * Usage: see bin/index.sh
  *
- *
- * @author maxjakob, Joachim Daiber (allows reading from TSV: used for DBpedia+Schema+Freebase types)
  */
 object AddTypesToIndex {
 
     def loadTypes(instanceTypesFileName: String) = {
-        instanceTypesFileName.endsWith(".tsv") match {
-          case true  => TypesLoader.getTypesMapFromTSV_java(new File(instanceTypesFileName))
-          case false => TypesLoader.getTypesMap_java(new FileInputStream(instanceTypesFileName))
+        val input = new BZip2CompressorInputStream(new FileInputStream(instanceTypesFileName), true)
+        val typesMap = instanceTypesFileName.contains(".tsv") match {
+          case true  => TypesLoader.getTypesMapFromTSV_java(input)
+          case false => TypesLoader.getTypesMap_java(input)
         }
+        input.close()
+        typesMap
     }
 
     def main(args : Array[String]) {
-      val indexingConfigFileName = args(0)
 
-      val config = new IndexingConfiguration(indexingConfigFileName)
-      val sourceIndexFileName = config.get("org.dbpedia.spotlight.index.dir")
+        val indexingConfigFileName = args(0)
+        val sourceIndexFileName = args(1)
 
-      val indexDir = new File(sourceIndexFileName)
-      var listOfIndexes = Seq[String](sourceIndexFileName)
-
-      if (indexDir.listFiles().foldLeft(false)( _ || _.isDirectory )) {
-        listOfIndexes = indexDir.listFiles().filter( _.isDirectory ).map(_.getAbsolutePath).toSeq
-      }
-
-      val instanceTypesFileName = config.get("org.dbpedia.spotlight.data.instanceTypes")
-      val typesMap = loadTypes(instanceTypesFileName)
-
-      for (sourceIndexFileName <- listOfIndexes) {
+        val config = new IndexingConfiguration(indexingConfigFileName)
         val targetIndexFileName = sourceIndexFileName+"-withTypes"
+        val instanceTypesFileName = config.get("org.dbpedia.spotlight.data.instanceTypes")
+
         val typesIndexer = new IndexEnricher(sourceIndexFileName,targetIndexFileName, config)
 
+        val typesMap = loadTypes(instanceTypesFileName)
         typesIndexer.enrichWithTypes(typesMap)
         typesIndexer.close
-      }
     }
 
 }

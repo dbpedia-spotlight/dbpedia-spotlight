@@ -1,7 +1,7 @@
 # DBpedia Spotlight
 #### Shedding Light on the Web of Documents
 
-DBpedia Spotlight looks for ~3.5M things of ~320 types in text and tries to link them to their global unique identifiers in [DBpedia](http://dbpedia.org). 
+DBpedia Spotlight looks for ~3.5M things of unknown or ~320 known types in text and tries to link them to their global unique identifiers in [DBpedia](http://dbpedia.org). 
 
 #### Demonstration
 
@@ -59,7 +59,7 @@ After you've downloaded the files, you need to modify the configuration in serve
 ## Licenses
 
 The program can be used under the terms of the [Apache License, 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
-Part of the code uses [LingPipe](http://alias-i.com/lingpipe/) under the [Royalty Free License](http://alias-i.com/lingpipe/licenses/lingpipe-license-1.txt). Therefore, this license also applies to the output of the currently deployed web service.
+Part of the code uses [LingPipe](http://alias-i.com/lingpipe/) under the [Royalty Free License](http://alias-i.com/lingpipe/licenses/lingpipe-license-1.txt). Therefore, this license may also apply to the output of the currently deployed web service.
 
 The documentation on this website is shared as [Creative Commons Attribution-ShareAlike 3.0 Unported License](http://en.wikipedia.org/wiki/Wikipedia:Text_of_Creative_Commons_Attribution-ShareAlike_3.0_Unported_License)
 
@@ -111,6 +111,9 @@ Prof. Dr. [Chris Bizer](http://www.wiwiss.fu-berlin.de/en/institute/pwo/bizer/te
 
 ## Acknowledgements
 
-This work has been funded by:
+This work has been partially funded by:
   * [Neofonie GmbH](http://www.neofonie.de/), a Berlin-based company offering leading technologies in the area of Web search, social media and mobile applications. (Jun 2010-Jun 2011)
-  * The European Commission through the project [LOD2 - Creating Knowledge out of Linked Data](http://lod2.eu/). (Jun 2010-present)
+  * The European Commission through the projects:
+    * [LOD2 - Creating Knowledge out of Linked Data](http://lod2.eu/). (Jun 2010-Oct 2012)
+    * [IKS - Interactive Knowledge Stack](http://www.iks-project.eu/) via the Early Adopters Program. (Jun 2011)
+  * Google Summer of Code 2012, with 4 students. (May 2012-Sep 2012)

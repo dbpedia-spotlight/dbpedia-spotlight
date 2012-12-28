@@ -34,45 +34,44 @@
     <name>DBpedia Spotlight Evaluation</name>
 
     <properties>
+        <javaOpts.Xmx>4g</javaOpts.Xmx> <!-- default that can be adjusted on the command line with -DjavaOpts.Xmx=... -->
         <spotlight.basedir>${project.basedir}/..</spotlight.basedir>
     </properties>
 
     <build>
         <plugins>
             <plugin>
-                <groupId>org.scala-tools</groupId>
-                <artifactId>maven-scala-plugin</artifactId>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>${scala.maven.plugin.version}</version>
 
                 <configuration>
                     <launchers>
                         <launcher>
-                            <id>pareval</id>
+                            <id>EvaluateParagraphDisambiguator</id>
                             <mainClass>org.dbpedia.spotlight.evaluation.EvaluateParagraphDisambiguator</mainClass>
+                            <jvmArgs>
+                                <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
+                            </jvmArgs>
                             <!--args>
                                 <arg>../conf/disambigonly.properties</arg>
                             </args-->
-                            <jvmArgs>
-                                <jvmArg>-Xmx32g</jvmArg>
-                                <jvmArg>-Duser.language=en</jvmArg>
-                                <jvmArg>-Duser.country=US</jvmArg>
-								 
-                            </jvmArgs>
                         </launcher>
                         <launcher>
-                            <id>stats</id>
+                            <id>StatsCommonVsNoCommonCompressed</id>
                             <mainClass>org.dbpedia.spotlight.corpora.StatsCommonVsNoCommonCompressed</mainClass>
-                            <args>
-                                <arg>../conf/eval.properties</arg>
-                            </args>
                             <jvmArgs>
-                                <jvmArg>-Xmx14G</jvmArg>
+                                <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
                             </jvmArgs>
+                            <!--args>
+                                <arg>../conf/eval.properties</arg>
+                            </args-->
                         </launcher>
                         <launcher>
-                            <id>spottereval</id>
+                            <id>SpotterEvaluatorPrecisionRecall</id>
                             <mainClass>org.dbpedia.spotlight.evaluation.SpotterEvaluatorPrecisionRecall</mainClass>
                             <jvmArgs>
-                                <jvmArg>-Xmx16g</jvmArg>
+                                <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
                             </jvmArgs>
                         </launcher>
                     </launchers>
@@ -81,21 +80,16 @@
 
         </plugins>
     </build>
-        
-
 
 
     <dependencies>
-       <dependency>
+        <dependency>
             <groupId>org.dbpedia.spotlight</groupId>
             <artifactId>core</artifactId>
-            <version>0.6</version>
         </dependency>
-
         <dependency>
             <groupId>org.dbpedia.spotlight</groupId>
             <artifactId>index</artifactId>
-            <version>0.6</version>
         </dependency>
 
         <!--dependency>
@@ -114,39 +108,30 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
         </dependency>
-
         <dependency>
             <groupId>net.sf.json-lib</groupId>
             <artifactId>json-lib</artifactId>
             <classifier>jdk15</classifier>
         </dependency>
-
         <dependency>
             <groupId>com.thoughtworks.paranamer</groupId>
             <artifactId>paranamer</artifactId>
             <version>2.3</version>
         </dependency>
-
         <dependency>
             <groupId>net.htmlparser.jericho</groupId>
             <artifactId>jericho-html</artifactId>
             <version>3.1</version>
         </dependency>
-
-        <!--dependency>
+        <dependency>
             <groupId>weka</groupId>
             <artifactId>weka</artifactId>
             <version>3.7.3</version>
-        </dependency-->
-
+        </dependency>
         <dependency>
             <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_2.9.0</artifactId>
-            <version>1.7.1</version>
+            <artifactId>scalatest_2.9.2</artifactId>
         </dependency>
-
     </dependencies>
-
-
 
 </project>

@@ -20,7 +20,10 @@ package org.dbpedia.spotlight.spot;
 
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.SpottingException;
-import org.dbpedia.spotlight.model.*;
+import org.dbpedia.spotlight.model.SpotlightConfiguration;
+import org.dbpedia.spotlight.model.SurfaceForm;
+import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
+import org.dbpedia.spotlight.model.Text;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -87,28 +90,28 @@ The financial crunch in the U.S. threatens to undermine a foreign policy describ
 
     @Test
     public void assureNESpotterRuns() throws ConfigurationException, SpottingException {
-        Spotter ner = new NESpotter(config.getSpotterConfiguration().getOpenNLPModelDir());
+        Spotter ner = new NESpotter(config.getSpotterConfiguration().getOpenNLPModelDir() + "/"+config.getLanguage().toLowerCase()+"/", config.getI18nLanguageCode(), config.getSpotterConfiguration().getOpenNLPModelsURI());
         List<SurfaceFormOccurrence> spots = ner.extract(t);
         print(spots);
     }
 
     @Test
     public void correctNEOffsets() throws ConfigurationException, SpottingException {
-        Spotter ner = new NESpotter(config.getSpotterConfiguration().getOpenNLPModelDir());
+        Spotter ner = new NESpotter(config.getSpotterConfiguration().getOpenNLPModelDir() + "/"+config.getLanguage().toLowerCase()+"/", config.getI18nLanguageCode(), config.getSpotterConfiguration().getOpenNLPModelsURI());
         List<SurfaceFormOccurrence> spots = ner.extract(t);
         testOffsets(spots);
     }
 
     @Test
     public void assureOpenNLPNGramSpotterRuns() throws ConfigurationException, SpottingException {
-        OpenNLPNGramSpotter chunkSpotter = new OpenNLPNGramSpotter(config.getSpotterConfiguration().getOpenNLPModelDir());
+        OpenNLPNGramSpotter chunkSpotter = new OpenNLPNGramSpotter(config.getSpotterConfiguration().getOpenNLPModelDir() + "/"  + config.getLanguage().toLowerCase(), config.getI18nLanguageCode());
         List<SurfaceFormOccurrence> spots = chunkSpotter.extract(t);
         print(spots);
     }
 
     @Test
     public void correctChunkerOffsets() throws SpottingException, ConfigurationException {
-        OpenNLPNGramSpotter chunkSpotter = new OpenNLPNGramSpotter(config.getSpotterConfiguration().getOpenNLPModelDir());
+        OpenNLPNGramSpotter chunkSpotter = new OpenNLPNGramSpotter(config.getSpotterConfiguration().getOpenNLPModelDir()+ "/"  + config.getLanguage().toLowerCase(), config.getI18nLanguageCode());
         List<SurfaceFormOccurrence> spots = chunkSpotter.extract(t);
         System.err.println(financialCrunch);
         testOffsets(spots);

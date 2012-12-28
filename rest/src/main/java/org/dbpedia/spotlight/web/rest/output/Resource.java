@@ -18,9 +18,8 @@ package org.dbpedia.spotlight.web.rest.output;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
-import org.dbpedia.spotlight.model.DBpediaResource;
+import org.dbpedia.extraction.util.WikiUtil;
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence;
-import org.dbpedia.spotlight.string.ModifiedWikiUtil;
 
 @XStreamAlias("resource")
 public class Resource {
@@ -51,7 +50,7 @@ public class Resource {
 
     public void setUri(String uri) {
         this.uri = /*DBpediaResource.DBPEDIA_RESOURCE_PREFIX() +*/ uri;
-        this.label = ModifiedWikiUtil.wikiDecode(uri);
+        this.label = WikiUtil.wikiDecode(uri);
     }
 
     public void setContextualScore(double contextualScore) {

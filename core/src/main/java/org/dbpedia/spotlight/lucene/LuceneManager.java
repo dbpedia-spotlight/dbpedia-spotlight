@@ -33,10 +33,7 @@ import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.*;
 import org.apache.lucene.search.similar.MoreLikeThis;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.store.MMapDirectory;
-import org.apache.lucene.store.NIOFSDirectory;
+import org.apache.lucene.store.*;
 import org.apache.lucene.util.Version;
 import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.lucene.analysis.NGramAnalyzer;
@@ -149,7 +146,9 @@ public class LuceneManager {
     }
 
     public static IndexReader openIndexReader(Directory indexDir) throws IOException {
-             if (isLuceneDirectory(indexDir)) {
+             if (indexDir.getClass().equals(RAMDirectory.class)) {
+                 return openSingleReader(indexDir);
+             } else if (isLuceneDirectory(indexDir)) {
                  return openSingleReader(indexDir);
              } else {
                  return openMultiReader(indexDir);
@@ -158,7 +157,7 @@ public class LuceneManager {
 
          public static IndexReader openSingleReader(Directory indexDir) throws IOException {
              LOG.debug("Opening IndexSearcher and IndexReader for Lucene directory "+indexDir+" ...");
-             return IndexReader.open(indexDir, true); // read-only=true
+             return IndexReader.open(indexDir); // read-only=true
          }
 
 

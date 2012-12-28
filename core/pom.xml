@@ -136,7 +136,10 @@
     </properties>
 
     <dependencies>
-
+        <dependency>
+            <groupId>org.dbpedia.extraction</groupId>
+            <artifactId>core</artifactId>
+        </dependency>
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
@@ -214,7 +217,7 @@
         <dependency>
             <groupId>com.aliasi</groupId>
             <artifactId>lingpipe</artifactId>
-            <version>4.0.0</version>
+            <version>4.1.0</version>
         </dependency>
 
         <dependency>
@@ -236,21 +239,15 @@
         </dependency>
 
         <dependency>
-          <groupId>net.liftweb</groupId>
-          <artifactId>lift-json_2.9.1</artifactId>
-          <version>2.4</version>
+            <groupId>net.liftweb</groupId>
+            <artifactId>lift-json_2.9.2</artifactId>
+            <version>2.5-M1</version>
         </dependency>
 
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.8.2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.scalaj</groupId>
-            <artifactId>scalaj-collection_2.9.1</artifactId>
-            <version>1.2</version>
         </dependency>
 
         <dependency>
@@ -300,6 +297,52 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_2.9.2</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.esotericsoftware.kryo</groupId>
+            <artifactId>kryo</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>jdbm</groupId>
+            <artifactId>jdbm</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>trove</groupId>
+            <artifactId>trove</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.scalaj</groupId>
+            <artifactId>scalaj-collection_2.9.1</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.mahout</groupId>
+            <artifactId>mahout-collections</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>scala.ahocorasick</groupId>
+            <artifactId>spotter-aho</artifactId>
+            <version>0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.scalaz</groupId>
+            <artifactId>scalaz-core_${scala.compiler.version}</artifactId>
+            <version>6.0.4</version>
         </dependency>
 
     </dependencies>

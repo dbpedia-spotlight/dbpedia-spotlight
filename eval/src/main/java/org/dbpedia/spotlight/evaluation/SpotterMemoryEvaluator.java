@@ -24,8 +24,8 @@ import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.InitializationException;
 import org.dbpedia.spotlight.exceptions.SpottingException;
+import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.Text;
-import org.dbpedia.spotlight.spot.OpenNLPUtil;
 import org.dbpedia.spotlight.spot.Spotter;
 import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter;
 import org.dbpedia.spotlight.spot.opennlp.ExactSurfaceFormDictionary;
@@ -53,6 +53,16 @@ public class SpotterMemoryEvaluator {
 
         Spotter spotter = null;
 
+        //
+        if (args.length==0)
+        {
+            LOG.error("server.properties is requested to continue...");
+           return;
+        }
+
+        SpotlightConfiguration configuration = new SpotlightConfiguration(args[0]);
+
+
         int spotterNr = 0;
 
         switch(spotterNr) {
@@ -61,11 +71,11 @@ public class SpotterMemoryEvaluator {
                 SurfaceFormDictionary sfDictProbThresh3 = ExactSurfaceFormDictionary.fromLingPipeDictionary(dictionary, false);
                 System.out.println("Dictionary size: " + sfDictProbThresh3.size());
                 File stopwordsFile = new File(openNLPDir+"stopwords.txt");
-                spotter = OpenNLPChunkerSpotter.fromDir(openNLPDir,sfDictProbThresh3,stopwordsFile);
+                spotter = OpenNLPChunkerSpotter.fromDir(openNLPDir,configuration.getI18nLanguageCode(),sfDictProbThresh3,stopwordsFile);
                 break;
             }
             case 1: {
-                spotter = new LingPipeSpotter(dictionary);
+                spotter = new LingPipeSpotter(dictionary, configuration.getAnalyzer());
                 break;
             }
         }

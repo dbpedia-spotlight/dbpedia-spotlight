@@ -23,6 +23,7 @@ import org.dbpedia.extraction.sources.{Source, XMLSource}
 import org.apache.commons.logging.LogFactory
 import java.io.{File}
 import xml.{XML, Elem}
+import org.dbpedia.extraction.util.Language
 
 /**
  * Loads Occurrences from a wiki dump.
@@ -37,30 +38,31 @@ object AllOccurrenceSource
     val splitParagraphsRegex = """(\n|(<br\s?/?>))(</?\w+?\s?/?>)?(\n|(<br\s?/?>))+"""
     val splitDisambiguationsRegex = """\n"""
 
+    //TODO Add fromInputStream requires that XMLSource from the DEF supports that. Currently only supports fromFile and fromXML
 
     /**
      * Creates an DBpediaResourceOccurrence Source from a dump file.
      */
-    def fromXMLDumpFile(dumpFile : File) : OccurrenceSource =
+    def fromXMLDumpFile(dumpFile : File, language: Language) : OccurrenceSource =
     {
-        new AllOccurrenceSource(XMLSource.fromFile(dumpFile, _.namespace == WikiTitle.Namespace.Main))
+        new AllOccurrenceSource(XMLSource.fromFile(dumpFile, language, _.namespace == Namespace.Main))
     }
 
     /**
      * Creates an DBpediaResourceOccurrence Source from an XML root element.
      */
-    def fromXML(xml : Elem) : OccurrenceSource  =
+    def fromXML(xml : Elem, language: Language) : OccurrenceSource  =
     {
-        new AllOccurrenceSource(XMLSource.fromXML(xml))
+        new AllOccurrenceSource(XMLSource.fromXML(xml, language))
     }
 
     /**
      * Creates an DBpediaResourceOccurrence Source from an XML root element string.
      */
-    def fromXML(xmlString : String) : OccurrenceSource  =
+    def fromXML(xmlString : String, language: Language) : OccurrenceSource  =
     {
         val xml : Elem = XML.loadString("<dummy>" + xmlString + "</dummy>")  // dummy necessary: when a string "<page><b>text</b></page>" is given, <page> is the root tag and can't be found with the command  xml \ "page"
-        new AllOccurrenceSource(XMLSource.fromXML(xml))
+        new AllOccurrenceSource(XMLSource.fromXML(xml, language))
     }
 
     /**
@@ -85,7 +87,7 @@ object AllOccurrenceSource
                     val cleanSource = WikiMarkupStripper.stripEverythingButBulletPoints(wikiPage.source)
 
                     // parse the (clean) wiki page
-                    pageNode = wikiParser( wikiPage.copy(source = cleanSource) )
+                    pageNode = wikiParser( WikiPageUtil.copyWikiPage(wikiPage, cleanSource) )
 
                     val surfaceForm = new SurfaceForm(
                             wikiPage.title.decoded.replace(" (disambiguation)", "").replaceAll("""^(The|A) """, ""))   //TODO i18n
@@ -116,7 +118,7 @@ object AllOccurrenceSource
                     val cleanSource = WikiMarkupStripper.stripEverything(wikiPage.source)
 
                     // parse the (clean) wiki page
-                    pageNode = wikiParser( wikiPage.copy(source = cleanSource) )
+                    pageNode = wikiParser( WikiPageUtil.copyWikiPage(wikiPage, cleanSource) )
     
                     // split the page node into paragraphs
                     val paragraphs = NodeUtil.splitNodes(pageNode.children, splitParagraphsRegex)

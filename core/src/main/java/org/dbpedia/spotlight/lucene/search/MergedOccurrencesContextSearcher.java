@@ -61,7 +61,11 @@ public class MergedOccurrencesContextSearcher extends BaseSearcher implements Co
     long numDocs = super.getNumberOfEntries();
 
     public MergedOccurrencesContextSearcher(LuceneManager lucene) throws IOException {
-        super(lucene);
+        this(lucene,false);
+    }
+
+    public MergedOccurrencesContextSearcher(LuceneManager lucene, boolean inMemory) throws IOException {
+        super(lucene, inMemory);
         mSearcher.setSimilarity(lucene.contextSimilarity());
     }
 

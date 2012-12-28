@@ -18,7 +18,6 @@
 
 package org.dbpedia.spotlight.lucene.index
 
-import io.Source
 import java.io.File
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.string.ContextExtractor
@@ -26,6 +25,8 @@ import org.dbpedia.spotlight.util.IndexingConfiguration
 import org.dbpedia.spotlight.filter.occurrences.{RedirectResolveFilter, UriWhitelistFilter, ContextNarrowFilter}
 import org.dbpedia.spotlight.io._
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
+import org.dbpedia.spotlight.BzipUtils
+import org.dbpedia.extraction.util.Language
 
 /**
  * Saves Occurrences to a TSV file.
@@ -33,6 +34,7 @@ import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
  * - Redirects are resolved
  *
  * TODO think about having a two file output, one with (id, sf, uri) and another with (id, context)
+ * TODO allow reading from a bzipped wikiDump (needs upgrading our dependency on the DBpedia Extraction Framework)
  *
  * Used to be called SurrogatesUtil
  *
@@ -48,12 +50,19 @@ object ExtractOccsFromWikipedia {
         val targetFileName = args(1)
 
         val config = new IndexingConfiguration(indexingConfigFileName)
-        val wikiDumpFileName    = config.get("org.dbpedia.spotlight.data.wikipediaDump")
+        var wikiDumpFileName    = config.get("org.dbpedia.spotlight.data.wikipediaDump")
         val conceptURIsFileName = config.get("org.dbpedia.spotlight.data.conceptURIs")
         val redirectTCFileName  = config.get("org.dbpedia.spotlight.data.redirectsTC")
         val maxContextWindowSize  = config.get("org.dbpedia.spotlight.data.maxContextWindowSize").toInt
         val minContextWindowSize  = config.get("org.dbpedia.spotlight.data.minContextWindowSize").toInt
+        val languageCode = config.get("org.dbpedia.spotlight.language_i18n_code")
 
+
+        if (wikiDumpFileName.endsWith(".bz2")) {
+            LOG.warn("The DBpedia Extraction Framework does not support parsing from bz2 files. You can stop here, decompress and restart the process with an uncompressed XML.")
+            LOG.warn("If you do not stop the process, we will decompress the file into the /tmp/ directory for you.")
+            wikiDumpFileName = BzipUtils.extract(wikiDumpFileName)
+        }
 
         val conceptUriFilter = UriWhitelistFilter.fromFile(new File(conceptURIsFileName))
 
@@ -64,7 +73,7 @@ object ExtractOccsFromWikipedia {
 
         val filters = (conceptUriFilter :: redirectResolver :: contextNarrowFilter :: Nil)
 
-        val occSource : Traversable[DBpediaResourceOccurrence] = AllOccurrenceSource.fromXMLDumpFile(new File(wikiDumpFileName))
+        val occSource : Traversable[DBpediaResourceOccurrence] = AllOccurrenceSource.fromXMLDumpFile(new File(wikiDumpFileName), Language(languageCode))
         //val filter = new OccurrenceFilter(redirectsTC = redirectsTCMap, conceptURIs = conceptUrisSet, contextExtractor = narrowContext)
         //val occs = filter.filter(occSource)
 
