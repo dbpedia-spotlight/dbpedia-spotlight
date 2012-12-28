@@ -1,8 +1,8 @@
-package org.dbpedia.spotlight.feed.convert
+package org.dbpedia.spotlight.topical.convert
 
-import org.dbpedia.spotlight.db.model.WordIdDictionary
 import java.io.{File, FileWriter, PrintWriter}
 import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.db.model.WordIdDictionary
 
 /**
  * Utility class which converts vowpal wabbit input format + specified label file (1st line: comma-separated list of labels,

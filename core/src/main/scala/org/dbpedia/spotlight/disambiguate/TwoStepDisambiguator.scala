@@ -167,8 +167,7 @@ class TwoStepDisambiguator(val candidateSearcher: CandidateSearcher,
                             resource, //TODO this resource may contain the c(s,r) that can be used for conditional prob.
                             supportConfidence)
                     })
-                    .sortBy(o => o.contextualScore) //TODO should be final score
-                .reverse
+                    .sortBy(o => -o.contextualScore) //TODO should be final score
                 .take(k)
             acc + (aSfOcc -> candOccs)
         });

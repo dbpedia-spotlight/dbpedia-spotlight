@@ -58,7 +58,7 @@ class ProbabilityTrainingData(output: PrintWriter) extends TrainingDataOutputGen
 
 }
 
-class TopicalTrainingDataGenerator(output: PrintWriter)  extends TSVOutputGenerator(output) {
+/*class TopicalScoreDataGenerator(output: PrintWriter)  extends TSVOutputGenerator(output) {
 
 
     protected def extractFeatures(r: DBpediaResourceOccurrence) = {
@@ -83,3 +83,39 @@ class TopicalTrainingDataGenerator(output: PrintWriter)  extends TSVOutputGenera
     }
 
 }
+
+class TopicalFilterDataGenerator(output: PrintWriter)  extends TSVOutputGenerator(output) {
+
+    override def write(result: DisambiguationResult) {
+        if (firstLine)
+            header(List[String]("topicalScore","bestScore","difference","perplexity","keep"))
+
+        if(result.predictedOccurrences.size >= 2) {
+            val sum = result.predictedOccurrences.foldLeft(0.0)( _ + _.topicalScore)
+
+            val log2 = math.log(2)
+            val perplexity = math.pow(2,-result.predictedOccurrences.foldLeft(0.0)((acc,element)=> acc + element.topicalScore * math.log(element.topicalScore/sum)/log2)/sum)
+
+            val correct = result.predictedOccurrences.find(_.resource.equals(result.correctOccurrence.resource)).getOrElse(null)
+            if (correct==null)
+                return
+
+            var keep = true
+            var first = true
+            var bestScore = 0.0
+            result.predictedOccurrences.sortBy(-_.topicalScore).foreach(occ => {
+                if (first) {
+                    bestScore = occ.topicalScore
+                    first = false
+                }
+
+                val featureValues = List[String](occ.topicalScore.toString,bestScore.toString, (bestScore-occ.topicalScore).toString,perplexity.toString,keep.toString)
+                output.append(line(featureValues))
+
+                if (occ.resource.equals(result.correctOccurrence.resource))
+                    keep = false
+            })
+        }
+    }
+
+}   */

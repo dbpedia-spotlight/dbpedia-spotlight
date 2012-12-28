@@ -1,8 +1,11 @@
 package org.dbpedia.spotlight.feed
 
 import org.dbpedia.spotlight.model._
-import org.dbpedia.spotlight.feed.util.TopicInferrer
 import scala.Double
+import org.dbpedia.spotlight.db.model.TopicalPriorStore
+import org.dbpedia.spotlight.topical.util.TopicInferrer
+import org.apache.commons.logging.LogFactory
+import collection.mutable._
 
 /**
  * This feed actually transforms feed items from the wikipedia update stream, by inferring the topic of the text given the

@@ -1,8 +1,15 @@
-package org.dbpedia.spotlight.feed.index
+package org.dbpedia.spotlight.topical.index
 
 import java.io.{FileWriter, PrintWriter, File}
 import scala._
-import org.dbpedia.spotlight.feed.wikipedia.util.{WikipediaFlattenedHierarchyLoader, WikipediaHierarchyLoader}
+import org.dbpedia.spotlight.topical.wikipedia.util.{WikipediaFlattenedHierarchyLoader, WikipediaHierarchyLoader}
+import org.dbpedia.spotlight.util.IndexingConfiguration
+import org.dbpedia.spotlight.model.{DBpediaCategory, Topic}
+import org.dbpedia.spotlight.topical.util.TopicUtil
+import org.dbpedia.spotlight.io.{FileOccurrenceSource, FileOccsCategoriesSource}
+import org.apache.commons.logging.LogFactory
+import scala.collection.mutable._
+import scala.util.control.Breaks._
 
 
 /**
@@ -56,7 +63,7 @@ object GenerateOccTopicCorpus {
             corpusSize = Int.MaxValue
             parentFile.listFiles().foreach(topicFile => {
                 var lineNr = 0
-                Source.fromFile(topicFile).getLines().foreach(_ => lineNr += 1)
+                scala.io.Source.fromFile(topicFile).getLines().foreach(_ => lineNr += 1)
                 corpusSize = math.min(lineNr, corpusSize)
             })
         }
@@ -267,7 +274,7 @@ object GenerateOccTopicCorpus {
             splittedOccsDir.listFiles().foreach(topicFile => {
                 var lineNr = 0
                 breakable {
-                    Source.fromFile(topicFile).getLines().foreach(_ => {
+                    scala.io.Source.fromFile(topicFile).getLines().foreach(_ => {
                         lineNr += 1
                         if (lineNr > corpusSize)
                             break()
@@ -376,7 +383,7 @@ object GenerateOccTopicCorpus {
         splittedOccsDir.listFiles().foreach(topicFile => {
             val topic = new Topic(topicFile.getName.substring(0, topicFile.getName.length - 4))
             var lineNr = 0
-            Source.fromFile(topicFile).getLines().foreach(_ => lineNr += 1)
+            scala.io.Source.fromFile(topicFile).getLines().foreach(_ => lineNr += 1)
             sizes += (topic -> lineNr)
             corpusSize = math.min(lineNr, corpusSize)
         })

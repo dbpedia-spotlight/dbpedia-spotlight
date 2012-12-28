@@ -1,9 +1,9 @@
-package org.dbpedia.spotlight.feed.util
+package org.dbpedia.spotlight.topical.util
 
 import scala.collection.mutable._
 import org.dbpedia.spotlight.model.Topic
-import org.dbpedia.spotlight.db.model.{WordIdDictionary, TopicalStatInformation}
 import org.dbpedia.spotlight.util.TextVectorizer
+import org.dbpedia.spotlight.db.model.{TopicalStatInformation, WordIdDictionary}
 
 /**
  * This class converts textual input into word vectors applying transformations if needed. It also updates the dictionary
@@ -13,7 +13,7 @@ import org.dbpedia.spotlight.util.TextVectorizer
  * @param topicInfo
  */
 //TODO better name!!
-protected[feed] class TextVectorizerWithTransformation(private val dictionary: WordIdDictionary, private val topicInfo: TopicalStatInformation) {
+protected[topical] class TextVectorizerWithTransformation(private val dictionary: WordIdDictionary, private val topicInfo: TopicalStatInformation) {
 
     private val vectorizer = new TextVectorizer(dictionary.isPhonetic)
 

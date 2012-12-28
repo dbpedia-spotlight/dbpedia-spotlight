@@ -1,9 +1,10 @@
 package org.dbpedia.spotlight.db.model
 
 import java.io.{FileNotFoundException, File}
-import org.dbpedia.spotlight.model.DBpediaResource
+import org.dbpedia.spotlight.model.{Topic, DBpediaResource}
 import com.officedepot.cdap2.collection.CompactHashMap
 import io.Source
+import org.apache.commons.logging.LogFactory
 
 /**
  * this class loads topical vectors for resources into memory which where created by CalculateResourceTopicVectors

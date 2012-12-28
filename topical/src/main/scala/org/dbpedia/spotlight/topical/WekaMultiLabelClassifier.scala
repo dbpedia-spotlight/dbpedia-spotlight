@@ -1,9 +1,19 @@
-package org.dbpedia.spotlight.feed
+package org.dbpedia.spotlight.topical
 
-import org.dbpedia.spotlight.feed.util.{TextVectorizerWithTransformation, TopicUtil}
+import org.dbpedia.spotlight.db.model.{WordIdDictionary, TopicalStatInformation}
+import util.{TextVectorizerWithTransformation, TopicUtil}
+import org.dbpedia.spotlight.model.{TopicalClassificationConfiguration, Text, Topic}
 import java.io.{FilenameFilter, FileOutputStream, ObjectOutputStream, File}
-import scala._
+import scala.collection.mutable._
+import scala.Array
+import weka.core.converters.ArffLoader
+import weka.classifiers.bayes.NaiveBayesMultinomialUpdateable
+import weka.core.Instance
+import weka.filters.unsupervised.attribute.MakeIndicator
 import java.util.Properties
+import weka.filters.Filter
+import org.apache.commons.logging.LogFactory
+import scala.util.Random
 
 /**
  * Object that can train or load a WekaMultiLabelClassifier.
@@ -21,12 +31,6 @@ object WekaMultiLabelClassifier {
     def main(args: Array[String]) {
         trainModel(new File(args(0)), new File(args(1)))
     }
-
-    def fromProperties(properties: Properties): WekaMultiLabelClassifier =
-        new WekaMultiLabelClassifier(TopicUtil.getDictionary(properties.getProperty("org.dbpedia.spotlight.topic.dictionary"), properties.getProperty("org.dbpedia.spotlight.topic.dictionary.maxsize").toInt),
-            TopicUtil.getTopicInfo(properties.getProperty("org.dbpedia.spotlight.topic.categories.info")),
-            new File(properties.getProperty("org.dbpedia.spotlight.topic.model.path")))
-
 
     def trainModel(arff: File, modelOut: File) {
         modelOut.mkdirs()

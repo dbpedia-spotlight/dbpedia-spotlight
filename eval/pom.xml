@@ -52,7 +52,10 @@
                                 <arg>../conf/disambigonly.properties</arg>
                             </args-->
                             <jvmArgs>
-                                <jvmArg>-Xmx16G</jvmArg>
+                                <jvmArg>-Xmx32g</jvmArg>
+                                <jvmArg>-Duser.language=en</jvmArg>
+                                <jvmArg>-Duser.country=US</jvmArg>
+								 
                             </jvmArgs>
                         </launcher>
                         <launcher>
@@ -69,7 +72,7 @@
                             <id>spottereval</id>
                             <mainClass>org.dbpedia.spotlight.evaluation.SpotterEvaluatorPrecisionRecall</mainClass>
                             <jvmArgs>
-                                <jvmArg>${heapspace.Xmx.server}</jvmArg>
+                                <jvmArg>-Xmx16g</jvmArg>
                             </jvmArgs>
                         </launcher>
                     </launchers>
@@ -130,11 +133,11 @@
             <version>3.1</version>
         </dependency>
 
-        <dependency>
+        <!--dependency>
             <groupId>weka</groupId>
             <artifactId>weka</artifactId>
             <version>3.7.3</version>
-        </dependency>
+        </dependency-->
 
         <dependency>
             <groupId>org.scalatest</groupId>

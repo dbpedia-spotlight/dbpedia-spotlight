@@ -18,9 +18,15 @@
 
 package org.dbpedia.spotlight.disambiguate
 
-import java.lang.UnsupportedOperationException
 import org.dbpedia.spotlight.model._
 import scala._
+import scalaj.collection.Imports._
+import org.dbpedia.spotlight.exceptions.{SearchException, ItemNotFoundException, InputException}
+import com.officedepot.cdap2.collection.CompactHashSet
+import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.db.model.TopicalPriorStore
+import org.dbpedia.spotlight.topical.{MultiLabelClassifier, TopicalClassifier}
+import org.apache.lucene.search.Explanation
 
 /**
  * Uses only topic prior to decide on disambiguation.

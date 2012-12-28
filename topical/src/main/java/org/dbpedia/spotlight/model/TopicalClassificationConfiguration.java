@@ -5,8 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.db.model.TopicalStatInformation;
 import org.dbpedia.spotlight.db.model.WordIdDictionary;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
-import org.dbpedia.spotlight.feed.TopicDescription;
-import org.dbpedia.spotlight.feed.util.TopicUtil;
+import org.dbpedia.spotlight.topical.util.TopicUtil;
 import scala.collection.Seq;
 
 import java.io.File;
@@ -61,14 +60,14 @@ public class TopicalClassificationConfiguration {
         return descriptions;
     }
 
-    public TopicalStatInformation getTopicInfo() {
+    public TopicalStatInformation loadTopicInfo() {
         String path = config.getProperty(TOPICS_INFO);
         if(path.isEmpty())
             return null;
         return TopicUtil.getTopicInfo(path);
     }
 
-    public WordIdDictionary getDictionary() {
+    public WordIdDictionary loadDictionary() {
         String path = config.getProperty(DICTIONARY);
         if(path.isEmpty())
             return null;

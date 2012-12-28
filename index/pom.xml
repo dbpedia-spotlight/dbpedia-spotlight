@@ -20,7 +20,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    
+
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -48,51 +48,47 @@
 
                 <configuration>
                     <launchers>
-                      <launcher>
-                        <id>calculatevectors</id>
-                        <mainClass>org.dbpedia.spotlight.topic.CalculateResourceTopicVectors</mainClass>
-                        <jvmArgs>
-                          <jvmArg>-Xmx16G</jvmArg>
-                        </jvmArgs>
-                      </launcher>
-                      <launcher>
-                        <id>splitoccs</id>
-                        <mainClass>org.dbpedia.spotlight.topic.SplitOccsSemiSupervised</mainClass>
-                        <jvmArgs>
-                          <jvmArg>-Xmx2G</jvmArg>
-                        </jvmArgs>
-                      </launcher>
                         <launcher>
                             <id>enrichtypes</id>
                             <mainClass>org.dbpedia.spotlight.lucene.index.AddTypesToIndex</mainClass>
                             <jvmArgs>
-                                <jvmArg>-Xmx8G</jvmArg>
+                                <jvmArg>-Xmx6G</jvmArg>
                             </jvmArgs>
-                            <args>
+                            <!--args>
                                 <arg>../conf/indexing-3.8.properties</arg>
-                            </args>
+                            </args-->
                         </launcher>
                         <launcher>
                             <id>indexer</id>
                             <mainClass>org.dbpedia.spotlight.lucene.index.IndexMergedOccurrences</mainClass>
                             <jvmArgs>
-                                <jvmArg>-Xmx14G</jvmArg>
+                                <jvmArg>-Xmx6G</jvmArg>
                             </jvmArgs>
                             <args>
-                                <arg>../conf/indexing-3.8.properties</arg>
-                                <arg>/data/spotlight/3.7/occs.uriSorted.tsv</arg>
+                                <arg>../conf/indexing.properties</arg>
+                                <!--arg>/media/Dirks HDD/GSOC2012/sortedOccs</arg-->
                                 <arg>overwrite</arg>
+                            </args>
+                        </launcher>
+                        <launcher>
+                            <id>extractCandidateMap</id>
+                            <mainClass>org.dbpedia.spotlight.util.ExtractCandidateMap</mainClass>
+                            <jvmArgs>
+                                <jvmArg>-Xmx6G</jvmArg>
+                            </jvmArgs>
+                            <args>
+                                <arg>../conf/indexing.properties</arg>
                             </args>
                         </launcher>
                         <launcher>
                             <id>enrichsf</id>
                             <mainClass>org.dbpedia.spotlight.lucene.index.AddSurfaceFormsToIndex</mainClass>
                             <jvmArgs>
-                                <jvmArg>-Xmx14G</jvmArg>
+                                <jvmArg>-Xmx6G</jvmArg>
                             </jvmArgs>
-                            <args>
+                            <!--args>
                                 <arg>../conf/indexing-3.8.properties</arg>
-                            </args>
+                            </args-->
                         </launcher>
                         <launcher>
                             <id>topicsignatures</id>
@@ -110,40 +106,32 @@
                         <launcher>
                             <id>topicaltext</id>
                             <mainClass>org.dbpedia.spotlight.util.ExtractTopicalText</mainClass>
-			    <!--args>
-				<arg>/data/spotlight/enwiki-20101011-resolved-concepts.uriSorted.tsv</arg>
-				<arg>/home/pablo/Projects/DBpediaSpotlight/IavorJelev/uri_pairs/Politics2_uri_pairs.txt</arg>
-			    </args-->
+                            <!--args>
+                          <arg>/data/spotlight/enwiki-20101011-resolved-concepts.uriSorted.tsv</arg>
+                          <arg>/home/pablo/Projects/DBpediaSpotlight/IavorJelev/uri_pairs/Politics2_uri_pairs.txt</arg>
+                            </args-->
                             <jvmArgs>
                                 <jvmArg>-Xmx3G</jvmArg>
+                            </jvmArgs>
+                        </launcher>
+
+                        <launcher>
+                            <id>calculatevectors</id>
+                            <mainClass>org.dbpedia.spotlight.feed.index.CalculateResourceTopicVectors</mainClass>
+                            <jvmArgs>
+                                <jvmArg>-Xmx16G</jvmArg>
+                            </jvmArgs>
+                        </launcher>
+                        <launcher>
+                            <id>splitoccs</id>
+                            <mainClass>org.dbpedia.spotlight.feed.index.SplitOccsSemiSupervised</mainClass>
+                            <jvmArgs>
+                                <jvmArg>-Xmx2G</jvmArg>
                             </jvmArgs>
                         </launcher>
                     </launchers>
                 </configuration>
             </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-install-plugin</artifactId>
-                <version>${maven.install.plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>install-weka-jar</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <groupId>weka</groupId>
-                            <artifactId>weka</artifactId>
-                            <version>3.7.3</version>
-                            <packaging>jar</packaging>
-                            <file>${basedir}/../lib/weka-trunk.jar</file>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
         </plugins>
     </build>
 
@@ -167,7 +155,7 @@
             <artifactId>core</artifactId>
         </dependency>
 
-         <dependency>
+        <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
             <version>3.6.0</version>
@@ -194,11 +182,11 @@
             <version>3.6.0</version>
         </dependency>
 
-        <dependency>
+        <!--dependency>
             <groupId>weka</groupId>
             <artifactId>weka</artifactId>
             <version>3.7.3</version>
-        </dependency>
+        </dependency-->
 
 
     </dependencies>

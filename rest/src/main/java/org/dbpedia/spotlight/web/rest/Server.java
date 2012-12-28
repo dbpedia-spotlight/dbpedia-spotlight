@@ -31,7 +31,6 @@ import org.dbpedia.spotlight.model.SpotlightFactory;
 import org.dbpedia.spotlight.model.SpotterConfiguration;
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy;
 import org.dbpedia.spotlight.spot.Spotter;
-import org.dbpedia.spotlight.topic.TopicalClassifier;
 import org.dbpedia.spotlight.web.rest.wadl.ExternalUriWadlGeneratorConfig;
 
 import java.io.IOException;
@@ -61,9 +60,6 @@ public class Server {
     // Server will hold a few disambiguators that can be chosen from URL parameters
     protected static Map<DisambiguationPolicy,ParagraphDisambiguatorJ> disambiguators = new HashMap<SpotlightConfiguration.DisambiguationPolicy,ParagraphDisambiguatorJ>();
 
-    // server will hold topical classification model
-    protected static TopicalClassifier classifier;
-
     private static volatile Boolean running = true;
 
     static String usage = "usage: java -jar dbpedia-spotlight.jar org.dbpedia.spotlight.web.rest.Server [config file]"
@@ -72,8 +68,8 @@ public class Server {
     public static void main(String[] args) throws IOException, InterruptedException, URISyntaxException, ClassNotFoundException, InitializationException {
         //Initialization, check values
         try {
-            String configFileName = args[0];
-            configuration = new SpotlightConfiguration(configFileName);
+            String configurationPath = args[0];
+            configuration = new SpotlightConfiguration(configurationPath);
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("\n"+usage);
@@ -87,7 +83,6 @@ public class Server {
         final SpotlightFactory factory = new SpotlightFactory(configuration);
         setDisambiguators(factory.disambiguators());
         setSpotters(factory.spotters());
-        setClassificationModel(factory.topicalClassifier());
 
         LOG.info(String.format("Initiated %d disambiguators.",disambiguators.size()));
         LOG.info(String.format("Initiated %d spotters.",spotters.size()));
@@ -132,14 +127,6 @@ public class Server {
         threadSelector.stopEndpoint();
         System.exit(0);
 
-    }
-
-    private static void setClassificationModel(TopicalClassifier clfr) {
-        classifier = clfr;
-    }
-
-    public static TopicalClassifier getClassifier() {
-        return classifier;
     }
 
     private static void setSpotters(Map<SpotterPolicy,Spotter> s) throws InitializationException {
@@ -210,5 +197,4 @@ public class Server {
     public static SpotlightConfiguration getConfiguration() {
         return configuration;
     }
-
 }

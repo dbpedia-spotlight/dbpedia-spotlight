@@ -1,4 +1,4 @@
-package org.dbpedia.spotlight.feed.wikipedia.util
+package org.dbpedia.spotlight.topical.wikipedia.util
 
 import org.dbpedia.spotlight.model.DBpediaCategory
 import io.Source

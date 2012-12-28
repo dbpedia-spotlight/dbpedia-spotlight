@@ -1,7 +1,13 @@
-package org.dbpedia.spotlight.feed.index
+package org.dbpedia.spotlight.topical.index
 
 import scala.{Boolean, Double}
 import java.io.{FileWriter, PrintWriter, File}
+import org.dbpedia.spotlight.model.{Topic, TopicalClassificationConfiguration}
+import org.dbpedia.spotlight.topical.{TopicalClassifierLoader, WekaMultiLabelClassifier, WekaSingleLabelClassifier, TopicalClassifier}
+import org.dbpedia.spotlight.topical.util.TopicUtil
+import org.dbpedia.spotlight.io.FileOccurrenceSource
+import org.apache.commons.logging.LogFactory
+import collection.mutable._
 
 /**
  * This object takes any occs.tsv file and splits it with the specified topical classification configuration into topics to the output
@@ -23,20 +29,8 @@ object AssignTopicsToOccs {
     def main(args: Array[String]) {
         val config = new TopicalClassificationConfiguration(args(1))
 
-        val topicalClassifier:TopicalClassifier =
-        {
-            LOG.info("Loading topical classifier...")
-            val info = config.getTopicInfo
-            val dic = config.getDictionary
-            if (config.getClassifierType == "org.dbpedia.spotlight.topic.WekaSingleLabelClassifier") {
-                new WekaSingleLabelClassifier(dic, info, config.getModelFile, null, info.loaded)
-            }
-            if (config.getClassifierType == "org.dbpedia.spotlight.topic.WekaMultiLabelClassifier")
-                new WekaMultiLabelClassifier(dic, info, config.getModelFile, info.loaded)
 
-            null
-        }
-        assignTopics(new File(args(0)), topicalClassifier, args(2).toDouble, new File(args(3)), args(4).toBoolean)
+        assignTopics(new File(args(0)), TopicalClassifierLoader.fromConfig(config), args(2).toDouble, new File(args(3)), args(4).toBoolean)
     }
 
     def assignTopics(occsFile: File, model: TopicalClassifier, minimalConfidence: Double, output: File, append: Boolean) {

@@ -1,4 +1,4 @@
-package org.dbpedia.spotlight.feed.convert
+package org.dbpedia.spotlight.topical.convert
 
 import java.io._
 import scala.collection.mutable.Map
@@ -6,10 +6,10 @@ import scala.Predef._
 import org.apache.commons.cli._
 import scala._
 import org.apache.commons.logging.LogFactory
-import org.dbpedia.spotlight.feed.util._
-import org.dbpedia.spotlight.db.model.{WordIdDictionary, TopicalStatInformation}
+import org.dbpedia.spotlight.topical.util._
 import org.dbpedia.spotlight.util.TextVectorizer
-import org.dbpedia.spotlight.feed.Topic
+import org.dbpedia.spotlight.model.Topic
+import org.dbpedia.spotlight.db.model.{TopicalStatInformation, WordIdDictionary}
 
 /**
  * Iterates over a tsv-corpus file, where each line's first column is the category of the second column which is the

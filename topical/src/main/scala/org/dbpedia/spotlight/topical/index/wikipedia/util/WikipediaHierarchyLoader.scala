@@ -1,4 +1,4 @@
-package org.dbpedia.spotlight.feed.wikipedia.util
+package org.dbpedia.spotlight.topical.wikipedia.util
 
 import io.Source
 import org.apache.commons.logging.LogFactory

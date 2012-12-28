@@ -1,10 +1,13 @@
 package org.dbpedia.spotlight.web.rest;
 
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
+import org.dbpedia.spotlight.exceptions.InitializationException;
 import org.dbpedia.spotlight.model.TopicalClassificationConfiguration;
 import org.dbpedia.spotlight.topical.TopicalClassifier;
 import org.dbpedia.spotlight.topical.TopicalClassifierLoader;
-import org.dbpedia.spotlight.web.rest.Server;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
 
 /**
  * @author: dirk
@@ -13,20 +16,21 @@ import org.dbpedia.spotlight.web.rest.Server;
  */
 public class TopicalServer {
 
-
-    private static TopicalClassifier classifier = null;
-
-    public static TopicalClassifier getClassifier() {
-        if(classifier!=null)
-            return classifier;
-
+    public static void main(String[] args) throws InterruptedException, URISyntaxException, ClassNotFoundException, InitializationException, IOException {
         TopicalClassificationConfiguration conf = null;
         try {
-            conf = new TopicalClassificationConfiguration(Server.getConfigurationPath());
+            conf = new TopicalClassificationConfiguration(args[0]);
         } catch (ConfigurationException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
         classifier = TopicalClassifierLoader.fromConfig(conf);
+
+        Server.main(args);
+    }
+
+    private static TopicalClassifier classifier;
+
+    public static TopicalClassifier getClassifier() {
         return classifier;
     }
 }

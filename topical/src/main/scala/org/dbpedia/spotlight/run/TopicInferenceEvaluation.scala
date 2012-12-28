@@ -4,9 +4,9 @@ import scala.io.Source
 import collection.mutable._
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.topical.util.TopicInferrer
+import org.dbpedia.spotlight.feed.{FeedListener, Feed}
+import org.dbpedia.spotlight.feed.trec.TrecResourceAnnotationFeed
 import org.dbpedia.spotlight.db.model.HashMapTopicalPriorStore
-import org.dbpedia.spotlight.topical.{FeedListener, Feed}
-import org.dbpedia.spotlight.topical.trec.TrecResourceAnnotationFeed
 
 /**
  * Little evaluation for topical inference from annotations.

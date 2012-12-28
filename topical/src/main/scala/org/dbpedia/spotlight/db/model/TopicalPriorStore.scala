@@ -1,9 +1,10 @@
 package org.dbpedia.spotlight.db.model
 
-import org.dbpedia.spotlight.model.DBpediaResource
+import org.dbpedia.spotlight.model.{Topic, DBpediaResource}
 import io.Source
 import java.io.{IOException, File}
 import com.officedepot.cdap2.collection.CompactHashMap
+import org.apache.commons.logging.LogFactory
 
 /**
  *

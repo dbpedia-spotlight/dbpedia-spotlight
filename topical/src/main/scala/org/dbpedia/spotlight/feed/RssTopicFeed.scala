@@ -2,8 +2,13 @@ package org.dbpedia.spotlight.feed
 
 import java.net.URL
 import scala._
+import actors.TIMEOUT
 import java.util
-import org.dbpedia.spotlight.model.Topic
+import org.dbpedia.spotlight.model.{Text,RssItem, Topic}
+import util.Date
+import xml.{Node,XML}
+import org.apache.commons.logging.LogFactory
+import org.apache.commons.lang.time.DateUtils
 
 /**
  * Implementation of a topical RSS feed

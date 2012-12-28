@@ -1,8 +1,8 @@
-package org.dbpedia.spotlight.feed.util
+package org.dbpedia.spotlight.topical.util
 
 import org.dbpedia.spotlight.model.Topic
-import org.dbpedia.spotlight.db.model.{WordIdDictionary, TopicalStatInformation}
 import java.io.File
+import org.dbpedia.spotlight.db.model.{TopicalStatInformation, WordIdDictionary}
 
 /**
  * Utility class which loads and persists topics and which can also load a WordIdDictionary

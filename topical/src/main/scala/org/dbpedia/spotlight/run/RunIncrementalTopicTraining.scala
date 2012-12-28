@@ -2,13 +2,13 @@ package org.dbpedia.spotlight.run
 
 import org.dbpedia.spotlight.model._
 import xml.XML
-import org.dbpedia.spotlight.topical._
+import org.dbpedia.spotlight.feed._
 import org.dbpedia.spotlight.trainer.TopicLiveTrainer
 import java.io.{BufferedReader, InputStreamReader, File}
-import org.dbpedia.spotlight.db.model.HashMapTopicalPriorStore
 import org.apache.commons.logging.LogFactory
 import collection.mutable._
 import org.dbpedia.spotlight.topical.{TopicalClassifier, WekaMultiLabelClassifier, WekaSingleLabelClassifier}
+import org.dbpedia.spotlight.db.model.HashMapTopicalPriorStore
 
 
 object RunIncrementalTopicTraining {
@@ -30,8 +30,8 @@ object RunIncrementalTopicTraining {
         val config = new TopicalClassificationConfiguration(args(0))
 
         var classifier:TopicalClassifier = null
-        val info = config.getTopicInfo
-        val dic = config.getDictionary
+        val info = config.loadTopicInfo
+        val dic = config.loadDictionary
         if (config.getClassifierType == "org.dbpedia.spotlight.topic.WekaSingleLabelClassifier") {
             classifier = new WekaSingleLabelClassifier(dic, info, config.getModelFile, null, info.loaded)
         }

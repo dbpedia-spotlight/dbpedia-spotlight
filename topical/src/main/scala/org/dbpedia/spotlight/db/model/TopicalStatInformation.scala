@@ -3,7 +3,8 @@ package org.dbpedia.spotlight.db.model
 import io.Source
 import java.io._
 import scala.collection.mutable._
-import collection.mutable
+import org.dbpedia.spotlight.model.Topic
+import org.apache.commons.logging.LogFactory
 
 /**
  * Class that handles word count information produced during corpus generation.

@@ -1,11 +1,18 @@
-package org.dbpedia.spotlight.feed.index
+package org.dbpedia.spotlight.topical.index
 
 import scala.Double
 import java.io.{FileWriter, PrintWriter, File}
-import org.dbpedia.spotlight.feed.wikipedia.util.WikipediaFlattenedHierarchyLoader
+import org.dbpedia.spotlight.topical.wikipedia.util.WikipediaFlattenedHierarchyLoader
+import org.dbpedia.spotlight.util.IndexingConfiguration
+import org.dbpedia.spotlight.model.{DBpediaCategory, Topic}
+import org.dbpedia.spotlight.topical.util.TopicUtil
+import org.dbpedia.spotlight.io.FileOccsCategoriesSource
+import org.apache.commons.logging.LogFactory
+import scala.collection.mutable._
 
 
 /**
+ * @deprecated This is really not the best way to go...
  * This object takes the sorted occs file extracted by ExtractOccsFromWikipedia, a flattened hierarchy (created by either
  * FlattenHierarchyByClusters, FlattenHierarchySemiSupervised or FlattenWikipediaHierarchy)
  * and dbpedias sorted article_categories file (http://downloads.dbpedia.org/3.7/en/article_categories_en.nt.bz2) and
@@ -37,7 +44,7 @@ object SplitOccsByCategories {
         val flattenedHierarchy = WikipediaFlattenedHierarchyLoader.loadFlattenedHierarchy(new File(pathToFlattenedHierarchy))
 
         new File(outputPath).mkdirs()
-        val writers = Map[Topic, PrintWriter]()
+        var writers = Map[Topic, PrintWriter]()
         flattenedHierarchy.foreach {
             case (topic, categories) => {
                 writers += (topic ->

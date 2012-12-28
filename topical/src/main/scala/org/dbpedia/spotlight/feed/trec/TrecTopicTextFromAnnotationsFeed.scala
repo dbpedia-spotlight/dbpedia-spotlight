@@ -1,8 +1,13 @@
 package org.dbpedia.spotlight.feed.trec
 
-import org.dbpedia.spotlight.model.Topic
-import org.dbpedia.spotlight.feed.util.{TopicInferrer, TopicUtil}
+import org.dbpedia.spotlight.model.{Text, DBpediaResource, Topic}
+import org.dbpedia.spotlight.topical.util.{TopicInferrer, TopicUtil}
 import scala.Double
+import org.dbpedia.spotlight.feed.{Feed, DecoratorFeed}
+import org.dbpedia.spotlight.db.model.TopicalPriorStore
+import org.dbpedia.spotlight.topical.util.TopicInferrer
+import org.apache.commons.logging.LogFactory
+import collection.mutable._
 
 /**
  * This is a decorator for the TrecResourceAnnotationFeed (member textAnnotationFeed) class, which assigns, based on a set of resource annotations
@@ -24,6 +29,7 @@ class TrecTopicTextFromAnnotationsFeed(topicalPriors: TopicalPriorStore, feed: F
 
         val probabilities = topicInferrer.inferTopics(annotations, targets)
         probabilities.foreach {
+            case(topic,  probability)  =>
                 LOG.debug("Assigned topic: " + topic.getName + " -> " + probability)
         }
         if (probabilities.size > 0)

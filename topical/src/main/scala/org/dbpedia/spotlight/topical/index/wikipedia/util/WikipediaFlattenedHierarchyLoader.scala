@@ -1,11 +1,10 @@
-package org.dbpedia.spotlight.feed.wikipedia.util
+package org.dbpedia.spotlight.topical.wikipedia.util
 
 import org.apache.commons.logging.LogFactory
 import java.io.File
 import io.Source
-import org.dbpedia.spotlight.model.{DBpediaCategory}
+import org.dbpedia.spotlight.model.{Topic, DBpediaCategory}
 import scala.collection.mutable._
-import org.dbpedia.spotlight.feed.Topic
 
 /**
  * Utility object which loads the flattened hierarchy into memory.

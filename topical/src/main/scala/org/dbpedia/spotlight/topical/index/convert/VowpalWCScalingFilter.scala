@@ -1,4 +1,4 @@
-package org.dbpedia.spotlight.feed.convert
+package org.dbpedia.spotlight.topical.convert
 
 import java.io.{FileWriter, PrintWriter}
 import io.Source

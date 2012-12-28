@@ -1,13 +1,12 @@
 package org.dbpedia.spotlight.run
 
 import org.dbpedia.spotlight.model.{SpotlightFactory, SpotlightConfiguration}
-import org.apache.commons.lang.time.DateUtils
 import java.io.{BufferedReader, InputStreamReader, FileNotFoundException, File}
-import org.dbpedia.spotlight.db.model.HashMapTopicalPriorStore
-import org.apache.commons.logging.LogFactory
 import actors.Actor
-import org.dbpedia.spotlight.topical.trec.{TrecTopicTextFromAnnotationsFeed, TrecResourceAnnotationFeed, TrecCorpusFeed}
-import org.dbpedia.spotlight.trainer.{TrecLiveTargetEntityTrainer, TopicLiveTrainer}
+import org.dbpedia.spotlight.feed.trec.{TrecResourceAnnotationFeed, TrecCorpusFeed}
+import org.dbpedia.spotlight.trainer.{TrecLiveTargetEntityTrainer}
+import org.apache.commons.logging.LogFactory
+import org.apache.commons.lang.time.DateUtils
 
 
 object RunTrecKBA {

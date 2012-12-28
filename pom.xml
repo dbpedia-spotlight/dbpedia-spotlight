@@ -50,6 +50,7 @@
         <module>index</module>
         <module>live</module>
         <module>eval</module>
+        <module>topical</module>
     </modules>
 
     <build>
@@ -179,7 +180,7 @@
                             <file>${spotlight.basedir}/lib/cloud9.jar</file>
                         </configuration>
                     </execution>
-                    <execution>
+                    <!--execution>
                         <id>install-kea-goss-weka-jar</id>
                         <phase>install</phase>
                         <goals>
@@ -206,7 +207,7 @@
                             <packaging>jar</packaging>
                             <file>${spotlight.basedir}/lib/weka-trunk.jar</file>
                         </configuration>
-                    </execution>
+                    </execution-->
                 </executions>
             </plugin>
 
@@ -244,6 +245,19 @@
                 <artifactId>rest</artifactId>
                 <version>${dbpedia.spotlight.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.dbpedia.spotlight</groupId>
+                <artifactId>index</artifactId>
+                <version>${dbpedia.spotlight.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.dbpedia.spotlight</groupId>
+                <artifactId>live</artifactId>
+                <version>${dbpedia.spotlight.version}</version>
+            </dependency>
+
 
             <dependency>
                 <groupId>log4j</groupId>
@@ -380,7 +394,7 @@
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>
-                <version>1.0</version>
+                <version>1.4</version>
             </dependency>
 
             <dependency>

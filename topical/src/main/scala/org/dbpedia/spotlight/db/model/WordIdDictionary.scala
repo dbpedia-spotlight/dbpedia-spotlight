@@ -3,6 +3,7 @@ package org.dbpedia.spotlight.db.model
 import java.io._
 import collection.mutable._
 import io.Source
+import org.apache.commons.logging.LogFactory
 
 /**
  * Utility class which handles all word to id dictionary related functions.

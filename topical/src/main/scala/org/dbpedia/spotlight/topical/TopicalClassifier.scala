@@ -65,18 +65,18 @@ trait MultiLabelClassifier extends TopicalClassifier {
     def updateNegative(vector: Map[Int, Double], topic: Topic)
 }
 
-object TopicalClassifier {
+object TopicalClassifierLoader {
     private val LOG = LogFactory.getLog(getClass)
 
-    def fromConfig(config: TopicalClassificationConfiguration): WekaMultiLabelClassifier = {
+    def fromConfig(config: TopicalClassificationConfiguration): TopicalClassifier = {
         LOG.info("Loading topical classifier...")
         val info = config.loadTopicInfo
         val dic = config.loadDictionary
         if (config.getClassifierType == "org.dbpedia.spotlight.topic.WekaSingleLabelClassifier") {
-            new WekaSingleLabelClassifier(dic, info, config.getModelFile, null, info.loaded)
+            return new WekaSingleLabelClassifier(dic, info, config.getModelFile, null, info.loaded)
         }
         if (config.getClassifierType == "org.dbpedia.spotlight.topic.WekaMultiLabelClassifier")
-            new WekaMultiLabelClassifier(dic, info, config.getModelFile, info.loaded)
+            return new WekaMultiLabelClassifier(dic, info, config.getModelFile, info.loaded)
 
         null
     }

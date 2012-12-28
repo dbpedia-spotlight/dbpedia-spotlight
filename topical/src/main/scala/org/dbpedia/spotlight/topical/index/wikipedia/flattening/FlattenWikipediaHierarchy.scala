@@ -1,4 +1,4 @@
-package org.dbpedia.spotlight.feed.wikipedia.flattening
+package org.dbpedia.spotlight.topical.wikipedia.flattening
 
 import scala.collection.mutable.{Map, Set}
 import io._
@@ -6,10 +6,10 @@ import org.apache.commons.logging.LogFactory
 import actors.Actor
 import actors.Future
 import java.io.{File, FileWriter, PrintWriter}
-import org.dbpedia.spotlight.feed.wikipedia.util.WikipediaHierarchyLoader
+import org.dbpedia.spotlight.topical.wikipedia.util.WikipediaHierarchyLoader
 import org.dbpedia.spotlight.model.{DBpediaCategory}
 import org.dbpedia.spotlight.util.IndexingConfiguration
-import org.dbpedia.spotlight.feed.Topic
+import org.dbpedia.spotlight.model.Topic
 
 /**
  * Object which iterates over the whole {@link http://downloads.dbpedia.org/3.7/en/skos_categories_en.nt.bz2 wikipedia_hierarchy}

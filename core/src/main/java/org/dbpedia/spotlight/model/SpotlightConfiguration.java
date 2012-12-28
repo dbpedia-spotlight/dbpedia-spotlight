@@ -148,12 +148,6 @@ public class SpotlightConfiguration {
         return disambiguatorConfiguration;
     }
 
-    protected TopicalClassificationConfiguration classificationConfiguration;
-
-    public TopicalClassificationConfiguration getTopicalClassificationConfiguration() {
-        return classificationConfiguration;
-    }
-
     public Analyzer getAnalyzer() {
         return analyzer;
     }
@@ -176,8 +170,6 @@ public class SpotlightConfiguration {
 		spotterConfiguration = new SpotterConfiguration(fileName);
 
         disambiguatorConfiguration = new DisambiguatorConfiguration(fileName);
-
-        classificationConfiguration = new TopicalClassificationConfiguration(fileName);
 
 		//set spotterFile, indexDir...
 		contextIndexDirectory = disambiguatorConfiguration.contextIndexDirectory;

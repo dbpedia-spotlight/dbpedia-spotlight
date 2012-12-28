@@ -23,12 +23,8 @@ import org.dbpedia.spotlight.disambiguate._
 import java.io.{PrintWriter, File}
 import org.dbpedia.spotlight.corpus._
 
-import scalaj.collection.Imports._
-
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.filter.occurrences.{UriWhitelistFilter, RedirectResolveFilter, OccurrenceFilter}
-import scala.Some
-import org.dbpedia.spotlight.db.model.{HashMapResourceTopicStore, HashMapTopicalPriorStore}
 import scala.Some
 
 /**
@@ -87,7 +83,7 @@ object EvaluateParagraphDisambiguator {
                 });
                 outputs.foreach(_.flush)
             } catch {
-                case e: Exception => LOG.error(e)
+                case e: Exception => LOG.error(e.printStackTrace())
             }
 
             nZeros += zeros
@@ -133,28 +129,9 @@ object EvaluateParagraphDisambiguator {
         //val paragraphs = AnnotatedTextSource
         //                    .fromOccurrencesFile(new File(testFileName))
 
-        val redirectTCFileName  = if (args.size>1) args(1) else "data/redirects_tc.tsv" //produced by ExtractCandidateMap
-        val conceptURIsFileName  = if (args.size>2) args(2) else "data/conceptURIs.list" //produced by ExtractCandidateMap
+        val redirectTCFileName  = if (args.size>1) args(1) else "D:/dirk/data/Wikipedia/output/redirects_tc.tsv" //produced by ExtractCandidateMap
+        val conceptURIsFileName  = if (args.size>2) args(2) else "D:/dirk/data/Wikipedia/output/conceptURIs.list" //produced by ExtractCandidateMap
 
-        //val default : Disambiguator = new DefaultDisambiguator(config)
-        //val test : Disambiguator = new GraphCentralityDisambiguator(config)
-
-        val factory = new SpotlightFactory(config)
-
-        //val topics = HashMapTopicalPriorStore.fromDir(new File("data/topics"))
-        val disambiguators = Set(//new TopicalDisambiguator(factory.candidateSearcher,HashMapTopicalPriorStore, factory.topicalClassifier),
-                                 new TopicBiasedDisambiguator(factory.candidateSearcher,factory.contextSearcher,
-                                     HashMapTopicalPriorStore,null, 0.3, factory.topicalClassifier)
-                                 //new TwoStepDisambiguator(factory.candidateSearcher,factory.contextSearcher)
-                                 //, new CuttingEdgeDisambiguator(factory),
-                                 //new PageRankDisambiguator(factory)
-                                )
-
-        val sources = List(//AidaCorpus.fromFile(new File("/home/pablo/eval/aida/gold/CoNLL-YAGO.tsv")),
-                           //new SmallContextOccurrencesCorpus(MilneWittenCorpus.fromDirectory(new File("/home/dirk/Dropbox/eval/wikifiedStories"))) )
-                            MilneWittenCorpus.fromDirectory(new File("/home/dirk/Dropbox/eval/wikifiedStories")))
-                           //PredoseCorpus.fromFile(new File("/home/pablo/eval/predose/predose_annotations.tsv"))
-                           // CSAWCorpus.fromDirectory(new File("/home/dirk/eval/corpus/csaw")))
 
         val noNils = new OccurrenceFilter {
             def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
@@ -167,18 +144,38 @@ object EvaluateParagraphDisambiguator {
                 }
             }
         }
-
         val occFilters = List(UriWhitelistFilter.fromFile(new File(conceptURIsFileName)),
-                              RedirectResolveFilter.fromFile(new File(redirectTCFileName)),
-                              noNils)
+            RedirectResolveFilter.fromFile(new File(redirectTCFileName)),
+            noNils)
+
+        //val default : Disambiguator = new DefaultDisambiguator(config)
+        //val test : Disambiguator = new GraphCentralityDisambiguator(config)
+
+        val factory = new SpotlightFactory(config)
+
+        val disambiguators = Set(//new TopicalDisambiguator(factory.candidateSearcher,HashMapTopicalPriorStore, factory.topicalClassifier),
+                     //new TopicalFilteredDisambiguator(factory.candidateSearcher,factory.contextSearcher,
+                     //    HashMapTopicalPriorStore,null, 0.3, factory.topicalClassifier)
+                     new TwoStepDisambiguator(factory.candidateSearcher,factory.contextSearcher)
+                     //, new CuttingEdgeDisambiguator(factory),
+                     //new PageRankDisambiguator(factory)
+                    )
+
+        val sources = List(//AidaCorpus.fromFile(new File("/home/pablo/eval/aida/gold/CoNLL-YAGO.tsv")),
+                           //new SmallContextOccurrencesCorpus(MilneWittenCorpus.fromDirectory(new File("/home/dirk/Dropbox/eval/wikifiedStories"))) )
+                            MilneWittenCorpus.fromDirectory(new File("C:/Users/dirk/Dropbox/eval/wikifiedStories")))
+                           //PredoseCorpus.fromFile(new File("/home/pablo/eval/predose/predose_annotations.tsv"))
+                           // CSAWCorpus.fromDirectory(new File("/home/dirk/eval/corpus/csaw")))
 
         sources.foreach( paragraphs => {
           val testSourceName = paragraphs.name
           disambiguators.foreach( d => {
               val dName = d.name.replaceAll("""[.*[?/<>|*:\"{\\}].*]""","_")
-              val tsvOut = new TopicalTrainingDataGenerator(new PrintWriter("%s-%s-%s.pareval.log".format(testSourceName,dName,EvalUtils.now())))
               //val arffOut = new TrainingDataOutputGenerator()
-              val outputs = List(tsvOut)
+              val outputs = List(   new ProbabilityTrainingData(new PrintWriter("%s-%s-%s.pareval.log".format(testSourceName,dName,EvalUtils.now())))    )
+
+                  //new TopicalScoreDataGenerator(new PrintWriter("%s-%s-%s.scores.pareval.log".format(testSourceName,dName,EvalUtils.now()))),
+                  //                  new TopicalFilterDataGenerator(new PrintWriter("%s-%s-%s.filter.pareval.log".format(testSourceName,dName,EvalUtils.now()))))
               evaluate(paragraphs, d, outputs, occFilters)
               outputs.foreach(_.close)
           })

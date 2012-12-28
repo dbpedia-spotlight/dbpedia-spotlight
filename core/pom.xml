@@ -97,7 +97,7 @@
                             <file>/home/pablo/workspace/lucene-3.6.0/build/contrib/queries/lucene-queries-3.6-SNAPSHOT.jar</file>
                         </configuration>
                     </execution-->
-                    <execution>
+                    <!--execution>
                         <id>install-kea-jar</id>
                         <phase>generate-resources</phase>
                         <goals>
@@ -124,7 +124,7 @@
                             <packaging>jar</packaging>
                             <file>${basedir}/../lib/weka-trunk.jar</file>
                         </configuration>
-                    </execution>
+                    </execution-->
                 </executions>
             </plugin>
 

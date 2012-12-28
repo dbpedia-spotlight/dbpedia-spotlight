@@ -1,16 +1,16 @@
-package org.dbpedia.spotlight.feed.wikipedia.flattening
+package org.dbpedia.spotlight.topical.wikipedia.flattening
 
-import org.dbpedia.spotlight.model.{DBpediaCategory}
+import org.dbpedia.spotlight.model.{TopicDescription, Topic, DBpediaCategory}
 import org.apache.commons.logging.LogFactory
-import org.dbpedia.spotlight.feed.wikipedia.util.WikipediaFlattenedHierarchyLoader
+import org.dbpedia.spotlight.topical.wikipedia.util.WikipediaFlattenedHierarchyLoader
 import java.io.{File, FileWriter, PrintWriter}
 import scala.collection.mutable._
-import org.dbpedia.spotlight.db.model.WordIdDictionary
 import org.dbpedia.spotlight.util.TextVectorizer
-import org.dbpedia.spotlight.feed.convert.VowpalToArff
-import org.dbpedia.spotlight.feed.{TopicDescription, Topic, WekaSingleLabelClassifier}
+import org.dbpedia.spotlight.topical.convert.VowpalToArff
+import org.dbpedia.spotlight.topical.WekaSingleLabelClassifier
 import java.util.regex.Pattern
 import org.dbpedia.spotlight.util.IndexingConfiguration
+import org.dbpedia.spotlight.db.model.WordIdDictionary
 
 /**
  * This object calculates topic assignments for dbpedia categories. Those topics and their specific keywords (important) are defined

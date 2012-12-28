@@ -29,7 +29,7 @@ import org.dbpedia.spotlight.lucene.similarity.{JCSTermCache, CachedInvCandFreqS
 import com.aliasi.sentences.IndoEuropeanSentenceModel
 import org.dbpedia.spotlight.disambiguate._
 import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter
-import java.io.File
+import java.io.{IOException, FileNotFoundException, File}
 import org.dbpedia.spotlight.spot._
 import opennlp.{SurfaceFormDictionary, ProbabilisticSurfaceFormDictionary, OpenNLPChunkerSpotter}
 import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters
@@ -42,7 +42,6 @@ import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy
 import org.dbpedia.spotlight.lucene.search.{LuceneCandidateSearcher, MergedOccurrencesContextSearcher}
 import com.aliasi.util.AbstractExternalizable
 import com.aliasi.dict.{DictionaryEntry, Dictionary}
-import java.util
 
 /**
  * This class contains many of the "defaults" for DBpedia Spotlight.
@@ -56,6 +55,31 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
 
     val analyzer = configuration.analyzer
     assert(analyzer!=null)
+
+    /* moved all to module "topical"
+    var topicalClassifier:TopicalClassifier = null
+
+    {
+        val config = configuration.getTopicalClassificationConfiguration
+        LOG.info("Loading topical classifier...")
+        val info = config.getTopicInfo
+        val dic = config.getDictionary
+        if (dic!=null && info!=null) {
+            if (config.getClassifierType == "org.dbpedia.spotlight.topic.WekaSingleLabelClassifier") {
+                topicalClassifier = new WekaSingleLabelClassifier(dic, info, config.getModelFile, null, info.loaded)
+            }
+            if (config.getClassifierType == "org.dbpedia.spotlight.topic.WekaMultiLabelClassifier")
+                topicalClassifier = new WekaMultiLabelClassifier(dic, info, config.getModelFile, info.loaded)
+        }
+        else
+            LOG.info("Topical classifier could not be loaded!")
+    }
+
+    try {
+        HashMapTopicalPriorStore.fromDir(configuration.getTopicalClassificationConfiguration.getPriorsDir)
+    } catch {
+        case e:IOException  => LOG.warn("No topical priors were loaded!")
+    }  */
 
     val contextIndexDir = LuceneManager.pickDirectory(new File(configuration.getContextIndexDirectory))
     val contextLuceneManager = new LuceneManager.CaseInsensitiveSurfaceForms(contextIndexDir) // use this if all surface forms in the index are lower-cased
@@ -93,7 +117,6 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
 
     val spotters = new java.util.HashMap[SpotterConfiguration.SpotterPolicy,Spotter]()
     val disambiguators = new java.util.HashMap[SpotlightConfiguration.DisambiguationPolicy,ParagraphDisambiguatorJ]()
-    val topicalClassifier = configuration.getTopicalClassificationConfiguration.getClassifier
 
     //populate
     LOG.info("Initiating spotters...")

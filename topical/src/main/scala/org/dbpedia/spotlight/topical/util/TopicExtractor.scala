@@ -16,7 +16,7 @@
  *
  */
 
-package org.dbpedia.spotlight.feed.util
+package org.dbpedia.spotlight.topical.util
 
 import org.apache.commons.httpclient.{HttpStatus, DefaultHttpMethodRetryHandler, HttpClient}
 import org.apache.commons.httpclient.params.HttpMethodParams

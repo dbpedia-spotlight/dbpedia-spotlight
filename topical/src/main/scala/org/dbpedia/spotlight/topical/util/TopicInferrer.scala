@@ -1,8 +1,8 @@
-package org.dbpedia.spotlight.feed.util
+package org.dbpedia.spotlight.topical.util
 
-import org.dbpedia.spotlight.db.model.TopicalPriorStore
 import org.dbpedia.spotlight.model.{Topic, DBpediaResource}
 import scala.collection.mutable._
+import org.dbpedia.spotlight.db.model.TopicalPriorStore
 
 /**
  * This class is able to infer topics based on number of occurred resources within a context and optionally also the main resource(s)

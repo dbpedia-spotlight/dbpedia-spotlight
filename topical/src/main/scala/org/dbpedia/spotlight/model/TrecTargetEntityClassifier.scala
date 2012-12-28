@@ -1,11 +1,10 @@
 package org.dbpedia.spotlight.model
 
 import java.io.File
-import org.apache.commons.logging.LogFactory
-import org.dbpedia.spotlight.topical.util.TopicUtil
-import org.dbpedia.spotlight.topical.{WekaMultiLabelClassifier}
 import collection.mutable._
-import org.dbpedia.spotlight.model.Topic
+import org.dbpedia.spotlight.topical.util.TopicUtil
+import org.dbpedia.spotlight.topical.WekaMultiLabelClassifier
+import org.apache.commons.logging.LogFactory
 
 /**
  * This is a wrapper class for for a topical multilabel classifier, which serves as a classifier is able to calculate
@@ -14,6 +13,7 @@ import org.dbpedia.spotlight.model.Topic
  * @param modelDir Place to save the whole model
  * @param targetEntities Set of DbpediaResources, that are considered as possible labels/classes.
  */
+class TrecTargetEntityClassifier(val modelDir: File, var targetEntities: Set[DBpediaResource] = null) {
 
     private val LOG = LogFactory.getLog(getClass)
 

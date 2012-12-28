@@ -1,9 +1,15 @@
-package org.dbpedia.spotlight.feed.index
+package org.dbpedia.spotlight.topical.index
 
-import scala._
 import java.io.{FileWriter, PrintWriter, File}
 import org.dbpedia.spotlight.model._
-import org.dbpedia.spotlight.feed.convert.TextCorpusToInputCorpus
+import org.dbpedia.spotlight.topical.convert.TextCorpusToInputCorpus
+import org.dbpedia.spotlight.util.IndexingConfiguration
+import org.dbpedia.spotlight.topical.WekaSingleLabelClassifier
+import org.dbpedia.spotlight.db.model.{TopicalStatInformation, WordIdDictionary}
+import org.dbpedia.spotlight.topical.util.TopicUtil
+import org.dbpedia.spotlight.io.FileOccurrenceSource
+import org.apache.commons.logging.LogFactory
+import collection.mutable._
 
 /**
  * This object splits the occs file into several topical occs files, by first creating an initial split, which is done
@@ -88,7 +94,7 @@ object SplitOccsSemiSupervised {
         tmpDir.listFiles().foreach(_.delete())
     }
 
-    def load(articleCats: File, descriptions: Seq[TopicDescription]): Map[DBpediaResource, Set[Topic]] = {
+    def load(articleCats: File, descriptions: collection.Seq[TopicDescription]): Map[DBpediaResource, Set[Topic]] = {
         val assignments = Map[DBpediaResource, Set[Topic]]()
 
         val categoryAssignments = descriptions.foldLeft(Map[DBpediaCategory, Set[Topic]]())((acc, description) =>
@@ -104,7 +110,7 @@ object SplitOccsSemiSupervised {
                 result
             })))
 
-        Source.fromFile(articleCats).getLines().foreach(line => {
+        scala.io.Source.fromFile(articleCats).getLines().foreach(line => {
             val split = line.split(" ")
             val category = new DBpediaCategory(split(2).substring(1, split(2).length - 1))
             if (categoryAssignments.contains(category)) {

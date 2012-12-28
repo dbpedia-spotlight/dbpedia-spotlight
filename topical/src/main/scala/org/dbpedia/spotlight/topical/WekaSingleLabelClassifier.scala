@@ -1,10 +1,16 @@
-package org.dbpedia.spotlight.feed
+package org.dbpedia.spotlight.topical
 
-import org.dbpedia.spotlight.feed.util.{TopicUtil, TextVectorizerWithTransformation}
-import scala._
+import org.dbpedia.spotlight.db.model.{WordIdDictionary, TopicalStatInformation}
+import util.{TopicUtil, TextVectorizerWithTransformation}
+import weka.classifiers.bayes.NaiveBayesMultinomialUpdateable
 import java.io._
+import org.apache.commons.logging.{LogFactory, Log}
 import java.util.{ArrayList, Properties}
-import _root_.weka.core._
+import weka.core._
+import scala.collection.mutable._
+import org.dbpedia.spotlight.model.{Topic, Text}
+import weka.core.converters.ArffLoader
+import weka.classifiers.{UpdateableClassifier, Classifier}
 
 /**
  * Object that can train or load a WekaSingleLabelClassifier.

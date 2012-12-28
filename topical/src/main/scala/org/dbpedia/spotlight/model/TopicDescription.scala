@@ -2,7 +2,7 @@ package org.dbpedia.spotlight.model
 
 import java.net.URL
 import java.io.File
-import scala._
+import xml.XML
 
 /**
  * Loads a topic description xml file.<br>

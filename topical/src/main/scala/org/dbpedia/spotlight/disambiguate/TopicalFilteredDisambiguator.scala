@@ -18,10 +18,15 @@
 
 package org.dbpedia.spotlight.disambiguate
 
-import java.lang.UnsupportedOperationException
 import scala._
 import org.dbpedia.spotlight.model._
-import java.io.StringReader
+import scalaj.collection.Imports._
+import org.dbpedia.spotlight.topical.TopicalClassifier
+import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
+import org.dbpedia.spotlight.db.model.{ResourceTopicsStore, TopicalPriorStore}
+import com.officedepot.cdap2.collection.CompactHashSet
+import org.dbpedia.spotlight.exceptions.ItemNotFoundException
+import org.apache.commons.logging.LogFactory
 
 /**
  *

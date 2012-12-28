@@ -6,6 +6,7 @@ import org.apache.commons.logging.LogFactory
 import scala.collection.mutable._
 import xml.XML
 import java.io.{FileWriter, PrintWriter, File}
+import org.dbpedia.spotlight.topical.{MultiLabelClassifier, TopicalClassifier}
 
 /**
  * This class represents a trainer for a topical classifier. It basically consumes different Feeds that are topically
