@@ -62,7 +62,7 @@ object TopicInferenceEvaluation {
 
         }
 
-        val annotationFeed = new TrecResourceAnnotationFeed(factory.annotator(), corpusFeed)
+        val annotationFeed = new TrecResourceAnnotationFeed(factory.paragraphAnnotator(), corpusFeed)
 
         var done2 = false
         val listener = new FeedListener[(Set[DBpediaResource], Text, Map[DBpediaResource, Double])]() {

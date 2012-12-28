@@ -1,8 +1,6 @@
 package org.dbpedia.spotlight.model
 
-import scala.Array
-import scala.collection.mutable._
-import org.dbpedia.spotlight.string.ModifiedWikiUtil
+import org.dbpedia.extraction.util.WikiUtil
 
 /**
  * String wrapper class for dbpedia categories
@@ -12,33 +10,32 @@ import org.dbpedia.spotlight.string.ModifiedWikiUtil
  */
 class DBpediaCategory(private var category: String) {
 
-  category = category.replace(DBpediaCategory.DBPEDIA_CATEGORY_PREFIX, "")
+    category = category.replace(DBpediaCategory.DBPEDIA_CATEGORY_PREFIX, "")
 
-  category = if (ModifiedWikiUtil.isEncoded(category)) {
-                ModifiedWikiUtil.spaceToUnderscore(category).capitalize
-              }
-              else {
-                ModifiedWikiUtil.wikiEncode(category)
-              }
+    category = if (isEncoded(category)) category else WikiUtil.wikiEncode(category)
 
-  def getFullUri = DBpediaCategory.DBPEDIA_CATEGORY_PREFIX + category
+    //CAREFUL: Copied from DBpediaResource
+    private def isEncoded(s: String) = """%[0-9a-fA-F][0-9a-fA-F]""".r.findFirstIn(s) != None
 
-  def getCategory = category
 
-  override def equals(that : Any) = {
-    that match {
-      case t: DBpediaCategory => this.category.equals(t.category)
-      case _ => false
+    def getFullUri = DBpediaCategory.DBPEDIA_CATEGORY_PREFIX + category
+
+    def getCategory = category
+
+    override def equals(that: Any) = {
+        that match {
+            case t: DBpediaCategory => this.category.equals(t.category)
+            case _ => false
+        }
     }
-  }
 
-  override def hashCode() : Int = {
-    (if (category != null) category.hashCode else 0)
-  }
+    override def hashCode(): Int = {
+        (if (category != null) category.hashCode else 0)
+    }
 
-  override def toString() : String = category.toString
+    override def toString(): String = category.toString
 }
 
 object DBpediaCategory {
-  val DBPEDIA_CATEGORY_PREFIX = "http://dbpedia.org/resource/Category:"
+    val DBPEDIA_CATEGORY_PREFIX = "http://dbpedia.org/resource/Category:"
 }

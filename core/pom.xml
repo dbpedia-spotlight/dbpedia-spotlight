@@ -33,107 +33,10 @@
     <packaging>jar</packaging>
     <name>DBpedia Spotlight Core</name>
 
-    <build>
-        <plugins>
-            <plugin>
-
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-install-plugin</artifactId>
-                <version>${maven.install.plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>install-nx-parser-jar</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <groupId>org.semanticweb.yars</groupId>
-                            <artifactId>nx-parser</artifactId>
-                            <version>1.1</version>
-                            <packaging>jar</packaging>
-                            <file>${basedir}/../lib/nxparser-1.1.jar</file>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>install-lingpipe-jar</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <groupId>com.aliasi</groupId>
-                            <artifactId>lingpipe</artifactId>
-                            <version>4.0.0</version>
-                            <packaging>jar</packaging>
-                            <file>${basedir}/../lib/lingpipe-4.0.0.jar</file>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>install-cloud9-jar</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <groupId>edu.umd</groupId>
-                            <artifactId>cloud9</artifactId>
-                            <version>SNAPSHOT</version>
-                            <packaging>jar</packaging>
-                            <file>${basedir}/../lib/cloud9.jar</file>
-                        </configuration>
-                    </execution>
-                    <!--execution>
-                        <id>install-lucene-queries-jar</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <groupId>org.apache.lucene</groupId>
-                            <artifactId>lucene-queries</artifactId>
-                            <version>3.6.0</version>
-                            <packaging>jar</packaging>
-                            <file>/home/pablo/workspace/lucene-3.6.0/build/contrib/queries/lucene-queries-3.6-SNAPSHOT.jar</file>
-                        </configuration>
-                    </execution-->
-                    <!--execution>
-                        <id>install-kea-jar</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <groupId>edu.umd</groupId>
-                            <artifactId>cloud9</artifactId>
-                            <version>SNAPSHOT</version>
-                            <packaging>jar</packaging>
-                            <file>${basedir}/../lib/kea-goss-5.0-weka-3.7.3-SNAPSHOT.jar</file>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>install-weka-jar</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <groupId>weka</groupId>
-                            <artifactId>weka</artifactId>
-                            <version>3.7.3</version>
-                            <packaging>jar</packaging>
-                            <file>${basedir}/../lib/weka-trunk.jar</file>
-                        </configuration>
-                    </execution-->
-                </executions>
-            </plugin>
-
-        </plugins>
-    </build>
-
     <properties>
         <spotlight.basedir>${project.basedir}/..</spotlight.basedir>
     </properties>
+
 
     <dependencies>
         <dependency>

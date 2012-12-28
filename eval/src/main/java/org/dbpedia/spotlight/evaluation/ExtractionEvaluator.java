@@ -179,7 +179,8 @@ public class ExtractionEvaluator {
 										 File annotationsFolder) throws IOException {
 
 
-		DefaultParagraphAnnotator annotator = spotlightFactory.annotator();
+		DefaultParagraphAnnotator annotator = null;
+		//spotlightFactory.annotator(); --> HACK: DefaultAnnotator is not DefaultParagraphAnnotator
 
 		int i = 0;
 		for(Text text : evaluationCorpus.getTexts()){

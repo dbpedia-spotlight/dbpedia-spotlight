@@ -12,7 +12,7 @@ abstract class Feed[T <: Product](synchronous: Boolean)(implicit m: Manifest[T])
     private var listeners = Set[FeedListener[_]]()
 
     def subscribe(listener: FeedListener[_]) {
-        listeners += (listener)
+         listeners += (listener)
     }
 
     def unSubscribe(listener: FeedListener[_]) {

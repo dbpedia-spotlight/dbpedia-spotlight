@@ -68,7 +68,7 @@ object RunTrecKBA {
 
         //Feed setup
         val corpusFeed = new TrecCorpusFeed(corpusDir, startDate, endDate, trecJudgmentsFile, clear)
-        val annotationFeed = new TrecResourceAnnotationFeed(factory.annotator(), corpusFeed)
+        val annotationFeed = new TrecResourceAnnotationFeed(factory.paragraphAnnotator(), corpusFeed)
         annotationFeed.startFeed
         //val trecTopicTextFeed = new TrecTopicTextFromAnnotationsFeed(HashMapTopicalPriorStore, annotationFeed.textAnnotationFeed)
         //trecTopicTextFeed.start

@@ -29,26 +29,27 @@ import java.lang.{Short, String}
  */
 
 trait OntologyType extends Serializable {
-  def getFullUri: String
-  def typeID: String = "OntologyTypeUnknown"
+    def getFullUri: String
 
-  var id: Short = 0.toShort
+    def typeID: String = "OntologyTypeUnknown"
 
-  override def hashCode() : Int = {
-    typeID.hashCode()
-  }
+    var id: Short = 0.toShort
 
-  override def equals(other : Any) : Boolean = {
-      if (other==null)
-           false
-      else
-        other match {
-            case o: OntologyType => o.typeID != null && o.typeID.equals(typeID)
-            case _ => false;
-        }
-  }
+    override def hashCode(): Int = {
+        typeID.hashCode()
+    }
 
-  override def toString = typeID
+    override def equals(other: Any): Boolean = {
+        if (other == null)
+            false
+        else
+            other match {
+                case o: OntologyType => o.typeID != null && o.typeID.equals(typeID)
+                case _ => false;
+            }
+    }
+
+    override def toString = typeID
 }
 
 
@@ -56,21 +57,22 @@ trait OntologyType extends Serializable {
  * Types from the DBpedia ontology (hierarchical)
  */
 
-class DBpediaType(var name : String) extends OntologyType {
+class DBpediaType(var name: String) extends OntologyType {
 
     name = name.replace(DBpediaType.DBPEDIA_ONTOLOGY_PREFIX, "")
 
-    name = name.replace("DBpedia:","")
+    name = name.replace("DBpedia:", "")
 
     name = name.capitalize
 
     name = name.replaceAll(" ([a-zA-Z])", "$1".toUpperCase).trim
 
-    def equals(that : DBpediaType) : Boolean = {
+    def equals(that: DBpediaType): Boolean = {
         name.equalsIgnoreCase(that.name)
     }
 
     override def getFullUri = DBpediaType.DBPEDIA_ONTOLOGY_PREFIX + name
+
     override def typeID = new StringBuilder("DBpedia:").append(name).toString()
 
 }
@@ -87,50 +89,54 @@ object DBpediaType {
 
 class FreebaseType(val domain: String, val typeName: String) extends OntologyType {
 
-  override def getFullUri = FreebaseType.FREEBASE_RDF_PREFIX + domain + "." + typeName
-  override def typeID = {
-    var typeID = "Freebase:/" + domain
+    override def getFullUri = FreebaseType.FREEBASE_RDF_PREFIX + domain + "." + typeName
 
-    if(typeName != null) {
-      typeID += "/" + typeName
+    override def typeID = {
+        var typeID = "Freebase:/" + domain
+
+        if (typeName != null) {
+            typeID += "/" + typeName
+        }
+
+        typeID
     }
-
-    typeID
-  }
 }
 
 object FreebaseType {
 
-  def fromTypeString(typeString: String) : FreebaseType = {
-    val typeParts: Array[String] = typeString.replace(FREEBASE_RDF_PREFIX, "").split("/")
+    def fromTypeString(typeString: String): FreebaseType = {
+        val typeParts: Array[String] = typeString.replace(FREEBASE_RDF_PREFIX, "").split("/")
 
-    var domain: String = null
-    var theType: String = null
-    typeParts.length match {
-      case 0 =>
-      case 1 => domain = typeParts(0)
-      case 2 => domain = typeParts(1)
-      case _ => {domain = typeParts(1); theType = typeParts(2)}
+        var domain: String = null
+        var theType: String = null
+        typeParts.length match {
+            case 0 =>
+            case 1 => domain = typeParts(0)
+            case 2 => domain = typeParts(1)
+            case _ => {
+                domain = typeParts(1); theType = typeParts(2)
+            }
+        }
+
+        new FreebaseType(domain, theType)
     }
 
-    new FreebaseType(domain, theType)
-  }
-
-  val FREEBASE_RDF_PREFIX = "http://rdf.freebase.com/ns"
+    val FREEBASE_RDF_PREFIX = "http://rdf.freebase.com/ns"
 }
 
-class SchemaOrgType(var name : String) extends OntologyType {
+class SchemaOrgType(var name: String) extends OntologyType {
 
     name = name.replace(SchemaOrgType.SCHEMAORG_PREFIX, "")
 
-    def equals(that : SchemaOrgType) : Boolean = {
+    def equals(that: SchemaOrgType): Boolean = {
         name.equalsIgnoreCase(that.name)
     }
 
     override def getFullUri = SchemaOrgType.SCHEMAORG_PREFIX + name
+
     override def typeID = "Schema:" + name
 
-   // override def toString = "%s/%s".format(SchemaOrgType.SCHEMAORG_PREFIX,name)
+    // override def toString = "%s/%s".format(SchemaOrgType.SCHEMAORG_PREFIX,name)
 
 }
 

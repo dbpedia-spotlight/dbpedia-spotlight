@@ -8,6 +8,7 @@
         <artifactId>spotlight</artifactId>
         <groupId>org.dbpedia.spotlight</groupId>
         <version>0.6</version>
+        <relativePath>..</relativePath>
     </parent>
 
     <artifactId>live</artifactId>
@@ -23,9 +24,9 @@
         <plugins>
 
             <plugin>
-                <groupId>org.scala-tools</groupId>
-                <artifactId>maven-scala-plugin</artifactId>
-
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>${scala.maven.plugin.version}</version>
                 <configuration>
                     <launchers>
                         <launcher>
