@@ -52,7 +52,7 @@
         <module>index</module>
         <module>eval</module>
         <module>live</module>
-        <module>topical</module>
+        <!--module>topical</module-->
 
     </modules>
 
