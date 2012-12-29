@@ -1,7 +1,9 @@
 package org.dbpedia.spotlight.web.rest
 
-import org.dbpedia.spotlight.model.{DBpediaResource, Text}
+import org.dbpedia.spotlight.model._
 import net.liftweb.json._
+import java.io.File
+import org.apache.commons.logging.LogFactory
 
 /**
  * Object to serialize our objects and lists of objects
@@ -10,6 +12,8 @@ import net.liftweb.json._
  */
 
 object OutputSerializer {
+
+    private val LOG = LogFactory.getLog(getClass)
 
     def tagsAsJson(text: Text, tags: Seq[(DBpediaResource,Double)]) = {
         import net.liftweb.json._

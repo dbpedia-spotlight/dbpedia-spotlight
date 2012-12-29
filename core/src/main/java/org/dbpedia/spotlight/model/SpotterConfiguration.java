@@ -235,7 +235,7 @@ public class SpotterConfiguration {
         List<SpotterPolicy> policies = new ArrayList<SpotterPolicy>();
         String requestedSpotters = config.getProperty("org.dbpedia.spotlight.spot.spotters", "").trim();
         List<String> spotterNames = Arrays.asList(requestedSpotters.split(","));
-        if (requestedSpotters=="" || spotterNames.size()==0) throw new ConfigurationException("Could not find 'org.dbpedia.spotlight.spot.spotters'. Please specify a comma-separated list of spotters to be loaded.");
+        if (requestedSpotters.isEmpty() || spotterNames.size()==0) throw new ConfigurationException("Could not find 'org.dbpedia.spotlight.spot.spotters'. Please specify a comma-separated list of spotters to be loaded.");
         for (String s: spotterNames) {
             try {
                 policies.add(SpotterPolicy.valueOf(s.trim()));

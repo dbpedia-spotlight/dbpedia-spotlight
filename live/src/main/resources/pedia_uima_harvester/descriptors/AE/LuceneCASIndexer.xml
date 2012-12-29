@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?><!--
+    Copyright 2012 Tamas Farkas, MTA SZTAKI, Hungary
+   
+       Licensed under the Apache License, Version 2.0 (the "License");
+       you may not use this file except in compliance with the License.
+       You may obtain a copy of the License at
+   
+           http://www.apache.org/licenses/LICENSE-2.0
+   
+       Unless required by applicable law or agreed to in writing, software
+       distributed under the License is distributed on an "AS IS" BASIS,
+       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+       See the License for the specific language governing permissions and
+       limitations under the License.
+ -->
+
+<analysisEngineDescription xmlns="http://uima.apache.org/resourceSpecifier">
+  <frameworkImplementation>org.apache.uima.java</frameworkImplementation>
+  <primitive>true</primitive>
+  <annotatorImplementationName>org.apache.uima.lucas.consumer.LuceneCASIndexer</annotatorImplementationName>
+  <processingResourceMetaData>
+    <name>LuceneCASIndexer</name>
+    <description/>
+    <version>0.6</version>
+    <vendor>apache</vendor>
+    <configurationParameters>
+      <configurationParameter>
+        <name>mappingFile</name>
+        <description>path to the mapping file</description>
+        <type>String</type>
+        <multiValued>false</multiValued>
+        <mandatory>true</mandatory>
+      </configurationParameter>
+      <configurationParameter>
+        <name>SofaNames</name>
+        <description>The Sofa names the annotator should work on. If no
+					names are specified, the annotator works on the
+					default sofa.</description>
+        <type>String</type>
+        <multiValued>true</multiValued>
+        <mandatory>false</mandatory>
+      </configurationParameter>
+    </configurationParameters>
+    <configurationParameterSettings>
+      <nameValuePair>
+        <name>mappingFile</name>
+        <value>
+          <string>lucas_xml/lucas.xml</string>
+        </value>
+      </nameValuePair>
+    </configurationParameterSettings>
+    <typeSystemDescription/>
+    <typePriorities/>
+    <fsIndexCollection/>
+    <capabilities>
+      <capability>
+        <inputs/>
+        <outputs/>
+        <languagesSupported/>
+      </capability>
+    </capabilities>
+    <operationalProperties>
+      <modifiesCas>false</modifiesCas>
+      <multipleDeploymentAllowed>false</multipleDeploymentAllowed>
+      <outputsNewCASes>false</outputsNewCASes>
+    </operationalProperties>
+  </processingResourceMetaData>
+  <resourceManagerConfiguration>
+    <externalResources>
+      <externalResource>
+        <name>LucasIndexWriterProvider</name>
+        <description>Provides a index writer instance.</description>
+        <fileResourceSpecifier>
+          <fileUrl>file:IndexWriter.properties</fileUrl>
+        </fileResourceSpecifier>
+        <implementationName>org.apache.uima.lucas.indexer.IndexWriterProviderImpl</implementationName>
+      </externalResource>
+    </externalResources>
+    <externalResourceBindings>
+      <externalResourceBinding>
+        <key>indexWriterProvider</key>
+        <resourceName>LucasIndexWriterProvider</resourceName>
+      </externalResourceBinding>
+    </externalResourceBindings>
+  </resourceManagerConfiguration>
+</analysisEngineDescription>
