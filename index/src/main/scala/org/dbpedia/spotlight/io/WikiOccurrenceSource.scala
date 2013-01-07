@@ -20,7 +20,7 @@ import org.dbpedia.spotlight.string.WikiMarkupStripper
 import org.dbpedia.spotlight.model._
 import org.dbpedia.extraction.wikiparser._
 import org.dbpedia.extraction.sources.{MemorySource, WikiPage, Source, XMLSource}
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import java.io.{PrintStream, FileOutputStream, File}
 import xml.{XML, Elem}
 import org.dbpedia.extraction.util.Language
@@ -31,7 +31,7 @@ import org.dbpedia.extraction.util.Language
 
 object WikiOccurrenceSource
 {
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     // split at paragraphs 
     val splitDocumentRegex = """(\n|(<br\s?/?>))(</?\w+?\s?/?>)?(\n|(<br\s?/?>))+"""

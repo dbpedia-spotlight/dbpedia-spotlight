@@ -21,7 +21,7 @@ import org.dbpedia.spotlight.lucene.LuceneManager
 import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
 import java.io.File
 import org.dbpedia.spotlight.lucene.similarity._
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import org.apache.lucene.search.Explanation
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.lucene.disambiguate.{MixedWeightsDisambiguator, MergedOccurrencesDisambiguator}
@@ -40,7 +40,7 @@ import scala.collection.JavaConversions._
  */
 class DefaultDisambiguator(val contextSearcher: ContextSearcher) extends Disambiguator with ParagraphDisambiguator  {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     LOG.info("Initializing disambiguator object ...")
 

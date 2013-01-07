@@ -21,7 +21,7 @@ package org.dbpedia.spotlight.util
 import org.dbpedia.spotlight.model.DBpediaResource
 import java.net.{Socket, URLEncoder}
 import java.io.{BufferedReader, InputStreamReader, PrintStream}
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 
 
 /**
@@ -32,7 +32,7 @@ import org.apache.commons.logging.LogFactory
  */
 class YahooBossSearcher(val webSearchConfig: WebSearchConfiguration) {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     // load configured properties
     val language = webSearchConfig.get("org.dbpedia.spotlight.yahoo.language", "en")

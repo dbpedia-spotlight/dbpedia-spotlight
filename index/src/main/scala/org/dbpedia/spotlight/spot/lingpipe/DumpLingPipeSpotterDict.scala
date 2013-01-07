@@ -4,10 +4,10 @@ import org.dbpedia.spotlight.spot.Spotter
 import java.io.{PrintWriter, File}
 import org.dbpedia.spotlight.model.SpotlightConfiguration
 import scala.collection.JavaConversions._
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 
 object DumpLingPipeSpotterDict {
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
     def main(args : Array[String]) {
         val configuration: SpotlightConfiguration = new SpotlightConfiguration(args(0))
         val spotter = new LingPipeSpotter(new File(configuration.getSpotterConfiguration.getSpotterFile), configuration.getAnalyzer)

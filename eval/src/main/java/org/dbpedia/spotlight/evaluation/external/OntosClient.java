@@ -18,8 +18,8 @@ package org.dbpedia.spotlight.evaluation.external;
 
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.*;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dbpedia.spotlight.exceptions.AnnotationException;
 import org.dbpedia.spotlight.exceptions.AuthenticationException;
 import org.dbpedia.spotlight.model.DBpediaResource;
@@ -54,7 +54,7 @@ public class OntosClient extends AnnotationClient {
 
     //public static final String dbpediaPrefix = "http://dbpedia.org/resource/";
 
-    public Log LOG = LogFactory.getLog(this.getClass());
+    public Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     // Create an instance of HttpClient.
     HttpClient client = new HttpClient();

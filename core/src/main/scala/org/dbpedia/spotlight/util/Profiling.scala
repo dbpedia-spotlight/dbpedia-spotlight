@@ -29,7 +29,7 @@
  */
 package org.dbpedia.spotlight.util
 
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 
 /**
 From: http://www.matthiasmann.de/content/view/25/26/
@@ -49,7 +49,7 @@ Now instead of adding a lot of timing code to your application we can simple do:
  */
 object Profiling {
 
-    val LOG = LogFactory.getLog(this.getClass)
+    val LOG = LoggerFactory.getLogger(this.getClass)
 
     def timed[T](report: Long=>Unit)(body: =>T) = {
         val start = System.nanoTime

@@ -1,7 +1,7 @@
 package org.dbpedia.spotlight.util
 
 import org.dbpedia.spotlight.exceptions.ConfigurationException
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import java.util.Properties
 import java.io.{FileInputStream, File}
 
@@ -15,7 +15,7 @@ import java.io.{FileInputStream, File}
 
 class WebSearchConfiguration (val configFile: File) {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     def this(fileName: String) {
         this(new File(fileName))

@@ -41,7 +41,7 @@ import org.dbpedia.spotlight.util.IndexingConfiguration
 import java.io.File
 import io.Source
 import org.dbpedia.spotlight.model.DBpediaResource
-import org.apache.commons.logging.{LogFactory, Log}
+import org.slf4j.{LoggerFactory, Logger}
 import org.dbpedia.spotlight.exceptions.ConfigurationException
 
 /**
@@ -53,7 +53,7 @@ import org.dbpedia.spotlight.exceptions.ConfigurationException
 
 object AddCountsToIndex {
 
-    val LOG: Log = LogFactory.getLog(this.getClass)
+    val LOG = LoggerFactory.getLogger(this.getClass)
 
     def uri2count(line : String) = {
         if (line.trim != null) {

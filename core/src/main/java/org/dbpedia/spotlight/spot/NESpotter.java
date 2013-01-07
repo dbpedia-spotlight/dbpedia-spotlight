@@ -27,8 +27,8 @@ import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.model.BaseModel;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.SpottingException;
 import org.dbpedia.spotlight.model.Feature;
@@ -52,7 +52,7 @@ import java.util.Map;
  * @author pablomendes  adjustments to logging, class rename, integrated with the rest of architecture
  */
 public class NESpotter implements Spotter {
-    private final Log LOG = LogFactory.getLog(this.getClass());
+    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
     protected static BaseModel sentenceModel = null;
     protected static Map<String, Object[]> entityTypes = new HashMap<String, Object[]>() {
         {

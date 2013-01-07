@@ -16,8 +16,8 @@
 
 package org.dbpedia.spotlight.lucene.similarity;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.DefaultSimilarity;
@@ -36,7 +36,7 @@ import java.io.IOException;
  */
 public class CachedInvCandFreqSimilarity extends DefaultSimilarity implements CachedSimilarity {
 
-    Log LOG = LogFactory.getLog(CachedInvCandFreqSimilarity.class);
+    Logger LOG = LoggerFactory.getLogger(CachedInvCandFreqSimilarity.class);
 
     TermCache termCache;   // Will cache a bitSet for each term in the context
     public CachedInvCandFreqSimilarity(TermCache cache) {

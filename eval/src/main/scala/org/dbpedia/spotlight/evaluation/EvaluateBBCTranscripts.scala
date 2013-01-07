@@ -18,7 +18,7 @@
 
 package org.dbpedia.spotlight.evaluation
 
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import scala.io.Source
 import org.dbpedia.spotlight.util.AnnotationFilter
 import org.dbpedia.spotlight.string.WikiLinkParser
@@ -42,7 +42,7 @@ import scala._
  */
 object EvaluateBBCTranscripts {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     val configuration = new SpotlightConfiguration("conf/bbc.properties");
     //    val confidence = 0.0;

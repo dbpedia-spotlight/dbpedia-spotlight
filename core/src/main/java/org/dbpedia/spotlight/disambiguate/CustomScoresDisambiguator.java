@@ -18,8 +18,8 @@ package org.dbpedia.spotlight.disambiguate;
 
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.Doubles;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.store.FSDirectory;
 import org.dbpedia.spotlight.exceptions.InputException;
@@ -43,7 +43,7 @@ import java.util.*;
  */
 public class CustomScoresDisambiguator implements Disambiguator {
 
-    Log LOG = LogFactory.getLog(this.getClass());
+    Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     Map<String,Double> scores = new HashMap<String,Double>();
 

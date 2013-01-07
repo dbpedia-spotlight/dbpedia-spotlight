@@ -18,8 +18,8 @@
 
 package org.dbpedia.spotlight.lucene.index;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.store.FSDirectory;
 import org.dbpedia.spotlight.exceptions.IndexException;
@@ -45,7 +45,7 @@ import java.util.Scanner;
  */
 public class CandidateIndexer extends BaseIndexer<Candidate> {
 
-    final static Log LOG = LogFactory.getLog(BaseIndexer.class);
+    final static Logger LOG = LoggerFactory.getLogger(BaseIndexer.class);
 
     /**
      * Constructs a surrogate indexer that follows the policy specified by the {@link org.dbpedia.spotlight.lucene.LuceneManager} implementation used.

@@ -18,7 +18,7 @@ package org.dbpedia.spotlight.util
 
 import io.Source
 import scala.collection.JavaConversions._
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import java.util.{LinkedHashSet, LinkedList}
 import java.io.{InputStream, File}
 import org.semanticweb.yars.nx.parser.NxParser
@@ -35,7 +35,7 @@ import org.dbpedia.spotlight.model._
 
 object TypesLoader
 {
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     def getTypesMap(typeDictFile : File) : Map[String, List[OntologyType]] = {
         LOG.info("Loading types map...")

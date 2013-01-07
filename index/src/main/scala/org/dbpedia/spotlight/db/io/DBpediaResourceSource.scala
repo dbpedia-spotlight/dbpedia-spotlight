@@ -10,7 +10,7 @@ import scala.collection.mutable.HashSet
 import org.dbpedia.spotlight.lucene.index.ExtractOccsFromWikipedia._
 import org.dbpedia.spotlight.filter.occurrences.RedirectResolveFilter
 import org.dbpedia.spotlight.db.WikipediaToDBpediaClosure
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import scala.Predef._
 import scala.Array
 import org.dbpedia.spotlight.model._
@@ -29,7 +29,7 @@ import org.dbpedia.spotlight.exceptions.NotADBpediaResourceException
 
 object DBpediaResourceSource {
 
-  private val LOG = LogFactory.getLog(this.getClass)
+  private val LOG = LoggerFactory.getLogger(this.getClass)
 
   def fromTSVInputStream(
     conceptList: InputStream,

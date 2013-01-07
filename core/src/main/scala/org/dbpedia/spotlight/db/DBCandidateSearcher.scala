@@ -1,7 +1,7 @@
 package org.dbpedia.spotlight.db
 
 import model.{ResourceStore, SurfaceFormStore, CandidateMapStore}
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.exceptions.SurfaceFormNotFoundException
 

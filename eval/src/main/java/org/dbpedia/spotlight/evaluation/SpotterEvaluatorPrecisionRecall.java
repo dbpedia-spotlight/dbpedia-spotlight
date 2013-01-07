@@ -20,8 +20,8 @@ package org.dbpedia.spotlight.evaluation;
 
 import com.aliasi.sentences.IndoEuropeanSentenceModel;
 import net.sf.json.JSONException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.InitializationException;
 import org.dbpedia.spotlight.exceptions.SpottingException;
@@ -55,7 +55,7 @@ import java.util.*;
  */
 public class SpotterEvaluatorPrecisionRecall {
 
-    private final static Log LOG = LogFactory.getLog(SpotterEvaluatorPrecisionRecall.class);
+    private final static Logger LOG = LoggerFactory.getLogger(SpotterEvaluatorPrecisionRecall.class);
 
 	public static void main(String[] args) throws IOException, JSONException, ConfigurationException, InitializationException, org.json.JSONException {
 
@@ -76,7 +76,7 @@ public class SpotterEvaluatorPrecisionRecall {
 		 * Base:
 		 */
 		SelectorResult baseResult = getDatasetBaseResult(evaluationCorpus);
-		LOG.info(baseResult);
+		LOG.info(baseResult.toString());
 
         LOG.info("Reformatting.");
         Map<SurfaceFormOccurrence, AnnotatedSurfaceFormOccurrence> goldSurfaceFormOccurrences = new HashMap<SurfaceFormOccurrence, AnnotatedSurfaceFormOccurrence>();

@@ -21,8 +21,8 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dbpedia.spotlight.exceptions.AnnotationException;
 import org.dbpedia.spotlight.model.*;
 
@@ -58,7 +58,7 @@ import java.util.Set;
  */
 public class OpenCalaisClient extends AnnotationClient {
 
-    Log LOG = LogFactory.getLog(this.getClass());
+    Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     private static String url ="http://api.opencalais.com/tag/rs/enrich";
     // Create an instance of HttpClient.

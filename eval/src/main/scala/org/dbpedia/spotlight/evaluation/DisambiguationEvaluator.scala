@@ -16,7 +16,7 @@
 
 package org.dbpedia.spotlight.evaluation
 
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import org.dbpedia.spotlight.model._
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.util.Profiling._
@@ -30,7 +30,7 @@ import java.io.{File, PrintStream}
 class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurrence], val disambiguatorSet : Set[Disambiguator], val outputFileName : String)
 {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
     var totalOccurrenceCount = 0
     var totalCorrectResourceMatches = 0
 

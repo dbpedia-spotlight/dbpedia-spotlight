@@ -8,7 +8,7 @@ import scala.Predef._
 import com.esotericsoftware.kryo.serializers.{DefaultArraySerializers, JavaSerializer}
 import java.lang.{System, Short, String}
 import collection.mutable.HashMap
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import com.esotericsoftware.kryo.serializers.DefaultSerializers.KryoSerializableSerializer
 import com.esotericsoftware.kryo.Kryo
 import org.dbpedia.spotlight.db.model.{TokenTypeStore, ResourceStore}
@@ -24,7 +24,7 @@ import org.dbpedia.spotlight.db.model.{TokenTypeStore, ResourceStore}
 abstract class MemoryStore extends Serializable {
 
   @transient
-  protected val LOG = LogFactory.getLog(this.getClass)
+  protected val LOG = LoggerFactory.getLogger(this.getClass)
 
   /**
    * Method called after the store has been deserialized.
@@ -42,7 +42,7 @@ abstract class MemoryStore extends Serializable {
  */
 object MemoryStore {
 
-  private val LOG = LogFactory.getLog(this.getClass)
+  private val LOG = LoggerFactory.getLogger(this.getClass)
 
   val kryos = HashMap[String, Kryo]()
 

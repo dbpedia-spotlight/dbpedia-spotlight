@@ -43,9 +43,22 @@
             <groupId>org.dbpedia.extraction</groupId>
             <artifactId>core</artifactId>
         </dependency>
+
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
         </dependency>
 
         <dependency>
@@ -82,6 +95,10 @@
                 <exclusion>
                     <groupId>xerces</groupId>
                     <artifactId>xerces</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging-api</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

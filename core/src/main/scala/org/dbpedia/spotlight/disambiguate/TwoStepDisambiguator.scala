@@ -18,7 +18,7 @@
 
 package org.dbpedia.spotlight.disambiguate
 
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
 import java.lang.UnsupportedOperationException
 import scalaj.collection.Imports._
@@ -45,7 +45,7 @@ class TwoStepDisambiguator(val candidateSearcher: CandidateSearcher,
                            val contextSearcher: MergedOccurrencesContextSearcher) //TODO should be ContextSearcher. Need a generic disambiguator to enable this.
     extends ParagraphDisambiguator  {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     LOG.info("Initializing disambiguator object ...")
 
@@ -98,7 +98,7 @@ class TwoStepDisambiguator(val candidateSearcher: CandidateSearcher,
                 try {
                     candidates = candidateSearcher.getCandidates(sfOcc.surfaceForm).asScala //.map(r => r.uri)
                 } catch {
-                    case e: ItemNotFoundException => LOG.debug(e);
+                    case e: ItemNotFoundException => LOG.debug(e.getMessage());
                 }
                 //ATTENTION there is no r.support at this point
                 //TODO if support comes from candidate index, it means c(sf,r).

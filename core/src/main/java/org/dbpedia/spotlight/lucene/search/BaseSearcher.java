@@ -18,8 +18,8 @@ package org.dbpedia.spotlight.lucene.search;
 
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.Ints;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldSelector;
@@ -45,7 +45,7 @@ import java.util.*;
  */
 public class BaseSearcher implements Closeable {
 
-    protected final Log LOG = LogFactory.getLog(getClass());
+    protected final Logger LOG = LoggerFactory.getLogger(getClass());
 
     LuceneManager mLucene;
     IndexSearcher mSearcher;

@@ -19,12 +19,12 @@ package org.dbpedia.spotlight.filter.occurrences
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
 import org.dbpedia.spotlight.string.ContextExtractor
 import org.dbpedia.spotlight.exceptions.InputException
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 
 
 class ContextNarrowFilter(val contextExtractor : ContextExtractor) extends OccurrenceFilter {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
         try {

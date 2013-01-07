@@ -18,8 +18,8 @@
 
 package org.dbpedia.spotlight.spot;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dbpedia.spotlight.exceptions.InitializationException;
 import org.dbpedia.spotlight.model.*;
 import org.dbpedia.spotlight.spot.cooccurrence.ClassifierFactory;
@@ -44,7 +44,7 @@ import java.util.List;
  */
 public class CoOccurrenceBasedSelector implements TaggedSpotSelector {
 
-	private final Log LOG = LogFactory.getLog(this.getClass());
+	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
 
 	/**
@@ -151,7 +151,7 @@ public class CoOccurrenceBasedSelector implements TaggedSpotSelector {
 
             if (surfaceFormOccurrence.surfaceForm().name().trim().length()==0) {
                 LOG.warn("I have an occurrence with empty surface form. :-O Ignoring.");
-                LOG.error(surfaceFormOccurrence);
+                LOG.error(surfaceFormOccurrence.toString());
                 continue;
             }
 

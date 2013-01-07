@@ -2,7 +2,7 @@ package org.dbpedia.spotlight.extract
 
 import org.dbpedia.spotlight.lucene.LuceneManager.DBpediaResourceField
 import org.apache.lucene.search.similar.MoreLikeThis
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import org.dbpedia.spotlight.lucene.similarity.{CachedInvCandFreqSimilarity, JCSTermCache}
 import org.dbpedia.spotlight.lucene.LuceneManager
 import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
@@ -20,7 +20,7 @@ import java.util
  */
 class LuceneTagExtractor(val contextLuceneManager: LuceneManager, val contextSearcher: MergedOccurrencesContextSearcher) extends TagExtractor {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     def extract(text: Text, nTags: Int) : Seq[(DBpediaResource,Double)] = {
         extract(text, nTags, List[OntologyType]())

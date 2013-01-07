@@ -20,7 +20,7 @@ package org.dbpedia.spotlight.io
 
 import com.officedepot.cdap2.collection.CompactHashSet
 import io.Source
-import org.apache.log4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Hacky but easy to generalize parser for Wortschatz dataset. Up to now only used to get common words.
@@ -29,7 +29,7 @@ import org.apache.log4j.Logger
 
 object WortschatzParser {
 
-    val LOG = Logger.getLogger(this.getClass)
+    val LOG = LoggerFactory.getLogger(this.getClass)
 
     def parse(filename: String) : CompactHashSet[String] = {
         parse(filename, count => true);

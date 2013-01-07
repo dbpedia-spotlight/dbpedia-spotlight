@@ -18,7 +18,7 @@
 
 package org.dbpedia.spotlight.model
 
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import org.dbpedia.spotlight.lucene.LuceneManager
 import org.dbpedia.spotlight.lucene.similarity.{JCSTermCache, CachedInvCandFreqSimilarity}
 import com.aliasi.sentences.IndoEuropeanSentenceModel
@@ -49,7 +49,7 @@ import io.Source
  */
 class SpotlightFactory(val configuration: SpotlightConfiguration) {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     val analyzer = configuration.analyzer
     assert(analyzer!=null)

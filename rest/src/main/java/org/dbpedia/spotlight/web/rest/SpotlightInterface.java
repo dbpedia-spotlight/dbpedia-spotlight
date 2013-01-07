@@ -20,8 +20,8 @@ package org.dbpedia.spotlight.web.rest;
 
 import de.l3s.boilerpipe.BoilerpipeProcessingException;
 import de.l3s.boilerpipe.extractors.ArticleExtractor;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ;
 import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.exceptions.SearchException;
@@ -44,7 +44,7 @@ import java.util.List;
  */
 public class SpotlightInterface  {
 
-    Log LOG = LogFactory.getLog(this.getClass());
+    Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     // Name of the REST api so that we can announce it in the log (can be disambiguate, annotate, candidates)
     String apiName;

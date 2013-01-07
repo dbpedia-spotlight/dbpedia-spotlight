@@ -18,9 +18,8 @@ package org.dbpedia.spotlight.evaluation.external;
 
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.params.HttpMethodParams;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dbpedia.spotlight.exceptions.AnnotationException;
 import org.dbpedia.spotlight.model.DBpediaResource;
 import org.dbpedia.spotlight.model.Text;
@@ -35,7 +34,7 @@ import java.util.List;
  */
 public abstract class AnnotationClient {
 
-    public Logger LOG = Logger.getLogger(this.getClass());
+    public Logger LOG = LoggerFactory.getLogger(this.getClass());
     
     // Create an instance of HttpClient.
     private static HttpClient client = new HttpClient();
@@ -138,7 +137,7 @@ public abstract class AnnotationClient {
                     correct++;
                 } catch (AnnotationException e) {
                     error++;
-                    LOG.error(e);
+                    LOG.error(e.getMessage());
                     e.printStackTrace();
                 }
                 for (DBpediaResource e: entities) {

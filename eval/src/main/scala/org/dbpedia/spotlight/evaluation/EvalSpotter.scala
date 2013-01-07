@@ -11,7 +11,7 @@ import org.apache.lucene.util.Version
 import org.dbpedia.spotlight.model.{SurfaceForm, Factory, SurfaceFormOccurrence}
 import collection.JavaConversions
 import org.apache.lucene.analysis._
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import org.apache.lucene.analysis.standard.{StandardAnalyzer, ClassicAnalyzer}
 import org.dbpedia.spotlight.spot.ahocorasick.AhoCorasickSpotter
 
@@ -24,7 +24,7 @@ import org.dbpedia.spotlight.spot.ahocorasick.AhoCorasickSpotter
  */
 object EvalSpotter {
 
-  private val LOG = LogFactory.getLog(this.getClass)
+  private val LOG = LoggerFactory.getLogger(this.getClass)
 
   def evalCorpus = {
     MilneWittenCorpus.fromDirectory(new File("/home/max/spotlight-data/milne-witten"))

@@ -19,7 +19,7 @@ package org.dbpedia.spotlight.filter.occurrences
 import org.dbpedia.spotlight.model.{DBpediaResource, DBpediaResourceOccurrence}
 import io.Source
 import java.io.File
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 
 
 class RedirectResolveFilter(val redirects : Map[String,String]) extends OccurrenceFilter {
@@ -38,7 +38,7 @@ class RedirectResolveFilter(val redirects : Map[String,String]) extends Occurren
 
 object RedirectResolveFilter {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     def fromFile(redirectTCFileName: File) : RedirectResolveFilter = {
         LOG.info("Loading redirects transitive closure from "+redirectTCFileName+"...")

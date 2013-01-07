@@ -16,8 +16,8 @@
 
 package org.dbpedia.spotlight.io;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.HashMap;
@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
  */
 public class DataLoader {
 
-    Log LOG = LogFactory.getLog(this.getClass());
+    Logger LOG = LoggerFactory.getLogger(this.getClass());
     LineParser mParser;
     File f;
 
@@ -100,7 +100,7 @@ public class DataLoader {
     }
 
     abstract static class LineParser {
-        Log LOG = LogFactory.getLog(this.getClass());
+        Logger LOG = LoggerFactory.getLogger(this.getClass());
         public abstract void add(String line, Map<String,Double> items);
     }
 

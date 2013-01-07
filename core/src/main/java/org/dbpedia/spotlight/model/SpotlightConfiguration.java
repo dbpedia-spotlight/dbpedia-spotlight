@@ -18,8 +18,8 @@
 
 package org.dbpedia.spotlight.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.search.BooleanQuery;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
@@ -40,7 +40,7 @@ import java.util.*;
  */
 public class SpotlightConfiguration {
 
-    private static Log LOG = LogFactory.getLog(SpotlightConfiguration.class);
+    private static Logger LOG = LoggerFactory.getLogger(SpotlightConfiguration.class);
     //TODO could get all of these from configuration file
     public final static String DEFAULT_TEXT = "";
     public final static String DEFAULT_URL = "";
@@ -291,7 +291,7 @@ public class SpotlightConfiguration {
         try {
             maxCacheSize = new Long(maxCacheSizeString.trim());
         } catch (Exception ignored) {
-            LOG.error(ignored);
+            LOG.error(ignored.getMessage());
         }
 
 

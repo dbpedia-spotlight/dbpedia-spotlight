@@ -3,7 +3,7 @@ package org.dbpedia.spotlight.util
 import java.io.PrintWriter
 import io.Source
 import org.dbpedia.spotlight.model.DBpediaResource._
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.model._
 
@@ -14,7 +14,7 @@ import org.dbpedia.spotlight.model._
  */
 object GetDBpediaResourceCandidates {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     /**
      * This class obtains DBpediaResources that are candidates for a given surface form

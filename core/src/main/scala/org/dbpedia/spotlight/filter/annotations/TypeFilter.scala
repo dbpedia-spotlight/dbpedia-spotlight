@@ -16,12 +16,12 @@
 
 package org.dbpedia.spotlight.filter.annotations
 
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import org.dbpedia.spotlight.model.{OntologyType, DBpediaResource, DBpediaType, DBpediaResourceOccurrence}
 
 class TypeFilter(var ontologyTypes : List[OntologyType], val blacklistOrWhitelist : FilterPolicy.ListColor) extends AnnotationFilter  {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     if (ontologyTypes==null)
         ontologyTypes = List[OntologyType]()

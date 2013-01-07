@@ -6,7 +6,7 @@ import collection.mutable.HashMap
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 import java.io.{InputStream, FileInputStream, File}
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import org.dbpedia.spotlight.model.{TokenType, DBpediaResourceOccurrence, Token}
 
 
@@ -21,7 +21,7 @@ import org.dbpedia.spotlight.model.{TokenType, DBpediaResourceOccurrence, Token}
 
 object TokenSource {
 
-  private val LOG = LogFactory.getLog(this.getClass)
+  private val LOG = LoggerFactory.getLogger(this.getClass)
 
   def fromPigFile(tokenFile: File) = fromPigInputStream(new FileInputStream(tokenFile))
   def fromPigInputStream(tokenFile: InputStream) = {

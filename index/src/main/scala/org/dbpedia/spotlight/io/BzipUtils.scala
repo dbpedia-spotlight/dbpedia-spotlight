@@ -18,7 +18,7 @@ package org.dbpedia.spotlight
 
 import java.io.{IOException, BufferedInputStream, FileInputStream, FileOutputStream}
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
-import org.apache.commons.logging.{LogFactory, Log}
+import org.slf4j.{LoggerFactory, Logger}
 
 
 
@@ -28,7 +28,7 @@ import org.apache.commons.logging.{LogFactory, Log}
 @Deprecated
 object BzipUtils {
 
-  val LOG: Log = LogFactory.getLog(this.getClass)
+  val LOG = LoggerFactory.getLogger(this.getClass)
 
   def extract(filename: String):String = {
     var buffersize: Int = 1024

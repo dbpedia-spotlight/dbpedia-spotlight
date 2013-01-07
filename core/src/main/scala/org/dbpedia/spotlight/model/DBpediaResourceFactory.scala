@@ -26,7 +26,7 @@ import org.dbpedia.spotlight.lucene.LuceneManager
 import java.sql.{SQLException, ResultSet, PreparedStatement, DriverManager}
 
 import java.util.logging.Logger
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import java.lang.String
 import org.dbpedia.spotlight.exceptions.{ItemNotFoundException, SearchException}
 import collection.immutable.List._
@@ -44,7 +44,7 @@ trait DBpediaResourceFactory {
 
 class DBpediaResourceFactorySQL(sqlDriver : String, sqlConnector : String, username : String, password : String) extends DBpediaResourceFactory {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     //Initialize SQL connection:
     Class.forName(sqlDriver).newInstance()

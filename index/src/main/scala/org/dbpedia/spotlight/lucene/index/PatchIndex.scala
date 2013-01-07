@@ -24,7 +24,7 @@ import io.Source
 import org.dbpedia.spotlight.model.DBpediaResource
 import org.apache.lucene.store.FSDirectory
 import org.dbpedia.spotlight.exceptions.ConfigurationException
-import org.apache.commons.logging.{LogFactory, Log}
+import org.slf4j.{LoggerFactory, Logger}
 import java.io.File
 import org.dbpedia.spotlight.util.IndexingConfiguration
 
@@ -36,7 +36,7 @@ import org.dbpedia.spotlight.util.IndexingConfiguration
 
 object PatchIndex {
 
-    val LOG: Log = LogFactory.getLog(this.getClass)
+    val LOG = LoggerFactory.getLogger(this.getClass)
 
     def uri2count(line : String) = {
         if (line.trim != null) {

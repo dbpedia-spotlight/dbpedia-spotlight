@@ -18,8 +18,8 @@
 
 package org.dbpedia.spotlight.spot;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dbpedia.spotlight.annotate.DefaultAnnotator;
 import org.dbpedia.spotlight.exceptions.SpottingException;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
@@ -37,7 +37,7 @@ import java.util.List;
  */
 public abstract class SpotterWithSelector implements Spotter {
 
-	private final Log LOG = LogFactory.getLog(DefaultAnnotator.class);
+	private final Logger LOG = LoggerFactory.getLogger(DefaultAnnotator.class);
 
 	protected Spotter spotter;
 	protected SpotSelector spotSelector;

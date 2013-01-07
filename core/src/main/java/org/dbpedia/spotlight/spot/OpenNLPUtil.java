@@ -25,8 +25,8 @@ import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.model.BaseModel;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 
 import java.io.File;
@@ -43,7 +43,7 @@ import java.util.regex.Pattern;
  */
 public class OpenNLPUtil {
 
-    private static final Log LOG = LogFactory.getLog(OpenNLPUtil.class);
+    private static final Logger LOG = LoggerFactory.getLogger(OpenNLPUtil.class);
 
 
     public enum OpenNlpModels {

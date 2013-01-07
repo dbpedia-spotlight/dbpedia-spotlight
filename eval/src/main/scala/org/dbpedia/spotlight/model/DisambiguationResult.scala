@@ -1,6 +1,6 @@
 package org.dbpedia.spotlight.model
 
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 
 /**
  *
@@ -9,7 +9,7 @@ import org.apache.commons.logging.LogFactory
 
 class DisambiguationResult(val correctOccurrence: DBpediaResourceOccurrence, val predictedOccurrences: List[DBpediaResourceOccurrence] ) {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     lazy val rank = {
         LOG.debug("Ranking for: %s -> %s".format(correctOccurrence.surfaceForm,correctOccurrence.resource))

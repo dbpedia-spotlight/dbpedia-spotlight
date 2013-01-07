@@ -18,8 +18,8 @@
 
 package org.dbpedia.spotlight.web.rest.resources;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 import org.dbpedia.spotlight.model.Text;
@@ -50,7 +50,7 @@ import java.util.List;
 @Consumes("text/plain")
 public class Spot {
 
-    Log LOG = LogFactory.getLog(this.getClass());
+    Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     @Context
     private UriInfo context;

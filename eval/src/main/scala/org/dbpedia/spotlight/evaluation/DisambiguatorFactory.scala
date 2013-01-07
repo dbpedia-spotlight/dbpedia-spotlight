@@ -1,6 +1,6 @@
 package org.dbpedia.spotlight.evaluation
 
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import org.dbpedia.spotlight.lucene.LuceneManager
 import org.apache.lucene.analysis.{StopAnalyzer, Analyzer}
 import org.apache.lucene.util.Version
@@ -22,7 +22,7 @@ import org.dbpedia.spotlight.disambiguate.{RandomDisambiguator, Disambiguator}
 
 object DisambiguatorFactory {
 
- val LOG = LogFactory.getLog(this.getClass)
+ val LOG = LoggerFactory.getLogger(this.getClass)
 
     def createMergedDisambiguator(outputFileName: String, analyzer: Analyzer, similarity: Similarity) : Disambiguator = {
         val directory = FSDirectory.open(new File(outputFileName));//+"."+analyzer.getClass.getSimpleName+"."+similarity.getClass.getSimpleName));

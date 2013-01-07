@@ -22,14 +22,14 @@ package org.dbpedia.spotlight.util
 import java.io.PrintWriter
 import io.Source
 import org.dbpedia.spotlight.model.{SpotlightConfiguration, DBpediaResource}
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 
 /**
  * Extract topic signatures for DBpedia Resources according to DBpedia Spotlight's index.
  * @author pablomendes
  */
 object ExtractTopicSignatures {
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     def main(args: Array[String]) {
 

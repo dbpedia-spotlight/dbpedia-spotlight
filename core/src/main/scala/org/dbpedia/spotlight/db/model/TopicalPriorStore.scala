@@ -4,7 +4,7 @@ import org.dbpedia.spotlight.model.{Topic, DBpediaResource}
 import io.Source
 import java.io.{IOException, File}
 import com.officedepot.cdap2.collection.CompactHashMap
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 
 /**
  *
@@ -24,7 +24,7 @@ trait TopicalPriorStore {
 }
 
 object HashMapTopicalPriorStore extends TopicalPriorStore {
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     val totalCounts = new CompactHashMap[String,Int]()                          // topic -> total
     val topicalPriors = new CompactHashMap[String,CompactHashMap[String,Int]]() // topic -> (resource -> count)

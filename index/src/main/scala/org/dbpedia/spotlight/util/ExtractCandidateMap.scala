@@ -20,7 +20,7 @@ package org.dbpedia.spotlight.util
 
 
 import io.Source
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import java.io._
 import org.dbpedia.spotlight.model.{Factory, SpotlightConfiguration, SurfaceForm}
 import java.util.Scanner
@@ -45,7 +45,7 @@ import org.dbpedia.extraction.util.WikiUtil
  */
 object ExtractCandidateMap
 {
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     var maximumSurfaceFormLength = 50
 

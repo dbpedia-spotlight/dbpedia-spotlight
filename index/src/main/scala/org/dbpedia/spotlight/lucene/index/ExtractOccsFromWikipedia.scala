@@ -19,7 +19,7 @@
 package org.dbpedia.spotlight.lucene.index
 
 import java.io.File
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import org.dbpedia.spotlight.string.ContextExtractor
 import org.dbpedia.spotlight.util.IndexingConfiguration
 import org.dbpedia.spotlight.filter.occurrences.{RedirectResolveFilter, UriWhitelistFilter, ContextNarrowFilter}
@@ -43,7 +43,7 @@ import org.dbpedia.extraction.util.Language
  */
 object ExtractOccsFromWikipedia {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     def main(args : Array[String]) {
         val indexingConfigFileName = args(0)

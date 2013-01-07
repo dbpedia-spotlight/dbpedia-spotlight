@@ -18,7 +18,7 @@ package org.dbpedia.spotlight.io
 
 import scala.collection.JavaConversions._
 import java.io.File
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import org.dbpedia.spotlight.util.TypesLoader
 import org.dbpedia.spotlight.model.{OntologyType, DBpediaResourceOccurrence}
 
@@ -31,7 +31,7 @@ import org.dbpedia.spotlight.model.{OntologyType, DBpediaResourceOccurrence}
 
 class TypeAdder(val occSource : OccurrenceSource, var typesMap : Map[String,List[OntologyType]]) extends OccurrenceSource
 {
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
     
     def this(occSource : OccurrenceSource, typesFile : File) = {
         this(occSource, TypesLoader.getTypesMap(typesFile))

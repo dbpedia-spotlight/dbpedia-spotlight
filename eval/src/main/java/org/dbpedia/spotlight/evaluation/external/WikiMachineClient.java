@@ -98,7 +98,7 @@ public class WikiMachineClient extends AnnotationClient {
                     }
             }
         }
-        LOG.trace(entities);
+        LOG.trace(entities.toString());
         return entities;
     }
 

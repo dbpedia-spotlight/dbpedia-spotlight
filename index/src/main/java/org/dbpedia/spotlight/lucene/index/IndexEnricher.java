@@ -18,8 +18,8 @@
 
 package org.dbpedia.spotlight.lucene.index;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -48,7 +48,7 @@ import java.util.*;
  */
 public class IndexEnricher extends BaseIndexer<Object> {
 
-    Log LOG = LogFactory.getLog(this.getClass());
+    Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     int DOCS_BEFORE_FLUSH = 10000;  // for priored surface forms (failed with 20,000 before (without PRIOR_DEVIDER))
 

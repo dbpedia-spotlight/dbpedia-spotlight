@@ -18,8 +18,8 @@
 
 package org.dbpedia.spotlight.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.spot.CoOccurrenceBasedSelector;
 import org.dbpedia.spotlight.spot.NESpotter;
@@ -38,7 +38,7 @@ import java.util.*;
  */
 public class SpotterConfiguration {
 
-    private static Log LOG = LogFactory.getLog(SpotterConfiguration.class);
+    private static Logger LOG = LoggerFactory.getLogger(SpotterConfiguration.class);
 
     public final String PREFIX_COOCCURRENCE_SELECTOR = "org.dbpedia.spotlight.spot.cooccurrence.";
 

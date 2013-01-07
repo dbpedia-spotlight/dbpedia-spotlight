@@ -20,8 +20,8 @@ package org.dbpedia.spotlight.web.rest;
 
 import com.sun.grizzly.http.SelectorThread;
 import com.sun.jersey.api.container.grizzly.GrizzlyWebContainerFactory;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dbpedia.spotlight.annotate.Annotator;
 import org.dbpedia.spotlight.disambiguate.Disambiguator;
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ;
@@ -49,7 +49,7 @@ import java.util.Map;
  */
 
 public class Server {
-    static Log LOG = LogFactory.getLog(Server.class);
+    static Logger LOG = LoggerFactory.getLogger(Server.class);
 
     public static final String APPLICATION_PATH = "http://spotlight.dbpedia.org/rest";
 

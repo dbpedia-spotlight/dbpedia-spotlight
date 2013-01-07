@@ -3,8 +3,8 @@ package org.dbpedia.spotlight.spot.cooccurrence.training;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 import com.aliasi.sentences.IndoEuropeanSentenceModel;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.spot.cooccurrence.classification.SpotClass;
 import org.dbpedia.spotlight.spot.cooccurrence.filter.Filter;
@@ -36,7 +36,7 @@ import java.util.*;
 
 public class AnnotatedDataset {
 
-    private final static Log LOG = LogFactory.getLog(AnnotatedDataset.class);
+    private final static Logger LOG = LoggerFactory.getLogger(AnnotatedDataset.class);
 
 	/**
 	 * Instances, i.e. annotated occurrences of a candidate

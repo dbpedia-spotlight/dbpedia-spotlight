@@ -17,12 +17,12 @@
 package org.dbpedia.spotlight.filter.annotations
 
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import org.dbpedia.spotlight.filter.Filter
 
 class PercentageOfSecondFilter(val confidence : Double) extends AnnotationFilter with Filter {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     val squaredConfidence = confidence*confidence
 
@@ -39,7 +39,7 @@ class PercentageOfSecondFilter(val confidence : Double) extends AnnotationFilter
 
 class ConfidenceFilter(val simThresholds : List[Double], val confidence : Double) extends AnnotationFilter  {
 
-    private val LOG = LogFactory.getLog(this.getClass)
+    private val LOG = LoggerFactory.getLogger(this.getClass)
 
     val simThreshold = if (simThresholds.length==0) 0 else simThresholds(math.max(((simThresholds.length-1)*confidence).round.toInt, 0))
     override def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {

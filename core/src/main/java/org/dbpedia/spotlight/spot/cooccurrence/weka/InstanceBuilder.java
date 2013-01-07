@@ -1,7 +1,7 @@
 package org.dbpedia.spotlight.spot.cooccurrence.weka;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dbpedia.spotlight.spot.cooccurrence.features.data.OccurrenceDataProvider;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 import weka.core.Attribute;
@@ -26,7 +26,7 @@ public abstract class InstanceBuilder {
 
 	public static final String FUNCTION_WORD_PATTERN = "(at|,|\\.|dt|to|wp.|c.*)";
 
-	protected Log LOG = LogFactory.getLog(this.getClass());
+	protected Logger LOG = LoggerFactory.getLogger(this.getClass());
 	protected OccurrenceDataProvider dataProvider;
 
 

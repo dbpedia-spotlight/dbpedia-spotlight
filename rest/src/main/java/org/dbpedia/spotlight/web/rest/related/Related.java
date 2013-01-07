@@ -18,8 +18,8 @@
 
 package org.dbpedia.spotlight.web.rest.related;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.web.rest.RelatedResources;
 import org.dbpedia.spotlight.web.rest.Server;
@@ -47,7 +47,7 @@ public class Related {
 
     public static final String uri = "http://160.45.137.71:2222/";
 
-    Log LOG = LogFactory.getLog(this.getClass());
+    Logger LOG = LoggerFactory.getLogger(this.getClass());
     RelatedResources searcher = new RelatedResources();
 
     // Sets the necessary headers in order to enable CORS

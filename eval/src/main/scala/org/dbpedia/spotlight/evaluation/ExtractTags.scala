@@ -1,6 +1,6 @@
 package org.dbpedia.spotlight.evaluation
 
-import org.apache.commons.logging.LogFactory
+import org.slf4j.LoggerFactory
 import org.dbpedia.spotlight.lucene.LuceneManager
 import org.dbpedia.spotlight.lucene.similarity.{CachedInvCandFreqSimilarity, JCSTermCache}
 import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
@@ -17,7 +17,7 @@ import org.dbpedia.spotlight.extract.LuceneTagExtractor
 
 object ExtractTags {
 
-    val LOG = LogFactory.getLog(this.getClass)
+    val LOG = LoggerFactory.getLogger(this.getClass)
 
     def main(args: Array[String]) {
         val configuration = new SpotlightConfiguration(args(0))
@@ -29,7 +29,7 @@ object ExtractTags {
         val inputFile: File = new File(baseDir+"gold/transcripts.txt");
         val outputDir = baseDir+"spotlight/Spotlight"
 
-        val LOG = LogFactory.getLog(this.getClass)
+        val LOG = LoggerFactory.getLogger(this.getClass)
 
         LOG.info("Initializing disambiguator object ...")
 

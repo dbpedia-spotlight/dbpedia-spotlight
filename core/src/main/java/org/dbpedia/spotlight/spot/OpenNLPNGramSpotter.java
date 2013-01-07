@@ -28,8 +28,8 @@ import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.model.BaseModel;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SurfaceForm;
@@ -58,7 +58,7 @@ import java.util.*;
  */
 public class OpenNLPNGramSpotter implements Spotter {
 
-	private final Log LOG = LogFactory.getLog(this.getClass());
+	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
 	protected static BaseModel sentenceModel = null;
 	protected static BaseModel chunkModel = null;
