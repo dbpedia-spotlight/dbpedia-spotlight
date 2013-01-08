@@ -163,7 +163,7 @@ object CreateSpotlightModel {
       sfStore,
       stopwords,
       None,
-      "NP", "N"
+      Set("NP", "MWU", "PP"), "N"
     )
 
     SpotterTuner.tuneOpenNLP(

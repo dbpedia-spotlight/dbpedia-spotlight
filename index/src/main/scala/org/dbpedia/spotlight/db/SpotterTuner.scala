@@ -93,7 +93,7 @@ object SpotterTuner {
       sfStore,
       stopwords,
       None,
-      "NP", "N"
+      Set("NP", "MWU", "PP"), "N"
     )
 
     tuneOpenNLP(
