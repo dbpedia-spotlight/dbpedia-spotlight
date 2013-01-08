@@ -22,19 +22,22 @@ import com.sun.grizzly.http.SelectorThread;
 import com.sun.jersey.api.container.grizzly.GrizzlyWebContainerFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dbpedia.spotlight.annotate.Annotator;
-import org.dbpedia.spotlight.disambiguate.Disambiguator;
+import org.dbpedia.spotlight.db.SpotlightModel;
+import org.dbpedia.spotlight.db.model.Tokenizer;
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ;
-import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.InitializationException;
 import org.dbpedia.spotlight.exceptions.InputException;
+import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters;
+import org.dbpedia.spotlight.filter.annotations.PercentageOfSecondFilter;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SpotlightFactory;
 import org.dbpedia.spotlight.model.SpotterConfiguration;
 import org.dbpedia.spotlight.spot.Spotter;
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy;
 import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy;
+import org.tartarus.snowball.ext.DutchStemmer;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -67,25 +70,63 @@ public class Server {
     static String usage = "usage: java -jar dbpedia-spotlight.jar org.dbpedia.spotlight.web.rest.Server [config file]"
                         + "   or: mvn scala:run \"-DaddArgs=[config file]\"";
 
+    //This is currently only used in the DB-based version.
+    private static Tokenizer tokenizer;
+
+    protected static CombineAllAnnotationFilters CombinedFilters;
+
     public static void main(String[] args) throws IOException, InterruptedException, URISyntaxException, ClassNotFoundException, InitializationException {
 
-        //Initialization, check values
-        try {
-            String configFileName = args[0];
-            configuration = new SpotlightConfiguration(configFileName);
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.err.println("\n"+usage);
-            System.exit(1);
+        URI serverURI = null;
+
+        if(args[0].endsWith(".properties")) {
+            //We are using the old-style configuration file:
+
+            //Initialization, check values
+            try {
+                String configFileName = args[0];
+                configuration = new SpotlightConfiguration(configFileName);
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.err.println("\n"+usage);
+                System.exit(1);
+            }
+
+            serverURI = new URI(configuration.getServerURI());
+
+            // Set static annotator that will be used by Annotate and Disambiguate
+            final SpotlightFactory factory = new SpotlightFactory(configuration);
+
+            setDisambiguators(factory.disambiguators());
+            setSpotters(factory.spotters());
+
+            setCombinedFilters(new CombineAllAnnotationFilters(Server.getConfiguration()));
+
+
+        } else {
+            //We are using a model folder:
+
+            serverURI = new URI(args[1]);
+
+            File modelFolder = null;
+            try {
+                modelFolder = new File(args[0]);
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.err.println("\n"+usage);
+                System.exit(1);
+            }
+
+            SpotlightModel db = SpotlightModel.fromFolder(modelFolder);
+
+            setTokenizer(db.tokenizer());
+            setSpotters(db.spotters());
+            setDisambiguators(db.disambiguators());
+
         }
 
-        URI serverURI = new URI(configuration.getServerURI());       // "http://localhost:"+args[0]+"/rest/"
         //ExternalUriWadlGeneratorConfig.setUri(configuration.getServerURI()); //TODO get another parameter, maybe getExternalServerURI since Grizzly will use this in order to find out to which port to bind
 
-        // Set static annotator that will be used by Annotate and Disambiguate
-        final SpotlightFactory factory = new SpotlightFactory(configuration);
-        setDisambiguators(factory.disambiguators());
-        setSpotters(factory.spotters());
 
         LOG.info(String.format("Initiated %d disambiguators.",disambiguators.size()));
         LOG.info(String.format("Initiated %d spotters.",spotters.size()));
@@ -200,6 +241,22 @@ public class Server {
 
     public static SpotlightConfiguration getConfiguration() {
         return configuration;
+    }
+
+    public static Tokenizer getTokenizer() {
+        return tokenizer;
+    }
+
+    public static void setTokenizer(Tokenizer tokenizer) {
+        Server.tokenizer = tokenizer;
+    }
+
+    public static CombineAllAnnotationFilters getCombinedFilters() {
+        return CombinedFilters;
+    }
+
+    public static void setCombinedFilters(CombineAllAnnotationFilters combinedFilters) {
+        CombinedFilters = combinedFilters;
     }
 
 }
