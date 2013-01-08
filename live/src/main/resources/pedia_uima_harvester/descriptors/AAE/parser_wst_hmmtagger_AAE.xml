@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<analysisEngineDescription xmlns="http://uima.apache.org/resourceSpecifier">
+  <frameworkImplementation>org.apache.uima.java</frameworkImplementation>
+  <primitive>false</primitive>
+  <delegateAnalysisEngineSpecifiers>
+    <delegateAnalysisEngine key="hmmtaggerAE">
+      <import location="../AE/hmmtaggerAE.xml"/>
+    </delegateAnalysisEngine>
+    <delegateAnalysisEngine key="categoryExtractorAE">
+      <import location="../AE/categoryExtractorAE.xml"/>
+    </delegateAnalysisEngine>
+    <delegateAnalysisEngine key="szpparserAE">
+      <import location="../AE/szpparserAE.xml"/>
+    </delegateAnalysisEngine>
+    <delegateAnalysisEngine key="wstAE">
+      <import location="../AE/wstAE.xml"/>
+    </delegateAnalysisEngine>
+  </delegateAnalysisEngineSpecifiers>
+  <analysisEngineMetaData>
+    <name>Sztakipedia Parser-WST-English Tagger</name>
+    <description/>
+    <version>1.0</version>
+    <vendor>MTA SZTAKI</vendor>
+    <configurationParameters searchStrategy="language_fallback">
+      <configurationParameter>
+        <name>SofaNames</name>
+        <description>The Sofa names the annotator should work on. If no
+					names are specified, the annotator works on the
+					default sofa.</description>
+        <type>String</type>
+        <multiValued>true</multiValued>
+        <mandatory>false</mandatory>
+        <overrides>
+          <parameter>categoryExtractorAE/SofaNames</parameter>
+          <parameter>wstAE/SofaNames</parameter>
+        </overrides>
+      </configurationParameter>
+      <configurationParameter>
+        <name>InputView</name>
+        <description>The Sofa names the annotator should work on. If no
+					names are specified, the annotator works on the
+					default sofa.</description>
+        <type>String</type>
+        <multiValued>false</multiValued>
+        <mandatory>false</mandatory>
+        <overrides>
+          <parameter>hmmtaggerAE/InputView</parameter>
+        </overrides>
+      </configurationParameter>
+      <configurationParameter>
+        <name>InputSofaName</name>
+        <type>String</type>
+        <multiValued>false</multiValued>
+        <mandatory>true</mandatory>
+        <overrides>
+          <parameter>szpparserAE/InputSofaName</parameter>
+        </overrides>
+      </configurationParameter>
+      <configurationParameter>
+        <name>OutputSofaName</name>
+        <type>String</type>
+        <multiValued>false</multiValued>
+        <mandatory>true</mandatory>
+        <overrides>
+          <parameter>szpparserAE/OutputSofaName</parameter>
+        </overrides>
+      </configurationParameter>
+      <configurationParameter>
+        <name>LocaleAbbrev</name>
+        <description>ISO 639 code of language used in parsed document eq: hu, en, de, fr ...</description>
+        <type>String</type>
+        <multiValued>false</multiValued>
+        <mandatory>true</mandatory>
+        <overrides>
+          <parameter>szpparserAE/LocaleAbbrev</parameter>
+        </overrides>
+      </configurationParameter>
+    </configurationParameters>
+    <configurationParameterSettings>
+      <nameValuePair>
+        <name>SofaNames</name>
+        <value>
+          <array>
+            <string>plaintext</string>
+          </array>
+        </value>
+      </nameValuePair>
+      <nameValuePair>
+        <name>InputView</name>
+        <value>
+          <string>plaintext</string>
+        </value>
+      </nameValuePair>
+      <nameValuePair>
+        <name>LocaleAbbrev</name>
+        <value>
+          <string>en</string>
+        </value>
+      </nameValuePair>
+      <nameValuePair>
+        <name>OutputSofaName</name>
+        <value>
+          <string>plaintext</string>
+        </value>
+      </nameValuePair>
+      <nameValuePair>
+        <name>InputSofaName</name>
+        <value>
+          <string>rawwiki</string>
+        </value>
+      </nameValuePair>
+    </configurationParameterSettings>
+    <flowConstraints>
+      <fixedFlow>
+        <node>szpparserAE</node>
+        <node>categoryExtractorAE</node>
+        <node>wstAE</node>
+        <node>hmmtaggerAE</node>
+      </fixedFlow>
+    </flowConstraints>
+    <typePriorities/>
+    <fsIndexCollection/>
+    <capabilities>
+      <capability>
+        <inputs/>
+        <outputs/>
+        <inputSofas>
+          <sofaName>rawwiki</sofaName>
+        </inputSofas>
+        <outputSofas>
+          <sofaName>plaintext</sofaName>
+        </outputSofas>
+        <languagesSupported>
+          <language>en</language>
+        </languagesSupported>
+      </capability>
+    </capabilities>
+    <operationalProperties>
+      <modifiesCas>true</modifiesCas>
+      <multipleDeploymentAllowed>true</multipleDeploymentAllowed>
+      <outputsNewCASes>false</outputsNewCASes>
+    </operationalProperties>
+  </analysisEngineMetaData>
+  <resourceManagerConfiguration/>
+  <sofaMappings>
+    <sofaMapping>
+      <componentKey>szpparserAE</componentKey>
+      <componentSofaName>rawwiki</componentSofaName>
+      <aggregateSofaName>rawwiki</aggregateSofaName>
+    </sofaMapping>
+    <sofaMapping>
+      <componentKey>szpparserAE</componentKey>
+      <componentSofaName>parsed</componentSofaName>
+      <aggregateSofaName>plaintext</aggregateSofaName>
+    </sofaMapping>
+  </sofaMappings>
+</analysisEngineDescription>

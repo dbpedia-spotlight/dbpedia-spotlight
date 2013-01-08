@@ -201,7 +201,7 @@ class AnnotationFilter(val config: SpotlightConfiguration)
 
         val showUntyped = dbpediaTypes.find(t => DBpediaType.UNKNOWN equals t) != None
         occs.filter(occ => {
-            // if the resource does not have type and the targets contain "unknown": don't filter
+            // if the resource does not have type and the mainResources contain "unknown": don't filter
             if (showUntyped && occ.resource.types.isEmpty) {
                 true
             }

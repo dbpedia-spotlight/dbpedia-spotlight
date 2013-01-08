@@ -1,4 +1,9 @@
 *.iml
 .idea
+.classpath
+.project
+.settings/
 target
 *.log
+*~
+index/output

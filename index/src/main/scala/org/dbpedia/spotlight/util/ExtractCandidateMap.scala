@@ -32,7 +32,7 @@ import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 import org.dbpedia.extraction.util.WikiUtil
 
 /**
- * Functions to create Concept URIs (possible targets of disambiguations)
+ * Functions to create Concept URIs (possible mainResources of disambiguations)
  *                     transitive closure of redirects that end at Concept URIs
  *                     surface forms for Concept URIs
  * from DBpedia data sets and Wikipedia.

@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?><!--
+    Copyright 2012 Tamas Farkas, MTA SZTAKI, Hungary
+   
+       Licensed under the Apache License, Version 2.0 (the "License");
+       you may not use this file except in compliance with the License.
+       You may obtain a copy of the License at
+   
+           http://www.apache.org/licenses/LICENSE-2.0
+   
+       Unless required by applicable law or agreed to in writing, software
+       distributed under the License is distributed on an "AS IS" BASIS,
+       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+       See the License for the specific language governing permissions and
+       limitations under the License.
+ -->
+
+<cpeDescription xmlns="http://uima.apache.org/resourceSpecifier">
+    <collectionReader>
+        <collectionIterator>
+            <descriptor>
+                <import location="../CAS/WikiDumpCollectionReader.xml"/>
+            </descriptor>
+            <configurationParameterSettings>
+                <nameValuePair>
+                    <name>InputFile</name>
+                    <value>
+                        <string>__INPUTFILE</string>
+                    </value>
+                </nameValuePair>
+                <nameValuePair>
+                    <name>Language</name>
+                    <value>
+                        <string>hu</string>
+                    </value>
+                </nameValuePair>
+                <nameValuePair>
+        			<name>ApplicationName</name>
+        			<value>
+          				<string>hu.wikipedia.org</string>
+        			</value>
+      			</nameValuePair>
+                <nameValuePair>
+        			<name>OutputSofa</name>
+        			<value>
+          				<string>rawwiki</string>
+        			</value>
+      			</nameValuePair>
+      			     <nameValuePair>
+        <name>RedirectPages</name>
+        <value>
+          <array>
+            <string>#ÁTIRÁNYÍTÁS</string>
+            <string>#REDIRECT</string>
+          </array>
+        </value>
+      </nameValuePair>
+      <nameValuePair>
+        <name>NonArticleTitles</name>
+        <value>
+          <array>
+			<string>Kategória:</string>
+            <string>Kategóriavita:</string>
+            <string>Fájl:</string>
+            <string>Fájlvita:</string>
+            <string>Sablon:</string>
+            <string>Sablonvita:</string>
+            <string>Wikipédia:</string>
+            <string>Wikipédia vita:</string>
+            <string>WP:</string>
+            <string>WPM:</string>
+            <string>Portal:</string>
+            <string>Topic:Discussion:</string>
+            <string>Média:</string>
+            <string>MediaWiki:</string>
+            <string>MediaWiki-vita:</string>
+            <string>Speciális:</string>
+            <string>Segítség:</string>
+            <string>Segítségvita:</string>
+            <string>Vita:</string>
+            <string>Szerkesztő:</string>
+            <string>Szerkesztő vita:</string>
+          </array>
+        </value>
+      </nameValuePair>
+      			
+      			
+            </configurationParameterSettings>
+            
+        </collectionIterator>
+        
+    </collectionReader>
+    <casProcessors casPoolSize="3" processingUnitThreadCount="1">
+        <casProcessor deployment="integrated" name="Hun Parser Wst">
+            <descriptor>
+                <import location="../AAE/parser_wst_indexerAAE.xml"/>
+            </descriptor>
+            <deploymentParameters/>
+            <errorHandling>
+                <errorRateThreshold action="continue" value="100/1000"/>
+                <maxConsecutiveRestarts action="continue" value="30"/>
+                <timeout max="1000000" default="-1"/>
+            </errorHandling>
+<!--             <checkpoint batch="10000" time="1000ms"/> -->
+            <checkpoint batch="10000" />
+            <configurationParameterSettings>  
+                <nameValuePair>
+        			<name>LocaleAbbrev</name>
+        			<value>
+          				<string>hu</string>
+        			</value>
+      			</nameValuePair>
+            </configurationParameterSettings>
+        </casProcessor>
+        <casProcessor deployment="integrated" name="LuceneConsumerAE">
+            <descriptor>
+                <import location="../CAS/LuceneConsumerAE.xml"/>
+            </descriptor>
+            <deploymentParameters/>
+            <errorHandling>
+                <errorRateThreshold action="continue" value="100/1000"/>
+                <maxConsecutiveRestarts action="continue" value="30"/>
+                <timeout max="1000000" default="-1"/>
+            </errorHandling>
+<!--             <checkpoint batch="10000" time="1000ms"/> -->
+            <checkpoint batch="10000"/>
+            <configurationParameterSettings>
+                <nameValuePair>
+                    <name>LuceneIndexDir</name>
+                    <value>
+                        <string>__LUCENEINDEXDIR</string>
+                    </value>
+                </nameValuePair>
+                <nameValuePair>
+                    <name>LangChainID</name>
+                    <value>
+                        <string>hun_stem</string>
+                    </value>
+                </nameValuePair>
+                <nameValuePair>
+                    <name>SofaNames</name>
+                    <value>
+                        <array>
+                            <string>plaintext</string>
+                            <string>parsed</string>
+                        </array>
+                    </value>
+                </nameValuePair>
+                <nameValuePair>
+                    <name>SkippedWordPlaceHolder</name>
+                    <value>
+                        <string>XX</string>
+                    </value>
+                </nameValuePair>
+            </configurationParameterSettings>
+        </casProcessor>
+        
+        <casProcessor deployment="integrated" name="xcasWriter">
+            <descriptor>
+                <import location="../CAS/XCASWriterCC.xml"/>
+            </descriptor>
+            <deploymentParameters/>
+            <errorHandling>
+                <errorRateThreshold action="continue" value="100/1000"/>
+                <maxConsecutiveRestarts action="continue" value="100"/>
+                <timeout max="1000000" default="-1"/>
+            </errorHandling>
+<!--             <checkpoint batch="10000" time="1000ms"/> -->
+            <checkpoint batch="10000"/>
+            <configurationParameterSettings>
+                <nameValuePair>
+                    <name>OutputDirectory</name>
+                    <value>
+                        <string>__XCASOUTPUTDIR</string>
+                    </value>
+                </nameValuePair>
+                <nameValuePair>
+                    <name>SofaNames</name>
+                    <value>
+                        <array>
+                            <string>plaintext</string>
+                            <string>parsed</string>
+                        </array>
+                    </value>
+                </nameValuePair>
+            </configurationParameterSettings>
+        </casProcessor>
+        
+    </casProcessors>
+    <cpeConfig>
+        <numToProcess>-1</numToProcess>
+        <deployAs>immediate</deployAs>
+        
+<!--         <checkpoint batch="10000" time="300000ms"/> -->
+			<checkpoint batch="10000" />
+        <timerImpl/>
+    </cpeConfig>
+</cpeDescription>
