@@ -1,6 +1,5 @@
-package org.dbpedia.spotlight.corpus
+package org.dbpedia.spotlight.io
 
-import org.dbpedia.spotlight.io.{WikiOccurrenceSource, AnnotatedTextSource}
 import org.dbpedia.spotlight.model.{Text, DBpediaResourceOccurrence, AnnotatedParagraph}
 
 /**

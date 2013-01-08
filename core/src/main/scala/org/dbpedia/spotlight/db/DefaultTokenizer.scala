@@ -9,9 +9,6 @@ import opennlp.tools.util.Span
 
 /**
  * @author Joachim Daiber
- *
- *
- *
  */
 
 class DefaultTokenizer(

@@ -23,11 +23,12 @@ import org.dbpedia.spotlight.disambiguate._
 import java.io.{PrintWriter, File}
 import org.dbpedia.spotlight.corpus.{PredoseCorpus, MilneWittenCorpus, AidaCorpus}
 
-import scalaj.collection.Imports._
-
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.filter.occurrences.{UriWhitelistFilter, RedirectResolveFilter, OccurrenceFilter}
 import scala.Some
+
+import scalaj.collection.Imports._
+
 
 /**
  * Evaluation for disambiguators that take one paragraph at a time, instead of one occurrence at a time.

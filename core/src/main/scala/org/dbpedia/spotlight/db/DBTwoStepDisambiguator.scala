@@ -165,6 +165,7 @@ class DBTwoStepDisambiguator(
       .map( kv =>
       kv._2.head)
       .toList
+      .sortBy(_.textOffset)
   }
 
   def name = "Database-backed 2 Step disambiguator (%s, %s)".format(contextSimilarity.getClass.getSimpleName, mixture.toString)

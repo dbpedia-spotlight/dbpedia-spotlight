@@ -4,12 +4,13 @@ package org.dbpedia.spotlight.spot.opennlp
 import org.dbpedia.spotlight.spot.Spotter
 import java.util.LinkedList
 import scala.util.control.Breaks._
-import java.io.{InputStream, FileInputStream}
+import java.io.InputStream
 import org.dbpedia.spotlight.model.{Token, SurfaceForm, SurfaceFormOccurrence, Text}
 import collection.mutable.ListBuffer
 import opennlp.tools.chunker.{ChunkerModel, ChunkerME, Chunker}
 import org.dbpedia.spotlight.exceptions.SurfaceFormNotFoundException
 import org.dbpedia.spotlight.db.model.SurfaceFormStore
+import breeze.linalg.DenseVector
 
 
 /**
@@ -25,18 +26,22 @@ class OpenNLPChunkerSpotterDB(
   chunkerModel: InputStream,
   surfaceFormStore: SurfaceFormStore,
   stopwords: Set[String],
-  npTag: String = "NP",
+  spotFeatureWeights: Option[Seq[Double]],
+  phraseTags: Set[String] = Set("NP"),
   nnTag: String = "NN"
 ) extends Spotter {
 
-  val MIN_ANNOTATION_PROBABILITY = 0.5
+  val spotFeatureWeightVector: Option[DenseVector[Double]] = spotFeatureWeights match {
+    case Some(w) => Some(DenseVector(w.toArray:_*))
+    case None => None
+  }
 
   val chunker: Chunker =
     new ChunkerME(new ChunkerModel(chunkerModel))
 
   def extract(text: Text): java.util.List[SurfaceFormOccurrence] = {
     val spots = new LinkedList[SurfaceFormOccurrence]
-    val sentences: List[List[Token]] = tokensToSentences(text.feature("tokens").asInstanceOf[List[Token]])
+    val sentences: List[List[Token]] = tokensToSentences(text.featureValue[List[Token]]("tokens").get)
 
     //Go through all sentences
     sentences.foreach{ sentence: List[Token] =>
@@ -44,14 +49,17 @@ class OpenNLPChunkerSpotterDB(
       val tags = sentence.map(_.featureValue[String]("pos").get).toArray
 
       //Go through all chunks
+      //System.err.println(chunker.chunkAsSpans(tokens, tags).map(_.getType).mkString(","))
       chunker.chunkAsSpans(tokens, tags)
 
         //Only look at NPs
-        .filter(chunkSpan => chunkSpan.getType.equals(npTag))
+        .filter(chunkSpan => phraseTags.contains(chunkSpan.getType))
         .foreach(chunkSpan => {
           breakable {
+
             val firstToken = chunkSpan.getStart
             val lastToken = chunkSpan.getEnd-1
+            System.err.println("Chunk:" + tokens.slice(firstToken, lastToken+1).mkString(" ") )
 
             //Taking away a left member in each step, look for the longest sub-chunk in the SF dictionary
             (firstToken to lastToken).foreach(startToken => {
@@ -62,7 +70,7 @@ class OpenNLPChunkerSpotterDB(
               if (surfaceFormMatch(spot)) {
                 if ( !((lastToken == startToken) && !tags(startToken).toUpperCase.startsWith(nnTag) || stopwords.contains(spot.toLowerCase))) {
                   //The sub-chunk is in the dictionary, finish the processing of this chunk
-                  spots.add(new SurfaceFormOccurrence(new SurfaceForm(spot), text, startOffset))
+                  spots.add(new SurfaceFormOccurrence(surfaceFormStore.getSurfaceForm(spot), text, startOffset))
                   break()
                 }
               }
@@ -75,14 +83,6 @@ class OpenNLPChunkerSpotterDB(
     spots
   }
 
-  private def surfaceFormMatch(spot: String): Boolean = {
-    try {
-      val sf = surfaceFormStore.getSurfaceForm(spot)
-      sf.annotationProbability >= MIN_ANNOTATION_PROBABILITY
-    } catch {
-      case e: SurfaceFormNotFoundException => false
-    }
-  }
 
   private var name = "Spotter based on an OpenNLP NP chunker and a simple spot dictionary."
   def getName = name
@@ -109,5 +109,37 @@ class OpenNLPChunkerSpotterDB(
 
     sentences.toList
   }
+
+  private def surfaceFormMatch(spot: String): Boolean = {
+    try {
+      spotFeatureWeightVector match {
+        case Some(weights) => {
+          System.err.println("Checking %s: %s, %s".format(spot,
+            OpenNLPChunkerSpotterDB.spotFeatures(surfaceFormStore.getSurfaceForm(spot)).toString,
+            (weights dot OpenNLPChunkerSpotterDB.spotFeatures(surfaceFormStore.getSurfaceForm(spot))).toString))
+
+          (weights dot OpenNLPChunkerSpotterDB.spotFeatures(surfaceFormStore.getSurfaceForm(spot))) > 0.45 //we are being generous!
+        }
+        case None => surfaceFormStore.getSurfaceForm(spot) != null
+      }
+    } catch {
+      case e: SurfaceFormNotFoundException => false
+    }
+  }
+
+}
+
+object OpenNLPChunkerSpotterDB {
+  def spotFeatures(spot: SurfaceForm): DenseVector[Double] =
+    DenseVector(
+      //Annotation probability:
+      spot.annotationProbability,
+
+      //Abbreviations:
+      if(spot.name.toUpperCase.equals(spot.name) && spot.name.size < 5) 1.0 else 0.0,
+
+      //Bias:
+      1.0
+    )
 
 }
