@@ -28,14 +28,12 @@ import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ;
 import org.dbpedia.spotlight.exceptions.InitializationException;
 import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters;
-import org.dbpedia.spotlight.filter.annotations.PercentageOfSecondFilter;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SpotlightFactory;
 import org.dbpedia.spotlight.model.SpotterConfiguration;
 import org.dbpedia.spotlight.spot.Spotter;
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy;
 import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy;
-import org.tartarus.snowball.ext.DutchStemmer;
 
 import java.io.File;
 import java.io.IOException;
@@ -73,7 +71,7 @@ public class Server {
     //This is currently only used in the DB-based version.
     private static Tokenizer tokenizer;
 
-    protected static CombineAllAnnotationFilters CombinedFilters;
+    protected static CombineAllAnnotationFilters combinedFilters = null;
 
     public static void main(String[] args) throws IOException, InterruptedException, URISyntaxException, ClassNotFoundException, InitializationException {
 
@@ -252,11 +250,11 @@ public class Server {
     }
 
     public static CombineAllAnnotationFilters getCombinedFilters() {
-        return CombinedFilters;
+        return combinedFilters;
     }
 
     public static void setCombinedFilters(CombineAllAnnotationFilters combinedFilters) {
-        CombinedFilters = combinedFilters;
+        Server.combinedFilters = combinedFilters;
     }
 
 }

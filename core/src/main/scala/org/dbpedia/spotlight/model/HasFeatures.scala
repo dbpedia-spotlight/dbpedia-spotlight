@@ -21,6 +21,10 @@ trait HasFeatures {
     }
   }
 
+  def featureValueJava(featureName: String): Object = {
+    features.get(featureName).getOrElse(null)
+  }
+
   def setFeature(feature: Feature) {
     features.put(feature.featureName, feature)
   }

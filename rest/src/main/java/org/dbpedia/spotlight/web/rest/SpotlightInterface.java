@@ -159,13 +159,13 @@ public class SpotlightInterface  {
         ParagraphDisambiguatorJ disambiguator = Server.getDisambiguator(disambiguatorName);
         List<DBpediaResourceOccurrence> occList = disambiguate(spots, disambiguator);
 
-        // Linking / filtering
-        scala.collection.immutable.List<OntologyType> ontologyTypes = Factory.ontologyType().fromCSVString(ontologyTypesString);
-
         // Filter: Old monolithic way
         PercentageOfSecondFilter anotherFilter = new PercentageOfSecondFilter(confidence);
-        if (Server.getCombinedFilters() != null)
+        if (Server.getCombinedFilters() != null) {
+            // Linking / filtering
+            scala.collection.immutable.List<OntologyType> ontologyTypes = Factory.ontologyType().fromCSVString(ontologyTypesString);
             occList = Server.getCombinedFilters().filter(occList, confidence, support, ontologyTypes, sparqlQuery, blacklist, coreferenceResolution);
+        }
 
         occList = anotherFilter.filterOccs(occList);
         // Filter: TODO run occurrences through a list of annotation filters (which can be passed by parameter)
