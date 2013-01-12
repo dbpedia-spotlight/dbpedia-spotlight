@@ -20,7 +20,7 @@ class SurfaceFormOccurrence(val surfaceForm : SurfaceForm,
                             val context : Text,
                             var textOffset : Int,
                             val provenance : Provenance.Value,
-                            var spotProb : Double = -1) extends HasFeatures
+                            var spotProb : Double = -1) extends HasFeatures with Ordered[SurfaceFormOccurrence]
 {
 
 
@@ -48,7 +48,7 @@ class SurfaceFormOccurrence(val surfaceForm : SurfaceForm,
     }
 
     override def hashCode() = {
-        3 * this.surfaceForm.asInstanceOf[SurfaceForm].hashCode() + 5 * this.context.asInstanceOf[Text].hashCode() + 7 * this.textOffset.hashCode()
+        3 * this.surfaceForm.hashCode() + 5 * this.context.hashCode() + 7 * this.textOffset.hashCode()
     }
     
     override def toString = {
@@ -57,6 +57,19 @@ class SurfaceFormOccurrence(val surfaceForm : SurfaceForm,
         val end = if (textOffset+span > context.text.length) context.text.length else textOffset+span
         val text = "Text[... " + context.text.substring(start, end) + " ...]"
         surfaceForm+" - at position *"+textOffset+"* in - "+text
+    }
+
+    override def compare(that: SurfaceFormOccurrence): Int = this.textOffset.compare(that.textOffset)
+
+    def intersects(that: SurfaceFormOccurrence): Boolean = {
+      val endThis = this.textOffset+this.surfaceForm.name.length
+      val endThat = that.textOffset+that.surfaceForm.name.length
+
+      if(this.textOffset <= that.textOffset) //this starts before or with that
+        endThis > that.textOffset
+      else //this starts after that
+        endThat > this.textOffset
+
     }
 
 }

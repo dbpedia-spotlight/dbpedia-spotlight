@@ -8,7 +8,7 @@ import opennlp.tools.sentdetect.{SentenceModel, SentenceDetectorME}
 import opennlp.tools.postag.{POSModel, POSTaggerME}
 import org.dbpedia.spotlight.disambiguate.mixtures.UnweightedMixture
 import similarity.GenerativeContextSimilarity
-import org.dbpedia.spotlight.spot.opennlp.OpenNLPChunkerSpotterDB
+import org.dbpedia.spotlight.spot.opennlp.OpenNLPSpotter
 import scala.collection.JavaConverters._
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy
 import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy
@@ -69,8 +69,13 @@ object SpotlightModel {
       new GenerativeContextSimilarity(tokenTypeStore)
     ))
 
-    val spotter = new OpenNLPChunkerSpotterDB(
-      new FileInputStream(new File(modelFolder, "opennlp/chunker.bin")),
+    val nerModels = new File(modelFolder, "opennlp").list().filter(_.startsWith("ner-")).map { f: String =>
+      new FileInputStream(new File(new File(modelFolder, "opennlp"), f))
+    }.toList
+
+    val spotter = new OpenNLPSpotter(
+      Some(new FileInputStream(new File(modelFolder, "opennlp/chunker.bin"))),
+      nerModels,
       sfStore,
       stopwords,
       Some(loadSpotterThresholds(new File(modelFolder, "opennlp_chunker_thresholds.txt"))),

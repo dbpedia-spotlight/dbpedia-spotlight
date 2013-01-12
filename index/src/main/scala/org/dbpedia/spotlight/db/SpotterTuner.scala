@@ -2,7 +2,7 @@ package org.dbpedia.spotlight.db
 
 import memory.MemoryStore
 import model.{Tokenizer, SurfaceFormStore}
-import org.dbpedia.spotlight.spot.opennlp.OpenNLPChunkerSpotterDB.spotFeatures
+import org.dbpedia.spotlight.spot.opennlp.OpenNLPSpotter.spotFeatures
 import breeze.linalg.{DenseMatrix, DenseVector}
 import org.dbpedia.spotlight.io.AnnotatedTextSource
 import breeze.regress.LinearRegression
@@ -12,7 +12,7 @@ import org.dbpedia.spotlight.model.{SurfaceForm, SurfaceFormOccurrence, Annotate
 import org.dbpedia.spotlight.io.WikipediaHeldoutCorpus
 import org.apache.commons.io.FileUtils
 import org.dbpedia.spotlight.exceptions.SurfaceFormNotFoundException
-import org.dbpedia.spotlight.spot.opennlp.OpenNLPChunkerSpotterDB
+import org.dbpedia.spotlight.spot.opennlp.OpenNLPSpotter
 import opennlp.tools.tokenize.{TokenizerModel, TokenizerME}
 import opennlp.tools.sentdetect.{SentenceModel, SentenceDetectorME}
 import opennlp.tools.postag.{POSModel, POSTaggerME}
@@ -22,7 +22,7 @@ import scala.collection.JavaConversions._
 
 object SpotterTuner {
 
-  def tuneOpenNLP(corpus: AnnotatedTextSource, tokenizer: Tokenizer, spotter: OpenNLPChunkerSpotterDB, outputFile: File) {
+  def tuneOpenNLP(corpus: AnnotatedTextSource, tokenizer: Tokenizer, spotter: OpenNLPSpotter, outputFile: File) {
 
     System.err.println("Tuning Spotter model...")
 
@@ -69,7 +69,6 @@ object SpotterTuner {
 
 
   def main(args: Array[String]) {
-    System.err.println("Run!")
 
     val modelFolder = new File("/data/spotlight/models")
 
@@ -88,8 +87,9 @@ object SpotterTuner {
       tokenTypeStore
     )
 
-    val spotter = new OpenNLPChunkerSpotterDB(
-      new FileInputStream(new File(modelFolder, "opennlp/chunker.bin")),
+    val spotter = new OpenNLPSpotter(
+      Some(new FileInputStream(new File(modelFolder, "opennlp/chunker.bin"))),
+      List(),
       sfStore,
       stopwords,
       None,

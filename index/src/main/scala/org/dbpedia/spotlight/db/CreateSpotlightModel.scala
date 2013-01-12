@@ -12,9 +12,14 @@ import org.apache.commons.io.FileUtils
 import opennlp.tools.tokenize.{TokenizerModel, TokenizerME}
 import opennlp.tools.sentdetect.{SentenceModel, SentenceDetectorME}
 import opennlp.tools.postag.{POSModel, POSTaggerME}
-import org.dbpedia.spotlight.spot.opennlp.OpenNLPChunkerSpotterDB
+import org.dbpedia.spotlight.spot.opennlp.OpenNLPSpotter
 
 /**
+ * This script creates a Spotlight model folder from the results of
+ * Apache Pig jobs. For a tutorial, see:
+ *
+ * https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Internationalization-(DB-backed-core)
+ *
  * @author Joachim Daiber
  */
 
@@ -158,8 +163,9 @@ object CreateSpotlightModel {
       tokenStore
     )
 
-    val spotter = new OpenNLPChunkerSpotterDB(
-      new FileInputStream(new File(opennlpOut, "chunker.bin")),
+    val spotter = new OpenNLPSpotter(
+      Some(new FileInputStream(new File(opennlpOut, "chunker.bin"))),
+      List(),
       sfStore,
       stopwords,
       None,
