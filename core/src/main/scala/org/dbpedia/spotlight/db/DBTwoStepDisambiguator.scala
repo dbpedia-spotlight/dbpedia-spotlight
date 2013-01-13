@@ -151,6 +151,12 @@ class DBTwoStepDisambiguator(
         .reverse
         .take(k)
 
+      (1 to candOccs.size-1).foreach{ i: Int =>
+        val top = candOccs(i-1)
+        val bottom = candOccs(i)
+        top.setPercentageOfSecondRank(MathUtil.exp(bottom.similarityScore - top.similarityScore)) //we are dividing (but in log scale)
+      }
+
       acc + (aSfOcc -> candOccs)
     })
 
