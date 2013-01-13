@@ -28,6 +28,7 @@ import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ;
 import org.dbpedia.spotlight.exceptions.InitializationException;
 import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters;
+import org.dbpedia.spotlight.model.DBpediaResource;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SpotlightFactory;
 import org.dbpedia.spotlight.model.SpotterConfiguration;
@@ -73,6 +74,8 @@ public class Server {
 
     protected static CombineAllAnnotationFilters combinedFilters = null;
 
+    private static String namespacePrefix = SpotlightConfiguration.DEFAULT_NAMESPACE;
+
     public static void main(String[] args) throws IOException, InterruptedException, URISyntaxException, ClassNotFoundException, InitializationException {
 
         URI serverURI = null;
@@ -117,6 +120,8 @@ public class Server {
 
             SpotlightModel db = SpotlightModel.fromFolder(modelFolder);
 
+
+            setNamespacePrefix(db.properties().getProperty("namespace"));
             setTokenizer(db.tokenizer());
             setSpotters(db.spotters());
             setDisambiguators(db.disambiguators());
@@ -257,4 +262,11 @@ public class Server {
         Server.combinedFilters = combinedFilters;
     }
 
+    public static String getPrefixedDBpediaURL(DBpediaResource resource) {
+        return namespacePrefix + resource.uri();
+    }
+
+    public static void setNamespacePrefix(String namespacePrefix) {
+        Server.namespacePrefix = namespacePrefix;
+    }
 }

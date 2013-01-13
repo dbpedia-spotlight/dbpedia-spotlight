@@ -27,20 +27,21 @@ object CreateSpotlightModel {
 
   def main(args: Array[String]) {
 
-    val (rawDataFolder: File, outputFolder: File, opennlpFolder: File, stopwordsFile: File, stemmer: SnowballProgram) = try {
+    val (language: String, rawDataFolder: File, outputFolder: File, opennlpFolder: File, stopwordsFile: File, stemmer: SnowballProgram) = try {
       (
-        new File(args(0)),
+        args(0),
         new File(args(1)),
         new File(args(2)),
         new File(args(3)),
-        if (args(4) equals "None") null else Class.forName("org.tartarus.snowball.ext.%s".format(args(4))).newInstance()
+        new File(args(4)),
+        if (args(5) equals "None") null else Class.forName("org.tartarus.snowball.ext.%s".format(args(5))).newInstance()
       )
     } catch {
       case e: Exception => {
         e.printStackTrace()
         System.err.println("Usage:")
-        System.err.println(" - English:    mvn scala:run -DmainClass=org.dbpedia.spotlight.db.CreateSpotlightModel -Dexec.args=\"/data/input /data/output /data/opennlp /data/stopwords.list EnglishStemmer\"")
-        System.err.println(" - no stemmer: mvn scala:run -DmainClass=org.dbpedia.spotlight.db.CreateSpotlightModel -Dexec.args=\"/data/input /data/output /data/opennlp /data/stopwords.list None\"")
+        System.err.println(" - English:    mvn scala:run -DmainClass=org.dbpedia.spotlight.db.CreateSpotlightModel -Dexec.args=\"en /data/input /data/output /data/opennlp /data/stopwords.list EnglishStemmer http://nl.dbpedia.org/resource/\"")
+        System.err.println(" - no stemmer: mvn scala:run -DmainClass=org.dbpedia.spotlight.db.CreateSpotlightModel -Dexec.args=\"en /data/input /data/output /data/opennlp /data/stopwords.list None http://nl.dbpedia.org/resource/\"")
         System.exit(1)
       }
     }
@@ -82,11 +83,20 @@ object CreateSpotlightModel {
         System.exit(1)
       }
     }
-    //TODO: add NER
+
+
+    val namespace = if (language.equals("en")) {
+      "http://dbpedia.org/resource/"
+    } else {
+      "http://%s.dbpedia.org/resource/".format(language)
+    }
+
 
     //Set default properties
     val defaultProperties = new Properties()
-    defaultProperties.setProperty("stemmer", args(4))
+    defaultProperties.setProperty("stemmer",   args(5))
+    defaultProperties.setProperty("namespace", namespace)
+
 
     defaultProperties.store(new FileOutputStream(new File(outputFolder, "model.properties")), null)
 
@@ -98,6 +108,7 @@ object CreateSpotlightModel {
     //val diskIndexer = new JDBMStoreIndexer(new File("data/"))
 
     val wikipediaToDBpediaClosure = new WikipediaToDBpediaClosure(
+      namespace,
       new FileInputStream(new File(rawDataFolder, "redirects.nt")),
       new FileInputStream(new File(rawDataFolder, "disambiguations.nt"))
     )
@@ -106,7 +117,14 @@ object CreateSpotlightModel {
       DBpediaResourceSource.fromPigFiles(
         wikipediaToDBpediaClosure,
         new File(rawDataFolder, "uriCounts"),
-        null //new File("raw_data/pig/instanceTypes.tsv")
+        (if (new File(rawDataFolder, "instance_types.nt").exists())
+          new File(rawDataFolder, "instance_types.nt")
+        else if (new File(rawDataFolder, "instanceTypes.tsv").exists())
+          new File(rawDataFolder, "instanceTypes.tsv")
+        else
+          null
+        ),
+        namespace
       )
     )
 
