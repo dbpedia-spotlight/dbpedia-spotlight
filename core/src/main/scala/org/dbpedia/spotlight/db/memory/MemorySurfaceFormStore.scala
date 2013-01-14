@@ -27,7 +27,11 @@ class MemorySurfaceFormStore
   var totalCountForID: Array[Int]     = null
 
   @transient
-  var totalCount = 0
+  var totalAnnotatedCount = 0
+
+  @transient
+  var totalOccurrenceCount = 0
+
 
   @transient
   var stopWords: Set[String] = Set("the", "an", "a")
@@ -41,12 +45,17 @@ class MemorySurfaceFormStore
 
   def size = stringForID.size
 
-  def getTotalCount: Int = totalCount
+  def getTotalAnnotatedCount: Int = totalAnnotatedCount
+  def getTotalOccurrenceCount: Int = totalOccurrenceCount
+
+
 
   def createReverseLookup() {
 
     LOG.info("Summing total SF counts.")
-    totalCount = annotatedCountForID.sum
+    totalAnnotatedCount = annotatedCountForID.sum
+    totalOccurrenceCount = totalCountForID.sum
+
 
     if (stringForID != null) {
       LOG.info("Creating reverse-lookup for surface forms, adding normalized surface forms.")

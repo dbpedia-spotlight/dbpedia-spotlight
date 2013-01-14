@@ -11,6 +11,7 @@ import org.dbpedia.spotlight.exceptions.{SurfaceFormNotFoundException, InputExce
 import collection.mutable
 import scala.Predef._
 import org.dbpedia.spotlight.util.MathUtil
+import breeze.{numerics, linalg}
 
 
 /**
@@ -40,6 +41,12 @@ class DBTwoStepDisambiguator(
   /* Tokenizer that may be used for tokenization if the text is not already tokenized. */
   var tokenizer: Tokenizer = null
 
+  private def getQuery(tokenTypes: Seq[TokenType]): java.util.Map[TokenType, Int]
+    = tokenTypes.groupBy(identity).mapValues(_.size).asJava
+
+  private def getQuery(text: Text): java.util.Map[TokenType, Int]
+    = getQuery(text.featureValue[List[Token]]("tokens").get.map{ t: Token => t.tokenType })
+
   /**
    * Calculate the context similarity given the text for all candidates in the set.
    *
@@ -49,8 +56,7 @@ class DBTwoStepDisambiguator(
    */
   def getContextSimilarityScores(text: Text, candidates: Set[DBpediaResource]): mutable.Map[DBpediaResource, Double] = {
 
-    val tokenTypes = text.featureValue[List[Token]]("tokens").get.map{ t: Token => t.tokenType }
-    val query = tokenTypes.groupBy(identity).mapValues(_.size).asJava
+    val query = getQuery(text)
 
     val contextCounts = candidates.map{ candRes: DBpediaResource =>
       (candRes -> contextStore.getContextCounts(candRes))
@@ -118,6 +124,26 @@ class DBTwoStepDisambiguator(
 
     // pick the best k for each surface form
     occs.keys.foldLeft(Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]())( (acc, aSfOcc) => {
+
+      //Get the NIL entity:
+      val eNIL = new DBpediaResourceOccurrence(
+        new DBpediaResource("--nil--"),
+        aSfOcc.surfaceForm,
+        paragraph.text,
+        -1
+      )
+
+      aSfOcc.featureValue[Array[TokenType]]("token_types") match {
+        case Some(t) => eNIL.setFeature(new Score("P(s|e)", contextSimilarity.nilScore(getQuery(t))))
+        case _ =>
+      }
+
+      val nilContextScore = contextSimilarity.nilScore(getQuery(aSfOcc.context))
+      eNIL.setFeature(new Score("P(c|e)", nilContextScore))
+      eNIL.setFeature(new Score("P(e)",   MathUtil.ln( 1 / surfaceFormStore.getTotalAnnotatedCount.toDouble ) )) //surfaceFormStore.getTotalAnnotatedCount = total number of entity mentions
+      val nilEntityScore = mixture.getScore(eNIL)
+
+      //Get all other entities:
       val candOccs = occs.getOrElse(aSfOcc, List[Candidate]())
         .map{ cand: Candidate => {
         val resOcc = new DBpediaResourceOccurrence(
@@ -146,15 +172,25 @@ class DBTwoStepDisambiguator(
         resOcc
       }
       }
-        .filter{ o => !java.lang.Double.isNaN(o.similarityScore) }
+        .filter{ o => !java.lang.Double.isNaN(o.similarityScore) && o.similarityScore > nilEntityScore }
         .sortBy( o => o.similarityScore )
         .reverse
         .take(k)
 
+
+      //Compute the final score as a softmax function, get the total score first:
+      val similaritySoftMaxTotal = linalg.softmax(candOccs.map(_.similarityScore) :+ nilEntityScore)
+      val contextSoftMaxTotal    = linalg.softmax(candOccs.map(_.contextualScore) :+ nilContextScore )
+
+      candOccs.foreach{ o: DBpediaResourceOccurrence =>
+        o.setSimilarityScore( MathUtil.exp(o.similarityScore - similaritySoftMaxTotal) ) // e^xi / \sum e^xi
+        o.setContextualScore( MathUtil.exp(o.contextualScore - contextSoftMaxTotal) )    // e^xi / \sum e^xi
+      }
+
       (1 to candOccs.size-1).foreach{ i: Int =>
         val top = candOccs(i-1)
         val bottom = candOccs(i)
-        top.setPercentageOfSecondRank(MathUtil.exp(bottom.similarityScore - top.similarityScore)) //we are dividing (but in log scale)
+        top.setPercentageOfSecondRank(bottom.similarityScore / top.similarityScore)
       }
 
       acc + (aSfOcc -> candOccs)

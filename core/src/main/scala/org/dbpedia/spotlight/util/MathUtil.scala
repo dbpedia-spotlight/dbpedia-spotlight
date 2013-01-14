@@ -40,6 +40,10 @@ object MathUtil {
     }
   }
 
+  def lnsum(seq: TraversableOnce[Double]): Double = {
+    seq.foldLeft(MathUtil.ln(0.0))(MathUtil.lnsum)
+  }
+
   def lnproduct(seq: TraversableOnce[Double]): Double = {
     seq.foldLeft(MathUtil.ln(1.0))(MathUtil.lnproduct)
   }

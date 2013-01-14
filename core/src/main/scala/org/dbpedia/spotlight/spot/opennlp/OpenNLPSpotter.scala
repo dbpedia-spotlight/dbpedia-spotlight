@@ -64,6 +64,7 @@ class OpenNLPSpotter(
     //Go through all sentences
     sentences.foreach{ sentence: List[Token] =>
       val tokens = sentence.map(_.token).toArray
+      val tokenTypes = sentence.map(_.tokenType).toArray
       val tags = sentence.map(_.featureValue[String]("pos").get).toArray
 
       //Go through all chunks
@@ -95,6 +96,7 @@ class OpenNLPSpotter(
                   //The sub-chunk is in the dictionary, finish the processing of this chunk
                   val spotOcc = new SurfaceFormOccurrence(surfaceFormStore.getSurfaceForm(spot), text, startOffset, Provenance.Annotation, spotScore(spot))
                   spotOcc.setFeature(new Nominal("spot_type", chunkSpan.getType))
+                  spotOcc.setFeature(new Feature("token_types", tokenTypes.slice(startToken, lastToken)))
                   spots += spotOcc
                   break()
                 }

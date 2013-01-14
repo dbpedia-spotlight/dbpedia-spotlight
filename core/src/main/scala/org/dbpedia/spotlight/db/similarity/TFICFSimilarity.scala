@@ -97,5 +97,8 @@ class TFICFSimilarity extends ContextSimilarity {
     scores
   }
 
+  def nilScore(query: java.util.Map[TokenType, Int]): Double = {
+    0.0
+  }
 
 }

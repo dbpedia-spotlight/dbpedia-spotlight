@@ -103,6 +103,11 @@ class DBpediaResourceOccurrence(val id : String,
         this.percentageOfSecondRank = p
     }
 
+    def setContextualScore(p: Double) {
+      setFeature(new Score("contextualScore", p))
+      this.contextualScore = p
+    }
+
 
 }
 
