@@ -40,8 +40,8 @@ object CreateSpotlightModel {
       case e: Exception => {
         e.printStackTrace()
         System.err.println("Usage:")
-        System.err.println(" - English:    mvn scala:run -DmainClass=org.dbpedia.spotlight.db.CreateSpotlightModel -Dexec.args=\"en /data/input /data/output /data/opennlp /data/stopwords.list EnglishStemmer http://nl.dbpedia.org/resource/\"")
-        System.err.println(" - no stemmer: mvn scala:run -DmainClass=org.dbpedia.spotlight.db.CreateSpotlightModel -Dexec.args=\"en /data/input /data/output /data/opennlp /data/stopwords.list None http://nl.dbpedia.org/resource/\"")
+        System.err.println(" - English:    mvn scala:run -DmainClass=org.dbpedia.spotlight.db.CreateSpotlightModel -Dexec.args=\"en /data/input /data/output /data/opennlp /data/stopwords.list EnglishStemmer\"")
+        System.err.println(" - no stemmer: mvn scala:run -DmainClass=org.dbpedia.spotlight.db.CreateSpotlightModel -Dexec.args=\"en /data/input /data/output /data/opennlp /data/stopwords.list None\"")
         System.exit(1)
       }
     }
@@ -130,6 +130,9 @@ object CreateSpotlightModel {
 
     val resStore = MemoryStore.loadResourceStore(new FileInputStream(new File(modelDataFolder, "res.mem")))
 
+    val onlpTokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(new File(opennlpOut, "token.bin"))))
+
+    memoryIndexer.tokenizer = Some(onlpTokenizer)
     memoryIndexer.addSurfaceForms(
       SurfaceFormSource.fromPigFiles(
         new File(rawDataFolder, "sfAndTotalCounts"),
@@ -173,13 +176,14 @@ object CreateSpotlightModel {
 
     //Tune Spotter:
     val tokenizer: Tokenizer = new DefaultTokenizer(
-      new TokenizerME(new TokenizerModel(new FileInputStream(new File(opennlpOut, "token.bin")))),
+      onlpTokenizer,
       stopwords,
       stemmer,
       new SentenceDetectorME(new SentenceModel(new FileInputStream(new File(opennlpOut, "sent.bin")))),
       new POSTaggerME(new POSModel(new FileInputStream(new File(opennlpOut, "pos-maxent.bin")))),
       tokenStore
     )
+
 
     val spotter = new OpenNLPSpotter(
       Some(new FileInputStream(new File(opennlpOut, "chunker.bin"))),

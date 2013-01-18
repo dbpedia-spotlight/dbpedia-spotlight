@@ -13,6 +13,9 @@ import java.util.{Map, Set}
 import java.io.File
 import org.dbpedia.spotlight.model._
 import scala.{Array, Int}
+import java.util
+import collection.mutable
+import opennlp.tools.tokenize.Tokenizer
 
 /**
  * Implements memory-based indexing. The memory stores are serialized and deserialized using Kryo.
@@ -34,6 +37,17 @@ class MemoryStoreIndexer(val baseDir: File)
     throw new NotImplementedException()
   }
 
+  def getSingleNgram(sf: String, tokenizer: Tokenizer): String = {
+    tokenizer.tokenize(sf).mkString(" ")
+  }
+
+  def getAllNgrams(sf: String, tokenizer: Tokenizer, n: Int): Seq[String] = {
+    val tokens = tokenizer.tokenize(sf)
+    (1 to math.min(n, tokens.size-1)).flatMap( tokens.sliding(_).map(_.mkString(" ")) )
+  }
+
+  var tokenizer: Option[Tokenizer] = None
+
   def addSurfaceForms(sfCount: Map[SurfaceForm, (Int, Int)]) {
 
     val sfStore = new MemorySurfaceFormStore()
@@ -42,6 +56,11 @@ class MemoryStoreIndexer(val baseDir: File)
     val totalCountForID = new Array[Int](sfCount.size + 1)
     val stringForID = new Array[String](sfCount.size + 1)
 
+    val annotatedCountByNgram = if (tokenizer.isDefined)
+      new mutable.HashMap[String, Int]() { override def default(key: String) = 0 }
+    else
+      null
+
     var i = 1
     sfCount foreach {
       case (sf, counts) => {
@@ -49,7 +68,22 @@ class MemoryStoreIndexer(val baseDir: File)
         annotatedCountForID(i) = counts._1
         totalCountForID(i) = counts._2
 
+        // Add the annotated count of the current sf to the total annotated count of the ngram
+        if (tokenizer.isDefined)
+          getAllNgrams(sf.name, tokenizer.get, 5).foreach( annotatedCountByNgram(_) += counts._1 )
+
         i += 1
+      }
+    }
+
+    if (tokenizer.isDefined) {
+      // Subtract the sum of all cases where the sf is part of a bigger, annotated surface form.
+
+      (1 to i-1) foreach { j: Int =>
+
+        //The correct total count is the original one MINUS the wrong annotated counts of bigger surface forms
+        if(totalCountForID(j) > 0)
+          totalCountForID(j) = totalCountForID(j) - annotatedCountByNgram( getSingleNgram(stringForID(j), tokenizer.get) )
       }
     }
 
@@ -59,6 +93,9 @@ class MemoryStoreIndexer(val baseDir: File)
 
     MemoryStore.dump(sfStore, new File(baseDir, "sf.mem"))
   }
+
+
+
 
 
   //RESOURCES

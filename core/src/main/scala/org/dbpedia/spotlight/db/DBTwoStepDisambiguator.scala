@@ -177,6 +177,11 @@ class DBTwoStepDisambiguator(
         .reverse
         .take(k)
 
+      (1 to candOccs.size-1).foreach{ i: Int =>
+        val top = candOccs(i-1)
+        val bottom = candOccs(i)
+        top.setPercentageOfSecondRank(MathUtil.exp(bottom.similarityScore - top.similarityScore))
+      }
 
       //Compute the final score as a softmax function, get the total score first:
       val similaritySoftMaxTotal = linalg.softmax(candOccs.map(_.similarityScore) :+ nilEntityScore)
@@ -185,12 +190,6 @@ class DBTwoStepDisambiguator(
       candOccs.foreach{ o: DBpediaResourceOccurrence =>
         o.setSimilarityScore( MathUtil.exp(o.similarityScore - similaritySoftMaxTotal) ) // e^xi / \sum e^xi
         o.setContextualScore( MathUtil.exp(o.contextualScore - contextSoftMaxTotal) )    // e^xi / \sum e^xi
-      }
-
-      (1 to candOccs.size-1).foreach{ i: Int =>
-        val top = candOccs(i-1)
-        val bottom = candOccs(i)
-        top.setPercentageOfSecondRank(bottom.similarityScore / top.similarityScore)
       }
 
       acc + (aSfOcc -> candOccs)
