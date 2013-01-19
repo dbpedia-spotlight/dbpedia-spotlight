@@ -147,6 +147,7 @@ class OpenNLPSpotter(
       }
     } catch {
       case e: SurfaceFormNotFoundException => 0.0
+      case _ => 0.0
     }
   }
 
@@ -155,6 +156,13 @@ class OpenNLPSpotter(
 
   val typeOrder = Array("person", "organization", "location", "misc") :+ phraseTags :+ Array("Capital_Sequences")
 
+  /**
+   * This method resolves overlap conflicts in spots by considering their source (e.g. NER, chunking) and
+   * their scores.
+   *
+   * @param spots
+   * @return
+   */
   def dropOverlappingSpots(spots: Seq[SurfaceFormOccurrence]): java.util.LinkedList[SurfaceFormOccurrence] = {
 
     val sortedSpots = spots.sorted

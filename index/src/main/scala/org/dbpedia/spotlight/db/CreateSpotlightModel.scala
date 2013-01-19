@@ -113,6 +113,17 @@ object CreateSpotlightModel {
       new FileInputStream(new File(rawDataFolder, "disambiguations.nt"))
     )
 
+
+    val onlpTokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(new File(opennlpOut, "token.bin"))))
+
+    memoryIndexer.tokenizer = Some(onlpTokenizer)
+    memoryIndexer.addSurfaceForms(
+      SurfaceFormSource.fromPigFiles(
+        new File(rawDataFolder, "sfAndTotalCounts"),
+        wikiClosure=wikipediaToDBpediaClosure
+      )
+    )
+
     memoryIndexer.addResources(
       DBpediaResourceSource.fromPigFiles(
         wikipediaToDBpediaClosure,
@@ -129,18 +140,6 @@ object CreateSpotlightModel {
     )
 
     val resStore = MemoryStore.loadResourceStore(new FileInputStream(new File(modelDataFolder, "res.mem")))
-
-    val onlpTokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(new File(opennlpOut, "token.bin"))))
-
-    memoryIndexer.tokenizer = Some(onlpTokenizer)
-    memoryIndexer.addSurfaceForms(
-      SurfaceFormSource.fromPigFiles(
-        new File(rawDataFolder, "sfAndTotalCounts"),
-        wikiClosure=wikipediaToDBpediaClosure,
-        resStore
-      )
-    )
-
     val sfStore  = MemoryStore.loadSurfaceFormStore(new FileInputStream(new File(modelDataFolder, "sf.mem")))
 
     memoryIndexer.addCandidatesByID(

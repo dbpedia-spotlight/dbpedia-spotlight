@@ -37,13 +37,12 @@ class MemoryStoreIndexer(val baseDir: File)
     throw new NotImplementedException()
   }
 
-  def getSingleNgram(sf: String, tokenizer: Tokenizer): String = {
-    tokenizer.tokenize(sf).mkString(" ")
+  def ngram(sf: String, tokenizer: Tokenizer): Seq[String] = {
+    tokenizer.tokenize(sf)
   }
 
-  def getAllNgrams(sf: String, tokenizer: Tokenizer, n: Int): Seq[String] = {
-    val tokens = tokenizer.tokenize(sf)
-    (1 to math.min(n, tokens.size-1)).flatMap( tokens.sliding(_).map(_.mkString(" ")) )
+  def getAllNgrams(grams: Seq[String]): Seq[Seq[String]] = {
+    (1 to grams.size-1).flatMap( grams.sliding(_) )
   }
 
   var tokenizer: Option[Tokenizer] = None
@@ -56,11 +55,6 @@ class MemoryStoreIndexer(val baseDir: File)
     val totalCountForID = new Array[Int](sfCount.size + 1)
     val stringForID = new Array[String](sfCount.size + 1)
 
-    val annotatedCountByNgram = if (tokenizer.isDefined)
-      new mutable.HashMap[String, Int]() { override def default(key: String) = 0 }
-    else
-      null
-
     var i = 1
     sfCount foreach {
       case (sf, counts) => {
@@ -68,24 +62,55 @@ class MemoryStoreIndexer(val baseDir: File)
         annotatedCountForID(i) = counts._1
         totalCountForID(i) = counts._2
 
-        // Add the annotated count of the current sf to the total annotated count of the ngram
-        if (tokenizer.isDefined)
-          getAllNgrams(sf.name, tokenizer.get, 5).foreach( annotatedCountByNgram(_) += counts._1 )
-
         i += 1
       }
     }
 
+
     if (tokenizer.isDefined) {
-      // Subtract the sum of all cases where the sf is part of a bigger, annotated surface form.
 
-      (1 to i-1) foreach { j: Int =>
+      //Get all sfs as ngrams in increasing order by their length in tokens
+      val sfId = mutable.HashMap[String, Int]()
 
-        //The correct total count is the original one MINUS the wrong annotated counts of bigger surface forms
-        if(totalCountForID(j) > 0)
-          totalCountForID(j) = totalCountForID(j) - annotatedCountByNgram( getSingleNgram(stringForID(j), tokenizer.get) )
+      //Here be dragons:
+      // Correct the counts for sf that are parts of large surface forms:
+      // Careful:
+      //  We are making an assumption that is not necessarily true:
+      //   Assumption: In a Wiki article, an annotation is always of the longest possible surface form.
+      //   Example: My [Apple Macbook Pro]. [Apple Macbook Pro] and not [Apple Macbook] Pro
+      //
+      // Walk the ngrams of the surface forms in increasing order of length from 2 to n, always take the sub-ngrams of size i-1
+      // For every sub-ngram: if it is a surface form, reduce its total count by the count of the current surface form.
+      stringForID.zipWithIndex.flatMap{
+        case (sf: String, id: Int) => {
+          val sfNgram = ngram(sf, tokenizer.get)
+
+          sfId.put(sfNgram.mkString(" "),
+            sfId.get(sfNgram.mkString(" ")) match {
+              case None => id
+              case Some(existingID) => if(annotatedCountForID(id) > annotatedCountForID(existingID)) id else existingID
+            }
+          )
+
+          Some(sfNgram, id)
+        }
+        case _ => None
+      }.sortBy(_._1.size).reverse.foreach{
+        case (ngram: Seq[String], id: Int) if(ngram.size > 1) => {
+          getAllNgrams(ngram).foreach{ subngram: Seq[String] =>
+            sfId.get(subngram.mkString(" ")) match {
+              case Some(subID) if(totalCountForID(subID) > 0 && annotatedCountForID(id) > 0) => totalCountForID(subID) = totalCountForID(subID) - annotatedCountForID(id)
+              case _ =>
+            }
+          }
+        }
+        case _ =>
       }
+
+      println(sfId("East Germany"), "-", annotatedCountForID(sfId("East Germany")), "-", totalCountForID(sfId("East Germany")))
+
     }
+
 
     sfStore.stringForID  = stringForID
     sfStore.annotatedCountForID = annotatedCountForID
