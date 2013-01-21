@@ -61,15 +61,25 @@ class SurfaceFormOccurrence(val surfaceForm : SurfaceForm,
 
     override def compare(that: SurfaceFormOccurrence): Int = this.textOffset.compare(that.textOffset)
 
-    def intersects(that: SurfaceFormOccurrence): Boolean = {
+    def contains(that: SurfaceFormOccurrence): Boolean = {
       val endThis = this.textOffset+this.surfaceForm.name.length
       val endThat = that.textOffset+that.surfaceForm.name.length
 
-      if(this.textOffset <= that.textOffset) //this starts before or with that
-        endThis > that.textOffset
-      else //this starts after that
-        endThat > this.textOffset
+      this.textOffset <= that.textOffset && endThat <= endThis
+    }
 
+    def intersects(that: SurfaceFormOccurrence): Boolean = {
+      //Borrowed from the OpenNLP Span class:
+
+      val startThis = this.textOffset
+      val startThat = that.textOffset
+      val endThis = this.textOffset+this.surfaceForm.name.length
+      val endThat = that.textOffset+that.surfaceForm.name.length
+
+      //either s's start is in this or this' start is in s
+      this.contains(that) || that.contains(this) ||
+        startThis <= startThat && startThat < endThis ||
+        startThat <= startThis && startThis < endThat
     }
 
 }

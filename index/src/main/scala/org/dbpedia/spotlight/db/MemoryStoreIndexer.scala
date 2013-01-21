@@ -107,8 +107,6 @@ class MemoryStoreIndexer(val baseDir: File)
         case _ =>
       }
 
-      println(sfId("East Germany"), "-", annotatedCountForID(sfId("East Germany")), "-", totalCountForID(sfId("East Germany")))
-
     }
 
 

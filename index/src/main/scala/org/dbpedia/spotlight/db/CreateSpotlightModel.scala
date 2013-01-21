@@ -194,7 +194,7 @@ object CreateSpotlightModel {
     )
 
     SpotterTuner.tuneOpenNLP(
-      new WikipediaHeldoutCorpus(Source.fromFile(new File(rawDataFolder, "test.txt")).getLines()),
+      WikipediaHeldoutCorpus.fromFile(new File(rawDataFolder, "test.txt")),
       tokenizer,
       spotter,
       new File(outputFolder, "opennlp_chunker_thresholds.txt")

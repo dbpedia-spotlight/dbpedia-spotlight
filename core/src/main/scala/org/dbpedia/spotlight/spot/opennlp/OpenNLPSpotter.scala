@@ -92,7 +92,6 @@ class OpenNLPSpotter(
               val spot = text.text.substring(startOffset, endOffset)
 
               if (surfaceFormMatch(spot)) {
-                if ( !((lastToken == startToken) && !tags(startToken).toUpperCase.startsWith(nnTag) || stopwords.contains(spot.toLowerCase))) {
                   //The sub-chunk is in the dictionary, finish the processing of this chunk
                   val spotOcc = new SurfaceFormOccurrence(surfaceFormStore.getSurfaceForm(spot), text, startOffset, Provenance.Annotation, spotScore(spot))
                   spotOcc.setFeature(new Nominal("spot_type", chunkSpan.getType))
@@ -100,7 +99,6 @@ class OpenNLPSpotter(
                   spots += spotOcc
                   break()
                 }
-              }
               
             })
           }
@@ -151,7 +149,16 @@ class OpenNLPSpotter(
     }
   }
 
-  private def surfaceFormMatch(spot: String): Boolean = spotScore(spot) > 0.45
+  private def surfaceFormMatch(spot: String): Boolean = {
+    try {
+      System.err.println(spot + ":" + spotScore(spot) + " ann:" + surfaceFormStore.getSurfaceForm(spot).annotatedCount.toString + ", total:" + surfaceFormStore.getSurfaceForm(spot).totalCount.toString)
+    } catch {
+      case e: SurfaceFormNotFoundException => println(spot)
+      case _ =>
+    }
+
+    spotScore(spot) > 0.45
+  }
 
 
   val typeOrder = Array("person", "organization", "location", "misc") :+ phraseTags :+ Array("Capital_Sequences")
@@ -217,7 +224,7 @@ object OpenNLPSpotter {
       spot.annotationProbability,
 
       //Abbreviations:
-      if(spot.name.toUpperCase.equals(spot.name) && spot.name.size < 5) 1.0 else 0.0,
+      if(spot.name.toUpperCase.equals(spot.name) && spot.name.size < 5 && !spot.name.matches("[0-9]+")) 1.0 else 0.0,
 
       //Bias:
       1.0

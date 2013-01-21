@@ -1,6 +1,10 @@
 package org.dbpedia.spotlight.io
 
 import org.dbpedia.spotlight.model.{Text, DBpediaResourceOccurrence, AnnotatedParagraph}
+import org.dbpedia.spotlight.db.{DBCandidateSearcher, WikipediaToDBpediaClosure}
+import java.io.File
+import io.Source
+import org.dbpedia.spotlight.exceptions.NotADBpediaResourceException
 
 /**
  * AnnotatedTextSource for heldout data generated from Wikipedia using the
@@ -11,11 +15,42 @@ import org.dbpedia.spotlight.model.{Text, DBpediaResourceOccurrence, AnnotatedPa
  *              were extracted as heldout data from the MediaWiki dump.
  *
  */
-class WikipediaHeldoutCorpus(val lines: Iterator[String]) extends AnnotatedTextSource {
+class WikipediaHeldoutCorpus(val lines: Iterator[String],
+                             val wikiToDBpediaClosure: Option[WikipediaToDBpediaClosure],
+                             val candidateSearcher: Option[DBCandidateSearcher]) extends AnnotatedTextSource {
+
   override def foreach[U](f : AnnotatedParagraph => U) {
     WikiOccurrenceSource.fromPigHeldoutFile(lines).groupBy(_.context).foreach {
       m: (Text, Traversable[DBpediaResourceOccurrence]) =>
-        f(new AnnotatedParagraph(m._1, m._2.toList))
+        f(new AnnotatedParagraph(m._1, resolveRedirectsAndFilter(m._2)))
     }
   }
+
+  def resolveRedirectsAndFilter(occs: Traversable[DBpediaResourceOccurrence]): List[DBpediaResourceOccurrence] =
+    if(wikiToDBpediaClosure.isEmpty && candidateSearcher.isEmpty)
+       occs.toList
+    else
+      occs.flatMap({ occ: DBpediaResourceOccurrence =>
+        try {
+          occ.resource.uri = wikiToDBpediaClosure.get.wikipediaToDBpediaURI(occ.resource.uri)
+
+          if (candidateSearcher.get.getAmbiguity(occ.surfaceForm) > 1)
+            Some(occ)
+          else
+            None
+        } catch {
+          case e: NotADBpediaResourceException => None
+        }
+      }).toList
+
+}
+
+object WikipediaHeldoutCorpus {
+
+  def fromFile(corpus: File, wikiToDBpediaClosure: WikipediaToDBpediaClosure, candidateSearcher: DBCandidateSearcher): WikipediaHeldoutCorpus = {
+    new WikipediaHeldoutCorpus(Source.fromFile(corpus).getLines().toList.iterator, Option(wikiToDBpediaClosure), Option(candidateSearcher))
+  }
+
+  def fromFile(corpus: File): WikipediaHeldoutCorpus = fromFile(corpus, null, null)
+
 }
