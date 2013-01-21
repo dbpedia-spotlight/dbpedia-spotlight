@@ -77,7 +77,7 @@ class GenerativeContextSimilarity(tokenTypeStore: TokenTypeStore) extends Contex
   def nilScore(query: java.util.Map[TokenType, Int]): Double = {
     MathUtil.lnproduct(
       query.map{ case(t: TokenType, c: Int) =>
-        MathUtil.lnproduct(MathUtil.ln(c), pLM(t))
+        MathUtil.lnproduct(MathUtil.ln(c.toDouble), MathUtil.lnproduct(MathUtil.ln(1-lambda), pLM(t)))
       }
     )
   }
