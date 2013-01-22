@@ -65,13 +65,15 @@ class OpenNLPSpotter(
     sentences.foreach{ sentence: List[Token] =>
       val tokens = sentence.map(_.token).toArray
       val tokenTypes = sentence.map(_.tokenType).toArray
-      val tags = sentence.map(_.featureValue[String]("pos").get).toArray
 
       //Go through all chunks
       var spans = uppercaseFinder.find(tokens).map{ s: Span => new Span(s.getStart, s.getEnd, "Capital_Sequences") }.toArray
 
       chunker match {
-        case Some(c) => spans ++= c.chunkAsSpans(tokens, tags).filter(chunkSpan => phraseTags.contains(chunkSpan.getType))
+        case Some(c) => {
+          val tags = sentence.map(_.featureValue[String]("pos").get).toArray
+          spans ++= c.chunkAsSpans(tokens, tags).filter(chunkSpan => phraseTags.contains(chunkSpan.getType))
+        }
         case None =>
       }
 
@@ -150,13 +152,6 @@ class OpenNLPSpotter(
   }
 
   private def surfaceFormMatch(spot: String): Boolean = {
-    try {
-      System.err.println(spot + ":" + spotScore(spot) + " ann:" + surfaceFormStore.getSurfaceForm(spot).annotatedCount.toString + ", total:" + surfaceFormStore.getSurfaceForm(spot).totalCount.toString)
-    } catch {
-      case e: SurfaceFormNotFoundException => println(spot)
-      case _ =>
-    }
-
     spotScore(spot) > 0.45
   }
 

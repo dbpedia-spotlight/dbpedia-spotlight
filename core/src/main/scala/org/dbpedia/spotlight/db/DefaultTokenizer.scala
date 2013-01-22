@@ -16,14 +16,12 @@ class DefaultTokenizer(
   stopWords: Set[String],
   stemmer: SnowballProgram,
   sentenceDetector: SentenceDetector,
-  posTagger: POSTagger,
+  var posTagger: POSTagger,
   tokenTypeStore: TokenTypeStore
 ) extends Tokenizer {
 
   def tokenize(text: Text): List[Token] = {
     this.synchronized {
-
-      if (posTagger != null) {
 
         val sentences: Array[Span] = sentenceDetector.sentPosDetect(text.text)
 
@@ -33,7 +31,7 @@ class DefaultTokenizer(
 
           val sentenceTokens   = tokenizer.tokenize(sentence)
           val sentenceTokenPos = tokenizer.tokenizePos(sentence)
-          val posTags          = posTagger.tag(sentenceTokens)
+          val posTags          = if(posTagger != null) posTagger.tag(sentenceTokens) else Array[String]()
 
           (0 to sentenceTokens.size-1).map{ i: Int =>
             val token = if (stopWords contains sentenceTokens(i)) {
@@ -41,7 +39,9 @@ class DefaultTokenizer(
             } else {
               new Token(sentenceTokens(i), sentencePos.getStart + sentenceTokenPos(i).getStart, getStemmedTokenType(sentenceTokens(i)))
             }
-            token.setFeature(new Feature("pos", posTags(i)))
+
+            if(posTagger != null)
+              token.setFeature(new Feature("pos", posTags(i)))
 
             if(i == sentenceTokens.size-1)
               token.setFeature(new Feature("end-of-sentence", true))
@@ -49,18 +49,6 @@ class DefaultTokenizer(
             token
           }
         }.flatten.toList
-      } else {
-
-        val stringTokens   = tokenizer.tokenize(text.text)
-        val stringTokenPos = tokenizer.tokenizePos(text.text)
-
-        (0 to stringTokens.size-1).map{ i: Int =>
-          if (stopWords contains stringTokens(i))
-            new Token(stringTokens(i), stringTokenPos(i).getStart, TokenType.STOPWORD)
-          else
-            new Token(stringTokens(i), stringTokenPos(i).getStart, getStemmedTokenType(stringTokens(i)))
-        }.toList
-      }
     }
 
   }

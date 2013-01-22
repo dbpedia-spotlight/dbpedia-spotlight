@@ -49,12 +49,13 @@ object SpotlightModel {
     }
 
     //Create the tokenizer:
+    val posTagger = new File(modelFolder, "opennlp/pos-maxent.bin")
     val tokenizer: Tokenizer = new DefaultTokenizer(
       new TokenizerME(new TokenizerModel(new FileInputStream(new File(modelFolder, "opennlp/token.bin")))),
       stopwords,
       stemmer,
       new SentenceDetectorME(new SentenceModel(new FileInputStream(new File(modelFolder, "opennlp/sent.bin")))),
-      new POSTaggerME(new POSModel(new FileInputStream(new File(modelFolder, "opennlp/pos-maxent.bin")))),
+      if (posTagger.exists()) new POSTaggerME(new POSModel(new FileInputStream(posTagger))) else null,
       tokenTypeStore
     )
 
@@ -73,8 +74,10 @@ object SpotlightModel {
       new FileInputStream(new File(new File(modelFolder, "opennlp"), f))
     }.toList
 
+    val chunker = new File(modelFolder, "opennlp/chunker.bin")
+
     val spotter = new OpenNLPSpotter(
-      Some(new FileInputStream(new File(modelFolder, "opennlp/chunker.bin"))),
+      if (chunker.exists()) Some(new FileInputStream(chunker)) else None,
       nerModels,
       sfStore,
       stopwords,
