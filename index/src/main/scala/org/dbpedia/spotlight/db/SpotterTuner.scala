@@ -67,40 +67,4 @@ object SpotterTuner {
 
   }
 
-
-  def main(args: Array[String]) {
-
-    val modelFolder = new File("/data/spotlight/models")
-
-    val tokenTypeStore = MemoryStore.loadTokenTypeStore(new FileInputStream(new File(modelFolder, "tokens.mem")))
-    val sfStore =        MemoryStore.loadSurfaceFormStore(new FileInputStream(new File(modelFolder, "sf.mem")))
-
-    val stopwords = scala.io.Source.fromFile(new File(modelFolder, "stopwords.list")).getLines().map(_.trim()).toSet
-    val stemmer = new DutchStemmer()
-
-    val tokenizer: Tokenizer = new DefaultTokenizer(
-      new TokenizerME(new TokenizerModel(new FileInputStream(new File(modelFolder, "opennlp/token.bin")))),
-      stopwords,
-      stemmer,
-      new SentenceDetectorME(new SentenceModel(new FileInputStream(new File(modelFolder, "opennlp/sent.bin")))),
-      new POSTaggerME(new POSModel(new FileInputStream(new File(modelFolder, "opennlp/pos-maxent.bin")))),
-      tokenTypeStore
-    )
-
-    val spotter = new OpenNLPSpotter(
-      Some(new FileInputStream(new File(modelFolder, "opennlp/chunker.bin"))),
-      List(),
-      sfStore,
-      stopwords,
-      None,
-      Set("NP", "MWU", "PP"), "N"
-    )
-
-    tuneOpenNLP(
-      new WikipediaHeldoutCorpus(Source.fromFile(new File("/data/spotlight/import/", "nl_test.txt")).getLines()),
-      tokenizer,
-      spotter,
-      new File("/data/spotlight/modelsspotting/chunking/threshholds.txt")
-    )
-  }
 }
