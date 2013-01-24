@@ -67,7 +67,7 @@ public class Spot {
 
         String typeFeature = null;
         if(!sfOcc.features().isEmpty())
-            typeFeature = (String) sfOcc.featureValue("type").get();
+            typeFeature = (String) sfOcc.featureValueJava("type");
 
         if (typeFeature != null)
             spot.setNerType(typeFeature);

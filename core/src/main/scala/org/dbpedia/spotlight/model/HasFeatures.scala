@@ -10,15 +10,19 @@ trait HasFeatures {
 
   val features = HashMap[String, Feature]()
 
-  def feature(featureName: String) : Option[Feature] = {
+  def feature(featureName: String): Option[Feature] = {
     features.get(featureName)
   }
 
   def featureValue[T](featureName: String): Option[T] = {
     features.get(featureName) match {
       case Some(f) => Option(f.value.asInstanceOf[T])
-      case None => None
+      case _ => None
     }
+  }
+
+  def featureValueJava(featureName: String): Object = {
+    features.get(featureName).getOrElse(null)
   }
 
   def setFeature(feature: Feature) {
