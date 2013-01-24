@@ -15,12 +15,12 @@ import org.dbpedia.spotlight.exceptions.NotADBpediaResourceException
  *              were extracted as heldout data from the MediaWiki dump.
  *
  */
-class WikipediaHeldoutCorpus(val lines: Iterator[String],
+class WikipediaHeldoutCorpus(val lines: Seq[String],
                              val wikiToDBpediaClosure: Option[WikipediaToDBpediaClosure],
                              val candidateSearcher: Option[DBCandidateSearcher]) extends AnnotatedTextSource {
 
   override def foreach[U](f : AnnotatedParagraph => U) {
-    WikiOccurrenceSource.fromPigHeldoutFile(lines).groupBy(_.context).foreach {
+    WikiOccurrenceSource.fromPigHeldoutFile(lines.iterator).groupBy(_.context).foreach {
       m: (Text, Traversable[DBpediaResourceOccurrence]) =>
         f(new AnnotatedParagraph(m._1, resolveRedirectsAndFilter(m._2)))
     }
@@ -48,7 +48,7 @@ class WikipediaHeldoutCorpus(val lines: Iterator[String],
 object WikipediaHeldoutCorpus {
 
   def fromFile(corpus: File, wikiToDBpediaClosure: WikipediaToDBpediaClosure, candidateSearcher: DBCandidateSearcher): WikipediaHeldoutCorpus = {
-    new WikipediaHeldoutCorpus(Source.fromFile(corpus).getLines().toList.iterator, Option(wikiToDBpediaClosure), Option(candidateSearcher))
+    new WikipediaHeldoutCorpus(Source.fromFile(corpus).getLines().toSeq, Option(wikiToDBpediaClosure), Option(candidateSearcher))
   }
 
   def fromFile(corpus: File): WikipediaHeldoutCorpus = fromFile(corpus, null, null)
