@@ -132,7 +132,7 @@ public class OutputManager {
                 hd.startElement("","","Resources",atts);
             }
 
-            atts.addAttribute("","","URI","CDATA", SpotlightConfiguration.DEFAULT_NAMESPACE+occ.resource().uri());
+            atts.addAttribute("","","URI","CDATA", Server.getPrefixedDBpediaURL(occ.resource()));
             atts.addAttribute("","","support","CDATA",String.valueOf(occ.resource().support()));
             atts.addAttribute("","","types","CDATA",(occ.resource().types()).mkString(","));
             // support and types should go to resource
@@ -270,7 +270,7 @@ public class OutputManager {
         for (DBpediaResourceOccurrence occ : occList){
             int endOfSurfaceform = occ.textOffset() + lengthAdded + occ.surfaceForm().name().length();
             startText = modifiedText.substring(0, occ.textOffset() + lengthAdded);
-            String fullUri = occ.resource().getFullUri();
+            String fullUri = Server.getPrefixedDBpediaURL(occ.resource());
             String annotationAdd = formatter.getLink(fullUri, occ.surfaceForm().name(), occ.resource().getTypes());
             modifiedText = startText + annotationAdd + modifiedText.substring(endOfSurfaceform);
             lengthAdded = lengthAdded + (annotationAdd.length()-occ.surfaceForm().name().length());

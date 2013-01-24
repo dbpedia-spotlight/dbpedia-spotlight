@@ -37,15 +37,14 @@ class SurfaceForm(var name : String) extends Serializable
 
   name = WikiUtil.cleanSpace(name)
 
-  //TODO: instead of equalsIgnoreCase, fix the Spotter // (should be fixed now)
-  override def equals(that : Any) = {
+  override def equals(that: Any) = {
     that match {
-      case t: SurfaceForm => name.equalsIgnoreCase(that.asInstanceOf[SurfaceForm].name)
+      case t: SurfaceForm => name.equals(that.asInstanceOf[SurfaceForm].name)
       case _ => false
     }
   }
 
-  override def hashCode() : Int = {
+  override def hashCode(): Int = {
     (if (name != null) name.hashCode else 0)
   }
 

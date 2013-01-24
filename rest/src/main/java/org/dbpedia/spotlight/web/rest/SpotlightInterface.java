@@ -22,6 +22,7 @@ import de.l3s.boilerpipe.BoilerpipeProcessingException;
 import de.l3s.boilerpipe.extractors.ArticleExtractor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dbpedia.spotlight.db.model.Tokenizer;
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ;
 import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.exceptions.SearchException;
@@ -58,6 +59,10 @@ public class SpotlightInterface  {
     public List<DBpediaResourceOccurrence> disambiguate(List<SurfaceFormOccurrence> spots, ParagraphDisambiguatorJ disambiguator) throws SearchException, InputException, SpottingException {
         List<DBpediaResourceOccurrence> resources = new ArrayList<DBpediaResourceOccurrence>();
         if (spots.size()==0) return resources; // nothing to disambiguate
+
+        if(Server.getTokenizer() != null)
+            Server.getTokenizer().tokenizeMaybe(spots.get(0).context());
+
         try {
             resources = disambiguator.disambiguate(Factory.paragraph().fromJ(spots));
         } catch (UnsupportedOperationException e) {
@@ -107,6 +112,10 @@ public class SpotlightInterface  {
 
     public List<SurfaceFormOccurrence> spot(String spotterName, Text context) throws InputException, SpottingException {
         Spotter spotter = Server.getSpotter(spotterName);
+
+        if(Server.getTokenizer() != null)
+            Server.getTokenizer().tokenizeMaybe(context);
+
         List<SurfaceFormOccurrence> spots = spotter.extract(context);
         return spots;
     }
@@ -142,7 +151,7 @@ public class SpotlightInterface  {
 
         // Call annotation or disambiguation
         int maxLengthForOccurrenceCentric = 1200; //TODO configuration
-        if (disambiguatorName.equals(SpotlightConfiguration.DisambiguationPolicy.Default.name())
+        if (Server.getTokenizer() == null && disambiguatorName.equals(SpotlightConfiguration.DisambiguationPolicy.Default.name())
                 && textString.length() > maxLengthForOccurrenceCentric) {
             disambiguatorName = SpotlightConfiguration.DisambiguationPolicy.Document.name();
             LOG.info(String.format("Text length > %d. Using %s to disambiguate.",maxLengthForOccurrenceCentric,disambiguatorName));
@@ -150,13 +159,14 @@ public class SpotlightInterface  {
         ParagraphDisambiguatorJ disambiguator = Server.getDisambiguator(disambiguatorName);
         List<DBpediaResourceOccurrence> occList = disambiguate(spots, disambiguator);
 
-        // Linking / filtering
-        scala.collection.immutable.List<OntologyType> ontologyTypes = Factory.ontologyType().fromCSVString(ontologyTypesString);
-
         // Filter: Old monolithic way
-        CombineAllAnnotationFilters annotationFilter = new CombineAllAnnotationFilters(Server.getConfiguration());
         PercentageOfSecondFilter anotherFilter = new PercentageOfSecondFilter(confidence);
-        occList = annotationFilter.filter(occList, confidence, support, ontologyTypes, sparqlQuery, blacklist, coreferenceResolution);
+        if (Server.getCombinedFilters() != null) {
+            // Linking / filtering
+            scala.collection.immutable.List<OntologyType> ontologyTypes = Factory.ontologyType().fromCSVString(ontologyTypesString);
+            occList = Server.getCombinedFilters().filter(occList, confidence, support, ontologyTypes, sparqlQuery, blacklist, coreferenceResolution);
+        }
+
         occList = anotherFilter.filterOccs(occList);
         // Filter: TODO run occurrences through a list of annotation filters (which can be passed by parameter)
         // Map<String,AnnotationFilter> annotationFilters = buildFilters(occList, confidence, support, dbpediaTypes, sparqlQuery, blacklist, coreferenceResolution);

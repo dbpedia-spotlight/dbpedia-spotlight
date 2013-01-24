@@ -47,10 +47,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * REST Web Service for /candidates API, which outputs the n-best disambiguations for each surface form
@@ -82,7 +79,12 @@ public class Candidates {
         Annotation annotation = new Annotation(text);
         List<Spot> spots = new LinkedList<Spot>();
 
-        List<SurfaceFormOccurrence> entityMentions = spotter.extract(new Text(text));
+        Text textObject = new Text(text);
+
+        if(Server.getTokenizer() != null)
+            Server.getTokenizer().tokenizeMaybe(textObject);
+
+        List<SurfaceFormOccurrence> entityMentions = spotter.extract(textObject);
         if (entityMentions.size()==0) return annotation; //nothing to di
         // sambiguate
         Paragraph paragraph = Factory.paragraph().fromJ(entityMentions);
@@ -93,8 +95,12 @@ public class Candidates {
 
         Enumeration.Value listColor = blacklist ? FilterPolicy$.MODULE$.Blacklist() : FilterPolicy$.MODULE$.Whitelist();
 
-        CombineAllAnnotationFilters filters = new CombineAllAnnotationFilters(Server.getConfiguration());
-        Map<SurfaceFormOccurrence,List<DBpediaResourceOccurrence>> filteredEntityCandidates = filters.filter(entityCandidates, confidence, support, ontologyTypes, sparqlQuery, listColor, coreferenceResolution);
+        Map<SurfaceFormOccurrence,List<DBpediaResourceOccurrence>> filteredEntityCandidates = entityCandidates;
+
+        if (Server.getCombinedFilters() != null) {
+            CombineAllAnnotationFilters filters = Server.getCombinedFilters();
+            filteredEntityCandidates = filters.filter(entityCandidates, confidence, support, ontologyTypes, sparqlQuery, listColor, coreferenceResolution);
+        }
 
         for(SurfaceFormOccurrence sfOcc : filteredEntityCandidates.keySet()) {
             Spot spot = Spot.getInstance(sfOcc);
@@ -322,8 +328,7 @@ public class Candidates {
         }
 
         /* Setting defaults */
-
-        if (disambiguatorName==SpotlightConfiguration.DisambiguationPolicy.Default.name()
+        if (Server.getTokenizer() == null && disambiguatorName==SpotlightConfiguration.DisambiguationPolicy.Default.name()
                 && text.length() > 1200) {
             disambiguatorName = SpotlightConfiguration.DisambiguationPolicy.Document.name();
             LOG.info(String.format("Text length: %d. Using %s to disambiguate.",text.length(),disambiguatorName));

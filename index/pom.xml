@@ -232,6 +232,12 @@
             <artifactId>commons-compress</artifactId>
             <version>1.4.1</version>
         </dependency>
+
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>weka</groupId>
             <artifactId>weka</artifactId>

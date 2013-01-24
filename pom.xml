@@ -342,6 +342,12 @@
             </dependency>
 
             <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>2.4</version>
+            </dependency>
+
+            <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>r07</version>
@@ -510,6 +516,12 @@
                 <groupId>org.codehaus.jackson</groupId>
                 <artifactId>jackson-core-asl</artifactId>
                 <version>1.9.8</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.scalanlp</groupId>
+                <artifactId>breeze-learn_2.9.2</artifactId>
+                <version>0.1</version>
             </dependency>
 
         </dependencies>
