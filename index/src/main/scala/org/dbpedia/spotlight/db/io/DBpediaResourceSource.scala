@@ -152,7 +152,8 @@ object DBpediaResourceSource {
           val obj  = triple(2).toString.replace(namespace, "")
 
           try {
-            resourceByURI(new DBpediaResource(subj).uri).types ::= OntologyType.fromURI(obj)
+            if(!obj.endsWith("owl#Thing"))
+              resourceByURI(new DBpediaResource(subj).uri).types ::= OntologyType.fromURI(obj)
           } catch {
             case e: java.util.NoSuchElementException =>
               uriNotFound += subj
