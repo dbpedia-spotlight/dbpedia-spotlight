@@ -50,6 +50,7 @@
         <module>eval</module>
 	    <module>uima</module>
         <module>dist</module>
+        <module>rest-tomcat</module>
     </modules>
 
     <build>
@@ -536,6 +537,14 @@
             <dependency>
                 <groupId>com.sun.jersey</groupId>
                 <artifactId>jersey-bundle</artifactId>
+                <version>${jersey.version}</version>
+                <!--
+                     License: CDDL v.1.1 andd GPL v.2
+                 -->
+            </dependency>
+            <dependency>
+                <groupId>com.sun.jersey</groupId>
+                <artifactId>jersey-servlet</artifactId>
                 <version>${jersey.version}</version>
                 <!--
                      License: CDDL v.1.1 andd GPL v.2
