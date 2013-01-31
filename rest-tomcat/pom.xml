@@ -16,6 +16,7 @@
     <!-- Project properties -->
     <properties>
         <prj.name.uri>dbpedia_spotlight</prj.name.uri>
+        <spotlight.basedir>${project.basedir}/..</spotlight.basedir>
         <!--
             Instructions:
 
@@ -33,8 +34,6 @@
         <server.name>debian-xps-desktop</server.name>
         <url.tomcat.manager>http://localhost:8080/manager</url.tomcat.manager>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-
     </properties>
 
 
