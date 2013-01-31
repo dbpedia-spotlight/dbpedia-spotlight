@@ -177,14 +177,14 @@ public class Server {
     }
 
 
-    private static void setSpotters(Map<SpotterPolicy,Spotter> s) throws InitializationException {
+    public static void setSpotters(Map<SpotterPolicy,Spotter> s) throws InitializationException {
         if (spotters.size() == 0)
             spotters = s;
         else
             throw new InitializationException("Trying to overwrite singleton Server.spotters. Something fishy happened!");
     }
 
-    private static void setDisambiguators(Map<SpotlightConfiguration.DisambiguationPolicy,ParagraphDisambiguatorJ> s) throws InitializationException {
+    public static void setDisambiguators(Map<SpotlightConfiguration.DisambiguationPolicy,ParagraphDisambiguatorJ> s) throws InitializationException {
         if (disambiguators.size() == 0)
             disambiguators = s;
         else
@@ -244,6 +244,11 @@ public class Server {
 
     public static SpotlightConfiguration getConfiguration() {
         return configuration;
+    }
+
+    public static void setConfiguration(SpotlightConfiguration configuration)
+    {
+      Server.configuration = configuration;
     }
 
     public static Tokenizer getTokenizer() {

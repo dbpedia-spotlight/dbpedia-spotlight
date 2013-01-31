@@ -51,6 +51,7 @@
         <module>rest</module>
         <module>index</module>
         <module>eval</module>
+        <module>rest-tomcat</module>
     </modules>
 
     <build>
