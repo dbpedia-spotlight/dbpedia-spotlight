@@ -34,8 +34,6 @@
         <server.name>debian-xps-desktop</server.name>
         <url.tomcat.manager>http://localhost:8080/manager</url.tomcat.manager>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-
     </properties>
 
 
