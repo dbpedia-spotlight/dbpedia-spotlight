@@ -46,7 +46,7 @@ object SpotlightModel {
     properties.load(new FileInputStream(new File(modelFolder, "model.properties")))
 
     //Load the stemmer from the model file:
-    val stemmer: SnowballProgram = properties.getProperty("stemmer") match {
+    def stemmer(): SnowballProgram = properties.getProperty("stemmer") match {
       case s: String if s equals "None" => null
       case s: String => Class.forName("org.tartarus.snowball.ext.%s".format(s)).newInstance().asInstanceOf[SnowballProgram]
     }
@@ -65,7 +65,7 @@ object SpotlightModel {
         new DefaultTokenizer(
           new TokenizerME(tokenModel),
           stopwords,
-          stemmer,
+          stemmer(),
           new SentenceDetectorME(sentenceModel),
           if (posTagger.exists()) new POSTaggerME(posModel) else null,
           tokenTypeStore
