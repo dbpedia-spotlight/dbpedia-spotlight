@@ -13,6 +13,7 @@ import opennlp.tools.tokenize.{TokenizerModel, TokenizerME}
 import opennlp.tools.sentdetect.{SentenceModel, SentenceDetectorME}
 import opennlp.tools.postag.{POSModel, POSTaggerME}
 import org.dbpedia.spotlight.spot.opennlp.OpenNLPSpotter
+import opennlp.tools.chunker.ChunkerModel
 
 /**
  * This script creates a Spotlight model folder from the results of
@@ -185,7 +186,7 @@ object CreateSpotlightModel {
 
 
     val spotter = new OpenNLPSpotter(
-      Some(new FileInputStream(new File(opennlpOut, "chunker.bin"))),
+      Some(new ChunkerModel(new FileInputStream(new File(opennlpOut, "chunker.bin")))),
       List(),
       sfStore,
       stopwords,

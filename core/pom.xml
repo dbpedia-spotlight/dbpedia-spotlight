@@ -254,6 +254,12 @@
             <artifactId>breeze-learn_2.9.2</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-actor</artifactId>
+        </dependency>
+
+
     </dependencies>
 
 </project>

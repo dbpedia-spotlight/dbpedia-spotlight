@@ -21,35 +21,31 @@ class DefaultTokenizer(
 ) extends Tokenizer {
 
   def tokenize(text: Text): List[Token] = {
-    this.synchronized {
 
-        val sentences: Array[Span] = sentenceDetector.sentPosDetect(text.text)
+    sentenceDetector.sentPosDetect(text.text).map{ sentencePos: Span =>
 
-        sentences.map{ sentencePos: Span =>
+      val sentence = text.text.substring(sentencePos.getStart, sentencePos.getEnd)
 
-          val sentence = text.text.substring(sentencePos.getStart, sentencePos.getEnd)
+      val sentenceTokens   = tokenizer.tokenize(sentence)
+      val sentenceTokenPos = tokenizer.tokenizePos(sentence)
+      val posTags          = if(posTagger != null) posTagger.tag(sentenceTokens) else Array[String]()
 
-          val sentenceTokens   = tokenizer.tokenize(sentence)
-          val sentenceTokenPos = tokenizer.tokenizePos(sentence)
-          val posTags          = if(posTagger != null) posTagger.tag(sentenceTokens) else Array[String]()
+      (0 to sentenceTokens.size-1).map{ i: Int =>
+        val token = if (stopWords contains sentenceTokens(i)) {
+          new Token(sentenceTokens(i), sentencePos.getStart + sentenceTokenPos(i).getStart, TokenType.STOPWORD)
+        } else {
+          new Token(sentenceTokens(i), sentencePos.getStart + sentenceTokenPos(i).getStart, getStemmedTokenType(sentenceTokens(i)))
+        }
 
-          (0 to sentenceTokens.size-1).map{ i: Int =>
-            val token = if (stopWords contains sentenceTokens(i)) {
-              new Token(sentenceTokens(i), sentencePos.getStart + sentenceTokenPos(i).getStart, TokenType.STOPWORD)
-            } else {
-              new Token(sentenceTokens(i), sentencePos.getStart + sentenceTokenPos(i).getStart, getStemmedTokenType(sentenceTokens(i)))
-            }
+        if(posTagger != null)
+          token.setFeature(new Feature("pos", posTags(i)))
 
-            if(posTagger != null)
-              token.setFeature(new Feature("pos", posTags(i)))
+        if(i == sentenceTokens.size-1)
+          token.setFeature(new Feature("end-of-sentence", true))
 
-            if(i == sentenceTokens.size-1)
-              token.setFeature(new Feature("end-of-sentence", true))
-
-            token
-          }
-        }.flatten.toList
-    }
+        token
+      }
+    }.flatten.toList
 
   }
 
