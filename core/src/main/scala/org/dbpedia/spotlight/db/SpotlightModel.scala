@@ -1,5 +1,6 @@
 package org.dbpedia.spotlight.db
 
+import concurrent.{TokenizerWrapper, SpotterWrapper}
 import memory.MemoryStore
 import model._
 import org.tartarus.snowball.SnowballProgram
@@ -17,6 +18,8 @@ import org.dbpedia.spotlight.spot.Spotter
 import java.io.{File, FileInputStream}
 import java.util.Properties
 import breeze.linalg.DenseVector
+import opennlp.tools.chunker.ChunkerModel
+import opennlp.tools.namefind.TokenNameFinderModel
 
 class SpotlightModel(val tokenizer: Tokenizer,
                      val spotters: java.util.Map[SpotterPolicy, Spotter],
@@ -50,14 +53,25 @@ object SpotlightModel {
 
     //Create the tokenizer:
     val posTagger = new File(modelFolder, "opennlp/pos-maxent.bin")
-    val tokenizer: Tokenizer = new DefaultTokenizer(
-      new TokenizerME(new TokenizerModel(new FileInputStream(new File(modelFolder, "opennlp/token.bin")))),
-      stopwords,
-      stemmer,
-      new SentenceDetectorME(new SentenceModel(new FileInputStream(new File(modelFolder, "opennlp/sent.bin")))),
-      if (posTagger.exists()) new POSTaggerME(new POSModel(new FileInputStream(posTagger))) else null,
-      tokenTypeStore
-    )
+    val posModel  = new POSModel(new FileInputStream(posTagger))
+    val tokenModel = new TokenizerModel(new FileInputStream(new File(modelFolder, "opennlp/token.bin")))
+    val sentenceModel = new SentenceModel(new FileInputStream(new File(modelFolder, "opennlp/sent.bin")))
+
+    val cores = (1 to Runtime.getRuntime.availableProcessors())
+
+
+    val tokenizer: Tokenizer = new TokenizerWrapper(
+      cores.map(_ =>
+        new DefaultTokenizer(
+          new TokenizerME(tokenModel),
+          stopwords,
+          stemmer,
+          new SentenceDetectorME(sentenceModel),
+          if (posTagger.exists()) new POSTaggerME(posModel) else null,
+          tokenTypeStore
+        )
+      )
+    ).asInstanceOf[Tokenizer]
 
     val searcher      = new DBCandidateSearcher(resStore, sfStore, candMapStore)
     val disambiguator = new ParagraphDisambiguatorJ(new DBTwoStepDisambiguator(
@@ -71,18 +85,26 @@ object SpotlightModel {
     ))
 
     val nerModels = new File(modelFolder, "opennlp").list().filter(_.startsWith("ner-")).map { f: String =>
-      new FileInputStream(new File(new File(modelFolder, "opennlp"), f))
+      new TokenNameFinderModel(new FileInputStream(new File(new File(modelFolder, "opennlp"), f)))
     }.toList
 
-    val chunker = new File(modelFolder, "opennlp/chunker.bin")
+    val chunkerFile = new File(modelFolder, "opennlp/chunker.bin")
+    val chunkerModel = if (chunkerFile.exists())
+      Some(new ChunkerModel(new FileInputStream(chunkerFile)))
+    else
+      None
 
-    val spotter = new OpenNLPSpotter(
-      if (chunker.exists()) Some(new FileInputStream(chunker)) else None,
-      nerModels,
-      sfStore,
-      stopwords,
-      Some(loadSpotterThresholds(new File(modelFolder, "opennlp_chunker_thresholds.txt"))),
-      Set("NP", "MWU", "PP"), "N"
+    val spotter = new SpotterWrapper(
+      cores.map(_ =>
+        new OpenNLPSpotter(
+          chunkerModel,
+          nerModels,
+          sfStore,
+          stopwords,
+          Some(loadSpotterThresholds(new File(modelFolder, "opennlp_chunker_thresholds.txt"))),
+          Set("NP", "MWU", "PP"), "N"
+        ).asInstanceOf[Spotter]
+      )
     ).asInstanceOf[Spotter]
 
     val spotters: java.util.Map[SpotterPolicy, Spotter] = Map(SpotterPolicy.Default -> spotter).asJava
