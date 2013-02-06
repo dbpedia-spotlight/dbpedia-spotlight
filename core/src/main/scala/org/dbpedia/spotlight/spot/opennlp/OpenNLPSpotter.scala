@@ -28,8 +28,8 @@ import scala.Some
  */
 
 class OpenNLPSpotter(
-  chunkerModel: Option[InputStream],
-  nerModels: List[InputStream],
+  chunkerModel: Option[ChunkerModel],
+  nerModels: List[TokenNameFinderModel],
   surfaceFormStore: SurfaceFormStore,
   stopwords: Set[String],
   spotFeatureWeights: Option[Seq[Double]],
@@ -43,12 +43,12 @@ class OpenNLPSpotter(
   }
 
   val chunker = chunkerModel match {
-    case Some(m) => Some(new ChunkerME(new ChunkerModel(m)))
+    case Some(m) => Some(new ChunkerME(m))
     case None => None
   }
 
-  val ners = nerModels.map{ m: InputStream =>
-    new NameFinderME(new TokenNameFinderModel(m))
+  val ners = nerModels.map{ m: TokenNameFinderModel =>
+    new NameFinderME(m)
   }
 
   val uppercaseFinder = new RegexNameFinder(
