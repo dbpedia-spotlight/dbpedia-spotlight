@@ -17,7 +17,6 @@ import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ
 import org.dbpedia.spotlight.spot.Spotter
 import java.io.{File, FileInputStream}
 import java.util.Properties
-import breeze.linalg.DenseVector
 import opennlp.tools.chunker.ChunkerModel
 import opennlp.tools.namefind.TokenNameFinderModel
 
@@ -57,8 +56,8 @@ object SpotlightModel {
     val tokenModel = new TokenizerModel(new FileInputStream(new File(modelFolder, "opennlp/token.bin")))
     val sentenceModel = new SentenceModel(new FileInputStream(new File(modelFolder, "opennlp/sent.bin")))
 
-    val cores = (1 to Runtime.getRuntime.availableProcessors())
-
+    val c = properties.getProperty("opennlp_parallel", Runtime.getRuntime.availableProcessors().toString).toInt
+    val cores = (1 to c)
 
     val tokenizer: Tokenizer = new TokenizerWrapper(
       cores.map(_ =>
