@@ -72,13 +72,18 @@ class OpenNLPSpotter(
       chunker match {
         case Some(c) => {
           val tags = sentence.map(_.featureValue[String]("pos").get).toArray
-          spans ++= c.chunkAsSpans(tokens, tags).filter(chunkSpan => phraseTags.contains(chunkSpan.getType))
+          this.synchronized {
+            spans ++= c.chunkAsSpans(tokens, tags).filter(chunkSpan => phraseTags.contains(chunkSpan.getType))
+          }
         }
         case None =>
       }
 
       if (!ners.isEmpty)
-        spans ++= ners.flatMap(_.find(tokens))
+        this.synchronized {
+          spans ++= ners.flatMap(_.find(tokens))
+        }
+
 
       spans.sorted
         .foreach(chunkSpan => {

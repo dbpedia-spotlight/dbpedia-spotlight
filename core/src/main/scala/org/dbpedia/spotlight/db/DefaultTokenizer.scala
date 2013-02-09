@@ -20,8 +20,7 @@ class DefaultTokenizer(
   tokenTypeStore: TokenTypeStore
 ) extends Tokenizer {
 
-  def tokenize(text: Text): List[Token] = {
-
+  def tokenize(text: Text): List[Token] = this.synchronized {
     sentenceDetector.sentPosDetect(text.text).map{ sentencePos: Span =>
 
       val sentence = text.text.substring(sentencePos.getStart, sentencePos.getEnd)
@@ -46,8 +45,8 @@ class DefaultTokenizer(
         token
       }
     }.flatten.toList
-
   }
+
 
   def getStemmedTokenType(token: String): TokenType = {
     stemmer.setCurrent(token)

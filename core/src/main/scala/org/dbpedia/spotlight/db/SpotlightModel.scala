@@ -59,18 +59,19 @@ object SpotlightModel {
     val c = properties.getProperty("opennlp_parallel", Runtime.getRuntime.availableProcessors().toString).toInt
     val cores = (1 to c)
 
-    val tokenizer: Tokenizer = new TokenizerWrapper(
-      cores.map(_ =>
-        new DefaultTokenizer(
-          new TokenizerME(tokenModel),
-          stopwords,
-          stemmer(),
-          new SentenceDetectorME(sentenceModel),
-          if (posTagger.exists()) new POSTaggerME(posModel) else null,
-          tokenTypeStore
-        )
-      )
+    def createTokenizer() = new DefaultTokenizer(
+      new TokenizerME(tokenModel),
+      stopwords,
+      stemmer(),
+      new SentenceDetectorME(sentenceModel),
+      if (posTagger.exists()) new POSTaggerME(posModel) else null,
+      tokenTypeStore
     ).asInstanceOf[Tokenizer]
+
+    val tokenizer: Tokenizer = if(cores.size == 1)
+      createTokenizer()
+    else
+      new TokenizerWrapper(cores.map(_ => createTokenizer())).asInstanceOf[Tokenizer]
 
     val searcher      = new DBCandidateSearcher(resStore, sfStore, candMapStore)
     val disambiguator = new ParagraphDisambiguatorJ(new DBTwoStepDisambiguator(
@@ -93,18 +94,21 @@ object SpotlightModel {
     else
       None
 
-    val spotter = new SpotterWrapper(
-      cores.map(_ =>
-        new OpenNLPSpotter(
-          chunkerModel,
-          nerModels,
-          sfStore,
-          stopwords,
-          Some(loadSpotterThresholds(new File(modelFolder, "opennlp_chunker_thresholds.txt"))),
-          Set("NP", "MWU", "PP"), "N"
-        ).asInstanceOf[Spotter]
-      )
+    def createSpotter() = new OpenNLPSpotter(
+      chunkerModel,
+      nerModels,
+      sfStore,
+      stopwords,
+      Some(loadSpotterThresholds(new File(modelFolder, "opennlp_chunker_thresholds.txt"))),
+      Set("NP", "MWU", "PP"), "N"
     ).asInstanceOf[Spotter]
+
+    val spotter = if(cores.size == 1)
+        createSpotter()
+      else
+        new SpotterWrapper(
+          cores.map(_ => createSpotter())
+        ).asInstanceOf[Spotter]
 
     val spotters: java.util.Map[SpotterPolicy, Spotter] = Map(SpotterPolicy.Default -> spotter).asJava
     val disambiguators: java.util.Map[DisambiguationPolicy, ParagraphDisambiguatorJ] = Map(DisambiguationPolicy.Default -> disambiguator).asJava
