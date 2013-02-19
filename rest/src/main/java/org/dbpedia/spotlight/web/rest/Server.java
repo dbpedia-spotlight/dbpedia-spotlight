@@ -100,6 +100,7 @@ public class Server {
 
             setDisambiguators(factory.disambiguators());
             setSpotters(factory.spotters());
+            setNamespacePrefix(configuration.getDbpediaResource());
 
             setCombinedFilters(new CombineAllAnnotationFilters(Server.getConfiguration()));
 
