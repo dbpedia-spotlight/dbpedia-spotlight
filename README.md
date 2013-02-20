@@ -20,11 +20,11 @@ You can use our demonstration [Web Service](http://github.com/dbpedia-spotlight/
 
 #### Run your own server
 
-If you need service reliability and lower response times, you can run DBpedia Spotlight in your own [InHouse-Server](http://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/InHouse_Server).
+If you need service reliability and lower response times, you can run DBpedia Spotlight in your own [InHouse-Server](https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Installation).
 
-    wget http://spotlight.dbpedia.org/download/release-0.5/dbpedia-spotlight-quickstart.zip
-    unzip dbpedia-spotlight-quickstart.zip
-    cd dbpedia-spotlight-quickstart/
+    wget http://spotlight.dbpedia.org/download/release-0.6/dbpedia-spotlight-quickstart-0.6.5.zip
+    unzip dbpedia-spotlight-quickstart-0.6.5.zip
+    cd dbpedia-spotlight-quickstart-0.6.5/
     ./run.sh
 
 #### Build from source
