@@ -53,7 +53,7 @@ We split the documentation according to the depth at which we give explanations.
 
 ## Downloads
 
-DBpedia Spotlight looks for ~3.5M things of ~320 types in text and tries to disambiguate them to their global unique identifiers in DBpedia. It uses the entire Wikipedia in order to learn how to annotate DBpedia Resources, the entire dataset cannot be distributed alongside the code, and can be downloaded in varied sizes from the [download page](http://dbpedia.org/spotlight/downloads). A tiny dataset is included in the distribution for demonstration purposes only.
+DBpedia Spotlight looks for ~3.5M things of ~320 types in text and tries to disambiguate them to their global unique identifiers in DBpedia. It uses the entire Wikipedia in order to learn how to annotate DBpedia Resources, the entire dataset cannot be distributed alongside the code, and can be downloaded in varied sizes from the [download page](https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Downloads). A tiny dataset is included in the distribution for demonstration purposes only.
 After you've downloaded the files, you need to modify the configuration in server.properties with the correct path to the files. More info [here](https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Installation).
 
 ## Licenses
