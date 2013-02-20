@@ -29,7 +29,7 @@
         <heapspace.Xmx.indexer>-Xmx1g</heapspace.Xmx.indexer>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.compiler.version>1.6</java.compiler.version>
+        <java.compiler.version>1.7</java.compiler.version>
         <maven.compiler.plugin.version>2.5.1</maven.compiler.plugin.version>
         <maven.install.plugin.version>2.3.1</maven.install.plugin.version>
         <maven.assembly.plugin.version>2.3</maven.assembly.plugin.version>
