@@ -5,7 +5,7 @@ DBpedia Spotlight looks for ~3.5M things of unknown or ~320 known types in text 
 
 #### Demonstration
 
-Go to our [demonstration](http://spotlight.dbpedia.org/demo/) page, copy+paste some text and play with the parameters to see how it works.
+Go to our [Demonstration](http://spotlight.dbpedia.org/demo/) page, copy+paste some text and play with the parameters to see how it works.
 
 #### Call our web service
 
@@ -20,7 +20,7 @@ You can use our demonstration [Web Service](http://github.com/dbpedia-spotlight/
 
 #### Run your own server
 
-If you need service reliability and lower response times, you can run DBpedia Spotlight in your own [InHouse-Server](https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Installation).
+If you need service reliability and lower response times, you can run DBpedia Spotlight in your own [In-House Server](https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Installation).
 
     wget http://spotlight.dbpedia.org/download/release-0.6/dbpedia-spotlight-quickstart-0.6.5.zip
     unzip dbpedia-spotlight-quickstart-0.6.5.zip
@@ -30,7 +30,6 @@ If you need service reliability and lower response times, you can run DBpedia Sp
 #### Build from source
 
 We provide a [Java/Scala API](http://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Java%2FScala%20API) for you to use our code in your application.
-More info [here](http://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Java%2FScala%20API).
 
 [![Build Status](https://secure.travis-ci.org/dbpedia-spotlight/dbpedia-spotlight.png?branch=master)](http://travis-ci.org/dbpedia-spotlight/dbpedia-spotlight)
 
@@ -39,8 +38,8 @@ More info [here](http://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Java
 The program can be used under the terms of the [Apache License, 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
 Part of the code uses [LingPipe](http://alias-i.com/lingpipe/) under the [Royalty Free License](http://alias-i.com/lingpipe/licenses/lingpipe-license-1.txt). Therefore, this license may also apply to the output of the currently deployed web service.
 
-The documentation on this website is shared as [Creative Commons Attribution-ShareAlike 3.0 Unported License](http://en.wikipedia.org/wiki/Wikipedia:Text_of_Creative_Commons_Attribution-ShareAlike_3.0_Unported_License)
+The documentation on this website is shared as [Creative Commons Attribution-ShareAlike 3.0 Unported License](http://en.wikipedia.org/wiki/Wikipedia:Text_of_Creative_Commons_Attribution-ShareAlike_3.0_Unported_License).
 
 ## Documentation
 
-More documentation is available from the [project's wiki](https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki).
+More documentation is available from the [DBpedia Spotlight wiki](https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki).
