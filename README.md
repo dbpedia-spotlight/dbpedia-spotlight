@@ -43,4 +43,4 @@ The documentation on this website is shared as [Creative Commons Attribution-Sha
 
 ## Documentation
 
-More documentation is available from the [project's wiki](/wiki).
+More documentation is available from the [project's wiki](https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki).
