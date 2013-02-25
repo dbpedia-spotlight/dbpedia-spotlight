@@ -10,7 +10,7 @@ export lang_i18n=pt
 export language=portuguese
 export dbpedia_workspace=..
 export dbpedia_version=3.8
-export spotlight_version=master
+export spotlight_version=0.6
 
 # error_exit function by William Shotts. http://stackoverflow.com/questions/64786/error-handling-in-bash
 function error_exit
@@ -111,7 +111,7 @@ wget "http://dumps.wikimedia.org/"$lang_i18n"wiki/latest/"$lang_i18n"wiki-latest
 echo 'done!'
 
 echo 'Getting LingPipe Spotter...'
-wget https://github.com/dbpedia-spotlight/dbpedia-spotlight/tree/$spotlight_version/dist/src/deb/control/data/usr/share/dbpedia-spotlight/spotter.dict
+wget https://github.com/dbpedia-spotlight/dbpedia-spotlight/tree/release-$spotlight_version/dist/src/deb/control/data/usr/share/dbpedia-spotlight/spotter.dict
 echo 'done!'
 
 # This becomes spotsel. Do we still use it? Could we provide a better link?
@@ -120,11 +120,11 @@ wget http://spotlight.dbpedia.org/download/release-0.5/spot_selector.tgz
 echo 'done!'
 
 echo 'Getting Index...'
-wget https://github.com/dbpedia-spotlight/dbpedia-spotlight/tree/$spotlight_version/dist/src/deb/control/data/usr/share/dbpedia-spotlight/index
+wget https://github.com/dbpedia-spotlight/dbpedia-spotlight/tree/release-$spotlight_version/dist/src/deb/control/data/usr/share/dbpedia-spotlight/index
 echo 'done!'
 
 echo 'Getting Index...'
-wget https://github.com/dbpedia-spotlight/dbpedia-spotlight/tree/$spotlight_version/dist/src/deb/control/data/usr/share/dbpedia-spotlight/pos-en-general-brown.HiddenMarkovModel
+wget https://github.com/dbpedia-spotlight/dbpedia-spotlight/tree/release-$spotlight_version/dist/src/deb/control/data/usr/share/dbpedia-spotlight/pos-en-general-brown.HiddenMarkovModel
 echo 'done!'
 
 echo 'Getting Apache OpenNLP models...'
@@ -187,7 +187,7 @@ fi
 echo 'done!'
 
 #------------------------------------- Runtime Files --------------------------------------------------
-mv spotter.dict $dbpedia_workspace/dbpedia_data/data/models/$language
+mv spotter.dict $dbpedia_workspace/dbpedia_data/data/models/$lang_i18n
 mv pos-en-general-brown.HiddenMarkovModel $dbpedia_workspace/dbpedia_data/data/models/$lang_i18n
 #index
 # No need to unpack any more
