@@ -48,8 +48,7 @@ set -e
 # create a lucene index out of the occurrences
 echo -e "Creating a context index from occs.tsv...\n"
 mvn scala:run -Dlauncher=IndexMergedOccurrences "-DjavaOpts.Xmx=$JAVA_XMX" "-DaddArgs=$INDEX_CONFIG_FILE|$OUTPUT_LOCATION/occs.uriSorted.tsv"
-# NOTE: if you get an out of memory error from the command above, try editing ../index/pom.xml with correct jvmArg and file arguments, then run:
-#mvn scala:run -Dlauncher=IndexMergedOccurrences "-DjavaOpts.Xmx=$JAVA_XMX" "-DaddArgs=$INDEX_CONFIG_FILE|$OUTPUT_LOCATION/occs.uriSorted.tsv"
+# NOTE: if you get an out of memory error from the command above, try editing ../index/pom.xml with correct jvmArg and file arguments.
 
 # (optional) make a backup copy of the index before you lose all the time you've put into this
 #cp -R $OUTPUT_LOCATION/index $OUTPUT_LOCATION/index-backup

@@ -114,7 +114,7 @@ echo 'Getting LingPipe Spotter...'
 wget https://github.com/dbpedia-spotlight/dbpedia-spotlight/tree/release-$spotlight_version/dist/src/deb/control/data/usr/share/dbpedia-spotlight/spotter.dict
 echo 'done!'
 
-# This becomes spotsel. Do we still use it? Could we provide a better link?
+# This becomes spotsel. Is it still used? Could a more recent link be provided?
 echo 'Getting Spot Selector...'
 wget http://spotlight.dbpedia.org/download/release-0.5/spot_selector.tgz
 echo 'done!'
@@ -190,13 +190,10 @@ echo 'done!'
 mv spotter.dict $dbpedia_workspace/dbpedia_data/data/models/$lang_i18n
 mv pos-en-general-brown.HiddenMarkovModel $dbpedia_workspace/dbpedia_data/data/models/$lang_i18n
 #index
-# No need to unpack any more
-# tar xvf index.tgz
 mv index $dbpedia_workspace/dbpedia_data/data/models/$lang_i18n
 #spot selector
-# No need at all?
-#tar xvf spot_selector.tgz
-#mv spotsel $dbpedia_workspace/dbpedia_data/data
+tar xvf spot_selector.tgz
+mv spotsel $dbpedia_workspace/dbpedia_data/data
 #Moving OpenNLP files
 mv $lang_i18n-chunker.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$lang_i18n
 mv $lang_i18n-ner-location.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$lang_i18n
@@ -207,7 +204,6 @@ mv $lang_i18n-sent.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$lang_i18n
 mv $lang_i18n-token.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$lang_i18n
 
 #------------------------------------- Original Data  --------------------------------------------------
-mv index.tgz  $dbpedia_workspace/dbpedia_data/original
 mv spot_selector.tgz  $dbpedia_workspace/dbpedia_data/original
 
 
