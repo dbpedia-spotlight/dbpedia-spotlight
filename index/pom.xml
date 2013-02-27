@@ -156,6 +156,17 @@
                                 <jvmArg>-Xmx3G</jvmArg>
                             </jvmArgs>
                         </launcher>
+
+                        <launcher>
+                            <id>CreateLookupIndex</id>
+                            <mainClass>org.dbpedia.spotlight.util.CreateLookupIndex</mainClass>
+			                <args>
+                				<arg>../conf/indexing.properties</arg>
+			                </args>
+                            <jvmArgs>
+                                <jvmArg>-Xmx3G</jvmArg>
+                            </jvmArgs>
+                        </launcher>
                     </launchers>
                 </configuration>
             </plugin>
