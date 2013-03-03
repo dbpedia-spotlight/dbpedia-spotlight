@@ -403,13 +403,14 @@ object ExtractCandidateMap
         //DBpedia config
         SpotlightConfiguration.DEFAULT_NAMESPACE=config.get("org.dbpedia.spotlight.default_namespace",SpotlightConfiguration.DEFAULT_NAMESPACE)
 
-
         //Bad URIs -- will exclude any URIs that match these patterns. Used for Lists, disambiguations, etc.
         val blacklistedURIPatternsFileName = config.get("org.dbpedia.spotlight.data.badURIs."+language)
-        blacklistedURIPatterns = Source.fromFile(blacklistedURIPatternsFileName).getLines.map( u => u.r ).toSet
+        LOG.info("Opening blacklisted URI patterns file: %s".format(blacklistedURIPatternsFileName))
+        blacklistedURIPatterns = Source.fromFile(blacklistedURIPatternsFileName, "UTF-8").getLines.map( u => u.r ).toSet
 
         //Stopwords (bad surface forms)
         val stopWordsFileName = config.get("org.dbpedia.spotlight.data.stopWords."+language)
+        LOG.info("Opening stopwords file: %s".format(stopWordsFileName))
         val stopWords = Source.fromFile(stopWordsFileName, "UTF-8").getLines.toSet
 
         // get concept URIs
