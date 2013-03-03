@@ -5,7 +5,7 @@
 
 export lang_i18n=en
 export OUTPUT_LOCATION=../dbpedia_data/data/output/$lang_i18n
-export INDEX_CONFIG_FILE=../conf/indexing.properties
+export INDEX_CONFIG_FILE=../conf/indexing.$lang_i18n.properties
 
 JAVA_XMX=5g
 
