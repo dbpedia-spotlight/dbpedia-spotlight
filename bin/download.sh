@@ -1,7 +1,6 @@
 #!/bin/bash
 #+------------------------------------------------------------------------------------------------------------------------------+
 #| DBpedia Spotlight - Download script                                                                                          |
-#| @author @sandroacoelho, @rafaharo, @iavraam                                                                                                       |
 #+------------------------------------------------------------------------------------------------------------------------------+
 PROGNAME=$(basename $0)
 
@@ -193,57 +192,17 @@ mv pos-en-general-brown.HiddenMarkovModel $dbpedia_workspace/dbpedia_data/data/m
 mv index $dbpedia_workspace/dbpedia_data/data/models/$lang_i18n/tiny.en.index
 #spot selector
 tar xvf spot_selector.tgz
-mv spotsel $dbpedia_workspace/dbpedia_data/data
+mv spotsel $dbpedia_workspace/dbpedia_data/data/models/$lang_i18n/spotsel.en
 #Moving OpenNLP files
-mv $lang_i18n-chunker.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$lang_i18n
-mv $lang_i18n-ner-location.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$lang_i18n
-mv $lang_i18n-ner-organization.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$lang_i18n
-mv $lang_i18n-ner-person.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$lang_i18n
-mv $lang_i18n-pos-maxent.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$lang_i18n
-mv $lang_i18n-sent.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$lang_i18n
-mv $lang_i18n-token.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$lang_i18n
+mv *-chunker.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$lang_i18n
+mv *-ner-location.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$lang_i18n
+mv *-ner-organization.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$lang_i18n
+mv *-ner-person.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$lang_i18n
+mv *-pos-maxent.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$lang_i18n
+mv *-sent.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$lang_i18n
+mv *-token.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$lang_i18n
 
 #------------------------------------- Original Data  --------------------------------------------------
-mv spot_selector.tgz  $dbpedia_workspace/dbpedia_data/original
-
-if [ -e $lang_i18n-ner-location.bin  ]; then
-   mv $lang_i18n-ner-location.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$language
-else
-   mv en-ner-location.bin $dbpedia_workspace/dbpedia_data/data/opennlp/english
-fi
-
-if [ -e $lang_i18n-ner-organization.bin  ]; then
-   mv $lang_i18n-ner-organization.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$language
-else
-   mv en-ner-organization.bin $dbpedia_workspace/dbpedia_data/data/opennlp/english
-fi
-
-if [ -e $lang_i18n-ner-person.bin  ]; then
-   mv $lang_i18n-ner-person.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$language
-else
-   mv en-ner-person.bin $dbpedia_workspace/dbpedia_data/data/opennlp/english
-fi
-
-if [ -e $lang_i18n-pos-maxent.bin  ]; then
-   mv $lang_i18n-pos-maxent.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$language
-else
-   mv en-pos-maxent.bin $dbpedia_workspace/dbpedia_data/data/opennlp/english
-fi
-
-if [ -e $lang_i18n-sent.bin  ]; then
-   mv $lang_i18n-sent.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$language
-else
-   mv en-sent.bin $dbpedia_workspace/dbpedia_data/data/opennlp/english
-fi
-
-if [ -e $lang_i18n-token.bin  ]; then
-   mv $lang_i18n-token.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$language
-else
-   mv en-token.bin $dbpedia_workspace/dbpedia_data/data/opennlp/english
-fi
-
-#------------------------------------- Original Data  --------------------------------------------------
-mv index.tgz  $dbpedia_workspace/dbpedia_data/original
 mv spot_selector.tgz  $dbpedia_workspace/dbpedia_data/original
 
 bzip2 -d $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/disambiguations_$lang_i18n.nt.bz2
