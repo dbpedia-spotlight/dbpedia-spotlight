@@ -1,14 +1,14 @@
 #!/bin/bash
 #+------------------------------------------------------------------------------------------------------------------------------+
 #| DBpedia Spotlight - Download script                                                                                          |
-#| @author @sandroacoelho, @rafaharo                                                                                                       |
+#| @author @sandroacoelho, @rafaharo, @iavraam                                                                                                       |
 #+------------------------------------------------------------------------------------------------------------------------------+
 PROGNAME=$(basename $0)
 
 #Config parameters (adjust according your target language and folder)
-export lang_i18n=es
-export language=spanish
-export dbpedia_workspace=/usr/local/spotlight
+export lang_i18n=el
+export language=greek
+export dbpedia_workspace=/var/local/spotlight
 export dbpedia_version=3.8
 
 # error_exit function by William Shotts. http://stackoverflow.com/questions/64786/error-handling-in-bash
@@ -103,19 +103,19 @@ echo 'Getting Wikipedia Dump...'
 wget "http://dumps.wikimedia.org/"$lang_i18n"wiki/latest/"$lang_i18n"wiki-latest-pages-articles.xml.bz2" --directory-prefix=$dbpedia_workspace/dbpedia_data/original/wikipedia/$lang_i18n
 echo 'done!'
 
-echo 'Getting LingPipe Spotter...'
+echo 'Getting LingPipe Spot Dictionary...'
 wget http://dbp-spotlight.svn.sourceforge.net/viewvc/dbp-spotlight/tags/release-0.5/dist/src/deb/control/data/usr/share/dbpedia-spotlight/spotter.dict
 echo 'done!'
 
-echo 'Getting Spot Selector...'
+echo 'Getting CoOccurrenceBased Spot Selector Statistics...'
 wget http://spotlight.dbpedia.org/download/release-0.5/spot_selector.tgz
 echo 'done!'
 
-echo 'Getting Index...'
+echo 'Getting the Tiny Lucene Context Index...'
 wget http://dbp-spotlight.svn.sourceforge.net/viewvc/dbp-spotlight/tags/release-0.5/dist/src/deb/control/data/usr/share/dbpedia-spotlight/index.tgz
 echo 'done!'
 
-echo 'Getting LingPipe HMM Model...'
+echo 'Getting LingPipe HMM Model for POS-tagging...'
 wget http://dbp-spotlight.svn.sourceforge.net/viewvc/dbp-spotlight/tags/release-0.5/dist/src/deb/control/data/usr/share/dbpedia-spotlight/pos-en-general-brown.HiddenMarkovModel
 echo 'done!'
 
@@ -235,6 +235,26 @@ fi
 mv index.tgz  $dbpedia_workspace/dbpedia_data/original
 mv spot_selector.tgz  $dbpedia_workspace/dbpedia_data/original
 
+bzip2 -d $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/disambiguations_$lang_i18n.nt.bz2
+/usr/bin/python unicodeEscape.py $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/disambiguations_$lang_i18n.nt
+rm $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/disambiguations_$lang_i18n.nt
+mv $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/disambiguations_$lang_i18n.nt.new $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/disambiguations_$lang_i18n.nt
+bzip2 -z -k $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/disambiguations_$lang_i18n.nt
 
+bzip2 -d $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/instance_types_$lang_i18n.nt.bz2
+/usr/bin/python unicodeEscape.py $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/instance_types_$lang_i18n.nt
+rm $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/instance_types_$lang_i18n.nt
+mv $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/instance_types_$lang_i18n.nt.new $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/instance_types_$lang_i18n.nt
+bzip2 -z -k $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/instance_types_$lang_i18n.nt
 
+bzip2 -d $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/labels_$lang_i18n.nt.bz2
+/usr/bin/python unicodeEscape.py $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/labels_$lang_i18n.nt
+rm $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/labels_$lang_i18n.nt
+mv $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/labels_$lang_i18n.nt.new $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/labels_$lang_i18n.nt
+bzip2 -z -k $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/labels_$lang_i18n.nt
 
+bzip2 -d $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/redirects_$lang_i18n.nt.bz2
+/usr/bin/python unicodeEscape.py $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/redirects_$lang_i18n.nt
+rm $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/redirects_$lang_i18n.nt
+mv $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/redirects_$lang_i18n.nt.new $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/redirects_$lang_i18n.nt
+bzip2 -z -k $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/redirects_$lang_i18n.nt

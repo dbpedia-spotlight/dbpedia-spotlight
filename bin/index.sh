@@ -3,15 +3,15 @@
 # If this is your first time running the script, we advise you to copy/paste commands from here, closely watching the messages
 # and the final output.
 #
-# @author @maxjakob, @pablomendes, @rafaharo
+# @author @maxjakob, @pablomendes, @rafaharo, @iavraam
 
-export lang_i18n=es
+export lang_i18n=el
 
 export DBPEDIA_WORKSPACE=/usr/local/spotlight/dbpedia_data
 
 export INDEX_CONFIG_FILE=../conf/indexing.properties
 
-JAVA_XMX=14g
+JAVA_XMX=5g
 
 
 # you have to run maven2 from the module that contains the indexing classes
@@ -24,11 +24,11 @@ else
 fi
 
 # first step is to extract valid URIs, synonyms and surface forms from DBpedia
-mvn scala:run -Dlauncher=ExtractCandidateMap "-DjavaOpts.Xmx=$JAVA_XMX" "-DaddArgs=$INDEX_CONFIG_FILE"
+mvn3 scala:run -Dlauncher=ExtractCandidateMap "-DjavaOpts.Xmx=$JAVA_XMX" "-DaddArgs=$INDEX_CONFIG_FILE"
 
 # now we collect parts of Wikipedia dump where DBpedia resources occur and output those occurrences as Tab-Separated-Values
 echo -e "Parsing Wikipedia dump to extract occurrences...\n"
-mvn scala:run -Dlauncher=ExtractOccsFromWikipedia "-DjavaOpts.Xmx=$JAVA_XMX" "-DaddArgs=$INDEX_CONFIG_FILE|$DBPEDIA_WORKSPACE/data/output/$lang_i18n/occs.tsv"
+mvn3 scala:run -Dlauncher=ExtractOccsFromWikipedia "-DjavaOpts.Xmx=$JAVA_XMX" "-DaddArgs=$INDEX_CONFIG_FILE|$DBPEDIA_WORKSPACE/data/output/$lang_i18n/occs.tsv"
 
 # (recommended) sorting the occurrences by URI will speed up context merging during indexing
 echo -e "Sorting occurrences to speed up indexing...\n"
@@ -41,33 +41,36 @@ cat $DBPEDIA_WORKSPACE/data/output/$lang_i18n/occs.uriSorted.tsv | cut -d$'\t' -
 sort $DBPEDIA_WORKSPACE/data/output/$lang_i18n/surfaceForms-fromOccs.tsv | uniq -c > $DBPEDIA_WORKSPACE/data/output/$lang_i18n/surfaceForms-fromOccs.count
 grep -Pv "      [123] " $DBPEDIA_WORKSPACE/data/output/$lang_i18n/surfaceForms-fromOccs.count | sed -r "s|\s+[0-9]+\s(.+)|\1|" > $DBPEDIA_WORKSPACE/data/output/$lang_i18n/surfaceForms-fromOccs-thresh3.tsv
 
-cp $DBPEDIA_WORKSPACE/data/output/$lang_i18n/surfaceForms.tsv $DBPEDIA_WORKSPACE/data/output/$lang_i18n/surfaceForms-fromTitRedDis.tsv
+cp $DBPEDIA_WORKSPACE/data/output/surfaceForms.tsv $DBPEDIA_WORKSPACE/data/output/$lang_i18n/surfaceForms-fromTitRedDis.tsv
 cat $DBPEDIA_WORKSPACE/data/output/$lang_i18n/surfaceForms-fromTitRedDis.tsv $DBPEDIA_WORKSPACE/data/output/$lang_i18n/surfaceForms-fromOccs.tsv > $DBPEDIA_WORKSPACE/data/output/$lang_i18n/surfaceForms.tsv
 
 # now that we have our set of surfaceForms, we can build a simple dictionary-based spotter from them
-mvn scala:run -Dlauncher=IndexLingPipeSpotter "-DjavaOpts.Xmx=$JAVA_XMX" "-DaddArgs=$INDEX_CONFIG_FILE"
+mvn3 scala:run -Dlauncher=IndexLingPipeSpotter "-DjavaOpts.Xmx=$JAVA_XMX" "-DaddArgs=$INDEX_CONFIG_FILE"
+cp $DBPEDIA_WORKSPACE/data/output/$lang_i18n/surfaceForms.tsv.spotterDictionary $DBPEDIA_WORKSPACE/data/output/$lang_i18n/spotter.$lang_i18n.dict
 
 set -e
 # create a lucene index out of the occurrences
 echo -e "Creating a context index from occs.tsv...\n"
-mvn scala:run -Dlauncher=IndexMergedOccurrences "-DjavaOpts.Xmx=$JAVA_XMX" "-DaddArgs=$INDEX_CONFIG_FILE|$DBPEDIA_WORKSPACE/data/output/$lang_i18n/occs.uriSorted.tsv"
+mvn3 scala:run -Dlauncher=IndexMergedOccurrences "-DjavaOpts.Xmx=$JAVA_XMX" "-DaddArgs=$INDEX_CONFIG_FILE|$DBPEDIA_WORKSPACE/data/output/$lang_i18n/occs.uriSorted.tsv"
 # NOTE: if you get an out of memory error from the command above, try editing ../index/pom.xml with correct jvmArg and file arguments, then run:
-#mvn scala:run -Dlauncher=IndexMergedOccurrences "-DjavaOpts.Xmx=$JAVA_XMX" "-DaddArgs=$INDEX_CONFIG_FILE|$DBPEDIA_WORKSPACE/data/output/$lang_i18n/occs.uriSorted.tsv"
+#mvn3 scala:run -Dlauncher=IndexMergedOccurrences "-DjavaOpts.Xmx=$JAVA_XMX" "-DaddArgs=$INDEX_CONFIG_FILE|$DBPEDIA_WORKSPACE/data/output/$lang_i18n/occs.uriSorted.tsv"
 
 # (optional) make a backup copy of the index before you lose all the time you've put into this
 #cp -R $DBPEDIA_WORKSPACE/data/output/$lang_i18n/index $DBPEDIA_WORKSPACE/data/output/$lang_i18n/index-backup
 # add surface forms to index
 echo -e "Adding Surface Forms to index...\n"
- mvn scala:run -Dlauncher=AddSurfaceFormsToIndex "-DjavaOpts.Xmx=$JAVA_XMX" "-DaddArgs=$INDEX_CONFIG_FILE|$DBPEDIA_WORKSPACE/data/output/$lang_i18n/index"
+cp -r $DBPEDIA_WORKSPACE/data/output/index $DBPEDIA_WORKSPACE/data/output/$lang_i18n
+mvn3 scala:run -Dlauncher=AddSurfaceFormsToIndex "-DjavaOpts.Xmx=$JAVA_XMX" "-DaddArgs=$INDEX_CONFIG_FILE|$DBPEDIA_WORKSPACE/data/output/$lang_i18n/index"
 # or
- mvn scala:run -Dlauncher=CandidateIndexer "-DjavaOpts.Xmx=$JAVA_XMX" "-DaddArgs=$DBPEDIA_WORKSPACE/data/output/$lang_i18n/surfaceForms.tsv|$DBPEDIA_WORKSPACE/data/output/$lang_i18n/candidateIndex|3|case-insensitive|overwrite"
+mvn3 scala:run -Dlauncher=CandidateIndexer "-DjavaOpts.Xmx=$JAVA_XMX" "-DaddArgs=$DBPEDIA_WORKSPACE/data/output/$lang_i18n/surfaceForms.tsv|$DBPEDIA_WORKSPACE/data/output/$lang_i18n/candidateIndex|3|case-insensitive|overwrite"
 
 # add entity types to index
-mvn scala:run -Dlauncher=AddTypesToIndex "-DjavaOpts.Xmx=$JAVA_XMX" "-DaddArgs=$INDEX_CONFIG_FILE|$DBPEDIA_WORKSPACE/data/output/$lang_i18n/index-withSF"
+mvn3 scala:run -Dlauncher=AddTypesToIndex "-DjavaOpts.Xmx=$JAVA_XMX" "-DaddArgs=$INDEX_CONFIG_FILE|$DBPEDIA_WORKSPACE/data/output/$lang_i18n/index-withSF"
 
 # (optional) reduce index size by unstoring fields (attention: you won't be able to see contents of fields anymore)
-mvn scala:run -Dlauncher=CompressIndex "-DjavaOpts.Xmx=$JAVA_XMX" "-DaddArgs=$INDEX_CONFIG_FILE|10|$DBPEDIA_WORKSPACE/data/output/$lang_i18n/index-withSF-withTypes"
+mvn3 scala:run -Dlauncher=CompressIndex "-DjavaOpts.Xmx=$JAVA_XMX" "-DaddArgs=$INDEX_CONFIG_FILE|10|$DBPEDIA_WORKSPACE/data/output/$lang_i18n/index-withSF-withTypes"
+cp $DBPEDIA_WORKSPACE/data/output/index_en/similarity-thresholds.txt $DBPEDIA_WORKSPACE/data/output/index-withSF-withTypes
 set +e
 
 # train a linker (most simple is based on similarity-thresholds)
-# mvn scala:run -Dlauncher=EvaluateDisambiguationOnly "-DjavaOpts.Xmx=$JAVA_XMX"
+# mvn3 scala:run -Dlauncher=EvaluateDisambiguationOnly "-DjavaOpts.Xmx=$JAVA_XMX"
