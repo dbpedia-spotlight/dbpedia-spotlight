@@ -12,7 +12,6 @@
     <artifactId>rest-tomcat</artifactId>
     <name>DBpedia Spotlight RESTful TOMCAT</name>
 
-
     <!-- Project properties -->
     <properties>
         <prj.name.uri>dbpedia_spotlight</prj.name.uri>
@@ -62,6 +61,23 @@
                 <configuration>
                     <warSourceDirectory>src/web</warSourceDirectory>
                     <webXml>src/web/WEB-INF/web.xml</webXml>
+                    <webResources>
+                        <resource>
+                            <directory>${project.basedir}/../conf</directory>
+                            <filtering>true</filtering>
+                            <includes>
+                                <include>server.properties</include>
+                            </includes>
+                        </resource>
+
+                        <resource>
+                            <directory>${project.basedir}/../core/src/main/resources</directory>
+                            <filtering>true</filtering>
+                            <includes>
+                                <include>log4j.properties</include>
+                            </includes>
+                        </resource>
+                    </webResources>
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>

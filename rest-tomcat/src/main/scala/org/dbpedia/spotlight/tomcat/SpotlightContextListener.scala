@@ -28,36 +28,14 @@ import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters
 
 class SpotlightContextListener extends  ServletContextListener {
 
-  val log: Log= LogFactory.getLog("SpotlightContextListener")
+  val server:Server = new Server
 
   def contextInitialized(event:ServletContextEvent) {
-
-    log.debug("Initializing Spotlight default context")
-
-    log.debug("Loading server.properties from resources path..")
-    val configFileName:String = getClass.getClassLoader.getResource("server.properties").getPath
-
-    val configuration:SpotlightConfiguration =  new SpotlightConfiguration(configFileName)
-    log.debug("Server.properties loaded from path  =  " + configFileName)
-
-    var factory: SpotlightFactory = new SpotlightFactory(configuration)
-    log.debug("Spotlight factory loaded")
-
-    log.debug("Setting disambiguators, spotters and configuration on Server...")
-    Server.setDisambiguators(factory.disambiguators)
-    Server.setSpotters(factory.spotters)
-    Server.setConfiguration(configuration)
-
-    Server.setCombinedFilters(new CombineAllAnnotationFilters(Server.getConfiguration))
-
-    log.debug("done!")
 
   }
 
 
   def contextDestroyed(event:ServletContextEvent) {
-
-    log.debug("Spotlight default context has destroyed")
 
   }
 }
