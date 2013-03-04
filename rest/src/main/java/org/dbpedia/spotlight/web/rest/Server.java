@@ -51,6 +51,7 @@ import java.util.Map;
  */
 
 public class Server {
+
     static Log LOG = LogFactory.getLog(Server.class);
 
     public static final String APPLICATION_PATH = "http://spotlight.dbpedia.org/rest";
@@ -76,70 +77,113 @@ public class Server {
 
     private static String namespacePrefix = SpotlightConfiguration.DEFAULT_NAMESPACE;
 
+    private static URI serverURI = null;
+
+    private static SpotlightFactory factory = null;
+
     public static void main(String[] args) throws IOException, InterruptedException, URISyntaxException, ClassNotFoundException, InitializationException {
 
-        URI serverURI = null;
+        initSpotlightConfiguration(args[0]);
+
+        setServerURI(args);
+
+        initGrizzlyWebContainer();
+
+    }
+
+    private static void setServerURI(String[] args) throws URISyntaxException, InitializationException {
 
         if(args[0].endsWith(".properties")) {
-            //We are using the old-style configuration file:
 
-            //Initialization, check values
-            try {
-                String configFileName = args[0];
-                configuration = new SpotlightConfiguration(configFileName);
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.err.println("\n"+usage);
-                System.exit(1);
-            }
-
-            serverURI = new URI(configuration.getServerURI());
-
-            // Set static annotator that will be used by Annotate and Disambiguate
-            final SpotlightFactory factory = new SpotlightFactory(configuration);
-
-            setDisambiguators(factory.disambiguators());
-            setSpotters(factory.spotters());
-            setNamespacePrefix(configuration.getDbpediaResource());
-
-            setCombinedFilters(new CombineAllAnnotationFilters(Server.getConfiguration()));
-
+           serverURI = new URI(configuration.getServerURI());
 
         } else {
+
+           serverURI = new URI(args[1]);
+           setDisambiguators(factory.disambiguators());
+           setSpotters(factory.spotters());
+           setNamespacePrefix(configuration.getDbpediaResource());
+        }
+
+    }
+
+    public static void initSpotlightConfiguration(String configFileName) throws InitializationException {
+
+        if(configFileName.endsWith(".properties")) {
+
+            initByPropertiesFile(configFileName);
+
+        } else {
+
             //We are using a model folder:
-
-            serverURI = new URI(args[1]);
-
-            File modelFolder = null;
-            try {
-                modelFolder = new File(args[0]);
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.err.println("\n"+usage);
-                System.exit(1);
-            }
-
-            SpotlightModel db = SpotlightModel.fromFolder(modelFolder);
-
-
-            setNamespacePrefix(db.properties().getProperty("namespace"));
-            setTokenizer(db.tokenizer());
-            setSpotters(db.spotters());
-            setDisambiguators(db.disambiguators());
+            initByModel(configFileName);
 
         }
 
-        //ExternalUriWadlGeneratorConfig.setUri(configuration.getServerURI()); //TODO get another parameter, maybe getExternalServerURI since Grizzly will use this in order to find out to which port to bind
-
-
         LOG.info(String.format("Initiated %d disambiguators.",disambiguators.size()));
+
         LOG.info(String.format("Initiated %d spotters.",spotters.size()));
 
+    }
+
+    private static void initByPropertiesFile(String configFileName) throws  InitializationException {
+
+        //We are using the old-style configuration file:
+        //Initialization, check values
+        try {
+            configuration = new SpotlightConfiguration(configFileName);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("\n"+ usage);
+            System.exit(1);
+        }
+
+        // Set static annotator that will be used by Annotate and Disambiguate
+        factory = new SpotlightFactory(configuration);
+
+        setDisambiguators(factory.disambiguators());
+
+        setSpotters(factory.spotters());
+
+        setNamespacePrefix(configuration.getDbpediaResource());
+
+        setCombinedFilters(new CombineAllAnnotationFilters(Server.getConfiguration()));
+
+    }
+
+    private static void initByModel(String folder) throws InitializationException {
+
+        File modelFolder = null;
+
+        try {
+            modelFolder = new File(folder);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("\n"+usage);
+            System.exit(1);
+        }
+
+        SpotlightModel db = SpotlightModel.fromFolder(modelFolder);
+
+        setNamespacePrefix(db.properties().getProperty("namespace"));
+
+        setTokenizer(db.tokenizer());
+
+        setSpotters(db.spotters());
+
+        setDisambiguators(db.disambiguators());
+
+    }
+
+    private static void initGrizzlyWebContainer() throws IOException, InterruptedException{
+
+        //ExternalUriWadlGeneratorConfig.setUri(configuration.getServerURI()); //TODO get another parameter, maybe getExternalServerURI since Grizzly will use this in order to find out to which port to bind
+
         final Map<String, String> initParams = new HashMap<String, String>();
+
         initParams.put("com.sun.jersey.config.property.resourceConfigClass", "com.sun.jersey.api.core.PackagesResourceConfig");
         initParams.put("com.sun.jersey.config.property.packages", "org.dbpedia.spotlight.web.rest.resources");
         initParams.put("com.sun.jersey.config.property.WadlGeneratorConfig", "org.dbpedia.spotlight.web.rest.wadl.ExternalUriWadlGeneratorConfig");
-
 
         SelectorThread threadSelector = GrizzlyWebContainerFactory.create(serverURI, initParams);
         threadSelector.start();
@@ -174,6 +218,7 @@ public class Server {
         //server.stop(0);
         threadSelector.stopEndpoint();
         System.exit(0);
+
 
     }
 
@@ -246,6 +291,7 @@ public class Server {
     public static SpotlightConfiguration getConfiguration() {
         return configuration;
     }
+
 
     public static void setConfiguration(SpotlightConfiguration configuration)
     {
