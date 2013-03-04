@@ -119,7 +119,9 @@ wget http://spotlight.dbpedia.org/download/release-0.5/spot_selector.tgz
 echo 'done!'
 
 echo 'Getting the Tiny Lucene Context Index...'
-wget https://github.com/dbpedia-spotlight/dbpedia-spotlight/tree/release-$spotlight_version/dist/src/deb/control/data/usr/share/dbpedia-spotlight/index
+wget http://spotlight.dbpedia.org/download/release-0.5/index.tgz
+#Getting from GitHub is not working
+#wget https://github.com/dbpedia-spotlight/dbpedia-spotlight/tree/release-$spotlight_version/dist/src/deb/control/data/usr/share/dbpedia-spotlight/index
 echo 'done!'
 
 echo 'Getting LingPipe HMM Model for POS-tagging...'
@@ -189,6 +191,7 @@ echo 'done!'
 mv spotter.dict $dbpedia_workspace/dbpedia_data/data/models/$lang_i18n/spotter.en.dict
 mv pos-en-general-brown.HiddenMarkovModel $dbpedia_workspace/dbpedia_data/data/models/$lang_i18n
 #index
+tar xvf index.tgz
 mv index $dbpedia_workspace/dbpedia_data/data/models/$lang_i18n/tiny.en.index
 #spot selector
 tar xvf spot_selector.tgz
