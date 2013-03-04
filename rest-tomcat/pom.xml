@@ -63,6 +63,7 @@
                     <webXml>src/web/WEB-INF/web.xml</webXml>
                     <webResources>
                         <resource>
+                            <targetPath>WEB-INF/classes</targetPath>
                             <directory>${project.basedir}/../conf</directory>
                             <filtering>true</filtering>
                             <includes>
@@ -71,12 +72,13 @@
                         </resource>
 
                         <resource>
+                            <targetPath>WEB-INF/classes</targetPath>
                             <directory>${project.basedir}/../core/src/main/resources</directory>
                             <filtering>true</filtering>
                             <includes>
                                 <include>log4j.properties</include>
                             </includes>
-                        </resource>
+                       </resource>
                     </webResources>
                     <archive>
                         <manifest>

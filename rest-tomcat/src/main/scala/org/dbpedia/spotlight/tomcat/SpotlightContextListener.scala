@@ -20,22 +20,33 @@ package org.dbpedia.spotlight.tomcat
 
 import javax.servlet.{ServletContextEvent, ServletContextListener}
 import org.apache.commons.logging.{Log, LogFactory}
-import org.dbpedia.spotlight.model.{SpotlightFactory, SpotlightConfiguration}
-import java.lang.String
 import org.dbpedia.spotlight.web.rest.Server
-import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters
+import java.util.Properties
+import java.io.{File, FileInputStream}
 
 
-class SpotlightContextListener extends  ServletContextListener {
+class SpotlightContextListener extends ServletContextListener {
 
-  val server:Server = new Server
+  val log: Log = LogFactory.getLog("SpotlightContextListener")
 
-  def contextInitialized(event:ServletContextEvent) {
+  def contextInitialized(event: ServletContextEvent) {
+
+    log.debug("Initializing Spotlight context...")
+
+    val config: Properties = new Properties
+    config.load(new FileInputStream(new File(getClass.getClassLoader.getResource("tomcat_spotlight.properties").getPath)))
+
+    val configFileName = getClass.getClassLoader.getResource(config.getProperty("org.dbpedia.spotlight.config.filename", "server.properties")).getPath
+    Server.initSpotlightConfiguration(configFileName)
+
+    log.debug("done!")
 
   }
 
 
-  def contextDestroyed(event:ServletContextEvent) {
+  def contextDestroyed(event: ServletContextEvent) {
+
+    log.debug("Spotlight context has destroyed")
 
   }
 }
