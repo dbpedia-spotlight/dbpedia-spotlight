@@ -1,6 +1,7 @@
 package org.dbpedia.spotlight.db
 
 import memory._
+import model.Tokenizer
 import org.apache.commons.lang.NotImplementedException
 import java.lang.{Short, String}
 
@@ -13,9 +14,7 @@ import java.util.{Map, Set}
 import java.io.File
 import org.dbpedia.spotlight.model._
 import scala.{Array, Int}
-import java.util
 import collection.mutable
-import opennlp.tools.tokenize.Tokenizer
 
 /**
  * Implements memory-based indexing. The memory stores are serialized and deserialized using Kryo.
@@ -38,7 +37,7 @@ class MemoryStoreIndexer(val baseDir: File)
   }
 
   def ngram(sf: String, tokenizer: Tokenizer): Seq[String] = {
-    tokenizer.tokenize(sf)
+    tokenizer.tokenizeRaw(sf)
   }
 
   def getAllNgrams(grams: Seq[String]): Seq[Seq[String]] = {

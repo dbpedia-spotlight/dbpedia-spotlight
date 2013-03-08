@@ -49,6 +49,13 @@ class MemorySurfaceFormStore
   def getTotalOccurrenceCount: Int = totalOccurrenceCount
 
 
+  def iterateSurfaceForms: Seq[SurfaceForm] = {
+    annotatedCountForID.zipWithIndex.flatMap{
+      case (count: Int, id: Int) if count > 0 => Some(sfForID(id))
+      case _ => None
+    }
+  }
+
 
   def createReverseLookup() {
 
@@ -77,9 +84,26 @@ class MemorySurfaceFormStore
   }
 
 
+  private def sfForID(id: Int) = {
+    val annotatedCount = annotatedCountForID(id)
+    val totalCount = totalCountForID(id)
+
+    new SurfaceForm(stringForID(id), id, annotatedCount, totalCount)
+  }
+
   @throws(classOf[SurfaceFormNotFoundException])
   def getSurfaceForm(surfaceform: String): SurfaceForm = {
     val id = idForString.get(surfaceform)
+
+    if (id == null)
+      throw new SurfaceFormNotFoundException("SurfaceForm %s not found.".format(surfaceform))
+
+    sfForID(id)
+  }
+
+  @throws(classOf[SurfaceFormNotFoundException])
+  def getSurfaceFormNormalized(surfaceform: String): SurfaceForm = {
+    val id = idForString.get(normalize(surfaceform))
 
     if (id == null)
       throw new SurfaceFormNotFoundException("SurfaceForm %s not found.".format(surfaceform))
@@ -89,18 +113,5 @@ class MemorySurfaceFormStore
 
     new SurfaceForm(surfaceform, id, annotatedCount, totalCount)
   }
-
-  @throws(classOf[SurfaceFormNotFoundException])
-   def getSurfaceFormNormalized(surfaceform: String): SurfaceForm = {
-     val id = idForString.get(normalize(surfaceform))
-
-     if (id == null)
-       throw new SurfaceFormNotFoundException("SurfaceForm %s not found.".format(surfaceform))
-
-     val annotatedCount = annotatedCountForID(id)
-     val totalCount = totalCountForID(id)
-
-     new SurfaceForm(surfaceform, id, annotatedCount, totalCount)
-   }
 
 }

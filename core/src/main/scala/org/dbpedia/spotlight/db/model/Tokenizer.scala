@@ -25,4 +25,7 @@ abstract class Tokenizer {
     if(text.feature("tokens").isEmpty)
       text.setFeature(new Feature("tokens", tokenize(text)))
   }
+
+  def tokenizeRaw(text: String): Seq[String]
+
 }

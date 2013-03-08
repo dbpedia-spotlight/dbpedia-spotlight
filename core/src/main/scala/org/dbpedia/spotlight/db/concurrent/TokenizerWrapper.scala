@@ -10,6 +10,7 @@ import akka.dispatch.Await
 import akka.util
 import akka.util.duration._
 import akka.pattern.ask
+import org.apache.commons.lang.NotImplementedException
 
 /**
  * A Wrapper for Tokenizer workers.
@@ -46,6 +47,10 @@ class TokenizerWrapper(val tokenizers: Seq[Tokenizer]) extends Tokenizer {
   override def tokenize(text: Text): List[Token] = {
     tokenizeMaybe(text)
     text.featureValue[List[Token]]("tokens").get
+  }
+
+  def tokenizeRaw(text: String): Seq[String] = {
+    throw new NotImplementedException()
   }
 
   def close() {

@@ -50,4 +50,6 @@ trait SurfaceFormStore {
    */
   def getTotalOccurrenceCount: Int
 
+  def iterateSurfaceForms: Seq[SurfaceForm]
+
 }

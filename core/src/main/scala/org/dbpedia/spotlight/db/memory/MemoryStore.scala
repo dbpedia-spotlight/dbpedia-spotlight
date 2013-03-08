@@ -12,6 +12,7 @@ import org.apache.commons.logging.LogFactory
 import com.esotericsoftware.kryo.serializers.DefaultSerializers.KryoSerializableSerializer
 import com.esotericsoftware.kryo.Kryo
 import org.dbpedia.spotlight.db.model.{TokenTypeStore, ResourceStore}
+import org.dbpedia.spotlight.db.FSADictionary
 
 
 /**
@@ -47,73 +48,84 @@ object MemoryStore {
   val kryos = HashMap[String, Kryo]()
 
   kryos.put(classOf[MemoryResourceStore].getSimpleName,
-    {
-      val kryo = new Kryo()
-      kryo.setRegistrationRequired(true)
+  {
+    val kryo = new Kryo()
+    kryo.setRegistrationRequired(true)
 
-      kryo.register(classOf[Array[Int]], new DefaultArraySerializers.IntArraySerializer())
-      kryo.register(classOf[Array[String]], new DefaultArraySerializers.StringArraySerializer())
-      kryo.register(classOf[Array[Array[Short]]], new JavaSerializer())
+    kryo.register(classOf[Array[Int]], new DefaultArraySerializers.IntArraySerializer())
+    kryo.register(classOf[Array[String]], new DefaultArraySerializers.StringArraySerializer())
+    kryo.register(classOf[Array[Array[Short]]], new JavaSerializer())
 
-      kryo.register(classOf[OntologyType])
-      kryo.register(classOf[DBpediaType])
-      kryo.register(classOf[FreebaseType])
-      kryo.register(classOf[SchemaOrgType])
+    kryo.register(classOf[OntologyType])
+    kryo.register(classOf[DBpediaType])
+    kryo.register(classOf[FreebaseType])
+    kryo.register(classOf[SchemaOrgType])
 
-      kryo.register(classOf[MemoryResourceStore])
-      kryo.register(classOf[MemoryOntologyTypeStore], new JavaSerializer())
+    kryo.register(classOf[MemoryResourceStore])
+    kryo.register(classOf[MemoryOntologyTypeStore], new JavaSerializer())
 
-      kryo
-    }
+    kryo
+  }
   )
 
   kryos.put(classOf[MemorySurfaceFormStore].getSimpleName,
-    {
-      val kryo = new Kryo()
-      kryo.setRegistrationRequired(true)
+  {
+    val kryo = new Kryo()
+    kryo.setRegistrationRequired(true)
 
-      kryo.register(classOf[Array[Int]],    new DefaultArraySerializers.IntArraySerializer())
-      kryo.register(classOf[Array[String]], new DefaultArraySerializers.StringArraySerializer())
-      kryo.register(classOf[MemorySurfaceFormStore])
+    kryo.register(classOf[Array[Int]],    new DefaultArraySerializers.IntArraySerializer())
+    kryo.register(classOf[Array[String]], new DefaultArraySerializers.StringArraySerializer())
+    kryo.register(classOf[MemorySurfaceFormStore])
 
-      kryo
-    }
+    kryo
+  }
   )
 
   kryos.put(classOf[MemoryContextStore].getSimpleName,
-    {
-      val kryo = new Kryo()
-      kryo.setRegistrationRequired(true)
+  {
+    val kryo = new Kryo()
+    kryo.setRegistrationRequired(true)
 
-      kryo.register(classOf[MemoryContextStore], new KryoSerializableSerializer())
+    kryo.register(classOf[MemoryContextStore], new KryoSerializableSerializer())
 
-      kryo
-    }
+    kryo
+  }
   )
 
   kryos.put(classOf[MemoryCandidateMapStore].getSimpleName,
-    {
-      val kryo = new Kryo()
-      kryo.setRegistrationRequired(true)
+  {
+    val kryo = new Kryo()
+    kryo.setRegistrationRequired(true)
 
-      kryo.register(classOf[MemoryCandidateMapStore], new JavaSerializer())
+    kryo.register(classOf[MemoryCandidateMapStore], new JavaSerializer())
 
-      kryo
-    }
+    kryo
+  }
   )
 
 
   kryos.put(classOf[MemoryTokenTypeStore].getSimpleName,
-    {
-      val kryo = new Kryo()
-      kryo.setRegistrationRequired(true)
+  {
+    val kryo = new Kryo()
+    kryo.setRegistrationRequired(true)
 
-      kryo.register(classOf[Array[Int]],    new DefaultArraySerializers.IntArraySerializer())
-      kryo.register(classOf[Array[String]], new DefaultArraySerializers.StringArraySerializer())
-      kryo.register(classOf[MemoryTokenTypeStore])
+    kryo.register(classOf[Array[Int]],    new DefaultArraySerializers.IntArraySerializer())
+    kryo.register(classOf[Array[String]], new DefaultArraySerializers.StringArraySerializer())
+    kryo.register(classOf[MemoryTokenTypeStore])
 
-      kryo
-    }
+    kryo
+  }
+  )
+
+  kryos.put(classOf[FSADictionary].getSimpleName,
+  {
+    val kryo = new Kryo()
+    kryo.setRegistrationRequired(false)
+
+    //kryo.register(classOf[FSADictionary], new JavaSerializer())
+
+    kryo
+  }
   )
 
   def load[T](in: InputStream, simpleName: String): T = {
@@ -154,6 +166,10 @@ object MemoryStore {
     val s = load[MemoryContextStore](in, classOf[MemoryContextStore].getSimpleName)
     s.tokenStore = tokenStore
     s
+  }
+
+  def loadFSADictionary(in: InputStream): FSADictionary = {
+    load[FSADictionary](in, classOf[FSADictionary].getSimpleName)
   }
 
   def dump(store: MemoryStore, out: File) {

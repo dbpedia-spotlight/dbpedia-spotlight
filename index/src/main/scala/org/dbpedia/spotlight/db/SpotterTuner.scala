@@ -1,28 +1,18 @@
 package org.dbpedia.spotlight.db
 
-import memory.MemoryStore
-import model.{Tokenizer, SurfaceFormStore}
-import org.dbpedia.spotlight.spot.opennlp.OpenNLPSpotter.spotFeatures
+import model.Tokenizer
 import breeze.linalg.{DenseMatrix, DenseVector}
 import org.dbpedia.spotlight.io.AnnotatedTextSource
 import breeze.regress.LinearRegression
-import java.io.{FileInputStream, File}
-import scala.io.Source
-import org.dbpedia.spotlight.model.{SurfaceForm, SurfaceFormOccurrence, AnnotatedParagraph, DBpediaResourceOccurrence}
-import org.dbpedia.spotlight.io.WikipediaHeldoutCorpus
+import java.io.File
+import org.dbpedia.spotlight.model.{SurfaceForm, SurfaceFormOccurrence, AnnotatedParagraph}
 import org.apache.commons.io.FileUtils
-import org.dbpedia.spotlight.exceptions.SurfaceFormNotFoundException
-import org.dbpedia.spotlight.spot.opennlp.OpenNLPSpotter
-import opennlp.tools.tokenize.{TokenizerModel, TokenizerME}
-import opennlp.tools.sentdetect.{SentenceModel, SentenceDetectorME}
-import opennlp.tools.postag.{POSModel, POSTaggerME}
-import org.dbpedia.spotlight.spot.Spotter
-import org.tartarus.snowball.ext.DutchStemmer
 import scala.collection.JavaConversions._
+
 
 object SpotterTuner {
 
-  def tuneOpenNLP(corpus: AnnotatedTextSource, tokenizer: Tokenizer, spotter: OpenNLPSpotter, outputFile: File) {
+  def tuneOpenNLP(corpus: AnnotatedTextSource, tokenizer: Tokenizer, spotter: DBSpotter, outputFile: File) {
 
     System.err.println("Tuning Spotter model...")
 
@@ -41,7 +31,7 @@ object SpotterTuner {
     }}
 
 
-    val (nx, ny) = (spotFeatures(new SurfaceForm("test")).activeSize, allSpots.map(_._2.size()).sum)
+    val (nx, ny) = (DBSpotter.spotFeatures(new SurfaceForm("test")).activeSize, allSpots.map(_._2.size()).sum)
 
     val x = DenseMatrix.zeros[Double](ny, nx)
     val y = DenseVector.zeros[Double](ny)
@@ -50,7 +40,7 @@ object SpotterTuner {
     allSpots.foreach{
       case(goldSpotSet: Set[String], spots: java.util.List[SurfaceFormOccurrence]) => {
         spots.foreach{ spot: SurfaceFormOccurrence =>
-          x(i,::) := spotFeatures(spot.surfaceForm).t
+          x(i,::) := DBSpotter.spotFeatures(spot.surfaceForm).t
           y(i)     = ( if(goldSpotSet.contains(spot.surfaceForm.name)) 1.0 else 0.0 )
           i += 1
         }
