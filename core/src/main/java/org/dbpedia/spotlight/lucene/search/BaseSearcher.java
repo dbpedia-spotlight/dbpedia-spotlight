@@ -178,9 +178,9 @@ public class BaseSearcher implements Closeable {
             long end = System.nanoTime();
             LOG.debug(String.format("Done search in %f ms. hits.length=%d",(end-start) / 1000000.0, hits.length));
         } catch (TimeLimitingCollector.TimeExceededException timedOutException) {
-            throw new TimeoutException("Timeout (>"+timeout+"ms searching for surface form "+query.toString(),timedOutException);
+            throw new TimeoutException("Timeout (>"+timeout+"ms searching for "+query.toString(),timedOutException);
         } catch (Exception e) {
-            throw new SearchException("Error searching for surface form "+query.toString(),e);
+            throw new SearchException("Error searching for "+query.toString(),e);
         }
         //LOG.debug(hits.length+" hits found.");
         return hits;
