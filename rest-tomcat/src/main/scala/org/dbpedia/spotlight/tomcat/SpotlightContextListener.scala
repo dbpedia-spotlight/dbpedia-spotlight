@@ -36,8 +36,20 @@ class SpotlightContextListener extends ServletContextListener {
     val config: Properties = new Properties
     config.load(new FileInputStream(new File(getClass.getClassLoader.getResource("tomcat_spotlight.properties").getPath)))
 
-    val configFileName = getClass.getClassLoader.getResource(config.getProperty("org.dbpedia.spotlight.config.filename", "server.properties")).getPath
-    Server.initSpotlightConfiguration(configFileName)
+    val property = config.getProperty("org.dbpedia.spotlight.config.filename", "server.properties")
+
+    if (property.contains(".properties")) {
+
+      val configFileName = getClass.getClassLoader.getResource(property).getPath
+      Server.initSpotlightConfiguration(configFileName)
+
+    }
+    else {
+
+      Server.initSpotlightConfiguration(property)
+
+    }
+
 
     log.debug("done!")
 
