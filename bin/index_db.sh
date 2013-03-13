@@ -124,10 +124,10 @@ pig -m examples/indexing/names_and_entities.pig.params examples/indexing/names_a
 #Copy results to local:
 cd $BASE_DIR
 cd $WDIR
-hadoop fs -cat /user/hadoop/${LANGUAGE}_tokencounts/token_counts.JSON.bz2/part* > tokenCounts
-hadoop fs -cat /user/hadoop/${LANGUAGE}_names_and_entities/pairCounts/part* > pairCounts
-hadoop fs -cat /user/hadoop/${LANGUAGE}_names_and_entities/uriCounts/part* > uriCounts
-hadoop fs -cat /user/hadoop/${LANGUAGE}_names_and_entities/sfAndTotalCounts/part* > sfAndTotalCounts
+hadoop fs -cat /user/hadoop/${LANGUAGE}/tokenCounts/part* > tokenCounts
+hadoop fs -cat /user/hadoop/${LANGUAGE}/names_and_entities/pairCounts/part* > pairCounts
+hadoop fs -cat /user/hadoop/${LANGUAGE}/names_and_entities/uriCounts/part* > uriCounts
+hadoop fs -cat /user/hadoop/${LANGUAGE}/names_and_entities/sfAndTotalCounts/part* > sfAndTotalCounts
 
 #Create the model:
 cd $BASE_DIR
