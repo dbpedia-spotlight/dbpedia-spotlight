@@ -10,6 +10,8 @@
 # $4 Analyzer
 # $5 Model target folder
 
+export MVN_OPTS="-Xmx26G"
+
 usage ()
 {
      echo "index_db.sh"
@@ -31,7 +33,6 @@ done
 
 shift $((OPTIND - 1))
 
-# test if we have two arguments on the command line
 if [ $# != 5 ]
 then
     usage
@@ -59,9 +60,9 @@ mkdir -p $WDIR
 #Download:
 echo "Downloading DBpedia dumps..."
 cd $WDIR
-#curl -# http://downloads.dbpedia.org/current/$LANGUAGE/redirects_$LANGUAGE.nt.bz2 | bzcat > redirects.nt
-#curl -# http://downloads.dbpedia.org/current/$LANGUAGE/disambiguations_$LANGUAGE.nt.bz2 | bzcat > disambiguations.nt
-#curl -# http://downloads.dbpedia.org/current/$LANGUAGE/instance_types_$LANGUAGE.nt.bz2 | bzcat > instance_types.nt
+curl -# http://downloads.dbpedia.org/current/$LANGUAGE/redirects_$LANGUAGE.nt.bz2 | bzcat > redirects.nt
+curl -# http://downloads.dbpedia.org/current/$LANGUAGE/disambiguations_$LANGUAGE.nt.bz2 | bzcat > disambiguations.nt
+curl -# http://downloads.dbpedia.org/current/$LANGUAGE/instance_types_$LANGUAGE.nt.bz2 | bzcat > instance_types.nt
 
 cd $BASE_DIR
 
@@ -98,7 +99,7 @@ fi
 
 #Load the dump into HDFS:
 echo "Loading Wikipedia dump into HDFS..."
-#curl -# "http://dumps.wikimedia.org/${LANGUAGE}wiki/latest/${LANGUAGE}wiki-latest-pages-articles.xml.bz2" | bzcat | hadoop fs -put - ${LANGUAGE}wiki-latest-pages-articles.xml
+curl -# "http://dumps.wikimedia.org/${LANGUAGE}wiki/latest/${LANGUAGE}wiki-latest-pages-articles.xml.bz2" | bzcat | hadoop fs -put - ${LANGUAGE}wiki-latest-pages-articles.xml
 
 #Load the stopwords into HDFS:
 echo "Moving stopwords into HDFS..."
@@ -118,21 +119,22 @@ sed -i s#%PIG_PATH#$BASE_WDIR/pig/pignlproc#g examples/indexing/names_and_entiti
 
 #Run pig:
 pig -m examples/indexing/token_counts.pig.params examples/indexing/token_counts.pig
-pig -no_multiquery -m examples/indexing/names_and_entities.pig.params examples/indexing/names_and_entities.pig
+pig -m examples/indexing/names_and_entities.pig.params examples/indexing/names_and_entities.pig
 
 #Copy results to local:
 cd $BASE_DIR
 cd $WDIR
-hadoop fs -cat /user/hduser/${LANGUAGE}_tokencounts/token_counts.JSON.bz2/part* > tokenCounts
-hadoop fs -cat /user/hduser/${LANGUAGE}_names_and_entities/pairCounts/part* > pairCounts
-hadoop fs -cat /user/hduser/${LANGUAGE}_names_and_entities/uriCounts/part* > uriCounts
-hadoop fs -cat /user/hduser/${LANGUAGE}_names_and_entities/sfAndTotalCounts/part* > sfAndTotalCounts
+hadoop fs -cat /user/hadoop/${LANGUAGE}_tokencounts/token_counts.JSON.bz2/part* > tokenCounts
+hadoop fs -cat /user/hadoop/${LANGUAGE}_names_and_entities/pairCounts/part* > pairCounts
+hadoop fs -cat /user/hadoop/${LANGUAGE}_names_and_entities/uriCounts/part* > uriCounts
+hadoop fs -cat /user/hadoop/${LANGUAGE}_names_and_entities/sfAndTotalCounts/part* > sfAndTotalCounts
 
 #Create the model:
 cd $BASE_DIR
 cd $1/dbpedia-spotlight
 mvn -q clean
 mvn -q install
+
 mvn -pl index exec:java -Dexec.mainClass=org.dbpedia.spotlight.db.CreateSpotlightModel -Dexec.args="$2 $WDIR $opennlp $5 $3 $4";
 
 echo "Finished!"
