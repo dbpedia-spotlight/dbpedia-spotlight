@@ -1,7 +1,6 @@
 package org.dbpedia.spotlight.db.concurrent
 
 import java.io.IOException
-import org.dbpedia.spotlight.db.model.Tokenizer
 import org.dbpedia.spotlight.model.{Token, Text}
 import akka.actor.{OneForOneStrategy, Props, ActorSystem, Actor}
 import akka.routing.SmallestMailboxRouter
@@ -11,6 +10,8 @@ import akka.util
 import akka.util.duration._
 import akka.pattern.ask
 import org.apache.commons.lang.NotImplementedException
+import org.dbpedia.spotlight.db.tokenize.BaseAnnotationTokenizer
+import org.dbpedia.spotlight.db.model.{RawTokenizer, AnnotationTokenizer}
 
 /**
  * A Wrapper for Tokenizer workers.
@@ -18,12 +19,12 @@ import org.apache.commons.lang.NotImplementedException
  * @author Joachim Daiber
  */
 
-class TokenizerWrapper(val tokenizers: Seq[Tokenizer]) extends Tokenizer {
+class TokenizerWrapper(val tokenizers: Seq[AnnotationTokenizer]) extends AnnotationTokenizer {
 
   var requestTimeout = 60
 
   val system = ActorSystem()
-  val workers = tokenizers.map { case tokenizer:Tokenizer =>
+  val workers = tokenizers.map { case tokenizer: AnnotationTokenizer =>
     system.actorOf(Props(new TokenizerActor(tokenizer)))
   }.seq
 
@@ -57,9 +58,11 @@ class TokenizerWrapper(val tokenizers: Seq[Tokenizer]) extends Tokenizer {
     system.shutdown()
   }
 
+  def getRawTokenizer: RawTokenizer = tokenizers.head.getRawTokenizer
+
 }
 
-class TokenizerActor(val tokenizer: Tokenizer) extends Actor {
+class TokenizerActor(val tokenizer: AnnotationTokenizer) extends Actor {
 
   def receive = {
     case TokenizerRequest(text) => {

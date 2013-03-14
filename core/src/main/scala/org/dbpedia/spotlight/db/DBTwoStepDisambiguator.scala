@@ -39,7 +39,7 @@ class DBTwoStepDisambiguator(
   private val LOG = LogFactory.getLog(this.getClass)
 
   /* Tokenizer that may be used for tokenization if the text is not already tokenized. */
-  var tokenizer: Tokenizer = null
+  var tokenizer: AnnotationTokenizer = null
 
   private def getQuery(tokenTypes: Seq[TokenType]): java.util.Map[TokenType, Int]
     = tokenTypes.groupBy(identity).mapValues(_.size).asJava

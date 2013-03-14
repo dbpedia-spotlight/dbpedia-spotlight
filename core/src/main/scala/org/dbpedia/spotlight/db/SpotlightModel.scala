@@ -18,9 +18,11 @@ import java.io.{File, FileInputStream}
 import java.util.{Locale, Properties}
 import opennlp.tools.chunker.ChunkerModel
 import opennlp.tools.namefind.TokenNameFinderModel
+import stem.SnowballStemmer
+import tokenize.{OpenNLPTokenizer, LanguageIndependentTokenizer, BaseAnnotationTokenizer}
 
 
-class SpotlightModel(val tokenizer: Tokenizer,
+class SpotlightModel(val tokenizer: AnnotationTokenizer,
                      val spotters: java.util.Map[SpotterPolicy, Spotter],
                      val disambiguators: java.util.Map[DisambiguationPolicy, ParagraphDisambiguatorJ],
                      val properties: Properties)
@@ -45,16 +47,15 @@ object SpotlightModel {
     properties.load(new FileInputStream(new File(modelFolder, "model.properties")))
 
     //Load the stemmer from the model file:
-    def stemmer(): SnowballProgram = properties.getProperty("stemmer") match {
+    def stemmer(): Stemmer = properties.getProperty("stemmer") match {
       case s: String if s equals "None" => null
-      case s: String => Class.forName("org.tartarus.snowball.ext.%s".format(s)).newInstance().asInstanceOf[SnowballProgram]
+      case s: String => new SnowballStemmer(s)
     }
-
 
     val c = properties.getProperty("opennlp_parallel", Runtime.getRuntime.availableProcessors().toString).toInt
     val cores = (1 to c)
 
-    val tokenizer: Tokenizer = if(new File(modelFolder, "opennlp").exists()) {
+    val tokenizer: AnnotationTokenizer = if(new File(modelFolder, "opennlp").exists()) {
 
       //Create the tokenizer:
       val posTagger = new File(modelFolder, "opennlp/pos-maxent.bin")
@@ -62,19 +63,19 @@ object SpotlightModel {
       val tokenizerModel = new TokenizerModel(new FileInputStream(new File(modelFolder, "opennlp/token.bin")))
       val sentenceModel = new SentenceModel(new FileInputStream(new File(modelFolder, "opennlp/sent.bin")))
 
-      def createTokenizer() = new DefaultTokenizer(
+      def createTokenizer() = new OpenNLPTokenizer(
         new TokenizerME(tokenizerModel),
         stopwords,
         stemmer(),
         new SentenceDetectorME(sentenceModel),
         if (posTagger.exists()) new POSTaggerME(posModel) else null,
         tokenTypeStore
-      ).asInstanceOf[Tokenizer]
+      ).asInstanceOf[AnnotationTokenizer]
 
       if(cores.size == 1)
         createTokenizer()
       else
-        new TokenizerWrapper(cores.map(_ => createTokenizer())).asInstanceOf[Tokenizer]
+        new TokenizerWrapper(cores.map(_ => createTokenizer())).asInstanceOf[AnnotationTokenizer]
 
     } else {
       val locale = properties.getProperty("locale").split("_")

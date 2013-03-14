@@ -2,7 +2,7 @@ package org.dbpedia.spotlight.db
 
 import memory.MemoryStore
 import org.dbpedia.spotlight.model._
-import model.{Tokenizer, SurfaceFormStore}
+import model.{RawTokenizer, SurfaceFormStore}
 import opennlp.tools.util.Span
 import collection.mutable.ArrayBuffer
 import collection.mutable.Map
@@ -69,7 +69,7 @@ object FSASpotter {
   //State ID for None
   val REJECTING_STATE = -2
 
-  def buildDictionary(sfStore: SurfaceFormStore, tokenizer: Tokenizer): FSADictionary = {
+  def buildDictionary(sfStore: SurfaceFormStore, tokenizer: RawTokenizer): FSADictionary = {
 
     //Temporary FSA DSs:
     val transitions: ArrayBuffer[Map[Int, Int]] = ArrayBuffer[Map[Int, Int]]()

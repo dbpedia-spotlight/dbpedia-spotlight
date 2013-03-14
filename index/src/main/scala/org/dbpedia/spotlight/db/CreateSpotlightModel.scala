@@ -3,7 +3,7 @@ package org.dbpedia.spotlight.db
 import io._
 import java.io.{FileOutputStream, FileInputStream, File}
 import memory.MemoryStore
-import model.Tokenizer
+import model.{RawTokenizer, Stemmer}
 import scala.io.Source
 import org.tartarus.snowball.SnowballProgram
 import java.util.{Locale, Properties}
@@ -13,6 +13,9 @@ import opennlp.tools.tokenize.{TokenizerModel, TokenizerME}
 import opennlp.tools.sentdetect.{SentenceModel, SentenceDetectorME}
 import opennlp.tools.postag.{POSModel, POSTaggerME}
 import opennlp.tools.chunker.ChunkerModel
+import stem.SnowballStemmer
+import tokenize._
+import scala.Some
 
 /**
  * This script creates a Spotlight model folder from the results of
@@ -29,14 +32,14 @@ object CreateSpotlightModel {
 
   def main(args: Array[String]) {
 
-    val (localeCode: String, rawDataFolder: File, outputFolder: File, opennlpFolder: Option[File], stopwordsFile: File, stemmer: Option[SnowballProgram]) = try {
+    val (localeCode: String, rawDataFolder: File, outputFolder: File, opennlpFolder: Option[File], stopwordsFile: File, stemmer: Stemmer) = try {
       (
         args(0),
         new File(args(1)),
         new File(args(2)),
         if (args(3) equals "None") None else Some(new File(args(3))),
         new File(args(4)),
-        if (args(5) equals "None") None else Some(Class.forName("org.tartarus.snowball.ext.%s".format(args(5))).newInstance())
+        if (args(5) equals "None") new Stemmer() else new SnowballStemmer(args(5))
         )
     } catch {
       case e: Exception => {
@@ -58,9 +61,7 @@ object CreateSpotlightModel {
 
     FileUtils.copyFile(stopwordsFile, new File(outputFolder, "stopwords.list"))
 
-    val stopwords = SpotlightModel.loadStopwords(outputFolder)
-
-    val tokenizer = if (opennlpFolder.isDefined) {
+    val rawTokenizer: RawTokenizer = if (opennlpFolder.isDefined) {
 
       val opennlpModels = opennlpFolder.get.listFiles()
       val opennlpOut = new File(outputFolder, OPENNLP_FOLDER)
@@ -96,17 +97,13 @@ object CreateSpotlightModel {
 
       val onlpTokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(new File(opennlpOut, "token.bin"))))
 
-      new DefaultTokenizer(
+      new OpenNLPRawTokenizer(
         onlpTokenizer,
-        stopwords,
-        stemmer.get,
-        new SentenceDetectorME(new SentenceModel(new FileInputStream(new File(opennlpOut, "sent.bin")))),
-        new POSTaggerME(new POSModel(new FileInputStream(new File(opennlpOut, "pos-maxent.bin")))),
-        null
+        stemmer
       )
 
     } else {
-      new LanguageIndependentTokenizer(stopwords, stemmer.get, locale, null)
+      new LanguageIndependentRawTokenizer(locale, stemmer)
     }
 
 
@@ -139,7 +136,7 @@ object CreateSpotlightModel {
       new FileInputStream(new File(rawDataFolder, "disambiguations.nt"))
     )
 
-    memoryIndexer.tokenizer = Some(tokenizer)
+    memoryIndexer.tokenizer = Some(rawTokenizer)
     memoryIndexer.addSurfaceForms(
       SurfaceFormSource.fromPigFiles(
         new File(rawDataFolder, "sfAndTotalCounts"),
@@ -178,16 +175,11 @@ object CreateSpotlightModel {
     memoryIndexer.addTokenTypes(
       TokenSource.fromPigFile(
         new File(rawDataFolder, "tokenCounts"),
-        additionalTokens = Some(TokenSource.fromSFStore(sfStore, tokenizer))
+        additionalTokens = Some(TokenSource.fromSFStore(sfStore, rawTokenizer))
       )
     )
 
     val tokenStore = MemoryStore.loadTokenTypeStore(new FileInputStream(new File(modelDataFolder, "tokens.mem")))
-
-    tokenizer match {
-      case tokenizer: LanguageIndependentTokenizer => tokenizer.tokenTypeStore = tokenStore
-      case tokenizer: DefaultTokenizer => tokenizer.tokenTypeStore = tokenStore
-    }
 
     memoryIndexer.createContextStore(resStore.size)
     memoryIndexer.addTokenOccurrences(
@@ -201,7 +193,7 @@ object CreateSpotlightModel {
     memoryIndexer.writeTokenOccurrences()
 
     if(opennlpFolder.isEmpty) {
-      val fsaDict = FSASpotter.buildDictionary(sfStore, tokenizer)
+      val fsaDict = FSASpotter.buildDictionary(sfStore, rawTokenizer)
       MemoryStore.dump(fsaDict, new File(outputFolder, "fsa_dict.mem"))
     }
 

@@ -1,7 +1,7 @@
 package org.dbpedia.spotlight.db.io
 
 import org.dbpedia.spotlight.io.OccurrenceSource
-import org.dbpedia.spotlight.db.model.{SurfaceFormStore, Tokenizer}
+import org.dbpedia.spotlight.db.model.{RawTokenizer, SurfaceFormStore}
 import collection.mutable.HashMap
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
@@ -24,11 +24,11 @@ object TokenSource {
   private val LOG = LogFactory.getLog(this.getClass)
   private val ADDITIONAL_TOKEN_COUNT = 1
 
-  def fromSFStore(sfStore: SurfaceFormStore, tokenizer: Tokenizer): Seq[String] = {
+  def fromSFStore(sfStore: SurfaceFormStore, tokenizer: RawTokenizer): Seq[String] = {
     sfStore.iterateSurfaceForms.grouped(100000).toList.par.flatMap(_.map{
       sf: SurfaceForm =>
         //Tokenize all SFs first
-        tokenizer.tokenizeRaw(sf.name)
+        tokenizer.tokenize(sf.name)
     }).seq.flatten
   }
 

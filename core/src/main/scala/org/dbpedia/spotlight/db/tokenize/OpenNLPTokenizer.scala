@@ -1,24 +1,23 @@
-package org.dbpedia.spotlight.db
+package org.dbpedia.spotlight.db.tokenize
 
-import model.{TokenTypeStore, Tokenizer}
-import org.tartarus.snowball.SnowballProgram
 import opennlp.tools.sentdetect.SentenceDetector
 import opennlp.tools.postag.POSTagger
 import org.dbpedia.spotlight.model.{Feature, TokenType, Token, Text}
 import opennlp.tools.util.Span
+import org.dbpedia.spotlight.db.model.{TokenTypeStore, Stemmer}
 
 /**
  * @author Joachim Daiber
  */
 
-class DefaultTokenizer(
+class OpenNLPTokenizer(
   tokenizer: opennlp.tools.tokenize.Tokenizer,
   stopWords: Set[String],
-  stemmer: SnowballProgram,
+  stemmer: Stemmer,
   sentenceDetector: SentenceDetector,
   var posTagger: POSTagger,
-  var tokenTypeStore: TokenTypeStore
-) extends Tokenizer {
+  tokenTypeStore: TokenTypeStore
+) extends BaseAnnotationTokenizer(tokenTypeStore, stemmer) {
 
   def tokenize(text: Text): List[Token] = this.synchronized {
     sentenceDetector.sentPosDetect(text.text).map{ sentencePos: Span =>
@@ -47,17 +46,12 @@ class DefaultTokenizer(
     }.flatten.toList
   }
 
-  def tokenizeRaw(text: String): Seq[String] = tokenizer.synchronized{
-    tokenizer.tokenize(text).map( getStemmedString(_) )
-  }
+  def getRawTokenizer: BaseRawTokenizer = new OpenNLPRawTokenizer(tokenizer, stemmer)
 
+}
 
-  def getStemmedString(token: String): String = stemmer.synchronized {
-    stemmer.setCurrent(token.toLowerCase)
-    stemmer.stem()
-    new String(stemmer.getCurrentBuffer)
-  }
+class OpenNLPRawTokenizer(tokenizer: opennlp.tools.tokenize.Tokenizer, stemmer: Stemmer) extends BaseRawTokenizer(stemmer) {
 
-  def getStemmedTokenType(token: String): TokenType = tokenTypeStore.getTokenType(new String(getStemmedString(token)))
+  def tokenizeUnstemmed(text: String): Seq[String] = tokenizer.tokenize(text)
 
 }

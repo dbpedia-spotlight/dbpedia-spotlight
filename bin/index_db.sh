@@ -106,7 +106,7 @@ fi
 #Set up Spotlight:
 cd $BASE_WDIR
 
-if [ -d $1/dbpedia-spotlight ]; then
+if [ -d dbpedia-spotlight ]; then
     echo "Updating DBpedia Spotlight..."
     cd dbpedia-spotlight
     git reset --hard HEAD
