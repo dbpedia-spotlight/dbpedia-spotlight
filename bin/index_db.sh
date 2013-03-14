@@ -7,7 +7,7 @@
 # $1 Working directory
 # $2 Language (en)
 # $3 Stopwords file
-# $4 Analyzer
+# $4 Analyzer+Stemmer language prefix e.g. Dutch(Analzyer|Stemmer)
 # $5 Model target folder
 
 export MVN_OPTS="-Xmx26G"
@@ -110,7 +110,7 @@ hadoop fs -put $3 stopwords.$LANGUAGE.list
 cd $BASE_DIR
 cd $1/pig/pignlproc
 sed -i s#%LANG#$LANGUAGE#g examples/indexing/token_counts.pig.params
-sed -i s#ANALYZER_NAME=DutchAnalyzer#ANALYZER_NAME=$4#g examples/indexing/token_counts.pig.params
+sed -i s#ANALYZER_NAME=DutchAnalyzer#ANALYZER_NAME=$4Analyzer#g examples/indexing/token_counts.pig.params
 sed -i s#%PIG_PATH#$BASE_WDIR/pig/pignlproc#g examples/indexing/token_counts.pig.params
 
 sed -i s#%LANG#${LANGUAGE}#g examples/indexing/names_and_entities.pig.params
@@ -135,6 +135,6 @@ cd $1/dbpedia-spotlight
 mvn -q clean
 mvn -q install
 
-mvn -pl index exec:java -Dexec.mainClass=org.dbpedia.spotlight.db.CreateSpotlightModel -Dexec.args="$2 $WDIR $opennlp $5 $3 $4";
+mvn -pl index exec:java -Dexec.mainClass=org.dbpedia.spotlight.db.CreateSpotlightModel -Dexec.args="$2 $WDIR $WDIR/$opennlp $WDIR/$5 $WDIR/$3 $4Stemmer";
 
 echo "Finished!"
