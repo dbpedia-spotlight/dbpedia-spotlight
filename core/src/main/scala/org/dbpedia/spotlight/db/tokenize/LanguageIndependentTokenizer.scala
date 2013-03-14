@@ -55,6 +55,8 @@ class LanguageIndependentRawTokenizer(locale: Locale, stemmer: Stemmer) extends 
     }.toSeq
   }
 
+  def tokenizePos(text: String): Seq[Span] = Helper.tokenizeWords(locale, text)
+
 }
 
 
