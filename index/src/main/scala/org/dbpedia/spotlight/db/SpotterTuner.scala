@@ -1,13 +1,13 @@
 package org.dbpedia.spotlight.db
 
 import breeze.linalg.{DenseMatrix, DenseVector}
+import model.AnnotationTokenizer
 import org.dbpedia.spotlight.io.AnnotatedTextSource
 import breeze.regress.LinearRegression
 import java.io.File
 import org.dbpedia.spotlight.model.{SurfaceForm, SurfaceFormOccurrence, AnnotatedParagraph}
 import org.apache.commons.io.FileUtils
 import scala.collection.JavaConversions._
-import tokenize.AnnotationTokenizer
 
 
 object SpotterTuner {
