@@ -54,6 +54,6 @@ class OpenNLPRawTokenizer(tokenizer: opennlp.tools.tokenize.Tokenizer, stemmer: 
 
   def tokenizeUnstemmed(text: String): Seq[String] = tokenizer.tokenize(text)
 
-  def tokenizePos(text: String): Seq[Span] = tokenizer.tokenizePos(text)
+  def tokenizePos(text: String): Array[Span] = tokenizer.tokenizePos(text)
 
 }

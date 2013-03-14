@@ -5,7 +5,7 @@
 #+------------------------------------------------------------------------------------------------------------------------------+
 
 # $1 Working directory
-# $2 Language (en)
+# $2 Locale (en_US)
 # $3 Stopwords file
 # $4 Analyzer+Stemmer language prefix e.g. Dutch(Analzyer|Stemmer)
 # $5 Model target folder
@@ -134,6 +134,7 @@ sed -i s#ANALYZER_NAME=DutchAnalyzer#ANALYZER_NAME=$4Analyzer#g examples/indexin
 sed -i s#%PIG_PATH#$BASE_WDIR/pig/pignlproc#g examples/indexing/token_counts.pig.params
 
 sed -i s#%LANG#${LANGUAGE}#g examples/indexing/names_and_entities.pig.params
+sed -i s#%LOCALE#$2#g examples/indexing/names_and_entities.pig.params
 sed -i s#%PIG_PATH#$BASE_WDIR/pig/pignlproc#g examples/indexing/names_and_entities.pig.params
 
 
