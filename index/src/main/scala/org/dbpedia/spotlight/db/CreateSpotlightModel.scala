@@ -177,7 +177,7 @@ object CreateSpotlightModel {
 
     memoryIndexer.addTokenTypes(
       TokenSource.fromPigFile(
-        new File(rawDataFolder, "token_counts"),
+        new File(rawDataFolder, "tokenCounts"),
         additionalTokens = Some(TokenSource.fromSFStore(sfStore, tokenizer))
       )
     )
@@ -192,7 +192,7 @@ object CreateSpotlightModel {
     memoryIndexer.createContextStore(resStore.size)
     memoryIndexer.addTokenOccurrences(
       TokenOccurrenceSource.fromPigFile(
-        new File(rawDataFolder, "token_counts"),
+        new File(rawDataFolder, "tokenCounts"),
         tokenStore,
         wikipediaToDBpediaClosure,
         resStore

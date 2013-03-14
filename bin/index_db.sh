@@ -26,10 +26,16 @@ opennlp="None"
 while getopts o: opt; do
   case $opt in
   o)
-      opennlp=$OPTARG
-      ;;
+  if [[ "$OPTARG" = /* ]]
+  then
+    opennlp="$OPTARG"
+  else
+    opennlp="$BASE_DIR/$OPTARG"
+  fi
+  ;;
   esac
 done
+
 
 shift $((OPTIND - 1))
 
@@ -48,7 +54,21 @@ else
    BASE_WDIR="$BASE_DIR/$1"
 fi
 
-WDIR="$1/$2"
+if [[ "$5" = /* ]]
+then
+   TARGET_DIR="$5"
+else
+   TARGET_DIR="$BASE_DIR/$5"
+fi
+
+if [[ "$3" = /* ]]
+then
+   STOPWORDS="$3"
+else
+   STOPWORDS="$BASE_DIR/$3"
+fi
+
+WDIR="$BASE_WDIR/$2"
 
 LANGUAGE=`echo $2 | sed "s/_.*//g"`
 
@@ -135,6 +155,6 @@ cd $1/dbpedia-spotlight
 mvn -q clean
 mvn -q install
 
-mvn -pl index exec:java -Dexec.mainClass=org.dbpedia.spotlight.db.CreateSpotlightModel -Dexec.args="$2 $WDIR $WDIR/$opennlp $WDIR/$5 $WDIR/$3 $4Stemmer";
+mvn -pl index exec:java -Dexec.mainClass=org.dbpedia.spotlight.db.CreateSpotlightModel -Dexec.args="$2 $WDIR $TARGET_DIR $opennlp $STOPWORDS $4Stemmer";
 
 echo "Finished!"
