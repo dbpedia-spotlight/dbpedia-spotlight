@@ -84,6 +84,23 @@ curl -# http://downloads.dbpedia.org/current/$LANGUAGE/redirects_$LANGUAGE.nt.bz
 curl -# http://downloads.dbpedia.org/current/$LANGUAGE/disambiguations_$LANGUAGE.nt.bz2 | bzcat > disambiguations.nt
 curl -# http://downloads.dbpedia.org/current/$LANGUAGE/instance_types_$LANGUAGE.nt.bz2 | bzcat > instance_types.nt
 
+
+#Set up Spotlight:
+cd $BASE_WDIR
+
+if [ -d dbpedia-spotlight ]; then
+    echo "Updating DBpedia Spotlight..."
+    cd dbpedia-spotlight
+    git reset --hard HEAD
+    git pull
+    mvn -q clean install
+else
+    echo "Setting up DBpedia Spotlight..."
+    git clone --depth 1 https://github.com/dbpedia-spotlight/dbpedia-spotlight.git
+    cd dbpedia-spotlight
+    mvn -q clean install
+fi
+
 cd $BASE_DIR
 
 #Set up pig:
@@ -101,19 +118,6 @@ else
     cd pignlproc
     echo "Building PigNLProc..."
     mvn -q assembly:assembly -Dmaven.test.skip=true
-fi
-
-#Set up Spotlight:
-cd $BASE_WDIR
-
-if [ -d dbpedia-spotlight ]; then
-    echo "Updating DBpedia Spotlight..."
-    cd dbpedia-spotlight
-    git reset --hard HEAD
-    git pull
-else
-    echo "Setting up DBpedia Spotlight..."
-    git clone --depth 1 https://github.com/dbpedia-spotlight/dbpedia-spotlight.git
 fi
 
 

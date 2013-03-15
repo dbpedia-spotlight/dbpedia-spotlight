@@ -193,7 +193,7 @@ object CreateSpotlightModel {
     memoryIndexer.writeTokenOccurrences()
 
     if(opennlpFolder.isEmpty) {
-      val fsaDict = FSASpotter.buildDictionary(sfStore, rawTokenizer)
+      val fsaDict = FSASpotter.buildDictionary(sfStore, new LanguageIndependentTokenizer(SpotlightModel.loadStopwords(outputFolder), stemmer, locale, tokenStore))
       MemoryStore.dump(fsaDict, new File(outputFolder, "fsa_dict.mem"))
     }
 
