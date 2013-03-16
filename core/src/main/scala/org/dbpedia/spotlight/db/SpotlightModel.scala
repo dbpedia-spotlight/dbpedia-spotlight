@@ -19,10 +19,10 @@ import java.util.{Locale, Properties}
 import opennlp.tools.chunker.ChunkerModel
 import opennlp.tools.namefind.TokenNameFinderModel
 import stem.SnowballStemmer
-import tokenize.{OpenNLPTokenizer, LanguageIndependentTokenizer, BaseAnnotationTokenizer}
+import tokenize.{OpenNLPTokenizer, LanguageIndependentTokenizer, BaseTextTokenizer}
 
 
-class SpotlightModel(val tokenizer: AnnotationTokenizer,
+class SpotlightModel(val tokenizer: TextTokenizer,
                      val spotters: java.util.Map[SpotterPolicy, Spotter],
                      val disambiguators: java.util.Map[DisambiguationPolicy, ParagraphDisambiguatorJ],
                      val properties: Properties)
@@ -55,7 +55,7 @@ object SpotlightModel {
     val c = properties.getProperty("opennlp_parallel", Runtime.getRuntime.availableProcessors().toString).toInt
     val cores = (1 to c)
 
-    val tokenizer: AnnotationTokenizer = if(new File(modelFolder, "opennlp").exists()) {
+    val tokenizer: TextTokenizer = if(new File(modelFolder, "opennlp").exists()) {
 
       //Create the tokenizer:
       val posTagger = new File(modelFolder, "opennlp/pos-maxent.bin")
@@ -70,12 +70,12 @@ object SpotlightModel {
         new SentenceDetectorME(sentenceModel),
         if (posTagger.exists()) new POSTaggerME(posModel) else null,
         tokenTypeStore
-      ).asInstanceOf[AnnotationTokenizer]
+      ).asInstanceOf[TextTokenizer]
 
       if(cores.size == 1)
         createTokenizer()
       else
-        new TokenizerWrapper(cores.map(_ => createTokenizer())).asInstanceOf[AnnotationTokenizer]
+        new TokenizerWrapper(cores.map(_ => createTokenizer())).asInstanceOf[TextTokenizer]
 
     } else {
       val locale = properties.getProperty("locale").split("_")

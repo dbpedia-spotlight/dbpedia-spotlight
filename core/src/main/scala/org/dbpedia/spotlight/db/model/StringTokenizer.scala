@@ -3,7 +3,7 @@ package org.dbpedia.spotlight.db.model
 import org.dbpedia.spotlight.model.Text
 import opennlp.tools.util.Span
 
-trait RawTokenizer {
+trait StringTokenizer {
 
   def tokenize(text: Text): Seq[String]
 

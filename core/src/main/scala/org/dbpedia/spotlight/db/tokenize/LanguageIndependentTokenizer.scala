@@ -18,9 +18,9 @@ class LanguageIndependentTokenizer(
   stemmer: Stemmer,
   locale: Locale,
   var tokenTypeStore: TokenTypeStore
-) extends BaseAnnotationTokenizer(tokenTypeStore, stemmer) {
+) extends BaseTextTokenizer(tokenTypeStore, stemmer) {
 
-  def getRawTokenizer: BaseRawTokenizer = new LanguageIndependentRawTokenizer(locale, stemmer)
+  def getStringTokenizer: BaseStringTokenizer = new LanguageIndependentStringTokenizer(locale, stemmer)
 
   def tokenize(text: Text): List[Token] = {
 
@@ -47,7 +47,7 @@ class LanguageIndependentTokenizer(
   }
 }
 
-class LanguageIndependentRawTokenizer(locale: Locale, stemmer: Stemmer) extends BaseRawTokenizer(stemmer) {
+class LanguageIndependentStringTokenizer(locale: Locale, stemmer: Stemmer) extends BaseStringTokenizer(stemmer) {
 
   def tokenizeUnstemmed(text: String): Seq[String] = {
     Helper.tokenizeWords(locale, text).map{ s: Span =>

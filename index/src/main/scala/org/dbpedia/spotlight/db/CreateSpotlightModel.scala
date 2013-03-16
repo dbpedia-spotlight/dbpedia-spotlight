@@ -3,7 +3,7 @@ package org.dbpedia.spotlight.db
 import io._
 import java.io.{FileOutputStream, FileInputStream, File}
 import memory.MemoryStore
-import model.{RawTokenizer, Stemmer}
+import model.{StringTokenizer, Stemmer}
 import scala.io.Source
 import org.tartarus.snowball.SnowballProgram
 import java.util.{Locale, Properties}
@@ -61,7 +61,7 @@ object CreateSpotlightModel {
 
     FileUtils.copyFile(stopwordsFile, new File(outputFolder, "stopwords.list"))
 
-    val rawTokenizer: RawTokenizer = if (opennlpFolder.isDefined) {
+    val rawTokenizer: StringTokenizer = if (opennlpFolder.isDefined) {
 
       val opennlpModels = opennlpFolder.get.listFiles()
       val opennlpOut = new File(outputFolder, OPENNLP_FOLDER)
@@ -97,13 +97,13 @@ object CreateSpotlightModel {
 
       val onlpTokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(new File(opennlpOut, "token.bin"))))
 
-      new OpenNLPRawTokenizer(
+      new OpenNLPStringTokenizer(
         onlpTokenizer,
         stemmer
       )
 
     } else {
-      new LanguageIndependentRawTokenizer(locale, stemmer)
+      new LanguageIndependentStringTokenizer(locale, stemmer)
     }
 
 

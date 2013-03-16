@@ -2,7 +2,7 @@ package org.dbpedia.spotlight.db
 
 import memory.MemoryStore
 import org.dbpedia.spotlight.model._
-import model.{AnnotationTokenizer, RawTokenizer, SurfaceFormStore}
+import model.{TextTokenizer, StringTokenizer, SurfaceFormStore}
 import opennlp.tools.util.Span
 import collection.mutable.ArrayBuffer
 import collection.mutable.Map

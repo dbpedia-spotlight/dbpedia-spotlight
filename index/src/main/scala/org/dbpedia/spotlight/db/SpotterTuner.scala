@@ -1,7 +1,7 @@
 package org.dbpedia.spotlight.db
 
 import breeze.linalg.{DenseMatrix, DenseVector}
-import model.AnnotationTokenizer
+import model.TextTokenizer
 import org.dbpedia.spotlight.io.AnnotatedTextSource
 import breeze.regress.LinearRegression
 import java.io.File
@@ -12,7 +12,7 @@ import scala.collection.JavaConversions._
 
 object SpotterTuner {
 
-  def tuneOpenNLP(corpus: AnnotatedTextSource, tokenizer: AnnotationTokenizer, spotter: DBSpotter, outputFile: File) {
+  def tuneOpenNLP(corpus: AnnotatedTextSource, tokenizer: TextTokenizer, spotter: DBSpotter, outputFile: File) {
 
     System.err.println("Tuning Spotter model...")
 

@@ -10,12 +10,12 @@ import org.dbpedia.spotlight.model.{Token, Text}
  * @author Joachim Daiber
  */
 
-trait AnnotationTokenizer {
+trait TextTokenizer {
 
   def tokenize(text: Text): List[Token]
 
   def tokenizeMaybe(text: Text)
 
-  def getRawTokenizer: RawTokenizer
+  def getStringTokenizer: StringTokenizer
 
 }

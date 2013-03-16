@@ -10,8 +10,8 @@ import akka.util
 import akka.util.duration._
 import akka.pattern.ask
 import org.apache.commons.lang.NotImplementedException
-import org.dbpedia.spotlight.db.tokenize.BaseAnnotationTokenizer
-import org.dbpedia.spotlight.db.model.{RawTokenizer, AnnotationTokenizer}
+import org.dbpedia.spotlight.db.tokenize.BaseTextTokenizer
+import org.dbpedia.spotlight.db.model.{StringTokenizer, TextTokenizer}
 
 /**
  * A Wrapper for Tokenizer workers.
@@ -19,12 +19,12 @@ import org.dbpedia.spotlight.db.model.{RawTokenizer, AnnotationTokenizer}
  * @author Joachim Daiber
  */
 
-class TokenizerWrapper(val tokenizers: Seq[AnnotationTokenizer]) extends AnnotationTokenizer {
+class TokenizerWrapper(val tokenizers: Seq[TextTokenizer]) extends TextTokenizer {
 
   var requestTimeout = 60
 
   val system = ActorSystem()
-  val workers = tokenizers.map { case tokenizer: AnnotationTokenizer =>
+  val workers = tokenizers.map { case tokenizer: TextTokenizer =>
     system.actorOf(Props(new TokenizerActor(tokenizer)))
   }.seq
 
@@ -58,11 +58,11 @@ class TokenizerWrapper(val tokenizers: Seq[AnnotationTokenizer]) extends Annotat
     system.shutdown()
   }
 
-  def getRawTokenizer: RawTokenizer = tokenizers.head.getRawTokenizer
+  def getStringTokenizer: StringTokenizer = tokenizers.head.getStringTokenizer
 
 }
 
-class TokenizerActor(val tokenizer: AnnotationTokenizer) extends Actor {
+class TokenizerActor(val tokenizer: TextTokenizer) extends Actor {
 
   def receive = {
     case TokenizerRequest(text) => {
