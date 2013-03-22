@@ -120,7 +120,10 @@ class DBTwoStepDisambiguator(
 
 
     // step2: query once for the paragraph context, get scores for each candidate resource
-    val contextScores = getContextSimilarityScores(paragraph.text, allCandidateResources)
+    val contextScores = if (contextStore != null)
+      getContextSimilarityScores(paragraph.text, allCandidateResources)
+    else
+      mutable.Map[DBpediaResource, Double]()
 
     // pick the best k for each surface form
     occs.keys.foldLeft(Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]())( (acc, aSfOcc) => {
@@ -138,7 +141,11 @@ class DBTwoStepDisambiguator(
         case _ =>
       }
 
-      val nilContextScore = contextSimilarity.nilScore(getQuery(aSfOcc.context))
+      val nilContextScore = if (contextStore != null)
+        contextSimilarity.nilScore(getQuery(aSfOcc.context))
+      else
+        0.0
+
       eNIL.setFeature(new Score("P(c|e)", nilContextScore))
       eNIL.setFeature(new Score("P(e)",   MathUtil.ln( 1 / surfaceFormStore.getTotalAnnotatedCount.toDouble ) )) //surfaceFormStore.getTotalAnnotatedCount = total number of entity mentions
       val nilEntityScore = mixture.getScore(eNIL)
