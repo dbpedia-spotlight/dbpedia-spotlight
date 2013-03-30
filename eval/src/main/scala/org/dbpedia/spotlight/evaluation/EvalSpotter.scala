@@ -75,13 +75,13 @@ object EvalSpotter {
     })
   }
 
-  private def getExpectedResult(annotatedTextSource: AnnotatedTextSource) = {
+  def getExpectedResult(annotatedTextSource: AnnotatedTextSource) = {
     annotatedTextSource.foldLeft(Set[SurfaceFormOccurrence]()){ (set, par) =>
       set ++ par.occurrences.map(Factory.SurfaceFormOccurrence.from(_))
     }
   }
 
-  private def evalSpotting(annotatedTextSource: AnnotatedTextSource,
+  def evalSpotting(annotatedTextSource: AnnotatedTextSource,
                            indexSpotter: Traversable[SurfaceForm] => Spotter,
                            expected: Traversable[SurfaceFormOccurrence]) {
     // index spotter
