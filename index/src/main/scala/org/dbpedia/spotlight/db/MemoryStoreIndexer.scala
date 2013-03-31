@@ -1,7 +1,7 @@
 package org.dbpedia.spotlight.db
 
 import memory._
-import model.Tokenizer
+import model.StringTokenizer
 import org.apache.commons.lang.NotImplementedException
 import java.lang.{Short, String}
 
@@ -36,15 +36,15 @@ class MemoryStoreIndexer(val baseDir: File)
     throw new NotImplementedException()
   }
 
-  def ngram(sf: String, tokenizer: Tokenizer): Seq[String] = {
-    tokenizer.tokenizeRaw(sf)
+  def ngram(sf: String, tokenizer: StringTokenizer): Seq[String] = {
+    tokenizer.tokenize(sf)
   }
 
   def getAllNgrams(grams: Seq[String]): Seq[Seq[String]] = {
     (1 to grams.size-1).flatMap( grams.sliding(_) )
   }
 
-  var tokenizer: Option[Tokenizer] = None
+  var tokenizer: Option[StringTokenizer] = None
 
   def addSurfaceForms(sfCount: Map[SurfaceForm, (Int, Int)]) {
 

@@ -1,12 +1,12 @@
-package org.dbpedia.spotlight.db
+package org.dbpedia.spotlight.db.tokenize
 
-import model.{TokenTypeStore, Tokenizer}
 import org.tartarus.snowball.SnowballProgram
 import org.dbpedia.spotlight.model.{Feature, TokenType, Token, Text}
 import opennlp.tools.util.Span
 import java.util.Locale
 import java.text.BreakIterator
 import collection.mutable.ArrayBuffer
+import org.dbpedia.spotlight.db.model.{TokenTypeStore, Stemmer}
 
 
 /**
@@ -15,25 +15,20 @@ import collection.mutable.ArrayBuffer
 
 class LanguageIndependentTokenizer(
   stopWords: Set[String],
-  stemmer: SnowballProgram,
+  stemmer: Stemmer,
   locale: Locale,
   var tokenTypeStore: TokenTypeStore
-) extends Tokenizer {
+) extends BaseTextTokenizer(tokenTypeStore, stemmer) {
 
-
-  def tokenizeRaw(text: String): Seq[String] = {
-    tokenizeWords(text).map{ s: Span =>
-      getStemmedString( text.substring(s.getStart, s.getEnd) )
-    }.toSeq
-  }
+  def getStringTokenizer: BaseStringTokenizer = new LanguageIndependentStringTokenizer(locale, stemmer)
 
   def tokenize(text: Text): List[Token] = {
 
-    tokenizeSentences(text.text).map{ sentencePos: Span =>
+    Helper.tokenizeSentences(locale, text.text).map{ sentencePos: Span =>
 
       val sentence = text.text.substring(sentencePos.getStart, sentencePos.getEnd)
 
-      val sentenceTokenPos = tokenizeWords(sentence)
+      val sentenceTokenPos = Helper.tokenizeWords(locale, sentence)
       val sentenceTokens   = sentenceTokenPos.map(s => sentence.substring(s.getStart, s.getEnd))
 
       (0 to sentenceTokens.size-1).map{ i: Int =>
@@ -50,24 +45,30 @@ class LanguageIndependentTokenizer(
       }
     }.flatten.toList
   }
+}
 
+class LanguageIndependentStringTokenizer(locale: Locale, stemmer: Stemmer) extends BaseStringTokenizer(stemmer) {
 
-  def getStemmedString(token: String): String = stemmer.synchronized {
-    stemmer.setCurrent(token.toLowerCase)
-    stemmer.stem()
-    new String(stemmer.getCurrentBuffer)
+  def tokenizeUnstemmed(text: String): Seq[String] = {
+    Helper.tokenizeWords(locale, text).map{ s: Span =>
+      text.substring(s.getStart, s.getEnd)
+    }.toSeq
   }
 
-  def getStemmedTokenType(token: String): TokenType = tokenTypeStore.getTokenType(new String(getStemmedString(token)))
+  def tokenizePos(text: String): Array[Span] = Helper.tokenizeWords(locale, text)
+
+}
 
 
-  private def tokenizeWords(text: String): Array[Span] =
-    tokenizeString(BreakIterator.getWordInstance(locale), text)
+object Helper {
 
-  private def tokenizeSentences(text: String): Array[Span] =
-    tokenizeString(BreakIterator.getSentenceInstance(locale), text)
+  def tokenizeWords(locale: Locale, text: String): Array[Span] =
+    tokenizeString(locale, BreakIterator.getWordInstance(locale), text)
 
-  private def tokenizeString(it: BreakIterator, text: String): Array[Span] = {
+  def tokenizeSentences(locale: Locale, text: String): Array[Span] =
+    tokenizeString(locale, BreakIterator.getSentenceInstance(locale), text)
+
+  def tokenizeString(locale: Locale, it: BreakIterator, text: String): Array[Span] = {
     it.setText(text)
 
     var spans = ArrayBuffer[Span]()
@@ -85,7 +86,6 @@ class LanguageIndependentTokenizer(
 
     spans.toArray
   }
-
 
 }
 

@@ -23,7 +23,7 @@ import com.sun.jersey.api.container.grizzly.GrizzlyWebContainerFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.db.SpotlightModel;
-import org.dbpedia.spotlight.db.model.Tokenizer;
+import org.dbpedia.spotlight.db.model.TextTokenizer;
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ;
 import org.dbpedia.spotlight.exceptions.InitializationException;
 import org.dbpedia.spotlight.exceptions.InputException;
@@ -70,7 +70,7 @@ public class Server {
                         + "   or: mvn scala:run \"-DaddArgs=[config file]\"";
 
     //This is currently only used in the DB-based version.
-    private static Tokenizer tokenizer;
+    private static TextTokenizer tokenizer;
 
     protected static CombineAllAnnotationFilters combinedFilters = null;
 
@@ -247,11 +247,11 @@ public class Server {
         return configuration;
     }
 
-    public static Tokenizer getTokenizer() {
+    public static TextTokenizer getTokenizer() {
         return tokenizer;
     }
 
-    public static void setTokenizer(Tokenizer tokenizer) {
+    public static void setTokenizer(TextTokenizer tokenizer) {
         Server.tokenizer = tokenizer;
     }
 

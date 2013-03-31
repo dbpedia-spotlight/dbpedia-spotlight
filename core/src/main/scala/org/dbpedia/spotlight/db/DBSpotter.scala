@@ -1,6 +1,6 @@
 package org.dbpedia.spotlight.db
 
-import model.{Tokenizer, SurfaceFormStore}
+import model.{TextTokenizer, SurfaceFormStore}
 import org.dbpedia.spotlight.spot.Spotter
 import breeze.linalg.DenseVector
 import org.dbpedia.spotlight.model._
@@ -18,7 +18,7 @@ abstract class DBSpotter(
  stopwords: Set[String]
 ) extends Spotter {
 
-  var tokenizer: Tokenizer = null
+  var tokenizer: TextTokenizer = null
 
   val uppercaseFinder = new RegexNameFinder(
     Array[Pattern](
