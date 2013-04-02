@@ -120,6 +120,8 @@ else
     mvn -q assembly:assembly -Dmaven.test.skip=true
 fi
 
+# Stop processing if one step fails
+set -e
 
 #Load the dump into HDFS:
 echo "Loading Wikipedia dump into HDFS..."
@@ -133,14 +135,20 @@ hadoop fs -put $3 stopwords.$LANGUAGE.list
 #Adapt pig params:
 cd $BASE_DIR
 cd $1/pig/pignlproc
+
+#Replace token parameters:
 sed -i s#%LANG#$LANGUAGE#g examples/indexing/token_counts.pig.params
 sed -i s#ANALYZER_NAME=DutchAnalyzer#ANALYZER_NAME=$4Analyzer#g examples/indexing/token_counts.pig.params
 sed -i s#%PIG_PATH#$BASE_WDIR/pig/pignlproc#g examples/indexing/token_counts.pig.params
 
+#Replace names+entities parameters:
 sed -i s#%LANG#${LANGUAGE}#g examples/indexing/names_and_entities.pig.params
 sed -i s#%LOCALE#$2#g examples/indexing/names_and_entities.pig.params
 sed -i s#%PIG_PATH#$BASE_WDIR/pig/pignlproc#g examples/indexing/names_and_entities.pig.params
 
+#Add username to params
+sed -i s#/user/hadoop#/user/$USER#g examples/indexing/token_counts.pig.params
+sed -i s#/user/hadoop#/user/$USER#g examples/indexing/names_and_entities.pig.params
 
 #Run pig:
 pig -m examples/indexing/token_counts.pig.params examples/indexing/token_counts.pig
@@ -163,3 +171,5 @@ mvn -q install
 mvn -pl index exec:java -Dexec.mainClass=org.dbpedia.spotlight.db.CreateSpotlightModel -Dexec.args="$2 $WDIR $TARGET_DIR $opennlp $STOPWORDS $4Stemmer";
 
 echo "Finished!"
+set +e
+
