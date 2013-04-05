@@ -1,7 +1,7 @@
 package org.dbpedia.spotlight.db.tokenize
 
 import org.dbpedia.spotlight.model.{TokenType, Feature, Token, Text}
-import org.dbpedia.spotlight.db.model.{TextTokenizer, Stemmer, TokenTypeStore}
+import org.dbpedia.spotlight.db.model.{StringTokenizer, TextTokenizer, Stemmer, TokenTypeStore}
 
 
 abstract class BaseTextTokenizer(tokenTypeStore: TokenTypeStore, stemmer: Stemmer) extends TextTokenizer {
@@ -15,6 +15,6 @@ abstract class BaseTextTokenizer(tokenTypeStore: TokenTypeStore, stemmer: Stemme
 
   protected def getStemmedTokenType(token: String): TokenType = tokenTypeStore.getTokenType(stemmer.stem(token))
 
-  def getStringTokenizer: BaseStringTokenizer
+  def getStringTokenizer: StringTokenizer
 
 }

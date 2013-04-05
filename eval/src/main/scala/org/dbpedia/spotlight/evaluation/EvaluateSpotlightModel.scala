@@ -10,7 +10,7 @@ class EvaluateSpotlightModel {
 
   def main(args: Array[String]) {
 
-    val model = SpotlightModel.fromFolder(args(1))
+    val model = SpotlightModel.fromFolder(new File(args(1)))
     val heldout = new File(args(2))
 
     val corpus = WikipediaHeldoutCorpus.fromFile(heldout)
@@ -20,10 +20,10 @@ class EvaluateSpotlightModel {
 
     //Spotting:
     val expected = EvalSpotter.getExpectedResult(corpus)
-    EvalSpotter.evalSpotting(corpus, spotter, expected)
+    EvalSpotter.evalSpotter(corpus, spotter, expected)
 
     //Disambiguation
-    EvaluateParagraphDisambiguator.evaluate(corpus, disambiguator, List(), List())
+    EvaluateParagraphDisambiguator.evaluate(corpus, disambiguator.disambiguator, List(), List())
 
   }
 
