@@ -1,9 +1,12 @@
 language: java
 jdk:
   - openjdk7
+  - oraclejdk7
 branches:
   only:
     - master
+install: /bin/true
+script: "mvn clean install"
 notifications:
   email:
     recipients:

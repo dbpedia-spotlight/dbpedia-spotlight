@@ -124,6 +124,8 @@ else
     mvn -q assembly:assembly -Dmaven.test.skip=true
 fi
 
+# Stop processing if one step fails
+set -e
 
 #Load the dump into HDFS:
 echo "Loading Wikipedia dump into HDFS..."
@@ -142,14 +144,20 @@ hadoop fs -put $3 stopwords.$LANGUAGE.list
 #Adapt pig params:
 cd $BASE_DIR
 cd $1/pig/pignlproc
+
+#Replace token parameters:
 sed -i s#%LANG#$LANGUAGE#g examples/indexing/token_counts.pig.params
 sed -i s#ANALYZER_NAME=DutchAnalyzer#ANALYZER_NAME=$4Analyzer#g examples/indexing/token_counts.pig.params
 sed -i s#%PIG_PATH#$BASE_WDIR/pig/pignlproc#g examples/indexing/token_counts.pig.params
 
+#Replace names+entities parameters:
 sed -i s#%LANG#${LANGUAGE}#g examples/indexing/names_and_entities.pig.params
 sed -i s#%LOCALE#$2#g examples/indexing/names_and_entities.pig.params
 sed -i s#%PIG_PATH#$BASE_WDIR/pig/pignlproc#g examples/indexing/names_and_entities.pig.params
 
+#Add username to params
+sed -i s#/user/hadoop#/user/$USER#g examples/indexing/token_counts.pig.params
+sed -i s#/user/hadoop#/user/$USER#g examples/indexing/names_and_entities.pig.params
 
 #Run pig:
 pig -m examples/indexing/token_counts.pig.params examples/indexing/token_counts.pig
@@ -158,10 +166,10 @@ pig -m examples/indexing/names_and_entities.pig.params examples/indexing/names_a
 #Copy results to local:
 cd $BASE_DIR
 cd $WDIR
-hadoop fs -cat /user/hadoop/${LANGUAGE}/tokenCounts/part* > tokenCounts
-hadoop fs -cat /user/hadoop/${LANGUAGE}/names_and_entities/pairCounts/part* > pairCounts
-hadoop fs -cat /user/hadoop/${LANGUAGE}/names_and_entities/uriCounts/part* > uriCounts
-hadoop fs -cat /user/hadoop/${LANGUAGE}/names_and_entities/sfAndTotalCounts/part* > sfAndTotalCounts
+hadoop fs -cat ${LANGUAGE}/tokenCounts/part* > tokenCounts
+hadoop fs -cat ${LANGUAGE}/names_and_entities/pairCounts/part* > pairCounts
+hadoop fs -cat ${LANGUAGE}/names_and_entities/uriCounts/part* > uriCounts
+hadoop fs -cat ${LANGUAGE}/names_and_entities/sfAndTotalCounts/part* > sfAndTotalCounts
 
 #Create the model:
 cd $BASE_DIR
@@ -176,3 +184,5 @@ if [ eval = "true" ]; then
 fi
 
 echo "Finished!"
+set +e
+
