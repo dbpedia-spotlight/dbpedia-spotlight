@@ -96,7 +96,8 @@ object SpotlightModel {
       new GenerativeContextSimilarity(tokenTypeStore)
     ))
 
-    val spotter = if(new File(modelFolder, "opennlp/pos-maxent.bin").exists()) {
+    //If there is at least one NE model or a chunker, use the OpenNLP spotter:
+    val spotter = if( new File(modelFolder, "opennlp").exists() && new File(modelFolder, "opennlp").list().exists(f => f.startsWith("ner-") || f.startsWith("chunker")) ) {
       val nerModels = new File(modelFolder, "opennlp").list().filter(_.startsWith("ner-")).map { f: String =>
         new TokenNameFinderModel(new FileInputStream(new File(new File(modelFolder, "opennlp"), f)))
       }.toList
