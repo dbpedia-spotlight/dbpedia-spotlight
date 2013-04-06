@@ -27,7 +27,7 @@ eval=""
 while getopts o: opt; do
   case $opt in
   o)
-  if [[ "$OPTARG" =~ /.* ]]
+  if [[ "$OPTARG" = /* ]]
   then
     opennlp="$OPTARG"
   else
@@ -51,21 +51,21 @@ fi
 
 BASE_DIR=$(pwd)
 
-if [[ "$1" =~ /.* ]]
+if [[ "$1"  = /* ]]
 then
    BASE_WDIR="$1"
 else
    BASE_WDIR="$BASE_DIR/$1"
 fi
 
-if [[ "$5" =~ /.* ]]
+if [[ "$5" = /* ]]
 then
    TARGET_DIR="$5"
 else
    TARGET_DIR="$BASE_DIR/$5"
 fi
 
-if [[ "$3" =~ /.* ]]
+if [[ "$3" = /* ]]
 then
    STOPWORDS="$3"
 else
