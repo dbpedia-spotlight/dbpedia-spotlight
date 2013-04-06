@@ -141,7 +141,14 @@ echo "Moving stopwords into HDFS..."
 cd $BASE_DIR
 hadoop fs -put $3 stopwords.$LANGUAGE.list
 
-test -e "$opennlp/$LANGUAGE-token.bin" && hadoop fs -put "$opennlp/$LANGUAGE-token.bin" "$LANGUAGE.tokenizer_model"
+if [ -e "$opennlp/$LANGUAGE-token.bin" ]; then
+    hadoop fs -put "$opennlp/$LANGUAGE-token.bin" "$LANGUAGE.tokenizer_model"
+else
+    touch empty;
+    hadoop fs -put empty "$LANGUAGE.tokenizer_model";
+    rm empty;
+fi
+
 
 #Adapt pig params:
 cd $BASE_DIR
