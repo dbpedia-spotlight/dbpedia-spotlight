@@ -97,12 +97,12 @@ if [ -d dbpedia-spotlight ]; then
     cd dbpedia-spotlight
     git reset --hard HEAD
     git pull
-    mvn -q clean install
+    mvn -T 1C -q clean install
 else
     echo "Setting up DBpedia Spotlight..."
     git clone --depth 1 https://github.com/dbpedia-spotlight/dbpedia-spotlight.git
     cd dbpedia-spotlight
-    mvn -q clean install
+    mvn -T 1C -q clean install
 fi
 
 cd $BASE_DIR
@@ -113,7 +113,7 @@ if [ -d $BASE_WDIR/pig ]; then
     cd $BASE_WDIR/pig/pignlproc
     git reset --hard HEAD
     git pull
-    mvn -q assembly:assembly -Dmaven.test.skip=true
+    mvn -T 1C -q assembly:assembly -Dmaven.test.skip=true
 else
     echo "Setting up PigNLProc..."
     mkdir -p $BASE_WDIR/pig/
@@ -121,7 +121,7 @@ else
     git clone --depth 1 https://github.com/dbpedia-spotlight/pignlproc.git
     cd pignlproc
     echo "Building PigNLProc..."
-    mvn -q assembly:assembly -Dmaven.test.skip=true
+    mvn -T 1C -q assembly:assembly -Dmaven.test.skip=true
 fi
 
 # Stop processing if one step fails
@@ -141,10 +141,7 @@ echo "Moving stopwords into HDFS..."
 cd $BASE_DIR
 hadoop fs -put $3 stopwords.$LANGUAGE.list
 
-if [ -f "$opennlp/$LANGUAGE-token.bin" ]
-then
-    hadoop fs -put $opennlp/$LANGUAGE-token.bin $LANGUAGE.tokenizer_model
-fi
+test -e "$opennlp/$LANGUAGE-token.bin" && hadoop fs -put "$opennlp/$LANGUAGE-token.bin" "$LANGUAGE.tokenizer_model"
 
 #Adapt pig params:
 cd $BASE_DIR
