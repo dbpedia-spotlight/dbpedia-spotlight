@@ -70,7 +70,7 @@ object FSASpotter {
   //State ID for None
   val REJECTING_STATE = -2
 
-  def buildDictionary(sfStore: SurfaceFormStore, tokenizer: LanguageIndependentTokenizer): FSADictionary = {
+  def buildDictionary(sfStore: SurfaceFormStore, tokenizer: StringTokenizer): FSADictionary = {
 
     //Temporary FSA DSs:
     val transitions: ArrayBuffer[Map[Int, Int]] = ArrayBuffer[Map[Int, Int]]()

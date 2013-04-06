@@ -61,7 +61,8 @@ object CreateSpotlightModel {
 
     FileUtils.copyFile(stopwordsFile, new File(outputFolder, "stopwords.list"))
 
-    val rawTokenizer: StringTokenizer = if (opennlpFolder.isDefined) {
+
+    if (opennlpFolder.isDefined) {
 
       val opennlpModels = opennlpFolder.get.listFiles()
       val opennlpOut = new File(outputFolder, OPENNLP_FOLDER)
@@ -70,15 +71,8 @@ object CreateSpotlightModel {
       def getModel(name: String) = opennlpModels.filter(_.getName.endsWith(name)).headOption
 
       try {
-        FileUtils.copyFile(getModel("-sent.bin").get, new File(opennlpOut, "sent.bin"))
         FileUtils.copyFile(getModel("-token.bin").get, new File(opennlpOut, "token.bin"))
-        FileUtils.copyFile(getModel("-pos-maxent.bin").get, new File(opennlpOut, "pos-maxent.bin"))
-
-        getModel("-chunker.bin") match {
-          case Some(model) => FileUtils.copyFile(model, new File(opennlpOut, "chunker.bin"))
-          case _ =>
-        }
-
+        FileUtils.copyFile(getModel("-sent.bin").get, new File(opennlpOut, "sent.bin"))
       } catch {
         case _: Exception => {
           System.err.println(
@@ -86,15 +80,34 @@ object CreateSpotlightModel {
               | You need to have at least the following model files in your opennlp folder:
               | *-sent.bin
               | *-token.bin
-              | *-pos-maxent.bin
               |
               | For the best result, you should also have:
               | *-chunker.bin
+              | *-pos-maxent.bin
             """.stripMargin)
           System.exit(1)
         }
       }
 
+      try {
+        FileUtils.copyFile(getModel("-pos-maxent.bin").get, new File(opennlpOut, "pos-maxent.bin"))
+      } catch {
+        case _: Exception => //Ignore
+      }
+
+      try {
+        getModel("-chunker.bin") match {
+          case Some(model) => FileUtils.copyFile(model, new File(opennlpOut, "chunker.bin"))
+          case _ =>
+        }
+      } catch {
+        case _: Exception => //Ignore
+      }
+
+    }
+
+    val rawTokenizer: StringTokenizer = if (opennlpFolder.isDefined) {
+      val opennlpOut = new File(outputFolder, OPENNLP_FOLDER)
       val onlpTokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(new File(opennlpOut, "token.bin"))))
 
       new OpenNLPStringTokenizer(
@@ -192,10 +205,8 @@ object CreateSpotlightModel {
     )
     memoryIndexer.writeTokenOccurrences()
 
-    if(opennlpFolder.isEmpty) {
-      val fsaDict = FSASpotter.buildDictionary(sfStore, new LanguageIndependentTokenizer(SpotlightModel.loadStopwords(outputFolder), stemmer, locale, tokenStore))
-      MemoryStore.dump(fsaDict, new File(outputFolder, "fsa_dict.mem"))
-    }
+    val fsaDict = FSASpotter.buildDictionary(sfStore, rawTokenizer)
+    MemoryStore.dump(fsaDict, new File(outputFolder, "fsa_dict.mem"))
 
     FileUtils.write(
       new File(outputFolder, "spotter_thresholds.txt"),
