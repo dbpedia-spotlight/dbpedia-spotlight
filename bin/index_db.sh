@@ -33,7 +33,7 @@ while getopts o: opt; do
   else
     opennlp="$BASE_DIR/$OPTARG"
   fi
-
+  ;;
   e)
   eval="true"
   ;;
