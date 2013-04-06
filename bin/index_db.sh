@@ -27,12 +27,7 @@ eval=""
 while getopts o: opt; do
   case $opt in
   o)
-  if [[ "$OPTARG" = /* ]]
-  then
-    opennlp="$OPTARG"
-  else
-    opennlp="$BASE_DIR/$OPTARG"
-  fi
+  opennlp="$OPTARG"
   ;;
   e)
   eval="true"
@@ -73,6 +68,13 @@ else
 fi
 
 WDIR="$BASE_WDIR/$2"
+
+if [[ "$opennlp" == "None" ]]; then
+    echo "";
+elif [[ "$opennlp" != /* ]]; then
+    opennlp="$BASE_DIR/$opennlp"; 
+fi
+
 
 LANGUAGE=`echo $2 | sed "s/_.*//g"`
 
