@@ -27,13 +27,8 @@ eval=""
 while getopts o: opt; do
   case $opt in
   o)
-  if [[ "$OPTARG" = /* ]]
-  then
-    opennlp="$OPTARG"
-  else
-    opennlp="$BASE_DIR/$OPTARG"
-  fi
-
+  opennlp="$OPTARG"
+  ;;
   e)
   eval="true"
   ;;
@@ -51,7 +46,7 @@ fi
 
 BASE_DIR=$(pwd)
 
-if [[ "$1" = /* ]]
+if [[ "$1"  = /* ]]
 then
    BASE_WDIR="$1"
 else
@@ -73,6 +68,13 @@ else
 fi
 
 WDIR="$BASE_WDIR/$2"
+
+if [[ "$opennlp" == "None" ]]; then
+    echo "";
+elif [[ "$opennlp" != /* ]]; then
+    opennlp="$BASE_DIR/$opennlp"; 
+fi
+
 
 LANGUAGE=`echo $2 | sed "s/_.*//g"`
 
@@ -97,12 +99,12 @@ if [ -d dbpedia-spotlight ]; then
     cd dbpedia-spotlight
     git reset --hard HEAD
     git pull
-    mvn -q clean install
+    mvn -T 1C -q clean install
 else
     echo "Setting up DBpedia Spotlight..."
     git clone --depth 1 https://github.com/dbpedia-spotlight/dbpedia-spotlight.git
     cd dbpedia-spotlight
-    mvn -q clean install
+    mvn -T 1C -q clean install
 fi
 
 cd $BASE_DIR
@@ -113,7 +115,7 @@ if [ -d $BASE_WDIR/pig ]; then
     cd $BASE_WDIR/pig/pignlproc
     git reset --hard HEAD
     git pull
-    mvn -q assembly:assembly -Dmaven.test.skip=true
+    mvn -T 1C -q assembly:assembly -Dmaven.test.skip=true
 else
     echo "Setting up PigNLProc..."
     mkdir -p $BASE_WDIR/pig/
@@ -121,7 +123,7 @@ else
     git clone --depth 1 https://github.com/dbpedia-spotlight/pignlproc.git
     cd pignlproc
     echo "Building PigNLProc..."
-    mvn -q assembly:assembly -Dmaven.test.skip=true
+    mvn -T 1C -q assembly:assembly -Dmaven.test.skip=true
 fi
 
 # Stop processing if one step fails
@@ -130,7 +132,7 @@ set -e
 #Load the dump into HDFS:
 echo "Loading Wikipedia dump into HDFS..."
 
-if [ eval = "" ]; then
+if [ "$eval" == "" ]; then
     curl -# "http://dumps.wikimedia.org/${LANGUAGE}wiki/latest/${LANGUAGE}wiki-latest-pages-articles.xml.bz2" | bzcat | hadoop fs -put - ${LANGUAGE}wiki-latest-pages-articles.xml
 else
     curl -# "http://dumps.wikimedia.org/${LANGUAGE}wiki/latest/${LANGUAGE}wiki-latest-pages-articles.xml.bz2" | bzcat | python $BASE_WDIR/pig/utilities/split_train_test.py 12000 $WDIR/heldout.txt | hadoop fs -put - ${LANGUAGE}wiki-latest-pages-articles.xml
@@ -141,10 +143,14 @@ echo "Moving stopwords into HDFS..."
 cd $BASE_DIR
 hadoop fs -put $3 stopwords.$LANGUAGE.list
 
-if [ -f $opennlp/*-token.bin ]
-then
-    hadoop fs -put $opennlp/*-token.bin $LANGUAGE.tokenizer_model
+if [ -e "$opennlp/$LANGUAGE-token.bin" ]; then
+    hadoop fs -put "$opennlp/$LANGUAGE-token.bin" "$LANGUAGE.tokenizer_model"
+else
+    touch empty;
+    hadoop fs -put empty "$LANGUAGE.tokenizer_model";
+    rm empty;
 fi
+
 
 #Adapt pig params:
 cd $BASE_DIR
@@ -184,7 +190,7 @@ mvn -q install
 
 mvn -pl index exec:java -Dexec.mainClass=org.dbpedia.spotlight.db.CreateSpotlightModel -Dexec.args="$2 $WDIR $TARGET_DIR $opennlp $STOPWORDS $4Stemmer";
 
-if [ eval = "true" ]; then
+if [ "$eval" == "true" ]; then
     mvn -pl index exec:java -Dexec.mainClass=org.dbpedia.spotlight.evaluation.EvaluateSpotlightModel -Dexec.args="$TARGET_DIR $WDIR/heldout.txt" > $TARGET_DIR/evaluation.txt
 fi
 
