@@ -3,7 +3,7 @@ package org.dbpedia.spotlight.db
 import io._
 import java.io.{FileOutputStream, FileInputStream, File}
 import memory.MemoryStore
-import model.{StringTokenizer, Stemmer}
+import model.{TextTokenizer, StringTokenizer, Stemmer}
 import scala.io.Source
 import org.tartarus.snowball.SnowballProgram
 import java.util.{Locale, Properties}
@@ -205,7 +205,26 @@ object CreateSpotlightModel {
     )
     memoryIndexer.writeTokenOccurrences()
 
-    val fsaDict = FSASpotter.buildDictionary(sfStore, rawTokenizer)
+
+    val tokenizer: TextTokenizer = if (opennlpFolder.isDefined) {
+      val opennlpOut = new File(outputFolder, OPENNLP_FOLDER)
+      val oToken = new TokenizerME(new TokenizerModel(new FileInputStream(new File(opennlpOut, "token.bin"))))
+      val oSent = new SentenceDetectorME(new SentenceModel(new FileInputStream(new File(opennlpOut, "sent.bin"))))
+
+      new OpenNLPTokenizer(
+        oToken,
+        Set[String](),
+        stemmer,
+        oSent,
+        null,
+        tokenStore
+      )
+
+    } else {
+      new LanguageIndependentTokenizer(Set[String](), stemmer, locale, tokenStore)
+    }
+    val fsaDict = FSASpotter.buildDictionary(sfStore, tokenizer)
+
     MemoryStore.dump(fsaDict, new File(outputFolder, "fsa_dict.mem"))
 
     FileUtils.write(
