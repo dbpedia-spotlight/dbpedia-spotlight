@@ -24,14 +24,10 @@ usage ()
 opennlp="None"
 eval=""
 
-while getopts o: opt; do
+while getopts "eo:" opt; do
   case $opt in
-  o)
-  opennlp="$OPTARG"
-  ;;
-  e)
-  eval="true"
-  ;;
+    o) opennlp="$OPTARG";;
+    e) eval="true";;
   esac
 done
 
