@@ -18,7 +18,7 @@ object EvaluateSpotlightModel {
     println("Memory footprint (model loaded): %s".format( memLoaded ) )
 
     val heldout = new File(args(1))
-    val corpus = WikipediaHeldoutCorpus.fromFile(heldout).take(5000)
+    val corpus = WikipediaHeldoutCorpus.fromFile(heldout)
     val memInit = (Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / (1024 * 1024)
     println("Memory footprint (corpus): %s".format( memInit ) )
 
