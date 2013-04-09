@@ -12,12 +12,12 @@ object EvaluateSpotlightModel {
 
   def main(args: Array[String]) {
 
-    val heldout = new File(args(2))
+    val heldout = new File(args(1))
     val corpus = WikipediaHeldoutCorpus.fromFile(heldout)
     val memInit = (Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / (1024 * 1024)
     println("Memory footprint (corpus): %s".format( memInit ) )
 
-    val model = SpotlightModel.fromFolder(new File(args(1)))
+    val model = SpotlightModel.fromFolder(new File(args(0)))
 
     val spotter = model.spotters.get(SpotterPolicy.Default)
     val disambiguator = model.disambiguators.get(DisambiguationPolicy.Default)
