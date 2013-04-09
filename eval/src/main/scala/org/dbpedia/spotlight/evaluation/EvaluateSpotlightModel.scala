@@ -12,12 +12,16 @@ object EvaluateSpotlightModel {
 
   def main(args: Array[String]) {
 
-    val heldout = new File(args(2))
-    val corpus = WikipediaHeldoutCorpus.fromFile(heldout)
+    val model = SpotlightModel.fromFolder(new File(args(0)))
+
+    val memLoaded = (Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / (1024 * 1024)
+    println("Memory footprint (model loaded): %s".format( memLoaded ) )
+
+    val heldout = new File(args(1))
+    val corpus = WikipediaHeldoutCorpus.fromFile(heldout).take(5000)
     val memInit = (Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / (1024 * 1024)
     println("Memory footprint (corpus): %s".format( memInit ) )
 
-    val model = SpotlightModel.fromFolder(new File(args(1)))
 
     val spotter = model.spotters.get(SpotterPolicy.Default)
     val disambiguator = model.disambiguators.get(DisambiguationPolicy.Default)
@@ -36,16 +40,14 @@ object EvaluateSpotlightModel {
     println("Annotation time avg: %s sec".format( t / corpus.size.toDouble) )
 
     val memFinal = (Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / (1024 * 1024)
-    println("Memory footprint: %s".format( memFinal - memInit ) )
+    println("Memory footprint: %s".format( memFinal ) )
 
     //Spotting:
     val expected = EvalSpotter.getExpectedResult(corpus)
 
-
-
     //Set tokenizer:
     spotter.asInstanceOf[DBSpotter].tokenizer = model.tokenizer
-    disambiguator.asInstanceOf[DBTwoStepDisambiguator].tokenizer = model.tokenizer
+    disambiguator.disambiguator.asInstanceOf[DBTwoStepDisambiguator].tokenizer = model.tokenizer
 
     EvalSpotter.evalSpotter(corpus, spotter, expected)
     EvaluateParagraphDisambiguator.evaluate(corpus, disambiguator.disambiguator, List(), List())
