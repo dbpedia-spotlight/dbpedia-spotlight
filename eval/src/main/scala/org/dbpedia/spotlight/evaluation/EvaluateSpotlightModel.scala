@@ -21,6 +21,10 @@ object EvaluateSpotlightModel {
 
     val spotter = model.spotters.get(SpotterPolicy.Default)
     val disambiguator = model.disambiguators.get(DisambiguationPolicy.Default)
+    
+    //Set tokenizer:
+    spotter.asInstanceOf[DBSpotter].tokenizer = model.tokenizer
+    disambiguator.asInstanceOf[DBTwoStepDisambiguator].tokenizer = model.tokenizer
 
     //Time performance:
     val startTime = System.nanoTime()
