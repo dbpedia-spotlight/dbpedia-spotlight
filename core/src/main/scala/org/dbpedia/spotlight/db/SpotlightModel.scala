@@ -62,7 +62,6 @@ object SpotlightModel {
 
       //Create the tokenizer:
       val posTagger = new File(modelFolder, "opennlp/pos-maxent.bin")
-      val posModel  = new POSModel(new FileInputStream(posTagger))
       val tokenizerModel = new TokenizerModel(new FileInputStream(new File(modelFolder, "opennlp/token.bin")))
       val sentenceModel = new SentenceModel(new FileInputStream(new File(modelFolder, "opennlp/sent.bin")))
 
@@ -71,7 +70,7 @@ object SpotlightModel {
         stopwords,
         stemmer(),
         new SentenceDetectorME(sentenceModel),
-        if (posTagger.exists()) new POSTaggerME(posModel) else null,
+        if (posTagger.exists()) new POSTaggerME(new POSModel(new FileInputStream(posTagger))) else null,
         tokenTypeStore
       ).asInstanceOf[TextTokenizer]
 
