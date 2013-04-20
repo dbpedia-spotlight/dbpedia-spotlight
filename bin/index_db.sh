@@ -24,14 +24,10 @@ usage ()
 opennlp="None"
 eval=""
 
-while getopts o: opt; do
+while getopts "eo:" opt; do
   case $opt in
-  o)
-  opennlp="$OPTARG"
-  ;;
-  e)
-  eval="true"
-  ;;
+    o) opennlp="$OPTARG";;
+    e) eval="true";;
   esac
 done
 
@@ -135,7 +131,7 @@ echo "Loading Wikipedia dump into HDFS..."
 if [ "$eval" == "" ]; then
     curl -# "http://dumps.wikimedia.org/${LANGUAGE}wiki/latest/${LANGUAGE}wiki-latest-pages-articles.xml.bz2" | bzcat | hadoop fs -put - ${LANGUAGE}wiki-latest-pages-articles.xml
 else
-    curl -# "http://dumps.wikimedia.org/${LANGUAGE}wiki/latest/${LANGUAGE}wiki-latest-pages-articles.xml.bz2" | bzcat | python $BASE_WDIR/pig/utilities/split_train_test.py 12000 $WDIR/heldout.txt | hadoop fs -put - ${LANGUAGE}wiki-latest-pages-articles.xml
+    curl -# "http://dumps.wikimedia.org/${LANGUAGE}wiki/latest/${LANGUAGE}wiki-latest-pages-articles.xml.bz2" | bzcat | python $BASE_WDIR/pig/pignlproc/utilities/split_train_test.py 12000 $WDIR/heldout.txt | hadoop fs -put - ${LANGUAGE}wiki-latest-pages-articles.xml
 fi
 
 #Load the stopwords into HDFS:
@@ -191,7 +187,7 @@ mvn -q install
 mvn -pl index exec:java -Dexec.mainClass=org.dbpedia.spotlight.db.CreateSpotlightModel -Dexec.args="$2 $WDIR $TARGET_DIR $opennlp $STOPWORDS $4Stemmer";
 
 if [ "$eval" == "true" ]; then
-    mvn -pl index exec:java -Dexec.mainClass=org.dbpedia.spotlight.evaluation.EvaluateSpotlightModel -Dexec.args="$TARGET_DIR $WDIR/heldout.txt" > $TARGET_DIR/evaluation.txt
+    mvn -pl eval exec:java -Dexec.mainClass=org.dbpedia.spotlight.evaluation.EvaluateSpotlightModel -Dexec.args="$TARGET_DIR $WDIR/heldout.txt" > $TARGET_DIR/evaluation.txt
 fi
 
 echo "Finished!"
