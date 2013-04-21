@@ -161,8 +161,15 @@ abstract class DBSpotter(
       if (lastSpot != null && lastSpot.intersects(spot)) {
 
         val spotHasBetterType = typeOrder.indexOf(spot.featureValue[String]("spot_type")) < typeOrder.indexOf(lastSpot.featureValue[String]("spot_type"))
+        val spotIsLonger = spot.surfaceForm.name.length > lastSpot.surfaceForm.name.length
 
-        if(spot.spotProb == lastSpot.spotProb && spotHasBetterType) {
+        if(spotIsLonger && spot.spotProb > lastSpot.spotProb/2.0) {
+          remove += i-1
+          lastSpot = spot
+        } else if(!spotIsLonger && !(spot.spotProb > lastSpot.spotProb*2.0)) {
+          remove += i
+          lastSpot = lastSpot
+        } else if(spot.spotProb == lastSpot.spotProb && spotHasBetterType) {
           remove += i-1
           lastSpot = spot
         } else if (spot.spotProb == lastSpot.spotProb && !spotHasBetterType) {
