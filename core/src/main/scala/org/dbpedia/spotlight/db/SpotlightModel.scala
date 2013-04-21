@@ -62,7 +62,6 @@ object SpotlightModel {
 
       //Create the tokenizer:
       val posTagger = new File(modelFolder, "opennlp/pos-maxent.bin")
-      val posModel  = new POSModel(new FileInputStream(posTagger))
       val tokenizerModel = new TokenizerModel(new FileInputStream(new File(modelFolder, "opennlp/token.bin")))
       val sentenceModel = new SentenceModel(new FileInputStream(new File(modelFolder, "opennlp/sent.bin")))
 
@@ -71,7 +70,7 @@ object SpotlightModel {
         stopwords,
         stemmer(),
         new SentenceDetectorME(sentenceModel),
-        if (posTagger.exists()) new POSTaggerME(posModel) else null,
+        if (posTagger.exists()) new POSTaggerME(new POSModel(new FileInputStream(posTagger))) else null,
         tokenTypeStore
       ).asInstanceOf[TextTokenizer]
 
@@ -96,7 +95,8 @@ object SpotlightModel {
       new GenerativeContextSimilarity(tokenTypeStore)
     ))
 
-    val spotter = if(new File(modelFolder, "opennlp").exists()) {
+    //If there is at least one NE model or a chunker, use the OpenNLP spotter:
+    val spotter = if( new File(modelFolder, "opennlp").exists() && new File(modelFolder, "opennlp").list().exists(f => f.startsWith("ner-") || f.startsWith("chunker")) ) {
       val nerModels = new File(modelFolder, "opennlp").list().filter(_.startsWith("ner-")).map { f: String =>
         new TokenNameFinderModel(new FileInputStream(new File(new File(modelFolder, "opennlp"), f)))
       }.toList

@@ -75,11 +75,26 @@ object EvalSpotter {
     })
   }
 
-  private def getExpectedResult(annotatedTextSource: AnnotatedTextSource) = {
+  def getExpectedResult(annotatedTextSource: AnnotatedTextSource) = {
     annotatedTextSource.foldLeft(Set[SurfaceFormOccurrence]()){ (set, par) =>
       set ++ par.occurrences.map(Factory.SurfaceFormOccurrence.from(_))
     }
   }
+
+  def evalSpotter(annotatedTextSource: AnnotatedTextSource,
+                  spotter: Spotter,
+                  expected: Traversable[SurfaceFormOccurrence]) {
+
+    // run spotting
+    var actual = Set[SurfaceFormOccurrence]()
+    for (paragraph <- annotatedTextSource) {
+      actual = JavaConversions.asScalaBuffer(spotter.extract(paragraph.text)).toSet union actual
+    }
+
+    // compare
+    printResults("%s and corpus %s".format(spotter.getName, annotatedTextSource.name), expected, actual)
+  }
+
 
   private def evalSpotting(annotatedTextSource: AnnotatedTextSource,
                            indexSpotter: Traversable[SurfaceForm] => Spotter,

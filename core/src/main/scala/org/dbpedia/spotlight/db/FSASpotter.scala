@@ -70,7 +70,7 @@ object FSASpotter {
   //State ID for None
   val REJECTING_STATE = -2
 
-  def buildDictionary(sfStore: SurfaceFormStore, tokenizer: LanguageIndependentTokenizer): FSADictionary = {
+  def buildDictionary(sfStore: SurfaceFormStore, tokenizer: TextTokenizer): FSADictionary = {
 
     //Temporary FSA DSs:
     val transitions: ArrayBuffer[Map[Int, Int]] = ArrayBuffer[Map[Int, Int]]()
@@ -105,7 +105,7 @@ object FSASpotter {
     var z = 0
 
     System.err.println("Tokenizing SFs...")
-    sfStore.iterateSurfaceForms.grouped(100000).toList.par.flatMap(_.map{
+    sfStore.iterateSurfaceForms.filter(_.annotationProbability >= 0.1).grouped(100000).toList.par.flatMap(_.map{
       sf: SurfaceForm =>
         //Tokenize all SFs first
         ( sf, tokenizer.tokenize(new Text(sf.name)) )

@@ -52,8 +52,8 @@ class OpenNLPTokenizer(
 
 class OpenNLPStringTokenizer(tokenizer: opennlp.tools.tokenize.Tokenizer, stemmer: Stemmer) extends BaseStringTokenizer(stemmer) {
 
-  def tokenizeUnstemmed(text: String): Seq[String] = tokenizer.tokenize(text)
+  def tokenizeUnstemmed(text: String): Seq[String] = this.synchronized{ tokenizer.tokenize(text) }
 
-  def tokenizePos(text: String): Array[Span] = tokenizer.tokenizePos(text)
+  def tokenizePos(text: String): Array[Span] = this.synchronized{ tokenizer.tokenizePos(text) }
 
 }

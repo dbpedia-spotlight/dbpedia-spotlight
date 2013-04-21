@@ -30,7 +30,7 @@ class DBTwoStepDisambiguator(
   tokenStore: TokenTypeStore,
   surfaceFormStore: SurfaceFormStore,
   resourceStore: ResourceStore,
-  candidateSearcher: DBCandidateSearcher,
+  val candidateSearcher: DBCandidateSearcher,
   contextStore: ContextStore,
   mixture: Mixture,
   contextSimilarity: ContextSimilarity
