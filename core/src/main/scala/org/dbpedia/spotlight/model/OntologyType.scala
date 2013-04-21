@@ -26,31 +26,31 @@ import java.lang.{Short, String}
  * @author maxjakob
  * @author Joachim Daiber
  * @author pablomendes (introduced and fixed bug for OntologyType.equals :)
+ * @author dirk.weissenborn (introduced opencyc)
  */
 
 trait OntologyType extends Serializable {
-  def getFullUri: String
-  def typeID: String = "OntologyTypeUnknown"
+      def getFullUri: String
+      def typeID: String = "OntologyTypeUnknown"
 
-  var id: Short = 0.toShort
+      var id: Short = 0.toShort
 
-  override def hashCode() : Int = {
-    typeID.hashCode()
-  }
+      override def hashCode() : Int = {
+        typeID.hashCode()
+      }
 
-  override def equals(other : Any) : Boolean = {
-      if (other==null)
-           false
-      else
-        other match {
-            case o: OntologyType => o.typeID != null && o.typeID.equals(typeID)
-            case _ => false;
-        }
-  }
+      override def equals(other : Any) : Boolean = {
+          if (other==null)
+               false
+          else
+            other match {
+                case o: OntologyType => o.typeID != null && o.typeID.equals(typeID)
+                case _ => false;
+            }
+      }
 
-  override def toString = typeID
+      override def toString = typeID
 }
-
 
 /**
  * Types from the DBpedia ontology (hierarchical)
@@ -136,4 +136,22 @@ class SchemaOrgType(var name : String) extends OntologyType {
 
 object SchemaOrgType {
     val SCHEMAORG_PREFIX = "http://schema.org/"
+}
+
+
+class OpenCycConcept(var name : String) extends OntologyType {
+
+    name = name.replace(OpenCycConcept.OPENCYCCONCEPT_PREFIX, "")
+
+    def equals(that : OpenCycConcept) : Boolean = {
+        name.equalsIgnoreCase(that.name)
+    }
+
+    override def getFullUri = OpenCycConcept.OPENCYCCONCEPT_PREFIX + name
+    override def typeID = "OpenCyc:" + name
+
+}
+
+object OpenCycConcept {
+    val OPENCYCCONCEPT_PREFIX = "http://sw.opencyc.org/concept/"
 }
