@@ -56,22 +56,35 @@ abstract class DBSpotter(
           val firstToken = chunkSpan.getStart
           val lastToken = chunkSpan.getEnd-1
 
+          val tokenSeqs = ListBuffer[(Int, Int)]()
+
           //Taking away a left member in each step, look for the longest sub-chunk in the SF dictionary
-          (firstToken to lastToken).foreach(startToken => {
-            val startOffset: Int = sentence(startToken).offset
-            val endOffset: Int = sentence(lastToken).offset + sentence(lastToken).token.length
-            val spot = text.text.substring(startOffset, endOffset)
+          (firstToken to lastToken).foreach{ startToken =>
+            tokenSeqs += Pair(startToken, lastToken)
+          }
 
-            if (surfaceFormMatch(spot)) {
-              //The sub-chunk is in the dictionary, finish the processing of this chunk
-              val spotOcc = new SurfaceFormOccurrence(surfaceFormStore.getSurfaceForm(spot), text, startOffset, Provenance.Annotation, spotScore(spot))
-              spotOcc.setFeature(new Nominal("spot_type", chunkSpan.getType))
-              spotOcc.setFeature(new Feature("token_types", tokenTypes.slice(startToken, lastToken)))
-              spots += spotOcc
-              break()
+          //Then, do the same in the other direction:
+          (firstToken to lastToken).reverse.foreach{ endToken =>
+            tokenSeqs += Pair(firstToken, endToken)
+          }
+
+          tokenSeqs.foreach{
+            case (startToken: Int, endToken: Int) => {
+              val startOffset = sentence(startToken).offset
+              val endOffset = sentence(endToken).offset + sentence(endToken).token.length
+
+              val spot = text.text.substring(startOffset, endOffset)
+
+              if (surfaceFormMatch(spot)) {
+                //The sub-chunk is in the dictionary, finish the processing of this chunk
+                val spotOcc = new SurfaceFormOccurrence(surfaceFormStore.getSurfaceForm(spot), text, startOffset, Provenance.Annotation, spotScore(spot))
+                spotOcc.setFeature(new Nominal("spot_type", chunkSpan.getType))
+                spotOcc.setFeature(new Feature("token_types", tokenTypes.slice(startToken, lastToken)))
+                spots += spotOcc
+                break()
+              }
             }
-
-          })
+          }
         }
       })
     }
@@ -117,6 +130,8 @@ abstract class DBSpotter(
   }
 
   protected def surfaceFormMatch(spot: String): Boolean = {
+    println(spot, spotScore(spot))
+
     if (spotFeatureWeightVector.isDefined)
       spotScore(spot) >= 0.5
     else
