@@ -40,6 +40,10 @@ object SurfaceFormSource {
 
         val surfaceform = new SurfaceForm(line(0))
         val countAnnotated = line(1).toInt
+        
+        //Read the total count: If there is no total count for the
+        //surface form, we use -1 to encode this case for handling 
+        //in later steps.
         val countTotal = if( line.size == 3 ) line(2).toInt else -1
 
         sfMap.put(
