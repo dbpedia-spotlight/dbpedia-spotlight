@@ -1,15 +1,15 @@
 #!/bin/bash
 #+------------------------------------------------------------------------------------------------------------------------------+
 #| DBpedia Spotlight - Download script                                                                                          |
-#| @author @sandroacoelho                                                                                                       |
 #+------------------------------------------------------------------------------------------------------------------------------+
 PROGNAME=$(basename $0)
 
 #Config parameters (adjust according your target language and folder)
-export lang_i18n=pt
-export language=portuguese
-export dbpedia_workspace=/var/local/spotlight
+export lang_i18n=en
+export language=english
+export dbpedia_workspace=..
 export dbpedia_version=3.8
+export spotlight_version=0.6
 
 # error_exit function by William Shotts. http://stackoverflow.com/questions/64786/error-handling-in-bash
 function error_exit
@@ -77,11 +77,24 @@ else
     mkdir $dbpedia_workspace/dbpedia_data/data/opennlp
 fi
 
-if [ -e $dbpedia_workspace/dbpedia_data/data/opennlp/$language  ]; then 
-    echo "$dbpedia_workspace"'/data/opennlp already exists.'
+if [ -e $dbpedia_workspace/dbpedia_data/data/opennlp/$lang_i18n  ]; then 
+    echo "$dbpedia_workspace"'/data/opennlp/'"$lang_i18n"' already exists.'
 else
-    mkdir $dbpedia_workspace/dbpedia_data/data/opennlp/$language
+    mkdir $dbpedia_workspace/dbpedia_data/data/opennlp/$lang_i18n
 fi
+
+if [ -e $dbpedia_workspace/dbpedia_data/data/models  ]; then 
+    echo "$dbpedia_workspace"'/data/models already exists.'
+else
+    mkdir $dbpedia_workspace/dbpedia_data/data/models
+fi
+
+if [ -e $dbpedia_workspace/dbpedia_data/data/models/$lang_i18n  ]; then
+    echo "$dbpedia_workspace"'/data/models/'"$lang_i18n"' already exists.'
+else
+    mkdir $dbpedia_workspace/dbpedia_data/data/models/$lang_i18n
+fi
+
 set +e
 
 
@@ -96,20 +109,23 @@ echo 'Getting Wikipedia Dump...'
 wget "http://dumps.wikimedia.org/"$lang_i18n"wiki/latest/"$lang_i18n"wiki-latest-pages-articles.xml.bz2" --directory-prefix=$dbpedia_workspace/dbpedia_data/original/wikipedia/$lang_i18n
 echo 'done!'
 
-echo 'Getting LingPipe Spotter...'
-wget http://dbp-spotlight.svn.sourceforge.net/viewvc/dbp-spotlight/tags/release-0.5/dist/src/deb/control/data/usr/share/dbpedia-spotlight/spotter.dict
+echo 'Getting LingPipe Spot Dictionary...'
+wget https://github.com/dbpedia-spotlight/dbpedia-spotlight/tree/release-$spotlight_version/dist/src/deb/control/data/usr/share/dbpedia-spotlight/spotter.dict
 echo 'done!'
 
-echo 'Getting Spot Selector...'
+echo 'Getting CoOccurrenceBased Spot Selector Statistics...'
+# A more recent link needs to be provided. Currently works only for English.
 wget http://spotlight.dbpedia.org/download/release-0.5/spot_selector.tgz
 echo 'done!'
 
-echo 'Getting Index...'
-wget http://dbp-spotlight.svn.sourceforge.net/viewvc/dbp-spotlight/tags/release-0.5/dist/src/deb/control/data/usr/share/dbpedia-spotlight/index.tgz
+echo 'Getting the Tiny Lucene Context Index...'
+wget http://spotlight.dbpedia.org/download/release-0.5/index.tgz
+#Getting from GitHub is not working
+#wget https://github.com/dbpedia-spotlight/dbpedia-spotlight/tree/release-$spotlight_version/dist/src/deb/control/data/usr/share/dbpedia-spotlight/index
 echo 'done!'
 
-echo 'Getting Index...'
-wget http://dbp-spotlight.svn.sourceforge.net/viewvc/dbp-spotlight/tags/release-0.5/dist/src/deb/control/data/usr/share/dbpedia-spotlight/pos-en-general-brown.HiddenMarkovModel
+echo 'Getting LingPipe HMM Model for POS-tagging...'
+wget https://github.com/dbpedia-spotlight/dbpedia-spotlight/tree/release-$spotlight_version/dist/src/deb/control/data/usr/share/dbpedia-spotlight/pos-en-general-brown.HiddenMarkovModel
 echo 'done!'
 
 echo 'Getting Apache OpenNLP models...'
@@ -118,7 +134,7 @@ if [ $? -eq 0 ] ; then
    wget http://opennlp.sourceforge.net/models-1.5/$lang_i18n-chunker.bin
 else
    echo "$lang_i18n"'-chunker.bin not found. Getting an English version...'
-   wget http://opennlp.sourceforge.net/models-1.5/en-chunker.bin -O $lang_i18n-chunker.bin
+   wget http://opennlp.sourceforge.net/models-1.5/en-chunker.bin
 fi
 
 wget -q --spider http://opennlp.sourceforge.net/models-1.5/$lang_i18n-ner-location.bin
@@ -126,7 +142,7 @@ if [ $? -eq 0 ] ; then
    wget http://opennlp.sourceforge.net/models-1.5/$lang_i18n-ner-location.bin
 else
    echo "$lang_i18n"'-ner-location.bin not found. Getting an English version...'
-   wget http://opennlp.sourceforge.net/models-1.5/en-ner-location.bin -O $lang_i18n-ner-location.bin
+   wget http://opennlp.sourceforge.net/models-1.5/en-ner-location.bin
 fi
 
 wget -q --spider http://opennlp.sourceforge.net/models-1.5/$lang_i18n-ner-organization.bin
@@ -134,7 +150,7 @@ if [ $? -eq 0 ] ; then
    wget http://opennlp.sourceforge.net/models-1.5/$lang_i18n-ner-organization.bin
 else
    echo "$lang_i18n"'-ner-organization.bin not found. Getting an English version...'
-   wget http://opennlp.sourceforge.net/models-1.5/en-ner-organization.bin -O $lang_i18n-ner-organization.bin
+   wget http://opennlp.sourceforge.net/models-1.5/en-ner-organization.bin
 fi
 
 wget -q --spider http://opennlp.sourceforge.net/models-1.5/$lang_i18n-ner-person.bin
@@ -142,7 +158,7 @@ if [ $? -eq 0 ] ; then
    wget http://opennlp.sourceforge.net/models-1.5/$lang_i18n-ner-person.bin
 else
    echo "$lang_i18n"'-ner-person.bin not found. Getting an English version...'
-   wget http://opennlp.sourceforge.net/models-1.5/en-ner-person.bin -O $lang_i18n-ner-person.bin
+   wget http://opennlp.sourceforge.net/models-1.5/en-ner-person.bin
 fi
 
 wget  -q --spider http://opennlp.sourceforge.net/models-1.5/$lang_i18n-pos-maxent.bin
@@ -150,7 +166,7 @@ if [ $? -eq 0 ] ; then
    wget http://opennlp.sourceforge.net/models-1.5/$lang_i18n-pos-maxent.bin
 else
    echo "$lang_i18n"'-ner-pos-maxent.bin not found. Getting an English version...'
-   wget http://opennlp.sourceforge.net/models-1.5/en-pos-maxent.bin -O $lang_i18n-pos-maxent.bin
+   wget http://opennlp.sourceforge.net/models-1.5/en-pos-maxent.bin
 fi
 
 wget  -q --spider http://opennlp.sourceforge.net/models-1.5/$lang_i18n-sent.bin
@@ -158,7 +174,7 @@ if [ $? -eq 0 ] ; then
    wget http://opennlp.sourceforge.net/models-1.5/$lang_i18n-sent.bin
 else
    echo "$lang_i18n"'-sent.bin not found. Getting an English version...'
-   wget http://opennlp.sourceforge.net/models-1.5/en-sent.bin -O $lang_i18n-sent.bin
+   wget http://opennlp.sourceforge.net/models-1.5/en-sent.bin
 fi
 
 wget  -q --spider http://opennlp.sourceforge.net/models-1.5/$lang_i18n-token.bin
@@ -166,33 +182,52 @@ if [ $? -eq 0 ] ; then
    wget http://opennlp.sourceforge.net/models-1.5/$lang_i18n-token.bin
 else
    echo "$lang_i18n"'-token.bin not found. Getting an English version...'
-   wget http://opennlp.sourceforge.net/models-1.5/en-token.bin -O $lang_i18n-token.bin
+   wget http://opennlp.sourceforge.net/models-1.5/en-token.bin
 fi
 
 echo 'done!'
 
 #------------------------------------- Runtime Files --------------------------------------------------
-mv spotter.dict $dbpedia_workspace/dbpedia_data/data
-mv pos-en-general-brown.HiddenMarkovModel $dbpedia_workspace/dbpedia_data/data
+mv spotter.dict $dbpedia_workspace/dbpedia_data/data/models/$lang_i18n/spotter.en.dict
+mv pos-en-general-brown.HiddenMarkovModel $dbpedia_workspace/dbpedia_data/data/models/$lang_i18n
 #index
 tar xvf index.tgz
-mv index $dbpedia_workspace/dbpedia_data/data/output
+mv index $dbpedia_workspace/dbpedia_data/data/models/$lang_i18n/tiny.en.index
 #spot selector
 tar xvf spot_selector.tgz
-mv spotsel $dbpedia_workspace/dbpedia_data/data
+mv spotsel $dbpedia_workspace/dbpedia_data/data/models/$lang_i18n/spotsel.en
 #Moving OpenNLP files
-mv $lang_i18n-chunker.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$language
-mv $lang_i18n-ner-location.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$language
-mv $lang_i18n-ner-organization.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$language
-mv $lang_i18n-ner-person.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$language
-mv $lang_i18n-pos-maxent.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$language
-mv $lang_i18n-sent.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$language
-mv $lang_i18n-token.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$language
+mv *-chunker.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$lang_i18n
+mv *-ner-location.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$lang_i18n
+mv *-ner-organization.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$lang_i18n
+mv *-ner-person.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$lang_i18n
+mv *-pos-maxent.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$lang_i18n
+mv *-sent.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$lang_i18n
+mv *-token.bin $dbpedia_workspace/dbpedia_data/data/opennlp/$lang_i18n
 
 #------------------------------------- Original Data  --------------------------------------------------
-mv index.tgz  $dbpedia_workspace/dbpedia_data/original
 mv spot_selector.tgz  $dbpedia_workspace/dbpedia_data/original
 
+bzip2 -d $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/disambiguations_$lang_i18n.nt.bz2
+/usr/bin/python unicodeEscape.py $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/disambiguations_$lang_i18n.nt
+rm $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/disambiguations_$lang_i18n.nt
+mv $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/disambiguations_$lang_i18n.nt.new $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/disambiguations_$lang_i18n.nt
+bzip2 -z -k $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/disambiguations_$lang_i18n.nt
 
+bzip2 -d $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/instance_types_$lang_i18n.nt.bz2
+/usr/bin/python unicodeEscape.py $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/instance_types_$lang_i18n.nt
+rm $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/instance_types_$lang_i18n.nt
+mv $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/instance_types_$lang_i18n.nt.new $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/instance_types_$lang_i18n.nt
+bzip2 -z -k $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/instance_types_$lang_i18n.nt
 
+bzip2 -d $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/labels_$lang_i18n.nt.bz2
+/usr/bin/python unicodeEscape.py $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/labels_$lang_i18n.nt
+rm $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/labels_$lang_i18n.nt
+mv $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/labels_$lang_i18n.nt.new $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/labels_$lang_i18n.nt
+bzip2 -z -k $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/labels_$lang_i18n.nt
 
+bzip2 -d $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/redirects_$lang_i18n.nt.bz2
+/usr/bin/python unicodeEscape.py $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/redirects_$lang_i18n.nt
+rm $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/redirects_$lang_i18n.nt
+mv $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/redirects_$lang_i18n.nt.new $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/redirects_$lang_i18n.nt
+bzip2 -z -k $dbpedia_workspace/dbpedia_data/original/dbpedia/$lang_i18n/redirects_$lang_i18n.nt

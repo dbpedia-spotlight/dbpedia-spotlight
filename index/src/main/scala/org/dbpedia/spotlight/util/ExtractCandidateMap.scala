@@ -112,8 +112,8 @@ object ExtractCandidateMap
         if (uri contains "%23") //TODO re-evaluate this decision in context of DBpedia 3.7
             return false
         // has to contain a letter
-        if ("""^[\\W\\d]+$""".r.findFirstIn(uri) != None)
-            return false
+        //if ("""^[\\W\\d]+$""".r.findFirstIn(uri) != None)
+        //    return false
         // cannot be a list, or any other pattern specified in the blacklist
         blacklistedURIPatterns.foreach(p => if (p.pattern.matcher(uri).matches) return false) // generalizes: if (uri contains "List_of_") return false
         true
@@ -177,9 +177,9 @@ object ExtractCandidateMap
             return false
         }
         // contains a letter
-        if ("""^[\W\d]+$""".r.findFirstIn(surfaceForm) != None) {
-            return false
-        }
+        //if ("""^[\W\d]+$""".r.findFirstIn(surfaceForm) != None) {
+        //    return false
+        //}
         // not an escaped char. see http://sourceforge.net/mailarchive/message.php?msg_id=28908255
         if ("""\\\w""".r.findFirstIn(surfaceForm) != None) {
             return false
@@ -403,13 +403,14 @@ object ExtractCandidateMap
         //DBpedia config
         SpotlightConfiguration.DEFAULT_NAMESPACE=config.get("org.dbpedia.spotlight.default_namespace",SpotlightConfiguration.DEFAULT_NAMESPACE)
 
-
         //Bad URIs -- will exclude any URIs that match these patterns. Used for Lists, disambiguations, etc.
         val blacklistedURIPatternsFileName = config.get("org.dbpedia.spotlight.data.badURIs."+language)
-        blacklistedURIPatterns = Source.fromFile(blacklistedURIPatternsFileName).getLines.map( u => u.r ).toSet
+        LOG.info("Opening blacklisted URI patterns file: %s".format(blacklistedURIPatternsFileName))
+        blacklistedURIPatterns = Source.fromFile(blacklistedURIPatternsFileName, "UTF-8").getLines.map( u => u.r ).toSet
 
         //Stopwords (bad surface forms)
         val stopWordsFileName = config.get("org.dbpedia.spotlight.data.stopWords."+language)
+        LOG.info("Opening stopwords file: %s".format(stopWordsFileName))
         val stopWords = Source.fromFile(stopWordsFileName, "UTF-8").getLines.toSet
 
         // get concept URIs

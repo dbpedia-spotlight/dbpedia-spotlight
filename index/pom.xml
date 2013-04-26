@@ -26,7 +26,7 @@
     <parent>
         <artifactId>spotlight</artifactId>
         <groupId>org.dbpedia.spotlight</groupId>
-        <version>0.6</version>
+        <version>0.6.5</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -182,6 +182,29 @@
                 </executions>
             </plugin>
 
+            <plugin>
+                <inherited>true</inherited>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>1.1.1</version>
+                <executions>
+                    <execution>
+                        <id>enforce-java-newer-7</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <version>1.7</version>
+                                </requireJavaVersion>
+                            </rules>
+                            <fail>true</fail>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
 
@@ -268,11 +291,6 @@
         <dependency>
             <groupId>com.esotericsoftware.kryo</groupId>
             <artifactId>kryo</artifactId>
-        </dependency>
-
-        <dependency>
-        	<groupId>org.apache.commons</groupId>
-        	<artifactId>commons-compress</artifactId>
         </dependency>
 
         <dependency>
