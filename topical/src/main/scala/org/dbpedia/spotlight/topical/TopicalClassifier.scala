@@ -1,8 +1,8 @@
 package org.dbpedia.spotlight.topical
 
-import scala.collection.mutable._
-import org.dbpedia.spotlight.model.{TopicalClassificationConfiguration, Text, Topic}
+import org.dbpedia.spotlight.model.{Text, Topic}
 import org.apache.commons.logging.LogFactory
+import java.io.File
 
 
 /**
@@ -17,13 +17,6 @@ trait TopicalClassifier {
     def getPredictions(text: Text): Array[(Topic, Double)]
 
     /**
-     * @param ids
-     * @param values
-     * @return predicted probabilities of topics given a word vector (ids come from a dictionary that translates words to ids)
-     */
-    def getPredictions(ids: Array[Int], values: Array[Double]): Array[(Topic, Double)]
-
-    /**
      * @return list of topics the classifier is able to predict
      */
     def getTopics(): List[Topic]
@@ -32,52 +25,59 @@ trait TopicalClassifier {
      * Trains the model on this text.
      * @param text
      * @param topic
-     * @param increaseVocabulary >0, if dictionary should be increased for this text by specified number of words.
      */
-    def update(text: Text, topic: Topic, increaseVocabulary: Int = 0)
+    def update(text: Text, topic: Topic)
 
-    /**
-     * Trains the model with the specified id->topic vector
-     * @param vector
-     * @param topic
-     */
-    def update(vector: Map[Int, Double], topic: Topic)
 
-    def persist
+    def serialize(output:File)
 }
 
 trait MultiLabelClassifier extends TopicalClassifier {
-    protected val NEGATIVE_TOPIC_PREFIX = "_"
 
     /**
      * Trains  the model with this text as a negative example for the topic
      * @param text
      * @param topic
-     * @param increaseVocabulary
      */
-    def updateNegative(text: Text, topic: Topic, increaseVocabulary: Int = 0)
-
-    /**
-     * Trains  the model with this vector as a negative example for the topic
-     * @param vector
-     * @param topic
-     */
-    def updateNegative(vector: Map[Int, Double], topic: Topic)
+    def updateNegative(text: Text, topic: Topic)
 }
 
-object TopicalClassifierLoader {
+object MultiLabelClassifier {
+    final val NEGATIVE_TOPIC_PREFIX = "_"
+}
+
+trait TopicalClassifierTrainer {
+    def trainModel(corpus:File):TopicalClassifier
+}
+
+object TopicalClassifierTrainer {
+    def byType(classifierType:String):TopicalClassifierTrainer =
+        classifierType match {
+            case "FactorieTopicalClassifier" => FactorieTopicalClassifier
+            case _ => FactorieTopicalClassifier // default
+        }
+
+}
+
+object TopicalClassifierFactory {
     private val LOG = LogFactory.getLog(getClass)
 
-    def fromConfig(config: TopicalClassificationConfiguration): TopicalClassifier = {
+    def fromFile(file:File, classifierType: String): Option[TopicalClassifier] = {
         LOG.info("Loading topical classifier...")
-        val info = config.loadTopicInfo
-        val dic = config.loadDictionary
-        if (config.getClassifierType == "org.dbpedia.spotlight.topic.WekaSingleLabelClassifier") {
-            return new WekaSingleLabelClassifier(dic, info, config.getModelFile, null, info.loaded)
-        }
-        if (config.getClassifierType == "org.dbpedia.spotlight.topic.WekaMultiLabelClassifier")
-            return new WekaMultiLabelClassifier(dic, info, config.getModelFile, info.loaded)
 
-        null
+        if (classifierType.endsWith("FactorieTopicalClassifier")) {
+            return Some(FactorieTopicalClassifier.deSerialize(file))
+        }
+
+        None
+    }
+
+    def fromType(classifierType:String): Option[TopicalClassifier] = {
+        if (classifierType.endsWith("FactorieTopicalClassifier")) {
+            val classifier = new FactorieTopicalClassifier
+            return Some(classifier)
+        }
+
+        None
     }
 }

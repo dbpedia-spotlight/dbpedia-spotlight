@@ -86,12 +86,6 @@
         </dependency>
 
         <dependency>
-            <groupId>nz.ac.waikato.cms.weka</groupId>
-            <artifactId>weka-stable</artifactId>
-            <version>3.6.8</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.dbpedia.spotlight</groupId>
             <artifactId>core</artifactId>
         </dependency>
@@ -177,7 +171,28 @@
             <artifactId>httpclient</artifactId>
         </dependency>
 
+      <dependency>
+        <groupId>cc.factorie</groupId>
+        <artifactId>factorie</artifactId>
+        <version>1.0.0-M3</version>
+      </dependency>
+
     </dependencies>
+
+  <repositories>
+    <repository>
+      <id>IESL Releases</id>
+      <name>IESL Repo</name>
+      <url>https://dev-iesl.cs.umass.edu/nexus/content/groups/public</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+    </repository>
+  </repositories>
+
 
 
 

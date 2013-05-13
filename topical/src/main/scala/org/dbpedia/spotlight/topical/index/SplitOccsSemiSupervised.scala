@@ -2,10 +2,8 @@ package org.dbpedia.spotlight.topical.index
 
 import java.io.{FileWriter, PrintWriter, File}
 import org.dbpedia.spotlight.model._
-import org.dbpedia.spotlight.topical.convert.TextCorpusToInputCorpus
 import org.dbpedia.spotlight.util.IndexingConfiguration
-import org.dbpedia.spotlight.topical.WekaSingleLabelClassifier
-import org.dbpedia.spotlight.db.model.{TopicalStatInformation, WordIdDictionary}
+import org.dbpedia.spotlight.topical.{TopicalClassifierTrainer}
 import org.dbpedia.spotlight.topical.util.TopicUtil
 import org.dbpedia.spotlight.io.FileOccurrenceSource
 import org.apache.commons.logging.LogFactory
@@ -14,7 +12,7 @@ import collection.mutable._
 /**
  * This object splits the occs file into several topical occs files, by first creating an initial split, which is done
  * by defining main categories for each topic in the topic.description file (which location is specified
- * in the properties, can usually be found in the conf/ folder) and assigning each resource which are members of one of these main categories
+ * in the indexing.properties, can usually be found in the conf/ folder) and assigning each resource which are members of one of these main categories
  * to the specific topics. After that, all occs of these assigned resources are assigned to the specific topics as well.
  * The initial split is afterwards used to train an initial topical classifier which is then used to assign occs to the topics.
  * This step can be repeated several times (splitting, training a model on the new split, splitting again ...)
@@ -35,60 +33,59 @@ object SplitOccsSemiSupervised {
         if (args.length > 5) {
             val config = new IndexingConfiguration(args(0))
             splitOccs(new File(args(1)),
-                new File(config.get("org.dbpedia.spotlight.topic.description")),
+                config.get(TopicalClassificationConfiguration.CLASSIFIER_TYPE),
+                new File(config.get(TopicalClassificationConfiguration.TOPIC_DESCRIPTION)),
                 new File(config.get("org.dbpedia.spotlight.data.sortedArticlesCategories")),
-                new File(args(2)), args(3).toDouble, args(4).toInt, new File(args(5)))
+                new File(args(2)),
+                args(3).toDouble,
+                args(4).toInt,
+                new File(args(5)))
         }
         else
-            LOG.error("Not sufficient arguments!")
+            LOG.error("Insufficient arguments!")
     }
 
     def splitOccs(occsFile: File,
+                  classifierType:String,
                   topicDescriptionFile: File,
                   articleCatsFile: File,
-                  tmpDir: File, threshold: Double, iterations: Int, outputFile: File) {
+                  tmpDir: File,
+                  threshold: Double,
+                  iterations: Int,
+                  outputDir: File) {
         tmpDir.mkdirs()
         val tmpCorpus = new File(tmpDir, "corpus.tsv")
-        val tmpTopics = new File(tmpDir, "topics.info")
-        val tmpDic = new File(tmpDir, "word_id.dic")
-        val tmpArff = new File(tmpDir, "corpus.arff")
-        val tmpModel = new File(tmpDir, "model.dat")
         val tmpOther = new File(tmpDir, "toSplit.tsv")
 
-        outputFile.mkdirs()
+        outputDir.mkdirs()
 
-        if (outputFile.listFiles().size > 0) {
+        if (outputDir.listFiles().size > 0) {
             LOG.info("Output directory was not empty. Taking split in this directory as initial split.")
-            new File(outputFile, TopicUtil.CATCH_TOPIC.getName + ".tsv").renameTo(tmpOther)
+            new File(outputDir, TopicUtil.CATCH_TOPIC.getName + ".tsv").renameTo(tmpOther)
         }
         else {
             LOG.info("Creating initial split for training an initial model for splitting!")
-            initialSplit(topicDescriptionFile, articleCatsFile, occsFile, outputFile)
+            initialSplit(topicDescriptionFile, articleCatsFile, occsFile, outputDir)
         }
 
+        val trainer = TopicalClassifierTrainer.byType(classifierType)
 
         for (i <- 0 until iterations) {
-            GenerateOccTopicCorpus.generateCorpus(outputFile, -1, new File(tmpCorpus.getAbsolutePath + ".tmp"))
+            GenerateOccTopicCorpus.generateCorpus(outputDir, -1, new File(tmpCorpus.getAbsolutePath + ".tmp"))
             new ProcessBuilder("sort", "-R", "-o", tmpCorpus.getAbsolutePath, tmpCorpus.getAbsolutePath + ".tmp").start().waitFor()
             new File(tmpCorpus + ".tmp").delete()
 
-            tmpTopics.delete()
-            tmpDic.delete()
-            TextCorpusToInputCorpus.writeDocumentsToCorpus(tmpCorpus, tmpArff, false, true, "arff", tmpTopics, tmpDic, 100000, 100000)
-            WekaSingleLabelClassifier.trainModel(tmpArff, tmpModel)
-            //WekaMultiLabelClassifier.trainModel(tmpArff, new File(tmpDir, "multilabel-model"))
-            val dictionary = new WordIdDictionary(tmpDic)
-            val classifier = new WekaSingleLabelClassifier(dictionary, new TopicalStatInformation(tmpTopics), tmpModel)
+            val classifier =  trainer.trainModel(tmpCorpus)
 
             if (i == 0) {
-                AssignTopicsToOccs.assignTopics(occsFile, classifier, threshold, outputFile, false)
+                AssignTopicsToOccs.assignTopics(occsFile, classifier, threshold, outputDir, false)
             }
             else
-                AssignTopicsToOccs.assignTopics(tmpOther, classifier, threshold, outputFile, true)
+                AssignTopicsToOccs.assignTopics(tmpOther, classifier, threshold, outputDir, true)
 
             tmpOther.delete()
             if (i < iterations - 1)
-                new File(outputFile, TopicUtil.CATCH_TOPIC.getName + ".tsv").renameTo(tmpOther)
+                new File(outputDir, TopicUtil.CATCH_TOPIC.getName + ".tsv").renameTo(tmpOther)
         }
 
         tmpDir.listFiles().foreach(_.delete())
@@ -145,9 +142,7 @@ object SplitOccsSemiSupervised {
         FileOccurrenceSource.fromFile(occsFile).foreach(occ => {
             if (!occ.resource.equals(lastResource)) {
                 lastResource = occ.resource
-
                 selectedTopics = initialAssignments.getOrElse(lastResource, Set[Topic]())
-
             }
 
             if (selectedTopics.size > 0) {

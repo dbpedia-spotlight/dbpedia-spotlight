@@ -3,7 +3,7 @@ package org.dbpedia.spotlight.topical.index
 import scala.{Boolean, Double}
 import java.io.{FileWriter, PrintWriter, File}
 import org.dbpedia.spotlight.model.{Topic, TopicalClassificationConfiguration}
-import org.dbpedia.spotlight.topical.{TopicalClassifierLoader, WekaMultiLabelClassifier, WekaSingleLabelClassifier, TopicalClassifier}
+import org.dbpedia.spotlight.topical.{TopicalClassifierFactory, TopicalMultiLabelClassifier, WekaSingleLabelClassifier, TopicalClassifier}
 import org.dbpedia.spotlight.topical.util.TopicUtil
 import org.dbpedia.spotlight.io.FileOccurrenceSource
 import org.apache.commons.logging.LogFactory
@@ -28,9 +28,7 @@ object AssignTopicsToOccs {
      */
     def main(args: Array[String]) {
         val config = new TopicalClassificationConfiguration(args(1))
-
-
-        assignTopics(new File(args(0)), TopicalClassifierLoader.fromConfig(config), args(2).toDouble, new File(args(3)), args(4).toBoolean)
+        assignTopics(new File(args(0)), TopicalClassifierFactory.fromFile(config.getModelFile, config.getClassifierType).get, args(2).toDouble, new File(args(3)), args(4).toBoolean)
     }
 
     def assignTopics(occsFile: File, model: TopicalClassifier, minimalConfidence: Double, output: File, append: Boolean) {

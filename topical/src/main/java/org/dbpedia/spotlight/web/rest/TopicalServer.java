@@ -4,7 +4,7 @@ import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.InitializationException;
 import org.dbpedia.spotlight.model.TopicalClassificationConfiguration;
 import org.dbpedia.spotlight.topical.TopicalClassifier;
-import org.dbpedia.spotlight.topical.TopicalClassifierLoader;
+import org.dbpedia.spotlight.topical.TopicalClassifierFactory$;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -23,7 +23,7 @@ public class TopicalServer {
         } catch (ConfigurationException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
-        classifier = TopicalClassifierLoader.fromConfig(conf);
+        classifier = TopicalClassifierFactory$.MODULE$.fromFile(conf.getModelFile(), conf.getClassifierType()).get();
 
         Server.main(args);
     }

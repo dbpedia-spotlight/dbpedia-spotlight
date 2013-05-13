@@ -2,10 +2,7 @@ package org.dbpedia.spotlight.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dbpedia.spotlight.db.model.TopicalStatInformation;
-import org.dbpedia.spotlight.db.model.WordIdDictionary;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
-import org.dbpedia.spotlight.topical.util.TopicUtil;
 import scala.collection.Seq;
 
 import java.io.File;
@@ -22,13 +19,10 @@ public class TopicalClassificationConfiguration {
     private static Log LOG = LogFactory.getLog(TopicalClassificationConfiguration.class);
     Properties config = new Properties();
 
-    static String CLASSIFIER_PATH = "org.dbpedia.spotlight.topic.model.path";
-    static String CLASSIFIER_TYPE = "org.dbpedia.spotlight.topic.model.type";
-    static String TOPICS_INFO = "org.dbpedia.spotlight.topic.topics.info";
-    static String DICTIONARY="org.dbpedia.spotlight.topic.dictionary";
-    static String DICTIONARY_MAXSIZE="org.dbpedia.spotlight.topic.dictionary.maxsize";
-    static String TOPICAL_PRIORS="org.dbpedia.spotlight.topic.priors";
-    static String TOPIC_DESCRIPTION="org.dbpedia.spotlight.topic.description";
+    public static String CLASSIFIER_PATH = "org.dbpedia.spotlight.topic.model.path";
+    public static String CLASSIFIER_TYPE = "org.dbpedia.spotlight.topic.classifier.type";
+    public static String TOPICAL_PRIORS="org.dbpedia.spotlight.topic.priors";
+    public static String TOPIC_DESCRIPTION="org.dbpedia.spotlight.topic.description";
 
     private static Seq<TopicDescription> descriptions;
 
@@ -42,7 +36,7 @@ public class TopicalClassificationConfiguration {
             throw new ConfigurationException("Cannot find configuration file "+configFileName,e);
         }
 
-        if (config.getProperty(CLASSIFIER_TYPE) == null || config.getProperty(CLASSIFIER_PATH) == null || config.getProperty(DICTIONARY) == null || config.getProperty(DICTIONARY_MAXSIZE) == null)
+        if (config.getProperty(CLASSIFIER_TYPE) == null || config.getProperty(CLASSIFIER_PATH) == null)
             throw new ConfigurationException(String.format("Please validate your configuration in file %s for topical classification.",configFileName));
 
         File priors =  new File(config.getProperty(TOPICAL_PRIORS));
@@ -58,20 +52,6 @@ public class TopicalClassificationConfiguration {
 
     public Seq<TopicDescription> getDescription(){
         return descriptions;
-    }
-
-    public TopicalStatInformation loadTopicInfo() {
-        String path = config.getProperty(TOPICS_INFO);
-        if(path.isEmpty())
-            return null;
-        return TopicUtil.getTopicInfo(path);
-    }
-
-    public WordIdDictionary loadDictionary() {
-        String path = config.getProperty(DICTIONARY);
-        if(path.isEmpty())
-            return null;
-        return TopicUtil.getDictionary(path, Integer.parseInt(config.getProperty(DICTIONARY_MAXSIZE)));
     }
 
     public String getClassifierType(){
