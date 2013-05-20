@@ -63,7 +63,8 @@ class LanguageIndependentStringTokenizer(locale: Locale, stemmer: Stemmer) exten
 object Helper {
 
   val normalizations = Map[String, List[(String, String)]](
-    "fr" -> List( ("([dDlL])[’']", "$1 ") ) //French def. and indef. article
+    "fr" -> List( ("([dDlL])[’']", "$1 ") ), //French def. and indef. article
+    "it" -> List( ("([lL]|[uU]n)[’']", "$1 ") ) //Italian def. and indef. article
   )
 
   def normalize(locale: Locale, text: String): String = {
