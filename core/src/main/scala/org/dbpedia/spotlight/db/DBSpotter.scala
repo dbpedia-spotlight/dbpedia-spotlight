@@ -41,7 +41,7 @@ abstract class DBSpotter(
       tokenizer.tokenizeMaybe(text)
 
     var spots = ListBuffer[SurfaceFormOccurrence]()
-    val sentences: List[List[Token]] = tokensToSentences(text.featureValue[List[Token]]("tokens").get)
+    val sentences: List[List[Token]] = DBSpotter.tokensToSentences(text.featureValue[List[Token]]("tokens").get)
 
     //Go through all sentences
     sentences.foreach{ sentence: List[Token] =>
@@ -93,26 +93,6 @@ abstract class DBSpotter(
   }
 
 
-
-  def tokensToSentences(allTokens: List[Token]): List[List[Token]] = {
-
-    val sentences = ListBuffer[List[Token]]()
-    val sentence = ListBuffer[Token]()
-
-    allTokens foreach { token: Token =>
-      sentence.append(token)
-
-      token.feature("end-of-sentence") match {
-        case Some(b) => {
-          sentences.append(sentence.toList)
-          sentence.clear()
-        }
-        case None =>
-      }
-    }
-
-    sentences.toList
-  }
 
   private def spotScore(spot: String): Double = {
     try {
@@ -216,4 +196,23 @@ object DBSpotter {
       1.0
     )
 
+  def tokensToSentences(allTokens: List[Token]): List[List[Token]] = {
+
+    val sentences = ListBuffer[List[Token]]()
+    val sentence = ListBuffer[Token]()
+
+    allTokens foreach { token: Token =>
+      sentence.append(token)
+
+      token.feature("end-of-sentence") match {
+        case Some(b) => {
+          sentences.append(sentence.toList)
+          sentence.clear()
+        }
+        case None =>
+      }
+    }
+
+    sentences.toList
+  }
 }
