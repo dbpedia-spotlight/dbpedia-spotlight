@@ -20,8 +20,13 @@ import com.sun.jersey.api.client.WebResource;
 
 /**
  * Wrapper for the DbpediaSpotlight Annotate Web Service. This annotator assumes that the
- * web service endpoint in the configuration has already been started.
+ * web service endpoint specified in the configuration has already been started.
  * 
+ * The annotator has no input size limitation, 
+ * however it assumes the input is structured as one sentence at a line.
+ * This is not a strict requirement though,
+ * the annotator would still work fine as long as there are no lines containing extra-long text.
+ *   
  * @author Mustafa Nural
  */
 public class SpotlightAnnotator extends JCasAnnotator_ImplBase {
