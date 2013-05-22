@@ -44,7 +44,9 @@
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
                 <version>${scala.maven.plugin.version}</version>
-
+                <!--
+                    License: LGPL, Version 2.1
+                -->
                 <configuration>
                     <launchers>
                         <launcher>
@@ -86,10 +88,16 @@
         <dependency>
             <groupId>org.dbpedia.spotlight</groupId>
             <artifactId>core</artifactId>
+            <!--
+                License: Apache Software License, Version 2.0
+            -->
         </dependency>
         <dependency>
             <groupId>org.dbpedia.spotlight</groupId>
             <artifactId>index</artifactId>
+            <!--
+                License: Apache Software License, Version 2.0
+            -->
         </dependency>
 
         <!--dependency>
@@ -107,30 +115,49 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
+            <!--
+                License: Apache Software License, Version 2.0
+            -->
         </dependency>
         <dependency>
             <groupId>net.sf.json-lib</groupId>
             <artifactId>json-lib</artifactId>
             <classifier>jdk15</classifier>
+            <!--
+                License: Apache Software License, Version 2.0
+            -->
         </dependency>
         <dependency>
             <groupId>com.thoughtworks.paranamer</groupId>
             <artifactId>paranamer</artifactId>
             <version>2.3</version>
-        </dependency>
-        <dependency>
-            <groupId>net.htmlparser.jericho</groupId>
-            <artifactId>jericho-html</artifactId>
-            <version>3.1</version>
+            <!--
+               License: Paranamer is Open Source, and licensed as BSD. It is compatible with commercial/proprietary, GPL, Apache use
+             -->
+       </dependency>
+       <dependency>
+           <groupId>net.htmlparser.jericho</groupId>
+           <artifactId>jericho-html</artifactId>
+           <version>3.1</version>
+           <!--
+               License: Eclipse Public License - v 1.0 and
+                         Lesser GNU Public License (LGPL)
+           -->
         </dependency>
         <dependency>
             <groupId>weka</groupId>
             <artifactId>weka</artifactId>
             <version>3.7.3</version>
+            <!--
+                License: Apache Software License, Version 2.0
+            -->
         </dependency>
         <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_2.9.2</artifactId>
+            <!--
+                License: Apache Software License, Version 2.0
+            -->
         </dependency>
     </dependencies>
 
