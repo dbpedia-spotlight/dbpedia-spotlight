@@ -324,8 +324,8 @@
         	<groupId>org.apache.commons</groupId>
         	<artifactId>commons-compress</artifactId>
             <!--
->             License: GNU GENERAL PUBLIC LICENSE, Version 3.0
->           -->
+                License: Apache Software License, Version 2.0
+            -->
         </dependency>
 
         <dependency>
