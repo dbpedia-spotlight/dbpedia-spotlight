@@ -18,6 +18,9 @@ import org.dbpedia.spotlight.uima.types.JCasResource;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * Wrapper for the DbpediaSpotlight Annotate Web Service. This annotator assumes that the
  * web service endpoint specified in the configuration has already been started.
@@ -31,6 +34,8 @@ import com.sun.jersey.api.client.WebResource;
  */
 public class SpotlightAnnotator extends JCasAnnotator_ImplBase {
 
+	Log LOG = LogFactory.getLog(this.getClass());
+	
 	private String SPOTLIGHT_ENDPOINT;
 
 	// Default values for the web service parameters for the spotlight endpoint
@@ -104,7 +109,7 @@ public class SpotlightAnnotator extends JCasAnnotator_ImplBase {
 					line = documentReader.readLine();
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
-					e.printStackTrace();
+					LOG.error("Can't read from input file",e);
 				}
 				if (line == null) {
 					moreLines = false;
@@ -123,7 +128,7 @@ public class SpotlightAnnotator extends JCasAnnotator_ImplBase {
 			do{
 				try{
 
-					System.out.println("Sending request to the server");
+					LOG.info("Sending request to the server");
 
 					WebResource r = c.resource(SPOTLIGHT_ENDPOINT);
 					response =
@@ -142,15 +147,13 @@ public class SpotlightAnnotator extends JCasAnnotator_ImplBase {
 					retry = false;
 				} catch (Exception e){
 					//In case of a failure, try sending the request with a 2 second delay at least three times before throwing an exception
-					e.printStackTrace();
-					System.err.println("Sentence Number: "+ numLines);
-					System.err.println(request);
-					System.err.println("Server request failed. Will try again in 2 seconds..");
+					LOG.error("Server request failed. Will try again in 2 seconds..", e);
+					LOG.error("Failed request payload: " +request);
 					try {
 						Thread.sleep(2000);
 					} catch (InterruptedException e1) {
 						// TODO Auto-generated catch block
-						e1.printStackTrace();
+						LOG.error("Thread interrupted",e1);
 					}
 					if (retryCount++ < 3){
 						retry = true;	
@@ -160,7 +163,7 @@ public class SpotlightAnnotator extends JCasAnnotator_ImplBase {
 				}
 			}while(retry);
 					
-					System.out.println("Writing to the index");
+					LOG.info("Server request completed. Writing to the index");
 					/*
 					 * Add the results to the AnnotationIndex
 					 */
@@ -180,6 +183,7 @@ public class SpotlightAnnotator extends JCasAnnotator_ImplBase {
 					documentOffset += request.length() + 1 ;
 
 		}
+		documentReader.close();
 
 	}
 
