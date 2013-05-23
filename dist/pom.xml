@@ -46,7 +46,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>${maven.assembly.plugin.version}</version>
                 <configuration>
                     <finalName>dbpedia-spotlight-${dbpedia.spotlight.version}</finalName>
                     <descriptorRefs>
@@ -72,7 +71,6 @@
             <plugin>
                 <artifactId>jdeb</artifactId>
                 <groupId>org.vafer</groupId>
-                <version>0.8</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -119,7 +117,6 @@
         <dependency>
             <groupId>org.dbpedia.spotlight</groupId>
             <artifactId>index</artifactId>
-            <version>0.6</version>
         </dependency>
 
     </dependencies>

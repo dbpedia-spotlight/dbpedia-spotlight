@@ -45,7 +45,6 @@
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
-                <version>${scala.maven.plugin.version}</version>
                 <configuration>
                     <launchers>
                         <launcher>
@@ -159,10 +158,9 @@
                 </configuration>
             </plugin>
 
-            <plugin>
+           <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-install-plugin</artifactId>
-                <version>${maven.install.plugin.version}</version>
                 <executions>
                     <execution>
                         <id>install-weka-jar</id>
