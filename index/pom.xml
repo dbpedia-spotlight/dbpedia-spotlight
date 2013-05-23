@@ -158,27 +158,6 @@
                 </configuration>
             </plugin>
 
-           <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-install-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>install-weka-jar</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <groupId>weka</groupId>
-                            <artifactId>weka</artifactId>
-                            <version>3.7.3</version>
-                            <packaging>jar</packaging>
-                            <file>${basedir}/../lib/weka-trunk.jar</file>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
         </plugins>
     </build>
 
