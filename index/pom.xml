@@ -46,7 +46,6 @@
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
                 <version>${scala.maven.plugin.version}</version>
-
                 <configuration>
                     <launchers>
                         <launcher>
@@ -187,10 +186,12 @@
 
 
     <dependencies>
+
         <dependency>
             <groupId>org.dbpedia.spotlight</groupId>
             <artifactId>core</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.dbpedia.extraction</groupId>
             <artifactId>core</artifactId>
@@ -199,39 +200,38 @@
         <dependency>
             <groupId>org.openrdf</groupId>
             <artifactId>rio</artifactId>
-            <version>1.0.10</version>
         </dependency>
+
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
-            <version>3.6.0</version>
         </dependency>
+
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-analyzers</artifactId>
-            <version>3.6.0</version>
         </dependency>
+
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-misc</artifactId>
-            <version>3.6.0</version>
         </dependency>
+
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queries</artifactId>
-            <version>3.6.0</version>
             <type>jar</type>
         </dependency>
+
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-phonetic</artifactId>
-            <version>3.6.0</version>
         </dependency>
+
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
-            <version>1.4.1</version>
-        </dependency>
+         </dependency>
 
         <dependency>
             <groupId>commons-io</groupId>
@@ -241,9 +241,7 @@
         <dependency>
             <groupId>weka</groupId>
             <artifactId>weka</artifactId>
-            <version>3.7.3</version>
         </dependency>
-
 
         <dependency>
             <groupId>trove</groupId>
