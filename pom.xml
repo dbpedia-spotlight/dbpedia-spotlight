@@ -260,6 +260,9 @@
         </plugins>
     </build>
 
+    <!-- For information about the dependencies and their licenses, see also
+         https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Libraries-info
+    -->
 
     <dependencies>
         <dependency>
@@ -401,8 +404,8 @@
                 <artifactId>guava</artifactId>
                 <version>r07</version>
                 <!--
-    >             License: Apache Software License, Version 2.0
-    >           -->
+                  License: Apache Software License, Version 2.0
+                -->
             </dependency>
 
             <dependency>
@@ -410,8 +413,8 @@
                 <artifactId>nekohtml</artifactId>
                 <version>0.9.5</version>
                 <!--
-    >             License: Apache Software License, Version 2.0
-    >           -->
+                  License: Apache Software License, Version 2.0
+                -->
             </dependency>
 
             <dependency>
@@ -425,8 +428,8 @@
                     </exclusion>
                 </exclusions>
                 <!--
-    >             License: Apache Software License, Version 2.0
-    >           -->
+                  License: Apache Software License, Version 2.0
+                -->
             </dependency>
 
             <dependency>
@@ -434,24 +437,24 @@
                 <artifactId>xercesImpl</artifactId>
                 <version>2.9.1</version>
                 <!--
-    >             License: Apache Software License, Version 2.0
-    >           -->
+                  License: Apache Software License, Version 2.0
+                -->
             </dependency>
             <dependency>
                 <groupId>xerces</groupId>
                 <artifactId>xmlParserAPIs</artifactId>
                 <version>2.6.2</version>
                 <!--
-    >             License: Apache Software License, Version 2.0
-    >           -->
+                  License: Apache Software License, Version 2.0
+                -->
             </dependency>
             <dependency>
                 <groupId>xml-apis</groupId>
                 <artifactId>xml-apis</artifactId>
                 <version>1.0.b2</version>
                 <!--
-    >             License: Apache Software License, Version 2.0
-    >           -->
+                  License: Apache Software License, Version 2.0
+                -->
             </dependency>
 
             <dependency>
@@ -593,8 +596,8 @@
                 <artifactId>trove</artifactId>
                 <version>1.1-beta-5</version>
                 <!--
-    >             License: Lesser GNU Public License (LGPL)
-    >           -->
+                  License: Lesser GNU Public License (LGPL)
+                -->
             </dependency>
 
             <dependency>
@@ -602,8 +605,8 @@
                 <artifactId>jdbm</artifactId>
                 <version>3.0-SNAPSHOT</version>
                 <!--
-    >             License: BSD 3-Clause
-    >           -->
+                  License: BSD 3-Clause
+                -->
             </dependency>
 
             <dependency>
@@ -626,8 +629,8 @@
                     </exclusion>
                 </exclusions>
                 <!--
-    >             License: BSD 3-Clause
-    >           -->
+                  License: BSD 3-Clause
+                -->
             </dependency>
 
             <dependency>
@@ -644,7 +647,7 @@
                 <artifactId>jackson-core-asl</artifactId>
                 <version>1.9.8</version>
                 <!--
-            >             License: Apache Software License, Version 2.0 and
+                          License: Apache Software License, Version 2.0 and
                                     Lesser GNU Public License (LGPL)
                 -->
             </dependency>
@@ -705,8 +708,8 @@
                 <artifactId>weka</artifactId>
                 <version>3.7.3</version>
                 <!--
-    >             License: GNU GENERAL PUBLIC LICENSE, Version 3.0
-    >           -->
+                  License: GNU GENERAL PUBLIC LICENSE, Version 3.0
+                -->
             </dependency>
 
             <dependency>
@@ -742,8 +745,8 @@
                 <artifactId>scalaz-core_${scala.compiler.version}</artifactId>
                 <version>6.0.4</version>
                 <!--
-    >             License: BSD 3-Clause
-    >           -->
+                  License: BSD 3-Clause
+                -->
             </dependency>
 
             <dependency>
@@ -760,8 +763,8 @@
                 <artifactId>opennlp-tools</artifactId>
                 <version>1.5.2-incubating</version>
                 <!--
-       >             License: Apache Software License, Version 2.0
-       >         -->
+                     License: Apache Software License, Version 2.0
+                 -->
             </dependency>
 
             <dependency>
@@ -769,7 +772,7 @@
                 <artifactId>maxent</artifactId>
                 <version>3.0.0</version>
                 <!--
-    >             License: Apache License V2.0, GNU Library or
+                  License: Apache License V2.0, GNU Library or
                            Lesser General Public License version 2.0 (LGPLv2)
                 -->
             </dependency>
@@ -779,8 +782,8 @@
                 <artifactId>fastutil</artifactId>
                 <version>6.3</version>
                 <!--
-    >             License: Apache Software License, Version 2.0
-    >           -->
+                  License: Apache Software License, Version 2.0
+                -->
             </dependency>
 
             <dependency>
@@ -788,8 +791,8 @@
                 <artifactId>hsqldb</artifactId>
                 <version>1.8.0.1</version>
                 <!--
-    >             License: based on BSD License
-    >           -->
+                  License: based on BSD License
+                -->
             </dependency>
 
             <dependency>
@@ -797,8 +800,8 @@
                 <artifactId>opencsv</artifactId>
                 <version>2.0</version>
                 <!--
-    >             License: Apache Software License, Version 2.0
-    >           -->
+                  License: Apache Software License, Version 2.0
+                -->
             </dependency>
 
             <dependency>
@@ -806,8 +809,8 @@
                 <artifactId>junit</artifactId>
                 <version>4.8.2</version>
                 <!--
-    >             License: Common Public License - v 1.0
-    >           -->
+                  License: Common Public License - v 1.0
+                -->
             </dependency>
 
 
@@ -816,8 +819,8 @@
                 <artifactId>lift-json_2.9.2</artifactId>
                 <version>2.5-M1</version>
                 <!--
-    >             License: Apache Software License, Version 2.0
-    >           -->
+                  License: Apache Software License, Version 2.0
+                -->
             </dependency>
 
             <dependency>
@@ -825,8 +828,8 @@
                 <artifactId>kea-goss-weka</artifactId>
                 <version>5.0</version>
                 <!--
-    >             License: GNU GENERAL PUBLIC LICENSE, Version 3.0
-    >           -->
+                  License: GNU GENERAL PUBLIC LICENSE, Version 3.0
+                -->
             </dependency>
 
             <dependency>
@@ -834,8 +837,8 @@
                 <artifactId>cloud9</artifactId>
                 <version>SNAPSHOT</version>
                 <!--
-    >             License: Apache Software License, Version 2.0
-    >           -->
+                  License: Apache Software License, Version 2.0
+                -->
             </dependency>
 
             <dependency>
@@ -853,8 +856,8 @@
                 <artifactId>nx-parser</artifactId>
                 <version>1.1</version>
                 <!--
-    >             License: BSD 3-Clause
-    >           -->
+                  License: BSD 3-Clause
+                -->
             </dependency>
 
         </dependencies>
