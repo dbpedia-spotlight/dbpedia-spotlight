@@ -1,0 +1,41 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+  	<groupId>org.dbpedia.spotlight</groupId>
+  	<artifactId>spotlight</artifactId>
+  	<version>0.6</version>
+	<relativePath>../pom.xml</relativePath>
+  </parent>
+
+  
+  <artifactId>uima</artifactId>
+  <name>Dbpedia Spotlight UIMA Integration</name>
+ 
+  <properties>
+       <spotlight.basedir>${project.basedir}/..</spotlight.basedir>
+  </properties>
+  
+  <dependencies>
+     <dependency>
+	<groupId>log4j</groupId>
+	<artifactId>log4j</artifactId>
+     </dependency>
+     <dependency>
+        <groupId>com.sun.jersey</groupId>
+        <artifactId>jersey-bundle</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>com.sun.jersey</groupId>
+        <artifactId>jersey-client</artifactId>
+      </dependency>
+      <dependency>
+   	<groupId>org.apache.uima</groupId>
+   	<artifactId>uimaj-core</artifactId>
+   	<version>2.4.0</version>
+      </dependency>
+   </dependencies>
+ 
+
+
+</project>
