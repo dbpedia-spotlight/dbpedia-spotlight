@@ -2,7 +2,7 @@ package org.dbpedia.spotlight.topical
 
 import cc.factorie._
 import app.classify
-import app.classify.ModelBasedClassifier
+import classify.{LogLinearModel, Classifier, LabelList, ModelBasedClassifier}
 import java.io.{StringReader, File}
 import io.Source
 import optimize.{AROW, MIRA, SampleRankTrainer}
@@ -13,6 +13,7 @@ import org.apache.lucene.analysis.en.EnglishAnalyzer
 import org.apache.lucene.util.Version
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute
 import scala.Predef._
+import collection.mutable.ArrayBuffer
 
 /**
  * @author dirk
@@ -24,7 +25,7 @@ protected class FactorieTopicalClassifier extends TopicalClassifier {
 
     private val analyzer: Analyzer =  new EnglishAnalyzer(Version.LUCENE_36)
 
-    class Document(text:String, labelName:String = "") extends FeatureVectorVariable[String] {
+    class Document(text:String, labelName:String = "") extends BinaryFeatureVectorVariable[String] {
         def domain = documentDomain
         var label = new Label(labelName, this)
 
@@ -32,8 +33,11 @@ protected class FactorieTopicalClassifier extends TopicalClassifier {
             val tokenStream = analyzer.reusableTokenStream(null, new StringReader(text))
             val charTermAttribute = tokenStream.addAttribute(classOf[CharTermAttribute])
             while (tokenStream.incrementToken()) {
-                if(charTermAttribute.toString().matches("""\w\w\w+"""))
+                try {
                     this += charTermAttribute.toString()
+                } catch {
+                    case e => //domain size exceeded max size. No problem just don't use that feature
+                }
             }
         }
 
@@ -41,7 +45,7 @@ protected class FactorieTopicalClassifier extends TopicalClassifier {
     class Label(name:String, val document:Document) extends LabeledCategoricalVariable(name) {
         def domain = labelDomain
     }
-    protected var documentDomain = new CategoricalDimensionTensorDomain[String]{dimensionDomain.maxSize=200000}
+    protected var documentDomain = new CategoricalDimensionTensorDomain[String]{dimensionDomain.maxSize=1000000}
     protected var labelDomain = new CategoricalDomain[String]{maxSize=50}
 
     protected var model = new CombinedModel(
@@ -76,7 +80,7 @@ protected class FactorieTopicalClassifier extends TopicalClassifier {
     def getTopics() = labelDomain.categories.map(cat => new Topic(cat)).toList
 
     private val objective = new HammingTemplate[Label]
-    private lazy val trainer = new SampleRankTrainer(new GibbsSampler(model, objective), new AROW(model))
+    private lazy val trainer = new SampleRankTrainer(new GibbsSampler(model, objective), new MIRA)
     /**
      * Trains the model on this text.
      * @param text
@@ -84,8 +88,7 @@ protected class FactorieTopicalClassifier extends TopicalClassifier {
      */
     def update(text: Text, topic: Topic) {
         val l = new Document(text.text,topic.getName).label
-        val example = new optimize.DiscreteLikelihoodExample(l)
-        trainer.processExamples(Seq(example))
+        trainer.processContext(l)
     }
 
     def serialize(modelFile: File) {
@@ -102,8 +105,7 @@ protected class FactorieTopicalClassifier extends TopicalClassifier {
 object FactorieTopicalClassifier extends TopicalClassifierTrainer{
     private val LOG = LogFactory.getLog(getClass())
 
-    var iterations = 1
-    var batchSize = 100000
+    var batchSize = 500000
 
     def main(args:Array[String]) {
         trainModel(new File("/home/dirk/Downloads/20news-18828").listFiles().flatMap(topicDir => {
@@ -119,46 +121,80 @@ object FactorieTopicalClassifier extends TopicalClassifierTrainer{
     /**
      * @param corpus needs to be shuffled and of the following format: each line refers to a document with the following structure: topic\ttext
      */
-    def trainModel(corpus:File):TopicalClassifier = {
+    def trainModel(corpus:File, iterations:Int):TopicalClassifier = {
         LOG.info("Training model on dataset " + corpus.getAbsolutePath)
         if (! corpus.exists) throw new IllegalArgumentException("Directory "+corpus+" does not exist.")
 
         trainModel(Source.fromFile(corpus).getLines().map(line => {
             val Array(topic,text) = line.split("\t",2)
             (new Topic(topic),new Text(text))
-        }))
+        }), iterations)
+
     }
 
-    def trainModel(corpus:Iterator[(Topic,Text)]):TopicalClassifier = {
+    def trainModel(corpus:Iterator[(Topic,Text)],iterations:Int):TopicalClassifier = {
         val classifier = new FactorieTopicalClassifier()
-        var documents = List[classifier.Document]()
+        var documents = new ArrayBuffer[classifier.Document]()
 
         def doTrain {
             val examples = documents.shuffle.map(_.label)
             examples.foreach(_.setRandomly())
-            (0 until iterations).foreach(i => {
-                classifier.trainer.processContexts(examples)
-                examples.foreach(_.setRandomly())
-                val trainTrial = new classify.Trial[classifier.Label](classifier.classifier)
-                trainTrial ++= examples
-                println("Train accuracy = " + trainTrial.accuracy)
-            })
+
+            classifier.trainer.processContexts(examples)
+            examples.foreach(_.setRandomly())
+            val trainTrial = new classify.Trial[classifier.Label](classifier.classifier)
+            trainTrial ++= examples
+            LOG.info("Train accuracy = " + trainTrial.accuracy)
         }
 
-        corpus.foreach {
-            case (topic,text) => {
-                documents ::= new classifier.Document(text.text,topic.getName)
-                if(documents.size >= batchSize) {
-                    doTrain
-                    documents = List[classifier.Document]()
-                }
-            }}
+        (0 until iterations).foreach(i => {
+            corpus.foreach {
+                case (topic,text) => {
+                    documents += new classifier.Document(text.text,topic.getName)
+                    if(documents.size >= batchSize) {
+                        doTrain
+                        documents.clear()
+                    }
+                }}
+            if(documents.size < batchSize) {
+                doTrain
+            }
 
-        if(documents.size < batchSize) {
-            doTrain
-        }
-
+        })
         classifier
+    }
+
+    //mainly copied from factorie
+    private var biasSmoothingMass = 1.0
+    private var evidenceSmoothingMass = 1.0
+    private def trainNaiveBayes[L <: LabeledMutableDiscreteVar[_], F <: DiscreteDimensionTensorVar](il: LabelList[L, F]): Classifier[L] = {
+        val cmodel = new LogLinearModel(il.labelToFeatures, il.labelDomain, il.instanceDomain)(il.labelManifest, il.featureManifest)
+        val labelDomain = il.labelDomain
+        val featureDomain = il.featureDomain
+        val numLabels = labelDomain.size
+        val numFeatures = featureDomain.size
+        val bias = new DenseProportions1(numLabels)
+        val evid = Seq.tabulate(numLabels)(i => new DenseProportions1(numFeatures))
+        // Note: this doesn't actually build the graphical model, it just gathers smoothed counts, never creating factors
+        // Incorporate smoothing, with simple +m smoothing
+        for (li <- 0 until numLabels) bias.masses += (li, biasSmoothingMass)
+        for (li <- 0 until numLabels; fi <- 0 until numFeatures) evid(li).masses += (fi, evidenceSmoothingMass)
+        // Incorporate evidence
+        for (label <- il) {
+            val targetIndex = label.intValue
+            bias.masses += (targetIndex, 1.0)
+            val features = il.labelToFeatures(label)
+            val activeElements = features.tensor.activeElements
+            while (activeElements.hasNext) {
+                val (featureIndex, featureValue) = activeElements.next()
+                evid(targetIndex).masses += (featureIndex, featureValue)
+            }
+        }
+        // Put results into the model templates
+        (0 until numLabels).foreach(i => cmodel.biasTemplate.weights(i) = math.log(bias(i)))
+        for (li <- 0 until numLabels; fi <- 0 until numFeatures)
+            cmodel.evidenceTemplate.weights(li * numFeatures + fi) = math.log(evid(li).apply(fi))
+        new ModelBasedClassifier[L](cmodel, il.head.domain)
     }
 
     def deSerialize(file:File):TopicalClassifier = {

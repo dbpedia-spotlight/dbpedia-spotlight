@@ -47,14 +47,20 @@ object MultiLabelClassifier {
 }
 
 trait TopicalClassifierTrainer {
-    def trainModel(corpus:File):TopicalClassifier
+    def trainModel(corpus:File, iterations:Int):TopicalClassifier
+
+    def trainModel(corpus:Iterator[(Topic,Text)],  iterations:Int):TopicalClassifier
+
+    def trainModel(corpus:File):TopicalClassifier = trainModel(corpus,1)
+
+    def trainModel(corpus:Iterator[(Topic,Text)]):TopicalClassifier = trainModel(corpus,1)
 }
 
 object TopicalClassifierTrainer {
     def byType(classifierType:String):TopicalClassifierTrainer =
         classifierType match {
             case "FactorieTopicalClassifier" => FactorieTopicalClassifier
-            case _ => FactorieTopicalClassifier // default
+            case _ => NaiveBayesTopicalClassifier // default
         }
 
 }
@@ -67,6 +73,10 @@ object TopicalClassifierFactory {
 
         if (classifierType.endsWith("FactorieTopicalClassifier")) {
             return Some(FactorieTopicalClassifier.deSerialize(file))
+        }
+
+        if (classifierType.endsWith("NaiveBayesTopicalClassifier")) {
+            return Some(NaiveBayesTopicalClassifier.deSerialize(file))
         }
 
         None

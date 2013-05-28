@@ -30,7 +30,7 @@ import org.apache.commons.logging.LogFactory
 
 /**
  *
- * @author pablomendes, dirk weissenborn
+ * @author pablomendes, dirkweissenborn
  */
 
 class TopicalFilteredDisambiguator(candidateSearcher: CandidateSearcher,

@@ -25,8 +25,9 @@ object SplitOccsSemiSupervised {
 
     /**
      *
-     * @param args 1st: indexing.properties 2nd: path to (sorted) occs file, 3rd: temporary path (same partition as output)
-     *             , 4th: minimal confidence of assigning an occ to a topic, 5th: nr of iterations, 6th: path to output directory
+     * @param args 1st: indexing.properties 2nd: path to occs file, 3rd: temporary path (same partition as output)
+     *             , 4th: minimal confidence of assigning an occ to a topic (0.5 has experimentally shown to be be good for naive bayes with 0.9 accuracy on the initial split)
+     *             , 5th: nr of iterations, 6th: path to output directory
      *
      */
     def main(args: Array[String]) {
@@ -75,7 +76,7 @@ object SplitOccsSemiSupervised {
             new ProcessBuilder("sort", "-R", "-o", tmpCorpus.getAbsolutePath, tmpCorpus.getAbsolutePath + ".tmp").start().waitFor()
             new File(tmpCorpus + ".tmp").delete()
 
-            val classifier =  trainer.trainModel(tmpCorpus)
+            val classifier =  trainer.trainModel(tmpCorpus,10)
 
             if (i == 0) {
                 AssignTopicsToOccs.assignTopics(occsFile, classifier, threshold, outputDir, false)
@@ -91,7 +92,7 @@ object SplitOccsSemiSupervised {
         tmpDir.listFiles().foreach(_.delete())
     }
 
-    def load(articleCats: File, descriptions: collection.Seq[TopicDescription]): Map[DBpediaResource, Set[Topic]] = {
+    def loadArticleCategories(articleCats: File, descriptions: collection.Seq[TopicDescription]): Map[DBpediaResource, Set[Topic]] = {
         val assignments = Map[DBpediaResource, Set[Topic]]()
 
         val categoryAssignments = descriptions.foldLeft(Map[DBpediaCategory, Set[Topic]]())((acc, description) =>
@@ -129,7 +130,7 @@ object SplitOccsSemiSupervised {
         val writers = Map[Topic, PrintWriter]()
         val topicDescriptions = TopicDescription.fromDescriptionFile(topicDescriptionFile)
 
-        val initialAssignments = load(articleCatsFile, topicDescriptions)
+        val initialAssignments = loadArticleCategories(articleCatsFile, topicDescriptions)
 
         topicDescriptions.foreach(description => {
             writers += (description.topic -> new PrintWriter(new FileWriter(new File(output, description.topic.getName + ".tsv"))))
