@@ -37,10 +37,19 @@ trait SurfaceFormStore {
 
 
   /**
-   * Returns the total count of all [[org.dbpedia.spotlight.model.SurfaceForm]]s in the store.
+   * Returns the total annotated count of all [[org.dbpedia.spotlight.model.SurfaceForm]]s in the store.
    *
    * @return
    */
-  def getTotalCount: Int
+  def getTotalAnnotatedCount: Int
+
+  /**
+   * Returns the total occurrence count of all [[org.dbpedia.spotlight.model.SurfaceForm]]s in the store.
+   *
+   * @return
+   */
+  def getTotalOccurrenceCount: Int
+
+  def iterateSurfaceForms: Seq[SurfaceForm]
 
 }

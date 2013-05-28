@@ -27,7 +27,11 @@ class MemorySurfaceFormStore
   var totalCountForID: Array[Int]     = null
 
   @transient
-  var totalCount = 0
+  var totalAnnotatedCount = 0
+
+  @transient
+  var totalOccurrenceCount = 0
+
 
   @transient
   var stopWords: Set[String] = Set("the", "an", "a")
@@ -41,12 +45,24 @@ class MemorySurfaceFormStore
 
   def size = stringForID.size
 
-  def getTotalCount: Int = totalCount
+  def getTotalAnnotatedCount: Int = totalAnnotatedCount
+  def getTotalOccurrenceCount: Int = totalOccurrenceCount
+
+
+  def iterateSurfaceForms: Seq[SurfaceForm] = {
+    annotatedCountForID.zipWithIndex.flatMap{
+      case (count: Int, id: Int) if count > 0 => Some(sfForID(id))
+      case _ => None
+    }
+  }
+
 
   def createReverseLookup() {
 
     LOG.info("Summing total SF counts.")
-    totalCount = annotatedCountForID.sum
+    totalAnnotatedCount = annotatedCountForID.sum
+    totalOccurrenceCount = totalCountForID.sum
+
 
     if (stringForID != null) {
       LOG.info("Creating reverse-lookup for surface forms, adding normalized surface forms.")
@@ -68,9 +84,26 @@ class MemorySurfaceFormStore
   }
 
 
+  private def sfForID(id: Int) = {
+    val annotatedCount = annotatedCountForID(id)
+    val totalCount = totalCountForID(id)
+
+    new SurfaceForm(stringForID(id), id, annotatedCount, totalCount)
+  }
+
   @throws(classOf[SurfaceFormNotFoundException])
   def getSurfaceForm(surfaceform: String): SurfaceForm = {
     val id = idForString.get(surfaceform)
+
+    if (id == null)
+      throw new SurfaceFormNotFoundException("SurfaceForm %s not found.".format(surfaceform))
+
+    sfForID(id)
+  }
+
+  @throws(classOf[SurfaceFormNotFoundException])
+  def getSurfaceFormNormalized(surfaceform: String): SurfaceForm = {
+    val id = idForString.get(normalize(surfaceform))
 
     if (id == null)
       throw new SurfaceFormNotFoundException("SurfaceForm %s not found.".format(surfaceform))
@@ -80,18 +113,5 @@ class MemorySurfaceFormStore
 
     new SurfaceForm(surfaceform, id, annotatedCount, totalCount)
   }
-
-  @throws(classOf[SurfaceFormNotFoundException])
-   def getSurfaceFormNormalized(surfaceform: String): SurfaceForm = {
-     val id = idForString.get(normalize(surfaceform))
-
-     if (id == null)
-       throw new SurfaceFormNotFoundException("SurfaceForm %s not found.".format(surfaceform))
-
-     val annotatedCount = annotatedCountForID(id)
-     val totalCount = totalCountForID(id)
-
-     new SurfaceForm(surfaceform, id, annotatedCount, totalCount)
-   }
 
 }

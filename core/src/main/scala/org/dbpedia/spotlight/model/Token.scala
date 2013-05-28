@@ -15,6 +15,6 @@ class Token(val token: String, val offset: Int, var tokenType: TokenType) extend
     }
   }
 
-  override def toString = "%s (%s)".format(token, if(tokenType != null) tokenType.count.toString else "unknown")
+  override def toString = "%s (ID: %d, count: %s)".format(token, tokenType.id, if(tokenType != null) tokenType.count.toString else "unknown")
 
 }

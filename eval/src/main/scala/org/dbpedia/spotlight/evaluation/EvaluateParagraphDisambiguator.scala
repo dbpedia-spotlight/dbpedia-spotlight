@@ -21,11 +21,14 @@ import org.dbpedia.spotlight.io._
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.disambiguate._
 import java.io.{PrintWriter, File}
-import org.dbpedia.spotlight.corpus._
+import org.dbpedia.spotlight.corpus.{PredoseCorpus, MilneWittenCorpus, AidaCorpus}
 
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.filter.occurrences.{UriWhitelistFilter, RedirectResolveFilter, OccurrenceFilter}
 import scala.Some
+
+import scalaj.collection.Imports._
+
 
 /**
  * Evaluation for disambiguators that take one paragraph at a time, instead of one occurrence at a time.
@@ -50,14 +53,13 @@ object EvaluateParagraphDisambiguator {
         var nOriginalOccurrences = 0
         val paragraphs = testSource.toList
         var totalParagraphs = paragraphs.size
-
         //testSource.view(10000,15000)
-        val (mrrResults,mrrResultsWithoutZeros) = paragraphs.foldLeft( (List[Double](), List[Double]()) ) { case  ((mrrResults, mrrResultsWithoutZeros), a) => {
+        val mrrResults = paragraphs.map(a => {
             i = i + 1
             LOG.info("Paragraph %d/%d: %s.".format(i, totalParagraphs, a.id))
             val paragraph = Factory.Paragraph.from(a)
             nOriginalOccurrences = nOriginalOccurrences + a.occurrences.toTraversable.size
-            var zeros = 0
+
             var acc = 0.0
             try {
                 val bestK = filter(disambiguator.bestK(paragraph,100))
@@ -75,7 +77,7 @@ object EvaluateParagraphDisambiguator {
 
                     val invRank = if (disambResult.rank>0) (1.0/disambResult.rank) else  0.0
                     if (disambResult.rank==0)  {
-                        zeros = zeros + 1
+                        nZeros = nZeros + 1
                     } else if (disambResult.rank==1)  {
                         nCorrects = nCorrects + 1
                     }
@@ -83,18 +85,12 @@ object EvaluateParagraphDisambiguator {
                 });
                 outputs.foreach(_.flush)
             } catch {
-                case e: Exception => LOG.error(e.printStackTrace())
+                case e: Exception => LOG.error(e)
             }
-
-            nZeros += zeros
             val mrr = if (a.occurrences.size==0) 0.0 else acc / a.occurrences.size
-            val mrrWithoutZero = if (a.occurrences.size - zeros==0) 0.0 else acc / (a.occurrences.size - zeros)
-
             LOG.info("Mean Reciprocal Rank (MRR) = %.5f".format(mrr))
-
-            (mrrResults.::(mrr),
-             mrrResultsWithoutZeros.::(mrrWithoutZero) )
-        }}
+            mrr
+        })
         val endTime = System.nanoTime()
         LOG.info("********************")
         LOG.info("Corpus: %s".format(testSource.name))
@@ -103,7 +99,6 @@ object EvaluateParagraphDisambiguator {
         LOG.info("Correct URI not found = %d / %d = %.3f".format(nZeros,nOccurrences,nZeros.toDouble/nOccurrences))
         LOG.info("Accuracy = %d / %d = %.3f".format(nCorrects,nOccurrences,nCorrects.toDouble/nOccurrences))
         LOG.info("Global MRR: %s".format(mrrResults.sum / mrrResults.size))
-        LOG.info("Global MRR without zeros: %s".format(mrrResultsWithoutZeros.sum /  mrrResults.size))
         LOG.info("Elapsed time: %s sec".format( (endTime-startTime) / 1000000000))
         LOG.info("********************")
 
@@ -113,7 +108,6 @@ object EvaluateParagraphDisambiguator {
                     "\nCorrect URI not found = %d / %d = %.3f".format(nZeros,nOccurrences,nZeros.toDouble/nOccurrences)+
                     "\nAccuracy = %d / %d = %.3f".format(nCorrects,nOccurrences,nCorrects.toDouble/nOccurrences) +
                     "\nGlobal MRR: %s".format(mrrResults.sum / mrrResults.size)+
-                    "\nGlobal MRR without zeros: %s".format(mrrResultsWithoutZeros.sum / mrrResults.size)+
                     "\nElapsed time: %s sec".format( (endTime-startTime) / 1000000000);
 
         outputs.foreach(_.summary(disambigSummary))
@@ -129,9 +123,25 @@ object EvaluateParagraphDisambiguator {
         //val paragraphs = AnnotatedTextSource
         //                    .fromOccurrencesFile(new File(testFileName))
 
-        val redirectTCFileName  = if (args.size>1) args(1) else "D:/dirk/data/Wikipedia/output/redirects_tc.tsv" //produced by ExtractCandidateMap
-        val conceptURIsFileName  = if (args.size>2) args(2) else "D:/dirk/data/Wikipedia/output/conceptURIs.list" //produced by ExtractCandidateMap
+        val redirectTCFileName  = if (args.size>1) args(1) else "data/redirects_tc.tsv" //produced by ExtractCandidateMap
+        val conceptURIsFileName  = if (args.size>2) args(2) else "data/conceptURIs.list" //produced by ExtractCandidateMap
 
+        //val default : Disambiguator = new DefaultDisambiguator(config)
+        //val test : Disambiguator = new GraphCentralityDisambiguator(config)
+
+        val factory = new SpotlightFactory(config)
+
+        //val topics = HashMapTopicalPriorStore.fromDir(new File("data/topics"))
+        val disambiguators = Set(//new TopicalDisambiguator(factory.candidateSearcher,topics),
+                                 //new TopicBiasedDisambiguator(factory.candidateSearcher,factory.contextSearcher,topics)
+                                 new TwoStepDisambiguator(factory.candidateSearcher,factory.contextSearcher)
+                                 //, new CuttingEdgeDisambiguator(factory),
+                                 //new PageRankDisambiguator(factory)
+                                )
+
+        val sources = List(//AidaCorpus.fromFile(new File("/home/pablo/eval/aida/gold/CoNLL-YAGO.tsv")),
+                           //MilneWittenCorpus.fromDirectory(new File("/home/pablo/eval/wikify/original"))
+                           PredoseCorpus.fromFile(new File("/home/pablo/eval/predose/predose_annotations.tsv")))
 
         val noNils = new OccurrenceFilter {
             def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
@@ -144,38 +154,18 @@ object EvaluateParagraphDisambiguator {
                 }
             }
         }
+
         val occFilters = List(UriWhitelistFilter.fromFile(new File(conceptURIsFileName)),
-            RedirectResolveFilter.fromFile(new File(redirectTCFileName)),
-            noNils)
-
-        //val default : Disambiguator = new DefaultDisambiguator(config)
-        //val test : Disambiguator = new GraphCentralityDisambiguator(config)
-
-        val factory = new SpotlightFactory(config)
-
-        val disambiguators = Set(//new TopicalDisambiguator(factory.candidateSearcher,HashMapTopicalPriorStore, factory.topicalClassifier),
-                     //new TopicalFilteredDisambiguator(factory.candidateSearcher,factory.contextSearcher,
-                     //    HashMapTopicalPriorStore,null, 0.3, factory.topicalClassifier)
-                     new TwoStepDisambiguator(factory.candidateSearcher,factory.contextSearcher)
-                     //, new CuttingEdgeDisambiguator(factory),
-                     //new PageRankDisambiguator(factory)
-                    )
-
-        val sources = List(//AidaCorpus.fromFile(new File("/home/pablo/eval/aida/gold/CoNLL-YAGO.tsv")),
-                           //new SmallContextOccurrencesCorpus(MilneWittenCorpus.fromDirectory(new File("/home/dirk/Dropbox/eval/wikifiedStories"))) )
-                            MilneWittenCorpus.fromDirectory(new File("C:/Users/dirk/Dropbox/eval/wikifiedStories")))
-                           //PredoseCorpus.fromFile(new File("/home/pablo/eval/predose/predose_annotations.tsv"))
-                           // CSAWCorpus.fromDirectory(new File("/home/dirk/eval/corpus/csaw")))
+                              RedirectResolveFilter.fromFile(new File(redirectTCFileName)),
+                              noNils)
 
         sources.foreach( paragraphs => {
           val testSourceName = paragraphs.name
           disambiguators.foreach( d => {
               val dName = d.name.replaceAll("""[.*[?/<>|*:\"{\\}].*]""","_")
+              val tsvOut = new TSVOutputGenerator(new PrintWriter("%s-%s-%s.pareval.log".format(testSourceName,dName,EvalUtils.now())))
               //val arffOut = new TrainingDataOutputGenerator()
-              val outputs = List(   new ProbabilityTrainingData(new PrintWriter("%s-%s-%s.pareval.log".format(testSourceName,dName,EvalUtils.now())))    )
-
-                  //new TopicalScoreDataGenerator(new PrintWriter("%s-%s-%s.scores.pareval.log".format(testSourceName,dName,EvalUtils.now()))),
-                  //                  new TopicalFilterDataGenerator(new PrintWriter("%s-%s-%s.filter.pareval.log".format(testSourceName,dName,EvalUtils.now()))))
+              val outputs = List(tsvOut)
               evaluate(paragraphs, d, outputs, occFilters)
               outputs.foreach(_.close)
           })

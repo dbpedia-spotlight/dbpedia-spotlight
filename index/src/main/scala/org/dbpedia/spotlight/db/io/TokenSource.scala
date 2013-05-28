@@ -1,13 +1,13 @@
 package org.dbpedia.spotlight.db.io
 
 import org.dbpedia.spotlight.io.OccurrenceSource
-import org.dbpedia.spotlight.db.model.Tokenizer
+import org.dbpedia.spotlight.db.model.{StringTokenizer, SurfaceFormStore}
 import collection.mutable.HashMap
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 import java.io.{InputStream, FileInputStream, File}
 import org.apache.commons.logging.LogFactory
-import org.dbpedia.spotlight.model.{TokenType, DBpediaResourceOccurrence, Token}
+import org.dbpedia.spotlight.model._
 
 
 /**
@@ -22,9 +22,18 @@ import org.dbpedia.spotlight.model.{TokenType, DBpediaResourceOccurrence, Token}
 object TokenSource {
 
   private val LOG = LogFactory.getLog(this.getClass)
+  private val ADDITIONAL_TOKEN_COUNT = 1
 
-  def fromPigFile(tokenFile: File) = fromPigInputStream(new FileInputStream(tokenFile))
-  def fromPigInputStream(tokenFile: InputStream) = {
+  def fromSFStore(sfStore: SurfaceFormStore, tokenizer: StringTokenizer): Seq[String] = {
+    sfStore.iterateSurfaceForms.grouped(100000).toList.par.flatMap(_.map{
+      sf: SurfaceForm =>
+        //Tokenize all SFs first
+        tokenizer.tokenize(sf.name)
+    }).seq.flatten
+  }
+
+  def fromPigFile(tokenFile: File, additionalTokens: Option[Seq[String]] = None) = fromPigInputStream(new FileInputStream(tokenFile), additionalTokens)
+  def fromPigInputStream(tokenFile: InputStream, additionalTokens: Option[Seq[String]] = None) = {
 
     val tokenMap = HashMap[String, Int]()
 
@@ -39,6 +48,16 @@ object TokenSource {
           i: Int => tokenMap.put(p._2(i), tokenMap.getOrElse(p._2(i), 0) + p._3(i))
         }
       }
+    }
+
+    additionalTokens match {
+      case Some(tokens) => {
+        LOG.info("Read %d additional tokens...".format(tokens.size))
+        tokens.foreach { token: String =>
+          tokenMap.put(token, tokenMap.getOrElse(token, 0) + ADDITIONAL_TOKEN_COUNT)
+        }
+      }
+      case None =>
     }
 
     var id = -1

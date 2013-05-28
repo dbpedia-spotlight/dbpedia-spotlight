@@ -26,8 +26,7 @@ object SurfaceFormSource {
 
   def fromPigInputStreams(
     sfAndTotalCounts: InputStream,
-    wikiClosure: WikipediaToDBpediaClosure = null,
-    resStore: MemoryResourceStore = null
+    wikiClosure: WikipediaToDBpediaClosure = null
   ): Map[SurfaceForm, (Int, Int)] = {
 
     LOG.info("Creating SurfaceFormSource...")
@@ -41,9 +40,21 @@ object SurfaceFormSource {
 
         val surfaceform = new SurfaceForm(line(0))
         val countAnnotated = line(1).toInt
+        
+        //Read the total count: If there is no total count for the
+        //surface form, we use -1 to encode this case for handling 
+        //in later steps.
         val countTotal = if( line.size == 3 ) line(2).toInt else -1
 
-        sfMap.put(surfaceform, (countAnnotated, countTotal))
+        sfMap.put(
+          surfaceform,
+          if(sfMap.get(surfaceform) != null) {
+            val (existingCountAnnotated, existingCountTotal) = sfMap.get(surfaceform)
+            (existingCountAnnotated + countAnnotated, existingCountTotal + countTotal)
+          } else {
+            (countAnnotated, countTotal)
+          }
+        )
       }
     }
 
@@ -55,10 +66,9 @@ object SurfaceFormSource {
 
   def fromPigFiles(
     sfAndTotalCounts: File,
-    wikiClosure: WikipediaToDBpediaClosure = null,
-    resStore: MemoryResourceStore  = null
+    wikiClosure: WikipediaToDBpediaClosure = null
   ): Map[SurfaceForm, (Int, Int)] = {
-    fromPigInputStreams(new FileInputStream(sfAndTotalCounts), wikiClosure, resStore)
+    fromPigInputStreams(new FileInputStream(sfAndTotalCounts), wikiClosure)
   }
 
 

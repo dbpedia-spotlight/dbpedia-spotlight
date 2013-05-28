@@ -1,6 +1,7 @@
 package org.dbpedia.spotlight.db
 
 import memory._
+import model.StringTokenizer
 import org.apache.commons.lang.NotImplementedException
 import java.lang.{Short, String}
 
@@ -13,6 +14,7 @@ import java.util.{Map, Set}
 import java.io.File
 import org.dbpedia.spotlight.model._
 import scala.{Array, Int}
+import collection.mutable
 
 /**
  * Implements memory-based indexing. The memory stores are serialized and deserialized using Kryo.
@@ -34,6 +36,16 @@ class MemoryStoreIndexer(val baseDir: File)
     throw new NotImplementedException()
   }
 
+  def ngram(sf: String, tokenizer: StringTokenizer): Seq[String] = {
+    tokenizer.tokenize(sf)
+  }
+
+  def getAllNgrams(grams: Seq[String]): Seq[Seq[String]] = {
+    (1 to grams.size-1).flatMap( grams.sliding(_) )
+  }
+
+  var tokenizer: Option[StringTokenizer] = None
+
   def addSurfaceForms(sfCount: Map[SurfaceForm, (Int, Int)]) {
 
     val sfStore = new MemorySurfaceFormStore()
@@ -53,12 +65,59 @@ class MemoryStoreIndexer(val baseDir: File)
       }
     }
 
+
+    if (tokenizer.isDefined) {
+
+      //Get all sfs as ngrams in increasing order by their length in tokens
+      val sfId = mutable.HashMap[String, Int]()
+
+      //Here be dragons:
+      // Correct the counts for sf that are parts of large surface forms:
+      // Careful:
+      //  We are making an assumption that is not necessarily true:
+      //   Assumption: In a Wiki article, an annotation is always of the longest possible surface form.
+      //   Example: My [Apple Macbook Pro]. [Apple Macbook Pro] and not [Apple Macbook] Pro
+      //
+      // Walk the ngrams of the surface forms in increasing order of length from 2 to n, always take the sub-ngrams of size i-1
+      // For every sub-ngram: if it is a surface form, reduce its total count by the count of the current surface form.
+      stringForID.zipWithIndex.flatMap{
+        case (sf: String, id: Int) => {
+          val sfNgram = ngram(sf, tokenizer.get)
+
+          sfId.put(sfNgram.mkString(" "),
+            sfId.get(sfNgram.mkString(" ")) match {
+              case None => id
+              case Some(existingID) => if(annotatedCountForID(id) > annotatedCountForID(existingID)) id else existingID
+            }
+          )
+
+          Some(sfNgram, id)
+        }
+        case _ => None
+      }.sortBy(_._1.size).reverse.foreach{
+        case (ngram: Seq[String], id: Int) if(ngram.size > 1) => {
+          getAllNgrams(ngram).foreach{ subngram: Seq[String] =>
+            sfId.get(subngram.mkString(" ")) match {
+              case Some(subID) if(totalCountForID(subID) > 0 && annotatedCountForID(id) > 0) => totalCountForID(subID) = totalCountForID(subID) - annotatedCountForID(id)
+              case _ =>
+            }
+          }
+        }
+        case _ =>
+      }
+
+    }
+
+
     sfStore.stringForID  = stringForID
     sfStore.annotatedCountForID = annotatedCountForID
     sfStore.totalCountForID = totalCountForID
 
     MemoryStore.dump(sfStore, new File(baseDir, "sf.mem"))
   }
+
+
+
 
 
   //RESOURCES

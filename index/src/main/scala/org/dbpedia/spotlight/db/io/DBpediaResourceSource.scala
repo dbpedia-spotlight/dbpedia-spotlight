@@ -16,6 +16,7 @@ import scala.Array
 import org.dbpedia.spotlight.model._
 import collection.parallel.mutable
 import org.dbpedia.spotlight.exceptions.NotADBpediaResourceException
+import org.semanticweb.yars.nx.parser.NxParser
 
 
 /**
@@ -81,7 +82,8 @@ object DBpediaResourceSource {
   def fromPigInputStreams(
     wikipediaToDBpediaClosure: WikipediaToDBpediaClosure,
     resourceCounts: InputStream,
-    instanceTypes: InputStream
+    instanceTypes: (String, InputStream),
+    namespace: String
   ): java.util.Map[DBpediaResource, Int] = {
 
     LOG.info("Creating DBepdiaResourceSource.")
@@ -119,10 +121,10 @@ object DBpediaResourceSource {
     }
 
     //Read types:
-    if (instanceTypes != null) {
-      LOG.info("Reading types...")
+    if (instanceTypes != null && instanceTypes._1.equals("tsv")) {
+      LOG.info("Reading types (tsv format)...")
       val uriNotFound = HashSet[String]()
-      Source.fromInputStream(instanceTypes).getLines() foreach {
+      Source.fromInputStream(instanceTypes._2).getLines() foreach {
         line: String => {
           val Array(uri: String, typeURI: String) = line.trim().split('\t')
 
@@ -133,6 +135,31 @@ object DBpediaResourceSource {
               uriNotFound += uri
           }
         }
+      }
+      LOG.warn("URI for %d type definitions not found!".format(uriNotFound.size) )
+      LOG.info("Done.")
+    } else if (instanceTypes != null && instanceTypes._1.equals("nt")) {
+      LOG.info("Reading types (nt format)...")
+
+      val uriNotFound = HashSet[String]()
+
+      val redParser = new NxParser(instanceTypes._2)
+      while (redParser.hasNext) {
+        val triple = redParser.next
+        val subj = triple(0).toString.replace(namespace, "")
+
+        if (!subj.contains("__")) {
+          val obj  = triple(2).toString.replace(namespace, "")
+
+          try {
+            if(!obj.endsWith("owl#Thing"))
+              resourceByURI(new DBpediaResource(subj).uri).types ::= OntologyType.fromURI(obj)
+          } catch {
+            case e: java.util.NoSuchElementException =>
+              uriNotFound += subj
+          }
+        }
+
       }
       LOG.warn("URI for %d type definitions not found!".format(uriNotFound.size) )
       LOG.info("Done.")
@@ -149,11 +176,19 @@ object DBpediaResourceSource {
   def fromPigFiles(
     wikipediaToDBpediaClosure: WikipediaToDBpediaClosure,
     counts: File,
-    instanceTypes: File
+    instanceTypes: File,
+    namespace: String
   ): java.util.Map[DBpediaResource, Int] = fromPigInputStreams(
     wikipediaToDBpediaClosure,
     new FileInputStream(counts),
-    if(instanceTypes == null) null else new FileInputStream(instanceTypes)
+    if(instanceTypes == null)
+      null
+    else
+      (
+        if(instanceTypes.getName.endsWith("nt")) "nt" else "tsv",
+        new FileInputStream(instanceTypes)
+      ),
+    namespace
   )
 
 

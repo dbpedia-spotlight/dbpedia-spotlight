@@ -43,8 +43,6 @@
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
-                <version>${scala.maven.plugin.version}</version>
-
                 <configuration>
                     <launchers>
                         <launcher>
@@ -83,10 +81,12 @@
 
 
     <dependencies>
+
         <dependency>
             <groupId>org.dbpedia.spotlight</groupId>
             <artifactId>core</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.dbpedia.spotlight</groupId>
             <artifactId>index</artifactId>
@@ -108,30 +108,33 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
         </dependency>
+
         <dependency>
             <groupId>net.sf.json-lib</groupId>
             <artifactId>json-lib</artifactId>
             <classifier>jdk15</classifier>
         </dependency>
+
         <dependency>
             <groupId>com.thoughtworks.paranamer</groupId>
             <artifactId>paranamer</artifactId>
-            <version>2.3</version>
+       </dependency>
+
+       <dependency>
+           <groupId>net.htmlparser.jericho</groupId>
+           <artifactId>jericho-html</artifactId>
         </dependency>
-        <dependency>
-            <groupId>net.htmlparser.jericho</groupId>
-            <artifactId>jericho-html</artifactId>
-            <version>3.1</version>
-        </dependency>
+
         <dependency>
             <groupId>weka</groupId>
             <artifactId>weka</artifactId>
-            <version>3.7.3</version>
         </dependency>
+
         <dependency>
             <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_2.9.2</artifactId>
+            <artifactId>scalatest_${scala.compiler.version}</artifactId>
         </dependency>
+
     </dependencies>
 
 </project>

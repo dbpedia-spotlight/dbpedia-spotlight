@@ -22,16 +22,15 @@ import org.apache.lucene.index.TermFreqVector;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.ScoreDoc;
 import org.dbpedia.spotlight.disambiguate.Disambiguator;
-import org.dbpedia.spotlight.exceptions.ConfigurationException;
-import org.dbpedia.spotlight.exceptions.InputException;
-import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
-import org.dbpedia.spotlight.exceptions.SearchException;
+import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguator;
+import org.dbpedia.spotlight.exceptions.*;
+import org.dbpedia.spotlight.lucene.LuceneFeatureVector;
 import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher;
 import org.dbpedia.spotlight.model.*;
+import org.dbpedia.spotlight.model.vsm.FeatureVector;
 
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class MergedOccurrencesDisambiguator implements Disambiguator {
 

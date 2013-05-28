@@ -20,18 +20,24 @@ import org.dbpedia.extraction.util.WikiUtil
  */
 
 class WikipediaToDBpediaClosure (
+  val namespace: String,
   val redirectsTriples: InputStream,
   val disambiguationTriples: InputStream
 ) {
   private val LOG = LogFactory.getLog(this.getClass)
+
+
+  def this(redirectsTriples: InputStream, disambiguationTriples: InputStream) {
+    this(SpotlightConfiguration.DEFAULT_NAMESPACE, redirectsTriples, disambiguationTriples)
+  }
 
   LOG.info("Loading redirects...")
   var linkMap = Map[String, String]()
   val redParser = new NxParser(redirectsTriples)
   while (redParser.hasNext) {
     val triple = redParser.next
-    val subj = triple(0).toString.replace(SpotlightConfiguration.DEFAULT_NAMESPACE, "")
-    val obj  = triple(2).toString.replace(SpotlightConfiguration.DEFAULT_NAMESPACE, "")
+    val subj = triple(0).toString.replace(namespace, "")
+    val obj  = triple(2).toString.replace(namespace, "")
     linkMap  = linkMap.updated(subj, obj)
   }
   LOG.info("Done.")
@@ -41,7 +47,7 @@ class WikipediaToDBpediaClosure (
   val disParser = new NxParser(disambiguationTriples)
   while (disParser.hasNext) {
     val triple = disParser.next
-    val subj = triple(0).toString.replace(SpotlightConfiguration.DEFAULT_NAMESPACE, "")
+    val subj = triple(0).toString.replace(namespace, "")
     disambiguationsSet  = disambiguationsSet + subj
   }
   LOG.info("Done.")
@@ -56,7 +62,7 @@ class WikipediaToDBpediaClosure (
     while (wikiDBPParser.hasNext) {
       val triple = wikiDBPParser.next
       val subj   = triple(0).toString.replaceFirst("http://[a-z]+[.]wikipedia[.]org/wiki/", "")
-      val obj    = triple(2).toString.replace(SpotlightConfiguration.DEFAULT_NAMESPACE, "")
+      val obj    = triple(2).toString.replace(namespace, "")
       wikiToDBPMap = wikiToDBPMap.updated(subj, getEndOfChainURI(linkMap, obj))
     }
   }

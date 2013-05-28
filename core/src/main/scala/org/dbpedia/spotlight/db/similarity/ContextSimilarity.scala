@@ -23,4 +23,15 @@ trait ContextSimilarity {
    */
   def score(query: java.util.Map[TokenType, Int], contextCounts: Map[DBpediaResource, java.util.Map[TokenType, Int]], totalContextCounts: Map[DBpediaResource, Int]): mutable.Map[DBpediaResource, Double]
 
+
+  /**
+   * Calculate the context score for the context alone, not assuming that there is any entity generating it.
+   *
+   * In the generative model, this is: \product_i P_LM(token_i)
+   *
+   * @param query the text context of the document
+   * @return
+   */
+  def nilScore(query: java.util.Map[TokenType, Int]): Double
+
 }

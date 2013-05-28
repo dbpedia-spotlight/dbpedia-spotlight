@@ -26,53 +26,51 @@ import java.lang.{Short, String}
  * @author maxjakob
  * @author Joachim Daiber
  * @author pablomendes (introduced and fixed bug for OntologyType.equals :)
+ * @author dirk.weissenborn (introduced opencyc)
  */
 
 trait OntologyType extends Serializable {
-    def getFullUri: String
+      def getFullUri: String
+      def typeID: String = "OntologyTypeUnknown"
 
-    def typeID: String = "OntologyTypeUnknown"
+      var id: Short = 0.toShort
 
-    var id: Short = 0.toShort
-
-    override def hashCode(): Int = {
+      override def hashCode() : Int = {
         typeID.hashCode()
-    }
+      }
 
-    override def equals(other: Any): Boolean = {
-        if (other == null)
-            false
-        else
+      override def equals(other : Any) : Boolean = {
+          if (other==null)
+               false
+          else
             other match {
                 case o: OntologyType => o.typeID != null && o.typeID.equals(typeID)
                 case _ => false;
             }
-    }
+      }
 
-    override def toString = typeID
+      override def toString = typeID
 }
-
 
 /**
  * Types from the DBpedia ontology (hierarchical)
  */
 
-class DBpediaType(var name: String) extends OntologyType {
+class DBpediaType(var name : String) extends OntologyType {
 
     name = name.replace(DBpediaType.DBPEDIA_ONTOLOGY_PREFIX, "")
 
-    name = name.replace("DBpedia:", "")
+    name = name.replace("DBpedia:","")
 
     name = name.capitalize
 
     name = name.replaceAll(" ([a-zA-Z])", "$1".toUpperCase).trim
 
-    def equals(that: DBpediaType): Boolean = {
+    def equals(that : DBpediaType) : Boolean = {
         name.equalsIgnoreCase(that.name)
     }
 
     override def getFullUri = DBpediaType.DBPEDIA_ONTOLOGY_PREFIX + name
-
     override def typeID = new StringBuilder("DBpedia:").append(name).toString()
 
 }
@@ -89,57 +87,71 @@ object DBpediaType {
 
 class FreebaseType(val domain: String, val typeName: String) extends OntologyType {
 
-    override def getFullUri = FreebaseType.FREEBASE_RDF_PREFIX + domain + "." + typeName
+  override def getFullUri = FreebaseType.FREEBASE_RDF_PREFIX + domain + "." + typeName
+  override def typeID = {
+    var typeID = "Freebase:/" + domain
 
-    override def typeID = {
-        var typeID = "Freebase:/" + domain
-
-        if (typeName != null) {
-            typeID += "/" + typeName
-        }
-
-        typeID
+    if(typeName != null) {
+      typeID += "/" + typeName
     }
+
+    typeID
+  }
 }
 
 object FreebaseType {
 
-    def fromTypeString(typeString: String): FreebaseType = {
-        val typeParts: Array[String] = typeString.replace(FREEBASE_RDF_PREFIX, "").split("/")
+  def fromTypeString(typeString: String) : FreebaseType = {
+    val typeParts: Array[String] = typeString.replace(FREEBASE_RDF_PREFIX, "").split("/")
 
-        var domain: String = null
-        var theType: String = null
-        typeParts.length match {
-            case 0 =>
-            case 1 => domain = typeParts(0)
-            case 2 => domain = typeParts(1)
-            case _ => {
-                domain = typeParts(1); theType = typeParts(2)
-            }
-        }
-
-        new FreebaseType(domain, theType)
+    var domain: String = null
+    var theType: String = null
+    typeParts.length match {
+      case 0 =>
+      case 1 => domain = typeParts(0)
+      case 2 => domain = typeParts(1)
+      case _ => {domain = typeParts(1); theType = typeParts(2)}
     }
 
-    val FREEBASE_RDF_PREFIX = "http://rdf.freebase.com/ns"
+    new FreebaseType(domain, theType)
+  }
+
+  val FREEBASE_RDF_PREFIX = "http://rdf.freebase.com/ns"
 }
 
-class SchemaOrgType(var name: String) extends OntologyType {
+class SchemaOrgType(var name : String) extends OntologyType {
 
     name = name.replace(SchemaOrgType.SCHEMAORG_PREFIX, "")
 
-    def equals(that: SchemaOrgType): Boolean = {
+    def equals(that : SchemaOrgType) : Boolean = {
         name.equalsIgnoreCase(that.name)
     }
 
     override def getFullUri = SchemaOrgType.SCHEMAORG_PREFIX + name
-
     override def typeID = "Schema:" + name
 
-    // override def toString = "%s/%s".format(SchemaOrgType.SCHEMAORG_PREFIX,name)
+   // override def toString = "%s/%s".format(SchemaOrgType.SCHEMAORG_PREFIX,name)
 
 }
 
 object SchemaOrgType {
     val SCHEMAORG_PREFIX = "http://schema.org/"
+}
+
+
+class OpenCycConcept(var name : String) extends OntologyType {
+
+    name = name.replace(OpenCycConcept.OPENCYCCONCEPT_PREFIX, "")
+
+    def equals(that : OpenCycConcept) : Boolean = {
+        name.equalsIgnoreCase(that.name)
+    }
+
+    override def getFullUri = OpenCycConcept.OPENCYCCONCEPT_PREFIX + name
+    override def typeID = "OpenCyc:" + name
+
+}
+
+object OpenCycConcept {
+    val OPENCYCCONCEPT_PREFIX = "http://sw.opencyc.org/concept/"
 }
