@@ -78,10 +78,10 @@ class RelatedResources {
         }
         catch {
             case timedOutException: TimeLimitingCollector.TimeExceededException => {
-                throw new TimeoutException("Timeout (>" + timeout + "ms searching for surface form " + query.toString, timedOutException)
+                throw new TimeoutException("Timeout (>" + timeout + "ms searching for context " + query.toString, timedOutException)
             }
             case e: Exception => {
-                throw new SearchException("Error searching for surface form " + query.toString, e)
+                throw new SearchException("Error searching for context " + query.toString, e)
             }
         }
         LOG.debug("Doc ids: %s".format(hits.map(d => d.doc.intValue() )))

@@ -49,7 +49,9 @@ object Factory {
     */
     object SurfaceFormOccurrence {
         def from(occ: DBpediaResourceOccurrence) : SurfaceFormOccurrence = {
-            new SurfaceFormOccurrence(occ.surfaceForm, occ.context, occ.textOffset)
+            val sfOcc = new SurfaceFormOccurrence(occ.surfaceForm, occ.context, occ.textOffset)
+            occ.features.values.foreach(f => sfOcc.setFeature(f))
+            sfOcc
         }
     }
 
@@ -73,7 +75,7 @@ object Factory {
     object DBpediaResourceOccurrence {
         def from(sfOcc: SurfaceFormOccurrence, resource: DBpediaResource, score: Double) = {
             LOG.debug("Factory test: support=%s, ctxScore=%s, sfOcc=%s".format(resource.support, score, sfOcc));
-            new DBpediaResourceOccurrence("",  // there is no way to know this here
+            val occ = new DBpediaResourceOccurrence("",  // there is no way to know this here
                 resource,
                 sfOcc.surfaceForm,
                 sfOcc.context,
@@ -82,10 +84,12 @@ object Factory {
                 score,
                 -1,         // there is no way to know percentage of second here
                 score)      // to be set later
+            sfOcc.features.values.foreach(f => occ.setFeature(f))
+            occ
         }
         def from(sfOcc: SurfaceFormOccurrence, fullResource: DBpediaResource, score: Tuple2[Int,Double]) = {
             //TODO can take a mixture as param and use resource.score to mix with the other two scores in Tuple2
-            new DBpediaResourceOccurrence("",  // there is no way to know this here
+            val occ = new DBpediaResourceOccurrence("",  // there is no way to know this here
                 fullResource, // support is also available from score._1, but types are only in fullResource
                 sfOcc.surfaceForm,
                 sfOcc.context,
@@ -94,10 +98,12 @@ object Factory {
                 score._2,
                 -1,         // there is no way to know percentage of second here
                 score._2)      // to be set later
+            sfOcc.features.values.foreach(f => occ.setFeature(f))
+            occ
         }
         //TODO take a mixture as param?
         def from(sfOcc: SurfaceFormOccurrence, resource: DBpediaResource, score: Tuple3[Int,Double,Double]) = {
-            new DBpediaResourceOccurrence("",  // there is no way to know this here
+            val occ = new DBpediaResourceOccurrence("",  // there is no way to know this here
                 new DBpediaResource(resource.uri, score._1),
                 sfOcc.surfaceForm,
                 sfOcc.context,
@@ -106,12 +112,16 @@ object Factory {
                 score._2 * score._3,
                 -1,         // there is no way to know percentage of second here
                 score._2)   // to be set later
+            sfOcc.features.values.foreach(f => occ.setFeature(f))
+            occ
         }
         def from(sfOcc: SurfaceFormOccurrence, hit: ScoreDoc, contextSearcher: BaseSearcher) = {
             var resource: DBpediaResource = contextSearcher.getDBpediaResource(hit.doc)
             if (resource == null) throw new ItemNotFoundException("Could not choose a URI for " + sfOcc.surfaceForm)
             val percentageOfSecond = -1;
-            new DBpediaResourceOccurrence("", resource, sfOcc.surfaceForm, sfOcc.context, sfOcc.textOffset, Provenance.Annotation, hit.score, percentageOfSecond, hit.score)
+            val occ = new DBpediaResourceOccurrence("", resource, sfOcc.surfaceForm, sfOcc.context, sfOcc.textOffset, Provenance.Annotation, hit.score, percentageOfSecond, hit.score)
+            sfOcc.features.values.foreach(f => occ.setFeature(f))
+            occ
         }
     }
 
@@ -177,12 +187,21 @@ object Factory {
             new Paragraph(a.id,a.text,a.occurrences.map( dro => Factory.SurfaceFormOccurrence.from(dro)))
         }
         def fromJ(occs: java.util.List[SurfaceFormOccurrence]) = {
-            from(occs.asScala.toList)
+            fromNonEmpty(occs.asScala.toList)
         }
-        def from(occs: List[SurfaceFormOccurrence]) = {
-            if (occs.size==0) throw new IllegalArgumentException("Cannot create paragraph out of empty occurrence list.")
+
+        /**
+         * If the list is non empty, we can grab the text from the occurrences
+         * We assume that all occurrences have the same text, and use the first.
+         */
+        def fromNonEmpty(occs: List[SurfaceFormOccurrence]) = {
+            if (occs.size==0) //without occurrences we can't get the text
+               throw new IllegalArgumentException("Cannot create paragraph out of empty occurrence list and without text.")
             val first = occs.head
-            new Paragraph("",first.context,occs.sortBy(o => o.textOffset))
+           from(first.context,occs)
+        }
+        def from(context: Text, occs: List[SurfaceFormOccurrence]) = {
+            new Paragraph("",context,occs.sortBy(o => o.textOffset))
         }
     }
 

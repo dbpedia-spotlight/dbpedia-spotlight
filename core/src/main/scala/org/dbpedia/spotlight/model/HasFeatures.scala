@@ -5,7 +5,6 @@ import collection.mutable.HashMap
 /**
  * @author Joachim Daiber
  */
-
 trait HasFeatures {
 
   val features = HashMap[String, Feature]()
@@ -27,6 +26,14 @@ trait HasFeatures {
 
   def setFeature(feature: Feature) {
     features.put(feature.featureName, feature)
+  }
+
+  /**
+   * Adds a number of features to this instance. Mostly a convenience method for Java.
+   * @param otherFeatures
+   */
+  def setFeatures(otherFeatures: HashMap[String,Feature]) {
+      features ++= otherFeatures
   }
 
 }

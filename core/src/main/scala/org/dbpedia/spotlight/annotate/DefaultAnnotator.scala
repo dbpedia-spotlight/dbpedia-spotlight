@@ -52,14 +52,26 @@ class DefaultParagraphAnnotator(val spotter : Spotter, val disambiguator: Paragr
 
     private val LOG = LogFactory.getLog(this.getClass)
 
+    /**
+     * Annotates the contents of the Text object returning a list of DBpedia resources that occurred in that content.
+     * @param text
+     * @throws org.dbpedia.spotlight.exceptions.InputException
+     * @return
+     */
     @throws(classOf[InputException])
-    def annotate(text : String) : java.util.List[DBpediaResourceOccurrence] = {
+    def annotate(text : Text) : java.util.List[DBpediaResourceOccurrence] = {
+        annotate(text.text)
+    }
+
+        @Deprecated
+    @throws(classOf[InputException])
+    def annotate(text : String) : java.util.List[DBpediaResourceOccurrence] = {  //TODO should be input of type Text, not String
 
         LOG.info("Spotting... ("+spotter.getName()+")")
         val spottedSurfaceForms : List[SurfaceFormOccurrence] = asBuffer(spotter.extract(new Text(text))).toList
 
         LOG.info("Disambiguating... ("+disambiguator.name+")")
-        val disambiguatedOccurrences : java.util.List[DBpediaResourceOccurrence] = disambiguator.disambiguate(Factory.Paragraph.from(spottedSurfaceForms))
+        val disambiguatedOccurrences : java.util.List[DBpediaResourceOccurrence] = disambiguator.disambiguate(Factory.Paragraph.fromNonEmpty(spottedSurfaceForms))
 
         LOG.info("Done.")
         disambiguatedOccurrences

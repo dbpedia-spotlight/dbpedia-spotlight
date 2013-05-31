@@ -137,7 +137,7 @@ public class MergedOccurrencesDisambiguator implements Disambiguator {
                 if (hits.length > i+1) {
                     percentageOfSecond = hits[i+1].score / score;
                 }
-                DBpediaResourceOccurrence resultOcc = new DBpediaResourceOccurrence("",
+                DBpediaResourceOccurrence resultOcc = new DBpediaResourceOccurrence("",  //TODO use Factory.DBpediaResourceOccurrence
                         resource,
                         sfOccurrence.surfaceForm(),
                         sfOccurrence.context(),
@@ -146,6 +146,7 @@ public class MergedOccurrencesDisambiguator implements Disambiguator {
                         score,
                         percentageOfSecond,
                         score); //TODO abusing what was spotProb here. now we have contextual score. need better way to do this
+                resultOcc.setFeatures(sfOccurrence.features());
                 rankedOccs.add(resultOcc);
             }
 
