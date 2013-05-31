@@ -2,6 +2,8 @@
 # when committed they are stored with LF,
 # on checkout they are converted to the OS's native line endings
 # https://help.github.com/articles/dealing-with-line-endings
+* text=auto
+
 *.java text
 *.scala text
 *.xml text
