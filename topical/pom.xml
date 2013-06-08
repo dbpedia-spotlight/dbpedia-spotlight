@@ -86,11 +86,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.dbpedia.spotlight</groupId>
-            <artifactId>core</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-bundle</artifactId>
         </dependency>

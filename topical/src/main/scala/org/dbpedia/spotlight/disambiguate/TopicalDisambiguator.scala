@@ -95,7 +95,7 @@ class TopicalDisambiguator(val candidateSearcher: CandidateSearcher,val topicalP
                 try {
                     candidates = candidateSearcher.getCandidates(sfOcc.surfaceForm).asScala //.map(r => r.uri)
                 } catch {
-                    case e: ItemNotFoundException => LOG.debug(e);
+                    case e: ItemNotFoundException => LOG.debug(e)
                 }
                 //ATTENTION there is no r.support at this point
                 //TODO if support comes from candidate index, it means c(sf,r).
@@ -103,7 +103,7 @@ class TopicalDisambiguator(val candidateSearcher: CandidateSearcher,val topicalP
                 LOG.trace("# candidates for: %s = %s.".format(sfOcc.surfaceForm, candidates.size))
                 candidates.foreach(r => allCandidates.add(r))
                 acc + (sfOcc -> candidates.toList)
-            });
+            })
         val e1 = System.nanoTime()
         //LOG.debug("Time with %s: %f.".format(m1, (e1-s1) / 1000000.0 ))
         occs
@@ -170,7 +170,7 @@ class TopicalDisambiguator(val candidateSearcher: CandidateSearcher,val topicalP
 
         // step1: get candidates for all surface forms
         //       (TODO here building allCandidates directly, but could extract from occs)
-        var allCandidates = CompactHashSet[DBpediaResource]();
+        var allCandidates = CompactHashSet[DBpediaResource]()
         val occs = getCandidates(paragraph, allCandidates)
 
        // pick the best k for each surface form
@@ -188,14 +188,14 @@ class TopicalDisambiguator(val candidateSearcher: CandidateSearcher,val topicalP
                 .reverse
                 .take(k)
             acc + (aSfOcc -> candOccs)
-        });
+        })
 
         // LOG.debug("Reranked (%d)".format(r.size))
 
         r
     }
 
-    def name(): String = {
+    def name = {
         "TopicalDisambiguator"
     }
 

@@ -3,7 +3,7 @@ package org.dbpedia.spotlight.topical.index
 import scala.{Boolean, Double}
 import java.io.{FileWriter, PrintWriter, File}
 import org.dbpedia.spotlight.model.{Topic, TopicalClassificationConfiguration}
-import org.dbpedia.spotlight.topical.{TopicalClassifierFactory, TopicalMultiLabelClassifier, WekaSingleLabelClassifier, TopicalClassifier}
+import org.dbpedia.spotlight.topical.{TopicalClassifierFactory, TopicalClassifier}
 import org.dbpedia.spotlight.topical.util.TopicUtil
 import org.dbpedia.spotlight.io.FileOccurrenceSource
 import org.apache.commons.logging.LogFactory
