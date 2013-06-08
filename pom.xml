@@ -32,7 +32,15 @@
 
         <heapspace.Xmx.compiler>-Xmx1g</heapspace.Xmx.compiler>
         <heapspace.Xmx.indexer>-Xmx1g</heapspace.Xmx.indexer>
+
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.compiler.version>1.6</java.compiler.version>
+        <maven.compiler.plugin.version>2.5.1</maven.compiler.plugin.version>
+        <maven.install.plugin.version>2.3.1</maven.install.plugin.version>
+        <maven.assembly.plugin.version>2.3</maven.assembly.plugin.version>
+        <maven.surefire.plugin.version>2.12.3</maven.surefire.plugin.version>
+        <scala.compiler.version>2.9.2</scala.compiler.version>
+        <scala.maven.plugin.version>3.1.0</scala.maven.plugin.version>
 
         <spotlight.basedir>${project.basedir}</spotlight.basedir>
     </properties>
@@ -48,6 +56,9 @@
         <module>rest</module>
         <module>index</module>
         <module>eval</module>
+        <module>live</module>
+        <module>topical</module>
+
 	<module>uima</module>
     </modules>
 
@@ -286,6 +297,82 @@
                             <file>${spotlight.basedir}/lib/scala-aho-corasick-0.1.jar</file>
                         </configuration>
                     </execution>
+
+                    <execution>
+                        <id>install-hunposchain0.6_mod-jar</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>org.wiki.harvester.dependency</groupId>
+                            <artifactId>hunposchain0.6_mod</artifactId>
+                            <version>1.0</version>
+                            <packaging>jar</packaging>
+                            <file>${spotlight.basedir}/lib/hunposchain0.6_mod.jar</file>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>install-morphadorner-jar</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>org.wiki.harvester.dependency</groupId>
+                            <artifactId>morphadorner</artifactId>
+                            <version>1.0</version>
+                            <packaging>jar</packaging>
+                            <file>${spotlight.basedir}/lib/morphadorner.jar</file>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>install-pedia.uima.harvester-jar</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>org.wiki.harvester.dependency</groupId>
+                            <artifactId>pedia.uima.harvester</artifactId>
+                            <version>1.0</version>
+                            <packaging>jar</packaging>
+                            <file>${spotlight.basedir}/lib/pedia.uima.harvester.jar</file>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>install-sztakipedia-parser-0.1.1b-jar</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>org.wiki.harvester.dependency</groupId>
+                            <artifactId>sztakipedia-parser-0.1.1b</artifactId>
+                            <version>1.0</version>
+                            <packaging>jar</packaging>
+                            <file>${spotlight.basedir}/lib/sztakipedia-parser-0.1.1b.jar</file>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>install-textcat-1.0.1-jar</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>org.wiki.harvester.dependency</groupId>
+                            <artifactId>textcat-1.0.1</artifactId>
+                            <version>1.0</version>
+                            <packaging>jar</packaging>
+                            <file>${spotlight.basedir}/lib/textcat-1.0.1.jar</file>
+                        </configuration>
+                    </execution>
+
                 </executions>
             </plugin>
 
@@ -909,6 +996,7 @@
             <name>Maven Java Net Snapshots and Releases</name>
             <url>https://maven.java.net/content/groups/public/</url>
         </repository>
+
 
         <repository>
             <id>scala-tools.org</id>

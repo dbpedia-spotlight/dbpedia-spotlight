@@ -43,7 +43,7 @@ class DBpediaResourceOccurrence(val id : String,
     }
 
     def this(resource : DBpediaResource, surfaceForm : SurfaceForm, context : Text,  textOffset : Int, similarityScore : Double) = {
-        this("", resource, surfaceForm, context, textOffset, similarityScore=similarityScore)
+        this("", resource, surfaceForm, context, textOffset, Provenance.Undefined, similarityScore)
     }
 
     def this(resource : DBpediaResource, surfaceForm : SurfaceForm, context : Text,  textOffset : Int) = {

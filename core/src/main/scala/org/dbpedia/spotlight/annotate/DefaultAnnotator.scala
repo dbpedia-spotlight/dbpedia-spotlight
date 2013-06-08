@@ -22,6 +22,7 @@ import org.dbpedia.spotlight.spot.Spotter
 import org.dbpedia.spotlight.exceptions.InputException
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.disambiguate.{ParagraphDisambiguatorJ, ParagraphDisambiguator, Disambiguator}
+import java.util
 
 /**
  * Annotates a text with DBpedia Resources.
@@ -40,7 +41,12 @@ class DefaultAnnotator(val spotter : Spotter, val disambiguator: Disambiguator) 
         val spottedSurfaceForms : java.util.List[SurfaceFormOccurrence] = spotter.extract(new Text(text))
 
         LOG.info("Disambiguating... ("+disambiguator.name+")")
-        val disambiguatedOccurrences : java.util.List[DBpediaResourceOccurrence] = disambiguator.disambiguate(spottedSurfaceForms)
+        val disambiguatedOccurrences : java.util.List[DBpediaResourceOccurrence] = {
+          if(spottedSurfaceForms.length>0)
+            disambiguator.disambiguate(spottedSurfaceForms)
+          else
+            new util.ArrayList[DBpediaResourceOccurrence]()
+        }
 
         LOG.info("Done.")
         disambiguatedOccurrences
@@ -59,7 +65,13 @@ class DefaultParagraphAnnotator(val spotter : Spotter, val disambiguator: Paragr
         val spottedSurfaceForms : List[SurfaceFormOccurrence] = asBuffer(spotter.extract(new Text(text))).toList
 
         LOG.info("Disambiguating... ("+disambiguator.name+")")
-        val disambiguatedOccurrences : java.util.List[DBpediaResourceOccurrence] = disambiguator.disambiguate(Factory.Paragraph.from(spottedSurfaceForms))
+        val disambiguatedOccurrences : java.util.List[DBpediaResourceOccurrence] = {
+          if(spottedSurfaceForms.length>0)
+            disambiguator.disambiguate(Factory.Paragraph.from(spottedSurfaceForms))
+          else
+            new util.ArrayList[DBpediaResourceOccurrence]()
+        }
+
 
         LOG.info("Done.")
         disambiguatedOccurrences

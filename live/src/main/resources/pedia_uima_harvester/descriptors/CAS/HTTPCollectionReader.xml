@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<collectionReaderDescription xmlns="http://uima.apache.org/resourceSpecifier">
+  <frameworkImplementation>org.apache.uima.java</frameworkImplementation>
+  <implementationName>hu.sztaki.pedia.uima.reader.HTTPCollectionReader</implementationName>
+  <processingResourceMetaData>
+    <name>HTTP Collection Reader</name>
+    <description/>
+    <version>1.0</version>
+    <vendor>MTA Sztaki</vendor>
+    <configurationParameters>
+      <configurationParameter>
+        <name>OutputSofa</name>
+        <type>String</type>
+        <multiValued>false</multiValued>
+        <mandatory>false</mandatory>
+      </configurationParameter>
+      <configurationParameter>
+        <name>Ports</name>
+        <type>Integer</type>
+        <multiValued>true</multiValued>
+        <mandatory>true</mandatory>
+      </configurationParameter>
+      <configurationParameter>
+        <name>MaxRequestSize</name>
+        <type>Integer</type>
+        <multiValued>false</multiValued>
+        <mandatory>true</mandatory>
+      </configurationParameter>
+      <configurationParameter>
+        <name>QueueSize</name>
+        <type>Integer</type>
+        <multiValued>false</multiValued>
+        <mandatory>true</mandatory>
+      </configurationParameter>
+    </configurationParameters>
+    <configurationParameterSettings>
+      <nameValuePair>
+        <name>OutputSofa</name>
+        <value>
+          <string>rawwiki</string>
+        </value>
+      </nameValuePair>
+      <nameValuePair>
+        <name>Ports</name>
+        <value>
+          <array>
+            <integer>8888</integer>
+          </array>
+        </value>
+      </nameValuePair>
+      <nameValuePair>
+        <name>MaxRequestSize</name>
+        <value>
+          <integer>10000000</integer>
+        </value>
+      </nameValuePair>
+      <nameValuePair>
+        <name>QueueSize</name>
+        <value>
+          <integer>100</integer>
+        </value>
+      </nameValuePair>
+    </configurationParameterSettings>
+    <typeSystemDescription>
+      <imports>
+        <import location="../typeSystemDescriptor.xml"/>
+      </imports>
+    </typeSystemDescription>
+    <capabilities>
+      <capability>
+        <inputs/>
+        <outputs>
+          <type allAnnotatorFeatures="true">org.apache.uima.examples.SourceDocumentInformation</type>
+          <type allAnnotatorFeatures="true">org.apache.uima.WikiArticleAnnotation</type>
+        </outputs>
+        <languagesSupported/>
+      </capability>
+    </capabilities>
+    <operationalProperties>
+      <modifiesCas>true</modifiesCas>
+      <multipleDeploymentAllowed>false</multipleDeploymentAllowed>
+      <outputsNewCASes>true</outputsNewCASes>
+    </operationalProperties>
+  </processingResourceMetaData>
+  <resourceManagerConfiguration/>
+</collectionReaderDescription>
