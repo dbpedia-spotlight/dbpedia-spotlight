@@ -91,10 +91,6 @@
                                         <prefix>/usr/share/java</prefix>
                                     </mapper>
                                 </data>
-                                <data>
-                                    <src>src/deb/control/data</src>
-                                    <type>directory</type>
-                                </data>
                             </dataSet>
                         </configuration>
                     </execution>
