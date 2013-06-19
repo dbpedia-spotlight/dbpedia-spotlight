@@ -120,7 +120,6 @@ object Factory {
     object OntologyType {
 
         def fromURI(uri: String) : OntologyType = {
-<<<<<<< HEAD
             if (uri.startsWith(DBpediaType.DBPEDIA_ONTOLOGY_PREFIX))
                 return new DBpediaType(uri)
 
@@ -134,17 +133,6 @@ object Factory {
                 return new OpenCycConcept(uri)
 
             new DBpediaType(uri)
-=======
-            if (uri.startsWith(DBpediaType.DBPEDIA_ONTOLOGY_PREFIX)) {
-                new DBpediaType(uri)
-            } else if (uri.startsWith(FreebaseType.FREEBASE_RDF_PREFIX)) {
-                FreebaseType.fromTypeString(uri)
-            } else if (uri.startsWith(SchemaOrgType.SCHEMAORG_PREFIX)) {
-                new SchemaOrgType(uri)
-            } else {
-                new DBpediaType(uri)
-            }
->>>>>>> CRLFxLF
         }
 
         def fromQName(ontologyType : String) : OntologyType = {
@@ -159,10 +147,7 @@ object Factory {
                             case "d" | "dbpedia"  => new DBpediaType(suffix)
                             case "f" | "freebase" => FreebaseType.fromTypeString(suffix)
                             case "s" | "schema" => new SchemaOrgType(suffix)
-<<<<<<< HEAD
                             case "o" | "opencyc" => new OpenCycConcept(suffix)
-=======
->>>>>>> CRLFxLF
                             case _ => new DBpediaType(ontologyType)
                         }
                     }
@@ -224,11 +209,8 @@ object Factory {
         catch {
 
           case cnfe: ClassNotFoundException => {
-<<<<<<< HEAD
-            LOG.error("I can't find a class with the name " + analyzerName +" or lucene version "+ luceneVersion)
-=======
+
             LOG.error("I can't found a class with the name " + analyzerName +" or lucene version "+ luceneVersion)
->>>>>>> CRLFxLF
             LOG.error("Try to use in org.dbpedia.spotlight.lucene.analyzer property a complete name, such :")
             LOG.error(" - org.apache.lucene.analysis.de.GermanAnalyzer for German;")
             LOG.error(" - org.apache.lucene.analysis.fr.FrenchAnalyzer for French;")
