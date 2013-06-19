@@ -107,6 +107,7 @@ public class Server {
 
     }
 
+
     public static void initSpotlightConfiguration(String configFileName) throws InitializationException {
 
         if(configFileName.endsWith(".properties")) {
