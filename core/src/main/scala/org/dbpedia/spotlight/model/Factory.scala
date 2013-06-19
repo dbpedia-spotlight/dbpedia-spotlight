@@ -209,7 +209,8 @@ object Factory {
         catch {
 
           case cnfe: ClassNotFoundException => {
-            LOG.error("I can't find a class with the name " + analyzerName +" or lucene version "+ luceneVersion)
+
+            LOG.error("I can't found a class with the name " + analyzerName +" or lucene version "+ luceneVersion)
             LOG.error("Try to use in org.dbpedia.spotlight.lucene.analyzer property a complete name, such :")
             LOG.error(" - org.apache.lucene.analysis.de.GermanAnalyzer for German;")
             LOG.error(" - org.apache.lucene.analysis.fr.FrenchAnalyzer for French;")
