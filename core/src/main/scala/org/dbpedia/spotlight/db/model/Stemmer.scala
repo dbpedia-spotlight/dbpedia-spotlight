@@ -12,7 +12,7 @@ class Stemmer {
 object Stemmer {
 
   def getStemmer(token: String) : Stemmer = {
-      if (token.startsWith ("sk."))
+      if (token equals "SlovakStemmer")
         new LuceneAnalysisSlovakStemmer ()
       else
         new SnowballStemmer (token.toString)
