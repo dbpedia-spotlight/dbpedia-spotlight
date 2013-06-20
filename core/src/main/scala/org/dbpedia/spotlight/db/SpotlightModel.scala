@@ -18,6 +18,7 @@ import java.util.{Locale, Properties}
 import opennlp.tools.chunker.ChunkerModel
 import opennlp.tools.namefind.TokenNameFinderModel
 import stem.SnowballStemmer
+import stem.LuceneAnalysisSlovakStemmer
 import tokenize.{OpenNLPTokenizer, LanguageIndependentTokenizer}
 
 
@@ -62,7 +63,7 @@ object SpotlightModel {
     //Load the stemmer from the model file:
     def stemmer(): Stemmer = properties.getProperty("stemmer") match {
       case s: String if s equals "None" => null
-      case s: String => new SnowballStemmer(s)
+      case s: String => Stemmer.getStemmer(s)
     }
 
     val c = properties.getProperty("opennlp_parallel", Runtime.getRuntime.availableProcessors().toString).toInt
