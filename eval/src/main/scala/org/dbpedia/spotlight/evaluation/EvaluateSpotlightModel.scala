@@ -2,7 +2,7 @@ package org.dbpedia.spotlight.evaluation
 
 import java.io.{FileInputStream, File}
 import org.dbpedia.spotlight.io.WikipediaHeldoutCorpus
-import org.dbpedia.spotlight.db.{WikipediaToDBpediaClosure, DBTwoStepDisambiguator, DBSpotter, SpotlightModel}
+import org.dbpedia.spotlight.db._
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy
 import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy
 import scala.collection.JavaConversions._
@@ -15,6 +15,7 @@ object EvaluateSpotlightModel {
   def main(args: Array[String]) {
 
     val model = SpotlightModel.fromFolder(new File(args(0)))
+    val (_, sfStore, resStore, candMapStore, _) = SpotlightModel.storesFromFolder(new File(args(0)))
 
     val memLoaded = (Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / (1024 * 1024)
     System.err.println("Memory footprint (model loaded): %s".format( memLoaded ) )
@@ -59,7 +60,13 @@ object EvaluateSpotlightModel {
     }
     disambiguator.disambiguator.asInstanceOf[DBTwoStepDisambiguator].tokenizer = model.tokenizer
 
+    val baseline: DBBaselineDisambiguator = new DBBaselineDisambiguator(sfStore, resStore, candMapStore)
+
+    //Evaluate full:
     EvaluateParagraphDisambiguator.evaluate(corpusDisambiguate, disambiguator.disambiguator, List(), List())
+
+    //Evaluate baseline:
+    EvaluateParagraphDisambiguator.evaluate(corpusDisambiguate, baseline, List(), List())
 
     //Spotting:
     val corpusSpot = new WikipediaHeldoutCorpus(Source.fromFile(heldout).getLines().toSeq.take(6000), None, None)

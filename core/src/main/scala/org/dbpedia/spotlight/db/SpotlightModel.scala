@@ -31,8 +31,7 @@ object SpotlightModel {
   def loadStopwords(modelFolder: File): Set[String] = scala.io.Source.fromFile(new File(modelFolder, "stopwords.list")).getLines().map(_.trim()).toSet
   def loadSpotterThresholds(file: File): Seq[Double] = scala.io.Source.fromFile(file).getLines().next().split(" ").map(_.toDouble)
 
-  def fromFolder(modelFolder: File): SpotlightModel = {
-
+  def storesFromFolder(modelFolder: File): (TokenTypeStore, SurfaceFormStore, ResourceStore, CandidateMapStore, ContextStore) = {
     val modelDataFolder = new File(modelFolder, "model")
 
     List(
@@ -40,19 +39,27 @@ object SpotlightModel {
       new File(modelDataFolder, "sf.mem"),
       new File(modelDataFolder, "res.mem"),
       new File(modelDataFolder, "candmap.mem")
-    ).foreach{ modelFile: File =>
-      if (!modelFile.exists())
-        throw new IOException("Invalid Spotlight model folder: Could not read required file %s in %s.".format(modelFile.getName, modelFile.getPath))
+    ).foreach {
+      modelFile: File =>
+        if (!modelFile.exists())
+          throw new IOException("Invalid Spotlight model folder: Could not read required file %s in %s.".format(modelFile.getName, modelFile.getPath))
     }
 
     val tokenTypeStore = MemoryStore.loadTokenTypeStore(new FileInputStream(new File(modelDataFolder, "tokens.mem")))
-    val sfStore =        MemoryStore.loadSurfaceFormStore(new FileInputStream(new File(modelDataFolder, "sf.mem")))
-    val resStore =       MemoryStore.loadResourceStore(new FileInputStream(new File(modelDataFolder, "res.mem")))
-    val candMapStore =   MemoryStore.loadCandidateMapStore(new FileInputStream(new File(modelDataFolder, "candmap.mem")), resStore)
+    val sfStore = MemoryStore.loadSurfaceFormStore(new FileInputStream(new File(modelDataFolder, "sf.mem")))
+    val resStore = MemoryStore.loadResourceStore(new FileInputStream(new File(modelDataFolder, "res.mem")))
+    val candMapStore = MemoryStore.loadCandidateMapStore(new FileInputStream(new File(modelDataFolder, "candmap.mem")), resStore)
     val contextStore = if (new File(modelDataFolder, "context.mem").exists())
       MemoryStore.loadContextStore(new FileInputStream(new File(modelDataFolder, "context.mem")), tokenTypeStore)
     else
       null
+
+    (tokenTypeStore, sfStore, resStore, candMapStore, contextStore)
+  }
+
+  def fromFolder(modelFolder: File): SpotlightModel = {
+
+    val (tokenTypeStore, sfStore, resStore, candMapStore, contextStore) = storesFromFolder(modelFolder)
 
     val stopwords = loadStopwords(modelFolder)
 
