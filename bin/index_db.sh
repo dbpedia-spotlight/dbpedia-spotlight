@@ -166,6 +166,13 @@ sed -i s#%PIG_PATH#$BASE_WDIR/pig/pignlproc#g examples/indexing/names_and_entiti
 sed -i s#/user/hadoop#/user/$USER#g examples/indexing/token_counts.pig.params
 sed -i s#/user/hadoop#/user/$USER#g examples/indexing/names_and_entities.pig.params
 
+#Add macros
+echo "MACROS_DIR=$1/pig/pignlproc/examples/macros/" >> examples/indexing/token_counts.pig.params
+echo "MACROS_DIR=$1/pig/pignlproc/examples/macros/" >> examples/indexing/names_and_entities.pig.params
+
+#Missing things
+echo "MIN_SURFACE_FORM_LENGTH=2" >> examples/indexing/token_counts.pig.params
+
 #Run pig:
 pig -m examples/indexing/token_counts.pig.params examples/indexing/token_counts.pig
 pig -m examples/indexing/names_and_entities.pig.params examples/indexing/names_and_entities.pig
