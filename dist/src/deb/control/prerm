@@ -1,0 +1,12 @@
+#!/bin/bash
+
+#Removing the startup command
+rm /usr/bin/dbpedia-spotlight-*
+
+#Removing all logs
+if [ -f /var/log/dbpedia-spotlight-* ]; then
+    rm /var/log/dbpedia-spotlight-*
+fi
+
+#Removing index data
+rm /usr/share/dbpedia-spotlight-* -r
