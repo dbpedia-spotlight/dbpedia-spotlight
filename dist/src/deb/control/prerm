@@ -1,4 +1,5 @@
 #!/bin/bash
+
 #Removing the startup command
 rm /usr/bin/dbpedia-spotlight-*
 
