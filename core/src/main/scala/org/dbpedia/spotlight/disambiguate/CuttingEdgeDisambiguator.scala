@@ -22,7 +22,7 @@ import org.dbpedia.spotlight.exceptions.{SearchException, InputException}
 import org.apache.lucene.search.Explanation
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.lucene.disambiguate.MixedWeightsDisambiguator
-import scalaj.collection.Imports._
+import scala.collection.JavaConverters._
 
 /**
  * Implementation used for evaluation runs. Will change as new scores/implementations come in.
