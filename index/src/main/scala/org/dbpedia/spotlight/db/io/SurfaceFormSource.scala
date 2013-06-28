@@ -34,8 +34,15 @@ object SurfaceFormSource {
     val sfMap = new HashMap[SurfaceForm, (Int, Int)]()
 
     LOG.info("Reading annotated and total counts...")
-    Source.fromInputStream(sfAndTotalCounts).getLines() foreach {
-      lineS: String => {
+
+    var linesIterator : Iterator[String] = Iterator.empty
+    try {
+      linesIterator = Source.fromInputStream(sfAndTotalCounts, "UTF-8").getLines
+    } catch {
+      case e: java.nio.charset.MalformedInputException => linesIterator = Source.fromInputStream(sfAndTotalCounts).getLines
+      }
+
+    for (lineS <- linesIterator) {
         val line = lineS.trim().split('\t')
 
         val surfaceform = new SurfaceForm(line(0))
@@ -55,7 +62,6 @@ object SurfaceFormSource {
             (countAnnotated, countTotal)
           }
         )
-      }
     }
 
     LOG.info("Done.")
@@ -75,7 +81,14 @@ object SurfaceFormSource {
   def fromTSVInputStream(in: InputStream): Map[SurfaceForm, (Int, Int)] = {
     val sfFormMap = new HashMap[SurfaceForm, (Int, Int)]()
 
-    Source.fromInputStream(in).getLines() map {
+    var linesIterator : Iterator[String] = Iterator.empty
+    try {
+      linesIterator = Source.fromInputStream(in, "UTF-8").getLines
+    } catch {
+      case e: java.nio.charset.MalformedInputException => linesIterator = Source.fromInputStream(in).getLines
+      }
+
+    linesIterator map {
       line: String => {
         val name = line.trim()
         sfFormMap.put(new SurfaceForm(name), (0, 0))

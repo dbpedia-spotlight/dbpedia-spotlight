@@ -50,7 +50,15 @@ object TokenOccurrenceSource {
   val tokensParser = TokenOccurrenceParser.createDefault
 
   def plainTokenOccurrenceSource(tokenInputStream: InputStream): Iterator[Triple[String, Array[String], Array[Int]]] = {
-    Source.fromInputStream(tokenInputStream) getLines() filter(!_.equals("")) map {
+
+    var linesIterator : Iterator[String] = Iterator.empty
+    try {
+      linesIterator = Source.fromInputStream(tokenInputStream, "UTF-8").getLines
+    } catch {
+      case e: java.nio.charset.MalformedInputException => linesIterator = Source.fromInputStream(tokenInputStream).getLines
+      }
+
+    linesIterator filter(!_.equals("")) map {
       line: String => {
         val Array(wikiurl, tokens) = line.trim().split('\t')
         val Pair(tokensA, countsA) = tokensParser.parse(tokens)

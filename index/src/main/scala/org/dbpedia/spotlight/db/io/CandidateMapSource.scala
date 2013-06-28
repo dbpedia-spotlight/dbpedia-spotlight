@@ -40,8 +40,15 @@ object CandidateMapSource {
     var uriIgnored  = 0
 
     LOG.info("Reading Candidate Map.")
-    Source.fromInputStream(pairCounts).getLines() foreach {
-      line: String => {
+
+    var linesIterator : Iterator[String] = Iterator.empty
+    try {
+      linesIterator = Source.fromInputStream(pairCounts, "UTF-8").getLines
+    } catch {
+      case e: java.nio.charset.MalformedInputException => linesIterator = Source.fromInputStream(pairCounts).getLines
+      }
+
+    for (line <- linesIterator) {
         try {
           val Array(sf, wikiurl, count) = line.trim().split('\t')
           val uri = wikipediaToDBpediaClosure.wikipediaToDBpediaURI(wikiurl)
@@ -59,7 +66,6 @@ object CandidateMapSource {
           case e: DBpediaResourceNotFoundException => {uriNotFound += 1; println(line)}
           case e: SurfaceFormNotFoundException     => sfNotFound += 1
         }
-      }
     }
     LOG.info("Done.")
 
@@ -89,8 +95,14 @@ object CandidateMapSource {
     val uriNotFound = HashSet[String]()
     val sfNotFound  = HashSet[String]()
 
-    Source.fromInputStream(candmap).getLines() foreach {
-      line: String => {
+    var linesIterator : Iterator[String] = Iterator.empty
+    try {
+      linesIterator = Source.fromInputStream(candmap, "UTF-8").getLines
+    } catch {
+      case e: java.nio.charset.MalformedInputException => linesIterator = Source.fromInputStream(candmap).getLines
+      }
+
+    for (line <- linesIterator) {
         try {
           val s1 = line.trim().split("\t")
           val s2 = s1(0).split(" ")
@@ -107,7 +119,6 @@ object CandidateMapSource {
           case e: DBpediaResourceNotFoundException => println(line)
           case e: SurfaceFormNotFoundException => sfNotFound += line
         }
-      }
     }
 
     LOG.warn("URI for %d candidate definitions not found!".format(uriNotFound.size) )
