@@ -29,8 +29,8 @@ class SpotlightModel(val tokenizer: TextTokenizer,
 
 object SpotlightModel {
 
-  def loadStopwords(modelFolder: File): Set[String] = scala.io.Source.fromFile(new File(modelFolder, "stopwords.list")).getLines().map(_.trim()).toSet
-  def loadSpotterThresholds(file: File): Seq[Double] = scala.io.Source.fromFile(file).getLines().next().split(" ").map(_.toDouble)
+  def loadStopwords(modelFolder: File): Set[String] = scala.io.Source.fromFile(new File(modelFolder, "stopwords.list"), "UTF-8").getLines().map(_.trim()).toSet
+  def loadSpotterThresholds(file: File): Seq[Double] = scala.io.Source.fromFile(file, "UTF-8").getLines().next().split(" ").map(_.toDouble)
 
   def fromFolder(modelFolder: File): SpotlightModel = {
 
