@@ -25,7 +25,7 @@ import org.dbpedia.spotlight.util.IndexingConfiguration
 import java.util.Scanner
 import java.io.FileInputStream
 import org.apache.commons.logging.{LogFactory, Log}
-import scalaj.collection.Imports._
+import scala.collection.JavaConverters._
 
 /**
  * In our first implementation we used to index all anchor text found in Wikipedia as surface forms to a target URI.

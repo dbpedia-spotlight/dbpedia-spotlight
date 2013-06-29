@@ -12,7 +12,7 @@ import java.io.File
  */
 
 class TestCorpora extends FlatSpec with ShouldMatchers {
-    implicit def stringToFile(s: String) = new File(s)
+  implicit def stringToFile(s: String) = new File(s)
 
   val queryFile = new File("/mnt/windows/Extra/Researches/data/kbp/queries/TAC_2010_KBP_Evaluation_Entity_Linking_Gold_Standard_V1.0/TAC_2010_KBP_Evaluation_Entity_Linking_Gold_Standard_V1.1/data/tac_2010_kbp_evaluation_entity_linking_queries.xml")
   val annotationFile = new File("/mnt/windows/Extra/Researches/data/kbp/queries/TAC_2010_KBP_Evaluation_Entity_Linking_Gold_Standard_V1.0/TAC_2010_KBP_Evaluation_Entity_Linking_Gold_Standard_V1.1/data/tac_2010_kbp_evaluation_entity_linking_query_types.tab")
@@ -21,22 +21,22 @@ class TestCorpora extends FlatSpec with ShouldMatchers {
 
 
   val corpora = List(MilneWittenCorpus.fromDirectory("/home/pablo/eval/wikify/original/"),
-                         AidaCorpus.fromFile("/home/pablo/eval/aida/gold/CoNLL-YAGO.tsv"),
-                         new KBPCorpus(queryFile,annotationFile,sourceDir,kbDir)
+    AidaCorpus.fromFile("/home/pablo/eval/aida/gold/CoNLL-YAGO.tsv"),
+    new KBPCorpus(queryFile, annotationFile, sourceDir, kbDir)
   )
 
 
-    corpora.foreach( corpus => {
-        corpus.getClass.getSimpleName.trim should "have correct offsets" in {
-            corpus.foreach( p => {
-                p.occurrences.foreach( o => {
-                    val stored = o.surfaceForm.name
-                    val actual = o.context.text.substring(o.textOffset,o.textOffset+stored.length)
-                    stored should equal (actual)
-                })
-            })
-        }
-    })
+  corpora.foreach(corpus => {
+    corpus.getClass.getSimpleName.trim should "have correct offsets" in {
+      corpus.foreach(p => {
+        p.occurrences.foreach(o => {
+          val stored = o.surfaceForm.name
+          val actual = o.context.text.substring(o.textOffset, o.textOffset + stored.length)
+          stored should equal(actual)
+        })
+      })
+    }
+  })
 
 
 }

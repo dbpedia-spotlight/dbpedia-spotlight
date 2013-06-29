@@ -22,7 +22,7 @@ import org.dbpedia.spotlight.model.{DBpediaResourceOccurrence, SurfaceFormOccurr
 import actors._
 import actors.Actor._
 import org.junit.Test
-import scalaj.collection.Imports._
+import scala.collection.JavaConverters._
 
 /**
  * TODO build real test with disambiguators

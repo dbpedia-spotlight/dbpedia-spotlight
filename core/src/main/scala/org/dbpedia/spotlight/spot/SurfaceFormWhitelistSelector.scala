@@ -17,7 +17,7 @@
 
 package org.dbpedia.spotlight.spot
 
-import scalaj.collection.Imports._
+import scala.collection.JavaConverters._
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.model._
 import scala.io.Source._

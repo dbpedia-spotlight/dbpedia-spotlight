@@ -21,7 +21,7 @@ package org.dbpedia.spotlight.filter.annotations
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.model.{DBpediaResource, DBpediaResourceOccurrence}
 import org.dbpedia.spotlight.sparql.SparqlQueryExecuter
-import scalaj.collection.Imports._
+import scala.collection.JavaConverters._
 
 
 class SparqlFilter(val executer : SparqlQueryExecuter, val sparqlQuery: String, val listColor : FilterPolicy.ListColor) extends AnnotationFilter  {

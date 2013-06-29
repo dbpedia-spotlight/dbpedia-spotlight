@@ -37,7 +37,7 @@ import com.sun.jersey.api.container.grizzly.GrizzlyWebContainerFactory
 import related.Related
 
 import org.dbpedia.spotlight.sparql.SparqlQueryExecuter
-import scalaj.collection.Imports._
+import scala.collection.JavaConverters._
 import collection.mutable.{Map, HashMap}
 import collection.Set
 
