@@ -31,7 +31,7 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.dbpedia.spotlight.lucene.similarity.{CachedInvCandFreqSimilarity, JCSTermCache, InvCandFreqSimilarity}
 import org.apache.lucene.misc.SweetSpotSimilarity
 import org.apache.lucene.search.{DefaultSimilarity, ScoreDoc, Similarity}
-import scalaj.collection.Imports._
+import scala.collection.JavaConverters._
 import org.dbpedia.spotlight.spot.{SpotSelector, AtLeastOneNounSelector, ShortSurfaceFormSelector}
 import java.io.File
 import org.dbpedia.extraction.util.WikiUtil

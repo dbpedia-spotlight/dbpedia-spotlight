@@ -27,7 +27,7 @@ import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.filter.occurrences.{UriWhitelistFilter, RedirectResolveFilter, OccurrenceFilter}
 import scala.Some
 
-import scalaj.collection.Imports._
+
 
 
 /**

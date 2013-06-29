@@ -20,7 +20,7 @@ import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.sparql.SparqlQueryExecuter
 import scala.collection.JavaConversions._
-import scalaj.collection.Imports._
+import scala.collection.JavaConverters._
 
 class CombineAllAnnotationFilters(val config: SpotlightConfiguration) {
 

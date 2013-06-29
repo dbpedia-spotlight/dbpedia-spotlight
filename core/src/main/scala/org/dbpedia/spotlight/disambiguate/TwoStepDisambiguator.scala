@@ -21,7 +21,7 @@ package org.dbpedia.spotlight.disambiguate
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
 import java.lang.UnsupportedOperationException
-import scalaj.collection.Imports._
+import scala.collection.JavaConverters._
 import org.apache.lucene.search.similar.MoreLikeThis
 import org.dbpedia.spotlight.exceptions.{ItemNotFoundException, SearchException, InputException}
 import org.apache.lucene.search.{ScoreDoc, Explanation}
@@ -147,7 +147,7 @@ class TwoStepDisambiguator(val candidateSearcher: CandidateSearcher,
             var score = hit.score
             //TODO can mix here the scores: c(s,r) / c(r)
             acc + (resource.uri -> (resource,score))
-        });
+        })
         val e2 = System.nanoTime()
         //LOG.debug("Scores (%d): %s".format(scores.size, scores))
 
