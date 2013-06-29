@@ -13,7 +13,7 @@ import com.esotericsoftware.kryo.serializers.DefaultSerializers.KryoSerializable
 import com.esotericsoftware.kryo.Kryo
 import org.dbpedia.spotlight.db.model.{TokenTypeStore, ResourceStore}
 import org.dbpedia.spotlight.db.FSADictionary
-
+import org.dbpedia.spotlight.db.entityTopic.Document
 
 /**
  * Base class for all memory stores.
@@ -46,6 +46,17 @@ object MemoryStore {
   private val LOG = LogFactory.getLog(this.getClass)
 
   val kryos = HashMap[String, Kryo]()
+
+  kryos.put(classOf[Document].getSimpleName,{
+    val kryo=new Kryo()
+    kryo.setRegistrationRequired(true)
+
+    kryo.register(classOf[Array[Int]], new DefaultArraySerializers.IntArraySerializer())
+    kryo.register(classOf[Document])
+
+    kryo
+  }
+  )
 
   kryos.put(classOf[MemoryResourceStore].getSimpleName,
   {
