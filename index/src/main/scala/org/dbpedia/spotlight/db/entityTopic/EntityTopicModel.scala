@@ -1,16 +1,16 @@
 package org.dbpedia.spotlight.db.entityTopic
 
 import java.io.{FileInputStream, File}
-import org.dbpedia.spotlight.db.memory.{MemoryTokenTypeStore, MemoryStore}
+import org.dbpedia.spotlight.db.memory.{DocumentStore, MemoryStore}
 import java.util.{Locale, Properties}
-import org.dbpedia.spotlight.db.model.{SurfaceFormStore, ResourceStore, TextTokenizer, Stemmer}
+import org.dbpedia.spotlight.db.model.{TextTokenizer, Stemmer}
 import org.dbpedia.spotlight.db.stem.SnowballStemmer
 import opennlp.tools.tokenize.{TokenizerME, TokenizerModel}
 import opennlp.tools.sentdetect.{SentenceDetectorME, SentenceModel}
 import org.dbpedia.spotlight.db.tokenize.{LanguageIndependentTokenizer, OpenNLPTokenizer}
 import opennlp.tools.postag.{POSModel, POSTaggerME}
 import org.dbpedia.spotlight.db.concurrent.{SpotterWrapper, TokenizerWrapper}
-import org.dbpedia.spotlight.db.{ FSASpotter, OpenNLPSpotter, DBCandidateSearcher}
+import org.dbpedia.spotlight.db.{WikipediaToDBpediaClosure, FSASpotter, OpenNLPSpotter, DBCandidateSearcher}
 
 import opennlp.tools.namefind.TokenNameFinderModel
 import opennlp.tools.chunker.ChunkerModel
@@ -23,7 +23,9 @@ import org.dbpedia.spotlight.model.{Text, SurfaceForm, DBpediaResource}
 import opennlp.tools.util.Span
 
 
+
 class EntityTopicModel( val locale:Locale,
+                        val wikiToDBpediaClosure:WikipediaToDBpediaClosure,
                         val tokenizer: TextTokenizer,
                         val spotter: Spotter,
                         val searcher: DBCandidateSearcher
@@ -32,11 +34,7 @@ class EntityTopicModel( val locale:Locale,
   val sfStore=searcher.sfStore
   val resStore=searcher.resStore
 
-  val namespace = if (locale.getLanguage.equals("en")) {
-    "http://wikipedia.org/wiki/"
-  } else {
-    "http://%s.wikipedia.org/wiki/".format(locale.getLanguage)
-  }
+
 
 
   def learnFromWiki(wikidump:String){
@@ -76,15 +74,13 @@ class EntityTopicModel( val locale:Locale,
       while(i<annotations.size()){
         val a:Annotation=annotations.get(i)
         surfaces(i)=sfStore.getSurfaceForm(content.substring(a.begin,a.end))
-
-        //TODO: get the exact resource with redirect considered
-        resources(i)=resStore.getResourceByName(a.value.replaceFirst(namespace,""))
+        resources(i)=resStore.getResourceByName(wikiToDBpediaClosure.wikipediaToDBpediaURI(a.value))//a.value.replaceFirst(namespace,"")
         spans(i)=new Span(a.begin,a.end)
         i+=1
       }
 
       val doc:Document=Document.initDocument(new Text(content),resources,surfaces,spans)
-     // docStore.save(doc)
+      docStore.save(doc)
     }
 
     docStore.finishSave()
@@ -186,16 +182,20 @@ object EntityTopicModel{
       ).asInstanceOf[Spotter]
     }
 
-    /*
-  val wikipediaToDBpediaClosure = new WikipediaToDBpediaClosure(
-    namespace,
-    new FileInputStream(new File(rawDataFolder, "redirects.nt")),
-    new FileInputStream(new File(rawDataFolder, "disambiguations.nt"))
-  ) */
 
+    val namespace = if (locale.getLanguage.equals("en")) {
+      "http://wikipedia.org/wiki/"
+    } else {
+      "http://%s.wikipedia.org/wiki/".format(locale.getLanguage)
+    }
 
+    val wikipediaToDBpediaClosure = new WikipediaToDBpediaClosure(
+      namespace,
+      new FileInputStream(new File(modelFolder, "redirects.nt")),
+      new FileInputStream(new File(modelFolder, "disambiguations.nt"))
+    )
 
-    new EntityTopicModel(locale,tokenizer, spotter, searcher)
+    new EntityTopicModel(locale,wikipediaToDBpediaClosure,tokenizer, spotter, searcher)
   }
 
   def main(args:Array[String]){
