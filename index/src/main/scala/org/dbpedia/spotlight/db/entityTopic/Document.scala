@@ -8,6 +8,7 @@ import scala.collection.mutable.HashMap
 import org.dbpedia.spotlight.db.model.TextTokenizer
 import org.dbpedia.spotlight.model._
 import opennlp.tools.util.Span
+import org.dbpedia.spotlight.db.entityTopic.Document
 
 
 

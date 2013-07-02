@@ -21,6 +21,7 @@ import java.lang.String
 import java.util
 import org.dbpedia.spotlight.model.{Text, SurfaceForm, DBpediaResource}
 import opennlp.tools.util.Span
+import org.dbpedia.spotlight.db.entityTopic.Document
 
 
 
