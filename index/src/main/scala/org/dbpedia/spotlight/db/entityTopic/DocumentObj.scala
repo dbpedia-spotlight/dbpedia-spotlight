@@ -14,13 +14,16 @@ import org.dbpedia.spotlight.db.entityTopic.Document
 
 
 
+
 object DocumentObj {
+
   val RandomGenerator=new Random();
 
   var spotter:Spotter=null
   var tokenizer:TextTokenizer=null
   var searcher: DBCandidateSearcher = null
   var topicNum:Int=0
+
 
   def init(model:CreateEntityTopicModel, topicN:Int){
     spotter=model.spotter
