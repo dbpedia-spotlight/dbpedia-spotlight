@@ -110,6 +110,8 @@ class OccsFilter(confidence: Double, support: Int,
    */
   def accept(visitor: FilterOccsVisitor, occs : java.util.List[DBpediaResourceOccurrence]): java.util.List[DBpediaResourceOccurrence]= {
 
+    if (coreferenceResolution) return new CoreferenceFilter().filterOccs(occs.asScala.toTraversable).toList.asJava
+
     var result:java.util.List[DBpediaResourceOccurrence]= occs
 
     elements.foreach(elem => result= elem.accept(visitor,result))
