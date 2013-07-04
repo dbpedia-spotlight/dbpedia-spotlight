@@ -14,7 +14,7 @@ import org.dbpedia.spotlight.db.entityTopic.Document
 
 
 
-object Document {
+object DocumentObj {
   val RandomGenerator=new Random();
 
   var spotter:Spotter=null

@@ -53,7 +53,7 @@ class EntityTopicModel( val locale:Locale,
    */
   def initializeDocuments(wikidump:String){
     docStore.initSave() //prepare for saving the document assignments to tmp file
-    Document.init(this,100)//hardcode the topic number
+    DocumentObj.init(this,100)//hardcode the topic number
 
     //parse wiki dump to get wiki pages iteratively
     val wikireader: WikipediaRecordReader = new WikipediaRecordReader(new File(wikidump))
@@ -80,7 +80,7 @@ class EntityTopicModel( val locale:Locale,
         i+=1
       }
 
-      val doc:Document=Document.initDocument(new Text(content),resources,surfaces,spans)
+      val doc:Document=DocumentObj.initDocument(new Text(content),resources,surfaces,spans)
       docStore.save(doc)
     }
 
