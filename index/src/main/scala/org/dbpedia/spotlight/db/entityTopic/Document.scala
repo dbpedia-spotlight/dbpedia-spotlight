@@ -22,7 +22,7 @@ object DocumentObj {
   var searcher: DBCandidateSearcher = null
   var topicNum:Int=0
 
-  def init(model:EntityTopicModel, topicN:Int){
+  def init(model:CreateEntityTopicModel, topicN:Int){
     spotter=model.spotter
     tokenizer=model.tokenizer
     searcher=model.searcher

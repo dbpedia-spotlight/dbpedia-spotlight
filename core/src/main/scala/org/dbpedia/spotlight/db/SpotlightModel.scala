@@ -2,7 +2,7 @@ package org.dbpedia.spotlight.db
 
 import concurrent.{TokenizerWrapper, SpotterWrapper}
 import memory.MemoryStore
-import model._
+import org.dbpedia.spotlight.db.model._
 import opennlp.tools.tokenize.{TokenizerModel, TokenizerME}
 import opennlp.tools.sentdetect.{SentenceModel, SentenceDetectorME}
 import opennlp.tools.postag.{POSModel, POSTaggerME}
@@ -14,11 +14,12 @@ import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ
 import org.dbpedia.spotlight.spot.{SpotXmlParser, Spotter}
 import java.io.{IOException, File, FileInputStream}
-import java.util.{Locale, Properties}
+import java.util.{Properties, Locale}
 import opennlp.tools.chunker.ChunkerModel
 import opennlp.tools.namefind.TokenNameFinderModel
 import stem.SnowballStemmer
 import tokenize.{OpenNLPTokenizer, LanguageIndependentTokenizer}
+import scala.Some
 
 
 class SpotlightModel(val tokenizer: TextTokenizer,
@@ -57,23 +58,12 @@ object SpotlightModel {
     (tokenTypeStore, sfStore, resStore, candMapStore, contextStore)
   }
 
-  def fromFolder(modelFolder: File): SpotlightModel = {
-
-    val (tokenTypeStore, sfStore, resStore, candMapStore, contextStore) = storesFromFolder(modelFolder)
-
-    val stopwords = loadStopwords(modelFolder)
-
-    val properties = new Properties()
-    properties.load(new FileInputStream(new File(modelFolder, "model.properties")))
-
+  def createTokenizer(modelFolder:File,tokenTypeStore:TokenTypeStore,properties:Properties,stopwords:Set[String],cores:Range):TextTokenizer={
     //Load the stemmer from the model file:
     def stemmer(): Stemmer = properties.getProperty("stemmer") match {
       case s: String if s equals "None" => null
       case s: String => new SnowballStemmer(s)
     }
-
-    val c = properties.getProperty("opennlp_parallel", Runtime.getRuntime.availableProcessors().toString).toInt
-    val cores = (1 to c)
 
     val tokenizer: TextTokenizer = if(new File(modelFolder, "opennlp").exists()) {
 
@@ -83,35 +73,28 @@ object SpotlightModel {
       val sentenceModel = new SentenceModel(new FileInputStream(new File(modelFolder, "opennlp/sent.bin")))
 
       def createTokenizer() = new OpenNLPTokenizer(
-        new TokenizerME(tokenizerModel),
-        stopwords,
-        stemmer(),
-        new SentenceDetectorME(sentenceModel),
-        if (posTagger.exists()) new POSTaggerME(new POSModel(new FileInputStream(posTagger))) else null,
-        tokenTypeStore
+      new TokenizerME(tokenizerModel),
+      stopwords,
+      stemmer(),
+      new SentenceDetectorME(sentenceModel),
+      if (posTagger.exists()) new POSTaggerME(new POSModel(new FileInputStream(posTagger))) else null,
+      tokenTypeStore
       ).asInstanceOf[TextTokenizer]
 
       if(cores.size == 1)
-        createTokenizer()
+      createTokenizer()
       else
-        new TokenizerWrapper(cores.map(_ => createTokenizer())).asInstanceOf[TextTokenizer]
+      new TokenizerWrapper(cores.map(_ => createTokenizer())).asInstanceOf[TextTokenizer]
 
-    } else {
+     } else {
       val locale = properties.getProperty("locale").split("_")
       new LanguageIndependentTokenizer(stopwords, stemmer(), new Locale(locale(0), locale(1)), tokenTypeStore)
     }
+    tokenizer
+  }
 
-    val searcher      = new DBCandidateSearcher(resStore, sfStore, candMapStore)
-    val disambiguator = new ParagraphDisambiguatorJ(new DBTwoStepDisambiguator(
-      tokenTypeStore,
-      sfStore,
-      resStore,
-      searcher,
-      contextStore,
-      new UnweightedMixture(Set("P(e)", "P(c|e)", "P(s|e)")),
-      new GenerativeContextSimilarity(tokenTypeStore)
-    ))
 
+  def createSpotter(modelFolder:File,sfStore:SurfaceFormStore,stopwords:Set[String],cores:Range):Spotter={
     //If there is at least one NE model or a chunker, use the OpenNLP spotter:
     val spotter = if( new File(modelFolder, "opennlp").exists() && new File(modelFolder, "opennlp").list().exists(f => f.startsWith("ner-") || f.startsWith("chunker")) ) {
       val nerModels = new File(modelFolder, "opennlp").list().filter(_.startsWith("ner-")).map { f: String =>
@@ -149,9 +132,37 @@ object SpotlightModel {
         stopwords
       ).asInstanceOf[Spotter]
     }
+    spotter
+  }
 
+  def fromFolder(modelFolder: File): SpotlightModel = {
+
+    val (tokenTypeStore, sfStore, resStore, candMapStore, contextStore) = storesFromFolder(modelFolder)
+
+    val properties = new Properties()
+    properties.load(new FileInputStream(new File(modelFolder, "model.properties")))
+    val stopwords = loadStopwords(modelFolder)
+    val c = properties.getProperty("opennlp_parallel", Runtime.getRuntime.availableProcessors().toString).toInt
+    val cores = (1 to c)
+
+    val tokenizer: TextTokenizer=createTokenizer(modelFolder,tokenTypeStore,properties,stopwords,cores)
+
+    val searcher      = new DBCandidateSearcher(resStore, sfStore, candMapStore)
+
+    val disambiguator = new ParagraphDisambiguatorJ(new DBTwoStepDisambiguator(
+      tokenTypeStore,
+      sfStore,
+      resStore,
+      searcher,
+      contextStore,
+      new UnweightedMixture(Set("P(e)", "P(c|e)", "P(s|e)")),
+      new GenerativeContextSimilarity(tokenTypeStore)
+    ))
+
+    val spotter=createSpotter(modelFolder,sfStore,stopwords,cores)
 
     val spotters: java.util.Map[SpotterPolicy, Spotter] = Map(SpotterPolicy.SpotXmlParser -> new SpotXmlParser(), SpotterPolicy.Default -> spotter).asJava
+
     val disambiguators: java.util.Map[DisambiguationPolicy, ParagraphDisambiguatorJ] = Map(DisambiguationPolicy.Default -> disambiguator).asJava
 
     new SpotlightModel(tokenizer, spotters, disambiguators, properties)
