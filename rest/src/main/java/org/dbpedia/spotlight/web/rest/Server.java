@@ -27,20 +27,23 @@ import org.dbpedia.spotlight.db.model.TextTokenizer;
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ;
 import org.dbpedia.spotlight.exceptions.InitializationException;
 import org.dbpedia.spotlight.exceptions.InputException;
-import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters;
 import org.dbpedia.spotlight.model.DBpediaResource;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SpotlightFactory;
 import org.dbpedia.spotlight.model.SpotterConfiguration;
+import org.dbpedia.spotlight.sparql.SparqlQueryExecuter;
 import org.dbpedia.spotlight.spot.Spotter;
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy;
 import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy;
+import scala.collection.JavaConverters;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -72,9 +75,11 @@ public class Server {
     //This is currently only used in the DB-based version.
     private static TextTokenizer tokenizer;
 
-    protected static CombineAllAnnotationFilters combinedFilters = null;
-
     private static String namespacePrefix = SpotlightConfiguration.DEFAULT_NAMESPACE;
+
+    private static SparqlQueryExecuter sparqlExecuter = null;
+
+    private static List<Double> spotterThresholds;
 
     public static void main(String[] args) throws IOException, InterruptedException, URISyntaxException, ClassNotFoundException, InitializationException {
 
@@ -101,9 +106,8 @@ public class Server {
             setDisambiguators(factory.disambiguators());
             setSpotters(factory.spotters());
             setNamespacePrefix(configuration.getDbpediaResource());
-
-            setCombinedFilters(new CombineAllAnnotationFilters(Server.getConfiguration()));
-
+            setSparqlExecuter(configuration.getSparqlExecuter());
+            setSpotterThresholds(configuration.getSimilarityThresholds());
 
         } else {
             //We are using a model folder:
@@ -126,6 +130,8 @@ public class Server {
             setTokenizer(db.tokenizer());
             setSpotters(db.spotters());
             setDisambiguators(db.disambiguators());
+            setSparqlExecuter(db.sparqlExecuter());
+            setSpotterThresholds(db.simThresholds());
 
         }
 
@@ -255,19 +261,28 @@ public class Server {
         Server.tokenizer = tokenizer;
     }
 
-    public static CombineAllAnnotationFilters getCombinedFilters() {
-        return combinedFilters;
-    }
-
-    public static void setCombinedFilters(CombineAllAnnotationFilters combinedFilters) {
-        Server.combinedFilters = combinedFilters;
-    }
-
     public static String getPrefixedDBpediaURL(DBpediaResource resource) {
         return namespacePrefix + resource.uri();
     }
 
     public static void setNamespacePrefix(String namespacePrefix) {
         Server.namespacePrefix = namespacePrefix;
+    }
+
+    private static void setSparqlExecuter(SparqlQueryExecuter sparqlExecuter)
+    {
+       Server.sparqlExecuter = sparqlExecuter;
+    }
+
+    public static SparqlQueryExecuter getSparqlExecute(){
+        return sparqlExecuter;
+    }
+
+    private static void setSpotterThresholds( List<Double> spotterThresholds){
+       Server.spotterThresholds =  spotterThresholds;
+    }
+
+    public static  List<Double> getSpotterThresholds(){
+       return spotterThresholds;
     }
 }

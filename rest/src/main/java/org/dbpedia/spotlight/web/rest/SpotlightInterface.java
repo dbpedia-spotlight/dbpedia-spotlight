@@ -24,7 +24,9 @@ import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ;
 import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.exceptions.SpottingException;
-import org.dbpedia.spotlight.filter.annotations.PercentageOfSecondFilter;
+import org.dbpedia.spotlight.filter.visitor.FilterElement;
+import org.dbpedia.spotlight.filter.visitor.FilterOccsImpl;
+import org.dbpedia.spotlight.filter.visitor.OccsFilter;
 import org.dbpedia.spotlight.model.*;
 import org.dbpedia.spotlight.spot.Spotter;
 
@@ -37,7 +39,7 @@ import java.util.List;
  *
  * @author maxjakob, pablomendes
  */
-public class SpotlightInterface  {
+public class SpotlightInterface {
 
     Log LOG = LogFactory.getLog(this.getClass());
 
@@ -153,18 +155,10 @@ public class SpotlightInterface  {
         ParagraphDisambiguatorJ disambiguator = Server.getDisambiguator(disambiguatorName);
         List<DBpediaResourceOccurrence> occList = disambiguate(spots, disambiguator);
 
-        // Filter: Old monolithic way
-        PercentageOfSecondFilter anotherFilter = new PercentageOfSecondFilter(confidence);
-        if (Server.getCombinedFilters() != null) {
-            // Linking / filtering
-            scala.collection.immutable.List<OntologyType> ontologyTypes = Factory.ontologyType().fromCSVString(ontologyTypesString);
-            occList = Server.getCombinedFilters().filter(occList, confidence, support, ontologyTypes, sparqlQuery, blacklist, coreferenceResolution);
-        }
+        FilterElement filter = new OccsFilter(confidence, support, ontologyTypesString, sparqlQuery, blacklist, coreferenceResolution, Server.getSpotterThresholds(), Server.getSparqlExecute());
+        occList = filter.accept(new FilterOccsImpl() ,occList);
 
-        occList = anotherFilter.filterOccs(occList);
-        // Filter: TODO run occurrences through a list of annotation filters (which can be passed by parameter)
-        // Map<String,AnnotationFilter> annotationFilters = buildFilters(occList, confidence, support, dbpediaTypes, sparqlQuery, blacklist, coreferenceResolution);
-        //AnnotationFilter annotationFilter = annotationFilters.get(CombineAllAnnotationFilters.class.getSimpleName());
+
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("Shown:");
