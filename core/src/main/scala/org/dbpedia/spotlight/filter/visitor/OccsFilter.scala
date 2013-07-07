@@ -21,13 +21,12 @@ import org.dbpedia.spotlight.sparql.SparqlQueryExecuter
 import scala.collection.JavaConverters._
 
 
-
 class OccsFilter(confidence: Double, support: Int,
                  ontologyTypes: String, sparqlQuery: String, blacklist: Boolean, coreferenceResolution: Boolean,
                  simThresholds: java.util.List[java.lang.Double], sparqlExecuter: SparqlQueryExecuter) extends FilterElement {
 
   //Converting thresholds to scala list
-  private val thresholds:List[Double] = simThresholds.asScala.map(v=>v.toDouble).toList
+  private val thresholds: List[Double] = simThresholds.asScala.map(v => v.toDouble).toList
 
   /**
    *
@@ -93,11 +92,17 @@ class OccsFilter(confidence: Double, support: Int,
   /**
    * List of available filters
    */
-  private val elements: List[FilterElement] =  List(supportFilter(support),
-                                                typeFilter(ontologyTypes, listColor),
-                                                sparqlFilter(sparqlExecuter, sparqlQuery, listColor),
-                                                confidenceFilter(thresholds,confidence),
-                                                percentageOfSecondFilter(confidence))
+  private val elements: List[FilterElement] = if (thresholds.size == 0)
+    List(supportFilter(support),
+      typeFilter(ontologyTypes, listColor),
+      sparqlFilter(sparqlExecuter, sparqlQuery, listColor),
+      confidenceFilter(thresholds, confidence),
+      percentageOfSecondFilter(confidence))
+  else
+    List(supportFilter(support),
+      typeFilter(ontologyTypes, listColor),
+      sparqlFilter(sparqlExecuter, sparqlQuery, listColor),
+      percentageOfSecondFilter(confidence))
 
 
   /**
@@ -108,13 +113,13 @@ class OccsFilter(confidence: Double, support: Int,
    * @param occs
    * @return
    */
-  def accept(visitor: FilterOccsVisitor, occs : java.util.List[DBpediaResourceOccurrence]): java.util.List[DBpediaResourceOccurrence]= {
+  def accept(visitor: FilterOccsVisitor, occs: java.util.List[DBpediaResourceOccurrence]): java.util.List[DBpediaResourceOccurrence] = {
 
     if (coreferenceResolution) return new CoreferenceFilter().filterOccs(occs.asScala.toTraversable).toList.asJava
 
-    var result:java.util.List[DBpediaResourceOccurrence]= occs
+    var result: java.util.List[DBpediaResourceOccurrence] = occs
 
-    elements.foreach(elem => result= elem.accept(visitor,result))
+    elements.foreach(elem => result = elem.accept(visitor, result))
 
     result
   }
