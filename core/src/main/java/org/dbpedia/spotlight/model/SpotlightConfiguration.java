@@ -320,10 +320,4 @@ public class SpotlightConfiguration {
     }
 
 
-    public SparqlQueryExecuter getSparqlExecuter() {
-        return new SparqlQueryExecuter(sparqlMainGraph, sparqlEndpoint);
-    }
-
-
-
 }

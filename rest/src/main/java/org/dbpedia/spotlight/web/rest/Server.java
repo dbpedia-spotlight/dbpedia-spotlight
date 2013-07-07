@@ -79,7 +79,7 @@ public class Server {
 
     private static SparqlQueryExecuter sparqlExecuter = null;
 
-    private static List<Double> spotterThresholds;
+    private static List<Double> spotterThresholds = new ArrayList<Double>();
 
     public static void main(String[] args) throws IOException, InterruptedException, URISyntaxException, ClassNotFoundException, InitializationException {
 
@@ -106,7 +106,7 @@ public class Server {
             setDisambiguators(factory.disambiguators());
             setSpotters(factory.spotters());
             setNamespacePrefix(configuration.getDbpediaResource());
-            setSparqlExecuter(configuration.getSparqlExecuter());
+            setSparqlExecuter(configuration.getSparqlEndpoint(), configuration.getSparqlMainGraph());
             setSpotterThresholds(configuration.getSimilarityThresholds());
 
         } else {
@@ -130,9 +130,7 @@ public class Server {
             setTokenizer(db.tokenizer());
             setSpotters(db.spotters());
             setDisambiguators(db.disambiguators());
-            setSparqlExecuter(db.sparqlExecuter());
-            setSpotterThresholds(db.simThresholds());
-
+            setSparqlExecuter(db.properties().getProperty("endpoint", ""),db.properties().getProperty("graph", ""));
         }
 
         //ExternalUriWadlGeneratorConfig.setUri(configuration.getServerURI()); //TODO get another parameter, maybe getExternalServerURI since Grizzly will use this in order to find out to which port to bind
@@ -269,9 +267,12 @@ public class Server {
         Server.namespacePrefix = namespacePrefix;
     }
 
-    private static void setSparqlExecuter(SparqlQueryExecuter sparqlExecuter)
+    private static void setSparqlExecuter(String endpoint, String graph)
     {
-       Server.sparqlExecuter = sparqlExecuter;
+        if (endpoint == null || endpoint.equals(""))  endpoint= "http://dbpedia.org/sparql";
+        if (graph == null || graph.equals(""))  endpoint= "http://dbpedia.org";
+
+        Server.sparqlExecuter = new SparqlQueryExecuter(graph, endpoint);
     }
 
     public static SparqlQueryExecuter getSparqlExecute(){
