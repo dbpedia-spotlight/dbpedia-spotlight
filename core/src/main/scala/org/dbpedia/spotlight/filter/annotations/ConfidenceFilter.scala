@@ -18,9 +18,12 @@ package org.dbpedia.spotlight.filter.annotations
 
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
 import org.apache.commons.logging.LogFactory
-import org.dbpedia.spotlight.filter.Filter
+import org.dbpedia.spotlight.filter.visitor.{FilterOccsVisitor, FilterElement}
+import java.util
+import scala.collection.JavaConversions._
 
-class PercentageOfSecondFilter(val confidence : Double) extends AnnotationFilter with Filter {
+
+class PercentageOfSecondFilter(val confidence : Double) extends AnnotationFilter with FilterElement {
 
     private val LOG = LogFactory.getLog(this.getClass)
 
@@ -35,9 +38,15 @@ class PercentageOfSecondFilter(val confidence : Double) extends AnnotationFilter
             Some(occ)
         }
     }
+
+
+  def accept(visitor: FilterOccsVisitor, occs: util.List[DBpediaResourceOccurrence]): java.util.List[DBpediaResourceOccurrence]= {
+    visitor.visit(this, occs)
+  }
+
 }
 
-class ConfidenceFilter(val simThresholds : List[Double], val confidence : Double) extends AnnotationFilter  {
+class ConfidenceFilter(val simThresholds : List[Double], val confidence : Double) extends AnnotationFilter with FilterElement {
 
     private val LOG = LogFactory.getLog(this.getClass)
 
@@ -52,4 +61,7 @@ class ConfidenceFilter(val simThresholds : List[Double], val confidence : Double
         }
     }
 
+  def accept(visitor: FilterOccsVisitor, occs: util.List[DBpediaResourceOccurrence]): java.util.List[DBpediaResourceOccurrence]= {
+    visitor.visit(this, occs)
+  }
 }
