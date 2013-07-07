@@ -94,7 +94,7 @@ public class Candidates {
 
         Enumeration.Value listColor = blacklist ? FilterPolicy$.MODULE$.Blacklist() : FilterPolicy$.MODULE$.Whitelist();
 
-        FilterElement filter = new OccsFilter(confidence, support, ontologyTypesString, sparqlQuery, blacklist, coreferenceResolution, Server.getSpotterThresholds(), Server.getSparqlExecute());
+        FilterElement filter = new OccsFilter(confidence, support, ontologyTypesString, sparqlQuery, blacklist, coreferenceResolution, Server.getSimilarityThresholds(), Server.getSparqlExecute());
 
         Map<SurfaceFormOccurrence,List<DBpediaResourceOccurrence>> filteredEntityCandidates = entityCandidates;
 

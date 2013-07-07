@@ -155,7 +155,7 @@ public class SpotlightInterface {
         ParagraphDisambiguatorJ disambiguator = Server.getDisambiguator(disambiguatorName);
         List<DBpediaResourceOccurrence> occList = disambiguate(spots, disambiguator);
 
-        FilterElement filter = new OccsFilter(confidence, support, ontologyTypesString, sparqlQuery, blacklist, coreferenceResolution, Server.getSpotterThresholds(), Server.getSparqlExecute());
+        FilterElement filter = new OccsFilter(confidence, support, ontologyTypesString, sparqlQuery, blacklist, coreferenceResolution, Server.getSimilarityThresholds(), Server.getSparqlExecute());
         occList = filter.accept(new FilterOccsImpl() ,occList);
 
 

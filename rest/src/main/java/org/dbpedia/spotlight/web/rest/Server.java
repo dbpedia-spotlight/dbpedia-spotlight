@@ -79,7 +79,7 @@ public class Server {
 
     private static SparqlQueryExecuter sparqlExecuter = null;
 
-    private static List<Double> spotterThresholds = new ArrayList<Double>();
+    private static List<Double> similarityThresholds = new ArrayList<Double>();
 
     public static void main(String[] args) throws IOException, InterruptedException, URISyntaxException, ClassNotFoundException, InitializationException {
 
@@ -107,7 +107,7 @@ public class Server {
             setSpotters(factory.spotters());
             setNamespacePrefix(configuration.getDbpediaResource());
             setSparqlExecuter(configuration.getSparqlEndpoint(), configuration.getSparqlMainGraph());
-            setSpotterThresholds(configuration.getSimilarityThresholds());
+            setSimilarityThresholds(configuration.getSimilarityThresholds());
 
         } else {
             //We are using a model folder:
@@ -279,11 +279,11 @@ public class Server {
         return sparqlExecuter;
     }
 
-    private static void setSpotterThresholds( List<Double> spotterThresholds){
-       Server.spotterThresholds =  spotterThresholds;
+    private static void setSimilarityThresholds( List<Double> similarityThresholds){
+       Server.similarityThresholds =  similarityThresholds;
     }
 
-    public static  List<Double> getSpotterThresholds(){
-       return spotterThresholds;
+    public static  List<Double> getSimilarityThresholds(){
+       return similarityThresholds;
     }
 }
