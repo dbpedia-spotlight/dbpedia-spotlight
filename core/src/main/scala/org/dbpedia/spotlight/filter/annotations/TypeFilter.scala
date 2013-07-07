@@ -18,8 +18,11 @@ package org.dbpedia.spotlight.filter.annotations
 
 import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.model.{OntologyType, DBpediaResource, DBpediaType, DBpediaResourceOccurrence}
+import org.dbpedia.spotlight.filter.visitor.{FilterElement, FilterOccsVisitor}
+import scala.collection.JavaConversions._
+import java.util
 
-class TypeFilter(var ontologyTypes : List[OntologyType], val blacklistOrWhitelist : FilterPolicy.ListColor) extends AnnotationFilter  {
+class TypeFilter(var ontologyTypes : List[OntologyType], val blacklistOrWhitelist : FilterPolicy.ListColor) extends AnnotationFilter  with FilterElement {
 
     private val LOG = LogFactory.getLog(this.getClass)
 
@@ -56,5 +59,10 @@ class TypeFilter(var ontologyTypes : List[OntologyType], val blacklistOrWhitelis
             None
         }
     }
+
+
+  def accept(visitor: FilterOccsVisitor, occs: util.List[DBpediaResourceOccurrence]): java.util.List[DBpediaResourceOccurrence]= {
+    visitor.visit(this, occs)
+  }
 
 }

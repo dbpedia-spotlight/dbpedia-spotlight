@@ -28,7 +28,6 @@ import java.io.File
 import org.dbpedia.spotlight.spot._
 import ahocorasick.AhoCorasickSpotter
 import opennlp.{ProbabilisticSurfaceFormDictionary, OpenNLPChunkerSpotter}
-import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters
 import org.dbpedia.spotlight.tagging.lingpipe.{LingPipeTextUtil, LingPipeTaggedTokenProvider, LingPipeFactory}
 import collection.JavaConversions._
 import org.dbpedia.spotlight.annotate.DefaultAnnotator
@@ -175,10 +174,6 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
     def annotator() ={
         new DefaultAnnotator(spotter(), new MergedOccurrencesDisambiguator(contextSearcher))
         //new DefaultParagraphAnnotator(spotter(), disambiguator())
-    }
-
-    def filter() ={
-        new CombineAllAnnotationFilters(configuration)
     }
 
     def taggedTokenProvider() = {
