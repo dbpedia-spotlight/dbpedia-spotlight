@@ -8,6 +8,7 @@ import opennlp.tools.sentdetect.{SentenceModel, SentenceDetectorME}
 import opennlp.tools.postag.{POSModel, POSTaggerME}
 import org.dbpedia.spotlight.disambiguate.mixtures.UnweightedMixture
 import similarity.GenerativeContextSimilarity
+import scala.collection.JavaConverters._
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy
 import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ
@@ -18,17 +19,12 @@ import opennlp.tools.chunker.ChunkerModel
 import opennlp.tools.namefind.TokenNameFinderModel
 import stem.SnowballStemmer
 import tokenize.{OpenNLPTokenizer, LanguageIndependentTokenizer}
-import org.dbpedia.spotlight.sparql.SparqlQueryExecuter
-import scala.collection.JavaConverters._
-import java.util
 
 
 class SpotlightModel(val tokenizer: TextTokenizer,
                      val spotters: java.util.Map[SpotterPolicy, Spotter],
                      val disambiguators: java.util.Map[DisambiguationPolicy, ParagraphDisambiguatorJ],
-                     val properties: Properties,
-                     val sparqlExecuter :SparqlQueryExecuter,
-                     val simThresholds : util.List[java.lang.Double])
+                     val properties: Properties)
 
 object SpotlightModel {
 
@@ -76,14 +72,6 @@ object SpotlightModel {
       case s: String => new SnowballStemmer(s)
     }
 
-    //Load the sparql executer from the model file
-    def sparqlExecuter(): SparqlQueryExecuter = {
-      val endpoint = properties.getProperty("endpoint", "http://dbpedia.org/sparql")
-      val graph = properties.getProperty("graph", "http://dbpedia.org")
-
-      new SparqlQueryExecuter(graph, endpoint)
-    }
-
     val c = properties.getProperty("opennlp_parallel", Runtime.getRuntime.availableProcessors().toString).toInt
     val cores = (1 to c)
 
@@ -124,8 +112,6 @@ object SpotlightModel {
       new GenerativeContextSimilarity(tokenTypeStore)
     ))
 
-    val spotterThresholds = loadSpotterThresholds(new File(modelFolder, "spotter_thresholds.txt"))
-
     //If there is at least one NE model or a chunker, use the OpenNLP spotter:
     val spotter = if( new File(modelFolder, "opennlp").exists() && new File(modelFolder, "opennlp").list().exists(f => f.startsWith("ner-") || f.startsWith("chunker")) ) {
       val nerModels = new File(modelFolder, "opennlp").list().filter(_.startsWith("ner-")).map { f: String =>
@@ -143,7 +129,7 @@ object SpotlightModel {
         nerModels,
         sfStore,
         stopwords,
-        Some(spotterThresholds)
+        Some(loadSpotterThresholds(new File(modelFolder, "spotter_thresholds.txt")))
       ).asInstanceOf[Spotter]
 
       if(cores.size == 1)
@@ -159,7 +145,7 @@ object SpotlightModel {
       new FSASpotter(
         dict,
         sfStore,
-        Some(spotterThresholds),
+        Some(loadSpotterThresholds(new File(modelFolder, "spotter_thresholds.txt"))),
         stopwords
       ).asInstanceOf[Spotter]
     }
@@ -167,6 +153,6 @@ object SpotlightModel {
 
     val spotters: java.util.Map[SpotterPolicy, Spotter] = Map(SpotterPolicy.SpotXmlParser -> new SpotXmlParser(), SpotterPolicy.Default -> spotter).asJava
     val disambiguators: java.util.Map[DisambiguationPolicy, ParagraphDisambiguatorJ] = Map(DisambiguationPolicy.Default -> disambiguator).asJava
-    new SpotlightModel(tokenizer, spotters, disambiguators, properties,sparqlExecuter, spotterThresholds.map(elem => java.lang.Double.valueOf(elem.toString)).asJava)
+    new SpotlightModel(tokenizer, spotters, disambiguators, properties)
   }
 }
