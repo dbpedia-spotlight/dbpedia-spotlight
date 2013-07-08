@@ -34,7 +34,7 @@ package org.dbpedia.spotlight.disambiguate
  * limitations under the License.
  */
 
-import scalaj.collection.Imports._
+import scala.collection.JavaConverters._
 import org.apache.commons.logging.LogFactory
 import org.apache.lucene.search.Explanation
 import org.dbpedia.spotlight.model._

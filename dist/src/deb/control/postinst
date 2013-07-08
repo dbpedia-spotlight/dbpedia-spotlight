@@ -7,5 +7,59 @@
 # else
 # 	[ -x /etc/init.d/dbpedia-spotlight ] && /etc/init.d/dbpedia-spotlight start
 # fi
-chmod a+rx /usr/bin/dbpedia-spotlight
-echo "Now you can start your server via /usr/bin/dbpedia-spotlight"
+
+#Global variables
+DBPEDIA_SPOTLIGHT_VERSION=0.6
+DOWNLOAD_SITE="http://spotlight.sztaki.hu/downloads/"
+DATA_FOLDER="/usr/share/dbpedia-spotlight-"
+FILE_SUFIX=".tar.gz"
+I18N_CODES=('da' 'de' 'en' 'es' 'fr' 'hu' 'it' 'pt' 'ru' 'sv' 'tr')
+I18N_LABELS=('Danish' 'German' 'English' 'Spanish' 'French' 'Hungarian' 'Italian' 'Portuguese' 'Russian' 'Swedish' 'Turkish')
+
+echo -e "\n"
+echo "DBpedia Spotlight Languages:"
+echo -e "\n"
+
+ELEMENTS=${#I18N_CODES[@]}
+for (( i=0;i<$ELEMENTS;i++)); do
+    echo ${I18N_CODES[${i}]}" - "${I18N_LABELS[${i}]}
+done
+
+echo -e "\n"
+echo "Please type the i18n language code that you would like to use with (E.g: en for English): (Default: en)"
+
+read -a SELECTED_LANGUAGE
+
+if  ! [ -n "$SELECTED_LANGUAGE" ]; then
+    export SELECTED_LANGUAGE="en"
+fi
+
+
+mkdir $DATA_FOLDER$SELECTED_LANGUAGE
+
+echo -e "\n"
+echo "Downloading the db-backed on selected language..."
+echo -e "\n"
+
+wget -t 3 -c --waitretry=30 -P $DATA_FOLDER$SELECTED_LANGUAGE $DOWNLOAD_SITE$SELECTED_LANGUAGE$FILE_SUFIX
+
+echo -e "\n"
+echo "Trying to unpack the  $SELECTED_LANGUAGE$FILE_SUFIX file..."
+echo -e "\n"
+
+tar xvfC $DATA_FOLDER$SELECTED_LANGUAGE/$SELECTED_LANGUAGE$FILE_SUFIX $DATA_FOLDER$SELECTED_LANGUAGE/
+rm $DATA_FOLDER$SELECTED_LANGUAGE/$SELECTED_LANGUAGE$FILE_SUFIX
+
+echo -e "\n"
+echo "DBpedia Spotlight Settings:"
+echo -e "\n"
+echo "Please type the maximum amount of memory that you want to reserve for this Spotlight instance: (E.g: 8g, 14g)"
+read MAX_MEMORY
+echo "Please type the port that you want to use with this Spotlight instance: (E.g: 2222, 8080)"
+read DBPEDIA_SPOTLIGHT_PORT
+
+echo -e "\n"
+echo "Creating DBpedia Spotlight bin command ..."
+echo "nohup java -jar -Xmx$MAX_MEMORY /usr/share/java/dbpedia-spotlight-$DBPEDIA_SPOTLIGHT_VERSION-jar-with-dependencies.jar $DATA_FOLDER$SELECTED_LANGUAGE/$SELECTED_LANGUAGE http://localhost:$DBPEDIA_SPOTLIGHT_PORT/rest/ > /var/log/dbpedia-spotlight-$SELECTED_LANGUAGE.log 2>&1 &" > /usr/bin/dbpedia-spotlight-$SELECTED_LANGUAGE
+chmod a+rx /usr/bin/dbpedia-spotlight-$SELECTED_LANGUAGE
+echo "Now you can start your server via /usr/bin/dbpedia-spotlight-$SELECTED_LANGUAGE"

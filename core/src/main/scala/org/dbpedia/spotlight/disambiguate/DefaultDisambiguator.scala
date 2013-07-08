@@ -26,7 +26,7 @@ import org.apache.lucene.search.Explanation
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.lucene.disambiguate.{MixedWeightsDisambiguator, MergedOccurrencesDisambiguator}
 import org.dbpedia.spotlight.exceptions.{ItemNotFoundException, SearchException, InputException}
-import scalaj.collection.Imports._
+import scala.collection.JavaConverters._
 import scala.collection.JavaConversions._
 
 /**
@@ -78,7 +78,6 @@ class DefaultDisambiguator(val contextSearcher: ContextSearcher) extends Disambi
      * Executes disambiguation per occurrence, returns a list of possible candidates.
      * Can be seen as a ranking (rather than classification) task: query instance in, ranked list of target URIs out.
      *
-     * @param sfOccurrences
      * @param k
      * @return
      * @throws org.dbpedia.spotlight.exceptions.SearchException

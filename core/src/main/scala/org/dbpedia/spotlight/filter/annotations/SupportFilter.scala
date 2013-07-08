@@ -18,9 +18,12 @@ package org.dbpedia.spotlight.filter.annotations
 
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
 import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.filter.visitor.{FilterOccsVisitor, FilterElement}
+import java.util
+import scala.collection.JavaConversions._
 
 
-class SupportFilter(val targetSupport : Int) extends AnnotationFilter  {
+class SupportFilter(val targetSupport : Int) extends AnnotationFilter with FilterElement  {
 
     private val LOG = LogFactory.getLog(this.getClass)
 
@@ -34,4 +37,7 @@ class SupportFilter(val targetSupport : Int) extends AnnotationFilter  {
         }
     }
 
+  def accept(visitor: FilterOccsVisitor, occs: util.List[DBpediaResourceOccurrence]): java.util.List[DBpediaResourceOccurrence]= {
+    visitor.visit(this, occs)
+  }
 }

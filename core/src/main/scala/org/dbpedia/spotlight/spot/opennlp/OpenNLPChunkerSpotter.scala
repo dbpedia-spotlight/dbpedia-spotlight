@@ -1,6 +1,6 @@
 package org.dbpedia.spotlight.spot.opennlp
 
-
+import scala.collection.JavaConverters._
 import org.dbpedia.spotlight.spot.{OpenNLPUtil, Spotter}
 import opennlp.tools.chunker.{ChunkerModel, ChunkerME, Chunker}
 import java.io.FileInputStream
@@ -13,7 +13,7 @@ import scala.util.control.Breaks._
 import org.dbpedia.spotlight.model.{SurfaceForm, SurfaceFormOccurrence, Text}
 import collection.mutable.HashSet
 import io.Source
-import scalaj.collection.Implicits._
+
 
 
 /**

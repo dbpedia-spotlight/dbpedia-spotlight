@@ -20,12 +20,12 @@ You can use our demonstration [Web Service](http://github.com/dbpedia-spotlight/
 
 #### Run your own server
 
-If you need service reliability and lower response times, you can run DBpedia Spotlight in your own [In-House Server](https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Installation).
+If you need service reliability and lower response times, you can run DBpedia Spotlight in your own [In-House Server](https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Installation). Try our automated setup script for [dpkg](https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Debian-Package-Installation:-How-To):
 
-    wget http://spotlight.dbpedia.org/download/release-0.6/dbpedia-spotlight-quickstart-0.6.5.zip
-    unzip dbpedia-spotlight-quickstart-0.6.5.zip
-    cd dbpedia-spotlight-quickstart-0.6.5/
-    ./run.sh
+    wget http://spotlight.sztaki.hu/downloads/dbpedia-spotlight-0.6.deb
+    dpkg -i dbpedia-spotlight-0.6.deb
+    #Follow the installation assistant
+    /usr/bin/dbpedia-spotlight-[language]
 
 #### Build from source
 

@@ -36,7 +36,7 @@ package org.dbpedia.spotlight.lucene.index
  *
  */
 
-import scalaj.collection.Imports._
+import scala.collection.JavaConverters._
 import org.dbpedia.spotlight.util.IndexingConfiguration
 import java.io.File
 import io.Source
@@ -93,7 +93,7 @@ object AddCountsToIndex {
 
         val sfIndexer = new IndexEnricher(sourceIndexFileName,targetIndexFileName,config)
 
-        val counts = loadCounts(countsFileName)
+        val counts : java.util.Map[String, java.lang.Integer]= loadCounts(countsFileName).asInstanceOf[java.util.Map[String, java.lang.Integer]]
         LOG.info("Adding to index.")
         sfIndexer.enrichWithCounts(counts)
         LOG.info("Done.")

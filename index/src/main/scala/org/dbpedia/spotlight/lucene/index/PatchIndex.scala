@@ -18,7 +18,6 @@
 
 package org.dbpedia.spotlight.lucene.index
 
-import scalaj.collection.Imports._
 import org.dbpedia.spotlight.lucene.LuceneManager
 import io.Source
 import org.dbpedia.spotlight.model.DBpediaResource
@@ -67,7 +66,7 @@ object PatchIndex {
         val sfIndexer = new IndexEnricher(sourceIndexFileName, targetIndexFileName, config)
 
         val typesMap = AddTypesToIndex.loadTypes(instanceTypesFileName);
-        val countsMap = AddCountsToIndex.loadCounts(countsFileName)
+        val countsMap: java.util.Map[String, java.lang.Integer] = AddCountsToIndex.loadCounts(countsFileName).asInstanceOf[java.util.Map[String, java.lang.Integer]]
         val sfMap = AddSurfaceFormsToIndex.loadSurfaceForms(surfaceFormsFileName, AddSurfaceFormsToIndex.fromTitlesToAlternatives)
 
         LOG.info("Expunge deletes.")

@@ -22,7 +22,7 @@ import org.dbpedia.spotlight.exceptions.InputException
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException
 import org.dbpedia.spotlight.exceptions.SearchException
 import org.dbpedia.spotlight.model._
-import scalaj.collection.Imports._
+import scala.collection.JavaConverters._
 import java.util.HashMap
 
 /**

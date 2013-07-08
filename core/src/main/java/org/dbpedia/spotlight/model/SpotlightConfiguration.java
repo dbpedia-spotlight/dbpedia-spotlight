@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.search.BooleanQuery;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
+import org.dbpedia.spotlight.sparql.SparqlQueryExecuter;
 
 import java.io.*;
 import java.net.URI;
@@ -283,8 +284,8 @@ public class SpotlightConfiguration {
         // Configure lucene to accept a larger number of or queries
         BooleanQuery.setMaxClauseCount(3072);
 
-        sparqlEndpoint = config.getProperty("org.dbpedia.spotlight.sparql.endpoint", "").trim(); //TODO how to fail gracefully for endpoint?
-        sparqlMainGraph = config.getProperty("org.dbpedia.spotlight.sparql.graph", "").trim();
+        sparqlEndpoint = config.getProperty("org.dbpedia.spotlight.sparql.endpoint", "http://dbpedia.org/sparql").trim();
+        sparqlMainGraph = config.getProperty("org.dbpedia.spotlight.sparql.graph", "http://dbpedia.org").trim();
 
 
         String maxCacheSizeString = config.getProperty("jcs.default.cacheattributes.MaxObjects", "").trim();

@@ -250,7 +250,7 @@ class DBTwoStepDisambiguator(
   @throws(classOf[InputException])
   def disambiguate(paragraph: Paragraph): List[DBpediaResourceOccurrence] = {
     // return first from each candidate set
-    bestK(paragraph, 5)
+    bestK(paragraph, MAX_CANDIDATES)
       .filter(kv =>
       kv._2.nonEmpty)
       .map( kv =>

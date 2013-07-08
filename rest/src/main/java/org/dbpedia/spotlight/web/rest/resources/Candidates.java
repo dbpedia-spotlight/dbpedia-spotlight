@@ -27,8 +27,10 @@ import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException;
 import org.dbpedia.spotlight.exceptions.SearchException;
 import org.dbpedia.spotlight.exceptions.SpottingException;
-import org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters;
 import org.dbpedia.spotlight.filter.annotations.FilterPolicy$;
+import org.dbpedia.spotlight.filter.visitor.FilterElement;
+import org.dbpedia.spotlight.filter.visitor.FilterOccsImpl;
+import org.dbpedia.spotlight.filter.visitor.OccsFilter;
 import org.dbpedia.spotlight.model.*;
 import org.dbpedia.spotlight.spot.Spotter;
 import org.dbpedia.spotlight.web.rest.Server;
@@ -69,10 +71,7 @@ public class Candidates {
     Log LOG = LogFactory.getLog(this.getClass());
 
     // Annotation interface
-    /**
-     * TODO Does not do any filtering at the moment!!!
-     */
-    public Annotation process(String text, double confidence, int support, List<OntologyType> ontologyTypes,
+    public Annotation process(String text, double confidence, int support, String ontologyTypesString,
                               String sparqlQuery, boolean blacklist, boolean coreferenceResolution, Spotter spotter, ParagraphDisambiguatorJ disambiguator)
             throws SearchException, ItemNotFoundException, InputException, SpottingException {
 
@@ -95,11 +94,13 @@ public class Candidates {
 
         Enumeration.Value listColor = blacklist ? FilterPolicy$.MODULE$.Blacklist() : FilterPolicy$.MODULE$.Whitelist();
 
+        FilterElement filter = new OccsFilter(confidence, support, ontologyTypesString, sparqlQuery, blacklist, coreferenceResolution, Server.getSimilarityThresholds(), Server.getSparqlExecute());
+
         Map<SurfaceFormOccurrence,List<DBpediaResourceOccurrence>> filteredEntityCandidates = entityCandidates;
 
-        if (Server.getCombinedFilters() != null) {
-            CombineAllAnnotationFilters filters = Server.getCombinedFilters();
-            filteredEntityCandidates = filters.filter(entityCandidates, confidence, support, ontologyTypes, sparqlQuery, listColor, coreferenceResolution);
+        for (Map.Entry<SurfaceFormOccurrence,List<DBpediaResourceOccurrence>> entry : entityCandidates.entrySet())
+        {
+            filter.accept(new FilterOccsImpl() ,entry.getValue());
         }
 
         for(SurfaceFormOccurrence sfOcc : filteredEntityCandidates.keySet()) {
@@ -320,13 +321,6 @@ public class Candidates {
             throw new InputException("No text was specified in the &text parameter.");
         }
 
-        List<OntologyType> ontologyTypes = new ArrayList<OntologyType>();
-        String types[] = ontologyTypesString.trim().split(",");
-        for (String t : types){
-            if (!t.trim().equals("")) ontologyTypes.add(Factory.ontologyType().fromQName(t.trim()));
-            //LOG.info("type:"+t.trim());
-        }
-
         /* Setting defaults */
         if (Server.getTokenizer() == null && disambiguatorName==SpotlightConfiguration.DisambiguationPolicy.Default.name()
                 && text.length() > 1200) {
@@ -339,7 +333,7 @@ public class Candidates {
 
         /* Running Annotation */
 
-        Annotation annotation = process(text, confidence, support, ontologyTypes, sparqlQuery, blacklist, coreferenceResolution, spotter, disambiguator);
+        Annotation annotation = process(text, confidence, support, ontologyTypesString, sparqlQuery, blacklist, coreferenceResolution, spotter, disambiguator);
 
         LOG.debug("Shown: "+annotation.toXML());
         LOG.debug("****************************************************************");

@@ -32,15 +32,7 @@
 
         <heapspace.Xmx.compiler>-Xmx1g</heapspace.Xmx.compiler>
         <heapspace.Xmx.indexer>-Xmx1g</heapspace.Xmx.indexer>
-
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.compiler.version>1.6</java.compiler.version>
-        <maven.compiler.plugin.version>2.5.1</maven.compiler.plugin.version>
-        <maven.install.plugin.version>2.3.1</maven.install.plugin.version>
-        <maven.assembly.plugin.version>2.3</maven.assembly.plugin.version>
-        <maven.surefire.plugin.version>2.12.3</maven.surefire.plugin.version>
-        <scala.compiler.version>2.9.2</scala.compiler.version>
-        <scala.maven.plugin.version>3.1.0</scala.maven.plugin.version>
 
         <spotlight.basedir>${project.basedir}</spotlight.basedir>
     </properties>
@@ -56,10 +48,8 @@
         <module>rest</module>
         <module>index</module>
         <module>eval</module>
-        <module>live</module>
-        <module>topical</module>
-
-	<module>uima</module>
+	    <module>uima</module>
+        <module>dist</module>
     </modules>
 
     <build>
@@ -702,15 +692,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.scalaj</groupId>
-                <artifactId>scalaj-collection_2.9.1</artifactId>
-                <version>1.2</version>
-                <!--
-                    License: Apache Software License, Version 2.0
-                -->
-            </dependency>
-
-            <dependency>
                 <groupId>trove</groupId>
                 <artifactId>trove</artifactId>
                 <version>1.1-beta-5</version>
@@ -996,7 +977,6 @@
             <name>Maven Java Net Snapshots and Releases</name>
             <url>https://maven.java.net/content/groups/public/</url>
         </repository>
-
 
         <repository>
             <id>scala-tools.org</id>
