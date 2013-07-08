@@ -96,11 +96,14 @@ public class Candidates {
 
         FilterElement filter = new OccsFilter(confidence, support, ontologyTypesString, sparqlQuery, blacklist, coreferenceResolution, Server.getSimilarityThresholds(), Server.getSparqlExecute());
 
-        Map<SurfaceFormOccurrence,List<DBpediaResourceOccurrence>> filteredEntityCandidates = entityCandidates;
+        Map<SurfaceFormOccurrence,List<DBpediaResourceOccurrence>> filteredEntityCandidates = new HashMap<SurfaceFormOccurrence,List<DBpediaResourceOccurrence>>();;
 
         for (Map.Entry<SurfaceFormOccurrence,List<DBpediaResourceOccurrence>> entry : entityCandidates.entrySet())
         {
-            filter.accept(new FilterOccsImpl() ,entry.getValue());
+            List<DBpediaResourceOccurrence> result = filter.accept(new FilterOccsImpl() ,entry.getValue());
+
+            if (!result.isEmpty())
+                filteredEntityCandidates.put(entry.getKey(), result);
         }
 
         for(SurfaceFormOccurrence sfOcc : filteredEntityCandidates.keySet()) {
