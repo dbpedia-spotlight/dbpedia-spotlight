@@ -122,7 +122,7 @@ object SplitOccsSemiSupervised {
             else
                 mergeDirectories(trainingDir,outputDir)
 
-            val f = if(i==0) occsFile else toSplit
+            val f = if(i<2) occsFile else toSplit
 
             LOG.info("Start splitting occs into topics, iteration: "+i)
             if (i < iterations-1) {
@@ -133,8 +133,6 @@ object SplitOccsSemiSupervised {
             }
             else
                 AssignTopicsToOccs.assignTopics(f, classifier, threshold, outputDir, true)
-
-            toSplit.delete()
         }
 
         tmpDir.listFiles().foreach(_.delete())
