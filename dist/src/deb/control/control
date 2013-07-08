@@ -2,7 +2,7 @@ Package: dbpedia-spotlight
 Version: 0.6
 Section: misc
 Priority: optional
-Architecture: i386
+Architecture: all
 Depends: openjdk-6-jre | sun-java6-jre
 Maintainer: Pablo Mendes <pablo.mendes@fu-berlin.de>
 Description: DBpedia Spotlight is a tool for automatically annotating mentions of DBpedia resources in text.
