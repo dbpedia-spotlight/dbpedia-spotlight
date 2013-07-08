@@ -132,7 +132,7 @@ object SplitOccsSemiSupervised {
                 new File(trainingDir, TopicUtil.CATCH_TOPIC.getName + ".tsv").renameTo(toSplit)
             }
             else
-                AssignTopicsToOccs.assignTopics(f, classifier, threshold, outputDir, true)
+                AssignTopicsToOccs.assignTopics(f, classifier, threshold, outputDir, i > 1)
         }
 
         tmpDir.listFiles().foreach(_.delete())
@@ -211,14 +211,14 @@ object SplitOccsSemiSupervised {
                     writers(topic).println(occ.toTsvString)
                 })
                 assignedResourcesCtr += 1
-                if (assignedResourcesCtr % 100000 == 0) {
+                if (assignedResourcesCtr % 10000 == 0) {
                     LOG.info("Assigned " + assignedResourcesCtr + " occs to topics")
                     LOG.info("Latest assignment: " + lastResource.uri + " -> " + selectedTopics.foldLeft("")(_ + " " + _.getName))
                 }
             }
 
             ctr += 1
-            if (ctr % 100000 == 0)
+            if (ctr % 10000 == 0)
                 LOG.info(ctr + " occs processed!")
         })
 

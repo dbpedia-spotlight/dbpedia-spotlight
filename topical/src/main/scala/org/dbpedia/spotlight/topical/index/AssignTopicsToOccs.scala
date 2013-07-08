@@ -50,7 +50,7 @@ object AssignTopicsToOccs {
                         writers(topic).println(occ.toTsvString)
                         written = true
                         assignments += 1
-                        if (assignments % 1000 == 0)
+                        if (assignments % 10000 == 0)
                             LOG.info(assignments + "-th assignment: " + occ.id + ", " + occ.resource.uri + "->" + topic.getName)
                     }
                 }
