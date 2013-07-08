@@ -26,6 +26,7 @@ object TopicalMultiLabelClassifier {
     }
 
     def trainModel(corpus: File, modelOut: File, classifierType:String = "") {
+        LOG.info("Training multilabel classifier on corpus: %s, saving model to: %s".format(corpus.getAbsolutePath, modelOut.getAbsolutePath))
         val trainer = TopicalClassifierTrainer.byType(classifierType)
         modelOut.mkdirs()
         val topics = mutable.Map[Topic,(File,PrintWriter)]()
@@ -38,6 +39,7 @@ object TopicalMultiLabelClassifier {
                 (f,new PrintWriter(f))
             })._2
 
+            //Add this example to the topical corpus
             pw.println(line)
 
             topics.foreach {

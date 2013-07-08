@@ -24,7 +24,7 @@ object TopicDescription {
         for (topicItem <- xml \\ "topic") yield {
             val topic = new Topic((topicItem \\ "@name").head.text) // HACK: bug fix    Computer_science got read with more than 16 characters
             val categories = (topicItem \\ "categories").head.text.split(",").map(category => category.toCharArray.subSequence(0, category.length).toString.trim)
-            val keywords = (topicItem \\ "keywords").head.text.split(",").map(category => category.toCharArray.subSequence(0, category.length).toString.trim)
+            //val keywords = (topicItem \\ "keywords").head.text.split(",").map(category => category.toCharArray.subSequence(0, category.length).toString.trim)
 
             var iptcTopics = Set[String]()
             for (iptcItem <- topicItem \\ "iptc")
@@ -34,9 +34,9 @@ object TopicDescription {
             for (feedItem <- topicItem \\ "feed")
                 feeds += new URL((feedItem \\ "@url").head.text)
 
-            new TopicDescription(topic, categories, keywords, iptcTopics, feeds)
+            TopicDescription(topic, categories, iptcTopics, feeds)
         }
     }
 }
 
-class TopicDescription(val topic: Topic, val categories: Seq[String], val keywords: Seq[String], val iptcTopics: Set[String], val rssFeeds: Set[URL])
+case class TopicDescription(topic: Topic, categories: Seq[String],iptcTopics: Set[String], rssFeeds: Set[URL])

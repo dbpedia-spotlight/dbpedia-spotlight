@@ -48,21 +48,41 @@ object MultiLabelClassifier {
 
 trait TopicalClassifierTrainer {
     def trainModel(corpus:File, iterations:Int):TopicalClassifier
+    def trainModelIncremental(corpus:File, iterations:Int, classifier:TopicalClassifier)
 
     def trainModel(corpus:Iterator[(Topic,Text)],  iterations:Int):TopicalClassifier
+    def trainModelIncremental(corpus:Iterator[(Topic,Text)],  iterations:Int, classifier:TopicalClassifier)
 
     def trainModel(corpus:File):TopicalClassifier = trainModel(corpus,1)
+    def trainModelIncremental(corpus:File,classifier:TopicalClassifier) {
+        trainModelIncremental(corpus,1,classifier)
+    }
 
     def trainModel(corpus:Iterator[(Topic,Text)]):TopicalClassifier = trainModel(corpus,1)
+    def trainModelIncremental(corpus:Iterator[(Topic,Text)],classifier:TopicalClassifier) {
+        trainModelIncremental(corpus,1,classifier)
+    }
+
+    def needsShuffled:Boolean = false
+
+
+    def main(args:Array[String]) {
+        if(args.size < 2) {
+            throw new IllegalArgumentException("You have to provide at least: path to corpus, model output path [, optional:iterations]")
+        }
+
+        val iterations = if(args.length>2) args(2).toInt else 1
+
+        val m1 = trainModel(new File(args(0)),iterations)
+        m1.serialize(new File(args(1)))
+    }
 }
 
 object TopicalClassifierTrainer {
     def byType(classifierType:String):TopicalClassifierTrainer =
         classifierType match {
-            case "FactorieTopicalClassifier" => FactorieTopicalClassifier
             case _ => NaiveBayesTopicalClassifier // default
         }
-
 }
 
 object TopicalClassifierFactory {
@@ -70,10 +90,6 @@ object TopicalClassifierFactory {
 
     def fromFile(file:File, classifierType: String): Option[TopicalClassifier] = {
         LOG.info("Loading topical classifier...")
-
-        if (classifierType.endsWith("FactorieTopicalClassifier")) {
-            return Some(FactorieTopicalClassifier.deSerialize(file))
-        }
 
         if (classifierType.endsWith("NaiveBayesTopicalClassifier")) {
             return Some(NaiveBayesTopicalClassifier.deSerialize(file))
@@ -83,8 +99,8 @@ object TopicalClassifierFactory {
     }
 
     def fromType(classifierType:String): Option[TopicalClassifier] = {
-        if (classifierType.endsWith("FactorieTopicalClassifier")) {
-            val classifier = new FactorieTopicalClassifier
+        if (classifierType.endsWith("NaiveBayesTopicalClassifier")) {
+            val classifier = new NaiveBayesTopicalClassifier
             return Some(classifier)
         }
 

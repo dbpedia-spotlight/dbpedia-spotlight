@@ -24,14 +24,14 @@ object AssignTopicsToOccs {
     /**
      *
      * @param args 1st: path to input occs, 2nd: path to topical classification configuration file,
-     *             3rd: min confidence of assigning, 4th: output, 5th: append (true|false)
+     *             3rd: min confidence of assigning (see SplitOccsSemisupervised for more information), 4th: output, 5th: append (true|false)
      */
     def main(args: Array[String]) {
         val config = new TopicalClassificationConfiguration(args(1))
         assignTopics(new File(args(0)), TopicalClassifierFactory.fromFile(config.getModelFile, config.getClassifierType).get, args(2).toDouble, new File(args(3)), args(4).toBoolean)
     }
 
-    def assignTopics(occsFile: File, model: TopicalClassifier, minimalConfidence: Double, output: File, append: Boolean) {
+    def assignTopics(occsFile: File, model: TopicalClassifier, minimalConfidence: Double, output: File, append: Boolean = false) {
         val writers = Map[Topic, PrintWriter]()
 
         model.getTopics.foreach(topic => writers += (topic -> new PrintWriter(new FileWriter(new File(output, topic.getName + ".tsv"), append))))
@@ -50,7 +50,7 @@ object AssignTopicsToOccs {
                         writers(topic).println(occ.toTsvString)
                         written = true
                         assignments += 1
-                        if (assignments % 10000 == 0)
+                        if (assignments % 1000 == 0)
                             LOG.info(assignments + "-th assignment: " + occ.id + ", " + occ.resource.uri + "->" + topic.getName)
                     }
                 }

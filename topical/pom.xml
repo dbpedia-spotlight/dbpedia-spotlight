@@ -169,7 +169,7 @@
       <dependency>
         <groupId>cc.factorie</groupId>
         <artifactId>factorie</artifactId>
-        <version>1.0.0-M3</version>
+        <version>1.0.0-M4</version>
       </dependency>
 
     </dependencies>

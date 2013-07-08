@@ -50,6 +50,8 @@
         <module>eval</module>
 	    <module>uima</module>
         <module>dist</module>
+      <module>live</module>
+      <module>topical</module>
     </modules>
 
     <build>
@@ -288,6 +290,8 @@
                         </configuration>
                     </execution>
 
+                    <!--Dependencies for dbpedia spotlight live-->
+
                     <execution>
                         <id>install-hunposchain0.6_mod-jar</id>
                         <phase>install</phase>
@@ -362,6 +366,8 @@
                             <file>${spotlight.basedir}/lib/textcat-1.0.1.jar</file>
                         </configuration>
                     </execution>
+
+                    <!--Spotlight live dependencies-->
 
                 </executions>
             </plugin>
