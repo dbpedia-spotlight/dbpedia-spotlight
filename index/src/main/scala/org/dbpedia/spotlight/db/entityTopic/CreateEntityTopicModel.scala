@@ -1,39 +1,50 @@
-package org.dbpedia.spotlight.db.entityTopic
+package org.dbpedia.spotlight.db.entitytopic
 
 import java.io.{FileInputStream, File}
-import org.dbpedia.spotlight.db.memory.{DocumentStore, MemoryStore}
+import org.dbpedia.spotlight.db.memory.{MemoryCandidateMapStore, DocumentStore}
 import java.util.{Locale, Properties}
-import org.dbpedia.spotlight.db.model.{TextTokenizer, Stemmer}
-import opennlp.tools.tokenize.{TokenizerME, TokenizerModel}
-import opennlp.tools.sentdetect.{SentenceDetectorME, SentenceModel}
-import org.dbpedia.spotlight.db.tokenize.{LanguageIndependentTokenizer, OpenNLPTokenizer}
-import opennlp.tools.postag.{POSModel, POSTaggerME}
-import org.dbpedia.spotlight.db.concurrent.{SpotterWrapper, TokenizerWrapper}
-import org.dbpedia.spotlight.db._
+import org.dbpedia.spotlight.db.model.{ResourceStore, SurfaceFormStore, TextTokenizer}
 import org.dbpedia.spotlight.spot.Spotter
-import org.dbpedia.spotlight.entityTopic.{AnnotatingMarkupParser, WikipediaRecordReader, Annotation}
-import java.lang.String
-import java.util
-import org.dbpedia.spotlight.model.{Text, SurfaceForm, DBpediaResource}
+import org.dbpedia.spotlight.entitytopic.{AnnotatingMarkupParser, WikipediaRecordReader, Annotation}
+import scala.collection.JavaConversions._
+import org.dbpedia.spotlight.model.{Text}
 import opennlp.tools.util.Span
+import org.dbpedia.spotlight.db.{SpotlightModel, DBCandidateSearcher, WikipediaToDBpediaClosure}
+import scala.collection.mutable.ListBuffer
 
 
 class CreateEntityTopicModel( val locale:Locale,
                         val wikiToDBpediaClosure:WikipediaToDBpediaClosure,
                         val tokenizer: TextTokenizer,
                         val spotter: Spotter,
-                        val searcher: DBCandidateSearcher
+                        val searcher: DBCandidateSearcher,
+                        val candMap: MemoryCandidateMapStore,
+                        val properties: Properties
                         )  {
-  val docStore:DocumentStore=new DocumentStore()
-  val sfStore=searcher.sfStore
-  val resStore=searcher.resStore
+  val docStore: DocumentStore = new DocumentStore()
+  val sfStore: SurfaceFormStore = searcher.sfStore
+  val resStore: ResourceStore = searcher.resStore
 
+  val topicentityCount=new GlobalCounter()
+  val entitymentionCount=new GlobalCounter()
+  val entitywordCount=new GlobalCounter()
+
+  val documents:ListBuffer[Document]=new ListBuffer[Document]()
 
   def learnFromWiki(wikidump:String){
 
-    initializeDocuments(wikidump)
+    initializeWikiDocuments(wikidump)
 
-    //TODO: update the assignments and counts through gibbs sampling
+    updateAssignments(1)//hardcode iterations of updates
+  }
+
+  def updateAssignments(iterations:Int){
+    Document.init(topicentityCount,entitymentionCount,entitywordCount, candMap, properties)
+
+    for(i <- 1 to iterations){
+      documents.foreach((doc:Document)=>doc.updateAssignment())
+    }
+
   }
 
 
@@ -42,40 +53,27 @@ class CreateEntityTopicModel( val locale:Locale,
    *
    * @param wikidump filename of the wikidump
    */
-  def initializeDocuments(wikidump:String){
-    docStore.initSave() //prepare for saving the document assignments to tmp file
-    DocumentObj.init(this,100)//hardcode the topic number
+  def initializeWikiDocuments(wikidump:String){
+    DocumentInitializer.init(this,100)//hardcode the topic number
 
     //parse wiki dump to get wiki pages iteratively
     val wikireader: WikipediaRecordReader = new WikipediaRecordReader(new File(wikidump))
     val converter: AnnotatingMarkupParser = new AnnotatingMarkupParser(locale.getLanguage())
 
     while(wikireader.nextKeyValue()){
-      val title:String=wikireader.getCurrentKey
-      val id:String=wikireader.getWikipediaId
+      //val title:String=wikireader.getCurrentKey
+      //val id:String=wikireader.getWikipediaId
 
       val content: String = converter.parse(wikireader.getCurrentValue)
-      val annotations:util.List[Annotation]=converter.getWikiLinkAnnotations()
-
-      val resources:Array[DBpediaResource]=new Array[DBpediaResource](annotations.size())
-      val surfaces:Array[SurfaceForm]=new Array[SurfaceForm](annotations.size())
-      val spans:Array[Span]=new Array[Span](annotations.size())
+      val annotations: List[Annotation]=converter.getWikiLinkAnnotations().toList
 
       //parse the wiki page to get link anchors: each link anchor has a surface form, dbpedia resource, span attribute
-      var i:Int=0
-      while(i<annotations.size()){
-        val a:Annotation=annotations.get(i)
-        surfaces(i)=sfStore.getSurfaceForm(content.substring(a.begin,a.end))
-        resources(i)=resStore.getResourceByName(wikiToDBpediaClosure.wikipediaToDBpediaURI(a.value))//a.value.replaceFirst(namespace,"")
-        spans(i)=new Span(a.begin,a.end)
-        i+=1
-      }
+      val surfaces = annotations.map((a: Annotation)=> sfStore.getSurfaceForm(content.substring(a.begin,a.end))).toArray
+      val resources = annotations.map((a: Annotation) => resStore.getResourceByName(wikiToDBpediaClosure.wikipediaToDBpediaURI(a.value))).toArray
+      val spans = annotations.map((a: Annotation) => new Span(a.begin,a.end)).toArray
 
-      val doc:Document=DocumentObj.initDocument(new Text(content),resources,surfaces,spans)
-      docStore.save(doc)
+      documents+=DocumentInitializer.initDocument(new Text(content),resources,surfaces,spans)
     }
-
-    docStore.finishSave()
   }
 
 }
@@ -111,7 +109,7 @@ object CreateEntityTopicModel{
     val spotter:Spotter= SpotlightModel.createSpotter(modelFolder,sfStore,stopwords,cores)
     val searcher:DBCandidateSearcher = new DBCandidateSearcher(resStore, sfStore, candMapStore)
 
-    new CreateEntityTopicModel(locale,wikipediaToDBpediaClosure,tokenizer, spotter, searcher)
+    new CreateEntityTopicModel(locale,wikipediaToDBpediaClosure,tokenizer, spotter, searcher, candMapStore.asInstanceOf[MemoryCandidateMapStore], properties)
   }
 
   def main(args:Array[String]){

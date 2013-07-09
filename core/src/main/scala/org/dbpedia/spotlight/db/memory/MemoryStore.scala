@@ -2,7 +2,7 @@ package org.dbpedia.spotlight.db.memory
 
 
 import com.esotericsoftware.kryo.io.{Output, Input}
-import org.dbpedia.spotlight.model.{DBpediaType, FreebaseType, SchemaOrgType, OntologyType}
+import org.dbpedia.spotlight.model._
 import java.io._
 import scala.Predef._
 import com.esotericsoftware.kryo.serializers.{DefaultSerializers, MapSerializer, DefaultArraySerializers, JavaSerializer}
@@ -13,7 +13,7 @@ import com.esotericsoftware.kryo.serializers.DefaultSerializers.KryoSerializable
 import com.esotericsoftware.kryo.Kryo
 import org.dbpedia.spotlight.db.model.{TokenTypeStore, ResourceStore}
 import org.dbpedia.spotlight.db.FSADictionary
-import org.dbpedia.spotlight.db.entityTopic.Document
+import org.dbpedia.spotlight.db.entitytopic.Document
 
 /**
  * Base class for all memory stores.
@@ -52,13 +52,14 @@ object MemoryStore {
     kryo.setRegistrationRequired(true)
 
     kryo.register(classOf[Array[Int]], new DefaultArraySerializers.IntArraySerializer())
+
     val mapSerializer: MapSerializer=new MapSerializer()
-    mapSerializer.setKeyClass(classOf[Int],new DefaultSerializers.IntSerializer())
+    mapSerializer.setKeyClass(classOf[Int], new DefaultSerializers.IntSerializer())
     mapSerializer.setKeysCanBeNull(false)
-    mapSerializer.setValueClass(classOf[Int],new DefaultSerializers.IntSerializer())
+    mapSerializer.setValueClass(classOf[Int], new DefaultSerializers.IntSerializer())
     mapSerializer.setValuesCanBeNull(false)
 
-    kryo.register(classOf[HashMap[Int,Int]],mapSerializer)
+    kryo.register(classOf[java.util.HashMap[Int,Int]], mapSerializer)
     kryo.register(classOf[Document])
 
     kryo

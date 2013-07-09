@@ -1,4 +1,4 @@
-package org.dbpedia.spotlight.entityTopic;
+package org.dbpedia.spotlight.entitytopic;
 
 import info.bliki.htmlcleaner.ContentToken;
 import info.bliki.htmlcleaner.TagNode;

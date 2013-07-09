@@ -1,4 +1,4 @@
-package org.dbpedia.spotlight.entityTopic;
+package org.dbpedia.spotlight.entitytopic;
 
 public class Annotation {
 

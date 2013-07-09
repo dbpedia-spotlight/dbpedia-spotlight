@@ -1,4 +1,4 @@
-package org.dbpedia.spotlight.entityTopic;
+package org.dbpedia.spotlight.entitytopic;
 
 import java.io.*;
 import java.io.ByteArrayOutputStream;

@@ -1,21 +1,15 @@
-package org.dbpedia.spotlight.db.entityTopic
+package org.dbpedia.spotlight.db.entitytopic
 
 import scala.collection.mutable.ListBuffer
-import scala.util.Random
 import org.dbpedia.spotlight.spot.Spotter
 import org.dbpedia.spotlight.db.{DBCandidateSearcher}
-import scala.collection.mutable.HashMap
 import org.dbpedia.spotlight.db.model.TextTokenizer
 import org.dbpedia.spotlight.model._
 import opennlp.tools.util.Span
-import org.dbpedia.spotlight.db.entityTopic.Document
+import java.util.HashMap
+import scala.util.Random
 
-
-
-
-
-
-object DocumentObj {
+object DocumentInitializer {
 
   val RandomGenerator=new Random();
 
@@ -24,30 +18,27 @@ object DocumentObj {
   var searcher: DBCandidateSearcher = null
   var topicNum:Int=0
 
+  var topicentityCount:GlobalCounter=null
+  var entitymentionCount:GlobalCounter=null
+  var entitywordCount:GlobalCounter=null
 
   def init(model:CreateEntityTopicModel, topicN:Int){
     spotter=model.spotter
     tokenizer=model.tokenizer
     searcher=model.searcher
     topicNum=topicN
+
+    topicentityCount=model.topicentityCount
+    entitymentionCount=model.entitymentionCount
+    entitywordCount=model.entitywordCount
   }
 
-  def multinomialSample(prob:Array[Float], id:Array[Int]):Int={
-    val sum=prob.foldLeft(0.0f)((a,b)=>a+b)
-    val threshold=RandomGenerator.nextFloat()*sum
-    var cumulative=0.0f
-    var i=0;
-    do{
-      cumulative+=prob(i)
-      i+=1
-    }while(threshold>=cumulative)
 
-    id(i-1)
-  }
 
   def incCount(map:HashMap[Int,Int],key:Int){
     map.get(key) match{
-      case a:Option[Int]=>map.put(key,a.getOrElse(0)+1)
+      case a: Int=>map.put(key,a+1)
+      case _ =>map.put(key,1)
     }
   }
 
@@ -66,8 +57,6 @@ object DocumentObj {
     val tokens:List[Token]=text.featureValue[List[Token]]("tokens").get
     val surfaceOccr:java.util.List[SurfaceFormOccurrence]=spotter.extract(text)
 
-
-
     /*tokens and mentions within two succinct link anchors are processed by assigning a token
      *with nearest anchor's entity, and sampling an entity for a mention based on its entity distribution
      */
@@ -84,6 +73,7 @@ object DocumentObj {
         else entityOfWord+=res.id
 
         incCount(entityForWordCount,entityOfWord.last)
+        entitywordCount.incCount(entityOfWord.last, words.last)
 
         prevRes=res
         prevSpan=span
@@ -95,6 +85,7 @@ object DocumentObj {
         words+=tokens(i).tokenType.id
         entityOfWord+=res.id
         incCount(entityForWordCount,res.id)
+        entitywordCount.incCount(entityOfWord.last, words.last)
         i+=1
       }
 
@@ -103,26 +94,35 @@ object DocumentObj {
       while(j<surfaceOccr.size &&  surfaceOccr.get(j).textOffset<span.getStart()){
         mentions+=surfaceOccr.get(j).surfaceForm.id
         topicOfMention+=RandomGenerator.nextInt(topicNum)
-        incCount(topicCount,topicOfMention.last)
 
         val cands=searcher.getCandidates(surfaceOccr.get(j).surfaceForm)
-        entityOfMention+=multinomialSample(cands.map((cand:Candidate)=>cand.support.asInstanceOf[Float]).toArray, cands.map((cand:Candidate)=>cand.resource.id).toArray)
+        entityOfMention+=Document.multinomialSample(cands.map((cand:Candidate)=>cand.support.asInstanceOf[Float]).toArray, cands.map((cand:Candidate)=>cand.resource.id).toArray)
+
+        incCount(topicCount,topicOfMention.last)
         incCount(entityForMentionCount,entityOfMention.last)
+        topicentityCount.incCount(topicOfMention.last, entityOfMention.last)
+        entitymentionCount.incCount(entityOfMention.last, mentions.last)
         j+=1
       }
 
       //mention of the link anchor are assigned with the link's target entity
       mentions+=surface.id
-      incCount(topicCount,topicOfMention.last)
       entityOfMention+=res.id
+      topicOfMention+=RandomGenerator.nextInt(topicNum)
+
+      incCount(topicCount,topicOfMention.last)
       incCount(entityForMentionCount,entityOfMention.last)
+      topicentityCount.incCount(topicOfMention.last, entityOfMention.last)
+      entitymentionCount.incCount(entityOfMention.last, mentions.last)
     })
 
     //for the tokens after the last link anchor
     while(i<tokens.size){
       words+=tokens(i).tokenType.id
       entityOfWord+=resources.last.id
+
       incCount(entityForWordCount,resources.last.id)
+      entitywordCount.incCount(entityOfWord.last, words.last)
       i+=1
     }
 
@@ -130,11 +130,13 @@ object DocumentObj {
     while(j<surfaceOccr.size()){
       mentions+=surfaceOccr.get(i).surfaceForm.id
       topicOfMention+=RandomGenerator.nextInt(topicNum)
-      incCount(topicCount,topicOfMention.last)
 
       val cands=searcher.getCandidates(surfaceOccr.get(i).surfaceForm)
-      entityOfMention+=multinomialSample(cands.map((cand:Candidate)=>cand.support.asInstanceOf[Float]).toArray, cands.map((cand:Candidate)=>cand.surfaceForm.id).toArray)
+      entityOfMention+=Document.multinomialSample(cands.map((cand:Candidate)=>cand.support.asInstanceOf[Float]).toArray, cands.map((cand:Candidate)=>cand.surfaceForm.id).toArray)
+      incCount(topicCount,topicOfMention.last)
       incCount(entityForMentionCount,entityOfMention.last)
+      topicentityCount.incCount(topicOfMention.last, entityOfMention.last)
+      entitymentionCount.incCount(entityOfMention.last, mentions.last)
       j+=1
     }
 

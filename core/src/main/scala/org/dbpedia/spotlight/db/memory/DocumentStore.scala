@@ -5,7 +5,7 @@ import java.io.{FileInputStream, FileOutputStream}
 import org.dbpedia.spotlight.db.memory.MemoryStore
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.io.{Output, Input}
-import org.dbpedia.spotlight.db.entityTopic.Document
+import org.dbpedia.spotlight.db.entitytopic.Document
 
 
 class DocumentStore {
