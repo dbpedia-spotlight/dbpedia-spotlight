@@ -50,6 +50,8 @@
         <module>eval</module>
 	    <module>uima</module>
         <module>dist</module>
+      <module>live</module>
+      <module>topical</module>
     </modules>
 
     <build>
@@ -287,6 +289,86 @@
                             <file>${spotlight.basedir}/lib/scala-aho-corasick-0.1.jar</file>
                         </configuration>
                     </execution>
+
+                    <!--Dependencies for dbpedia spotlight live-->
+
+                    <execution>
+                        <id>install-hunposchain0.6_mod-jar</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>org.wiki.harvester.dependency</groupId>
+                            <artifactId>hunposchain0.6_mod</artifactId>
+                            <version>1.0</version>
+                            <packaging>jar</packaging>
+                            <file>${spotlight.basedir}/lib/hunposchain0.6_mod.jar</file>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>install-morphadorner-jar</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>org.wiki.harvester.dependency</groupId>
+                            <artifactId>morphadorner</artifactId>
+                            <version>1.0</version>
+                            <packaging>jar</packaging>
+                            <file>${spotlight.basedir}/lib/morphadorner.jar</file>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>install-pedia.uima.harvester-jar</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>org.wiki.harvester.dependency</groupId>
+                            <artifactId>pedia.uima.harvester</artifactId>
+                            <version>1.0</version>
+                            <packaging>jar</packaging>
+                            <file>${spotlight.basedir}/lib/pedia.uima.harvester.jar</file>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>install-sztakipedia-parser-0.1.1b-jar</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>org.wiki.harvester.dependency</groupId>
+                            <artifactId>sztakipedia-parser-0.1.1b</artifactId>
+                            <version>1.0</version>
+                            <packaging>jar</packaging>
+                            <file>${spotlight.basedir}/lib/sztakipedia-parser-0.1.1b.jar</file>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>install-textcat-1.0.1-jar</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>org.wiki.harvester.dependency</groupId>
+                            <artifactId>textcat-1.0.1</artifactId>
+                            <version>1.0</version>
+                            <packaging>jar</packaging>
+                            <file>${spotlight.basedir}/lib/textcat-1.0.1.jar</file>
+                        </configuration>
+                    </execution>
+
+                    <!--Spotlight live dependencies-->
+
                 </executions>
             </plugin>
 

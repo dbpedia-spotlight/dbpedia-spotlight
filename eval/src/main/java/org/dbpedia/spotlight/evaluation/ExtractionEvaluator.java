@@ -20,7 +20,7 @@ package org.dbpedia.spotlight.evaluation;
 
 import au.com.bytecode.opencsv.CSVReader;
 import org.apache.jcs.access.exception.CacheException;
-import org.dbpedia.spotlight.annotate.DefaultAnnotator;
+import org.dbpedia.spotlight.annotate.DefaultParagraphAnnotator;
 import org.dbpedia.spotlight.exceptions.ConfigurationException;
 import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.model.*;
@@ -179,7 +179,8 @@ public class ExtractionEvaluator {
 										 File annotationsFolder) throws IOException {
 
 
-		DefaultAnnotator annotator = spotlightFactory.annotator();
+		DefaultParagraphAnnotator annotator = null;
+		//spotlightFactory.annotator(); --> HACK: DefaultAnnotator is not DefaultParagraphAnnotator
 
 		int i = 0;
 		for(Text text : evaluationCorpus.getTexts()){

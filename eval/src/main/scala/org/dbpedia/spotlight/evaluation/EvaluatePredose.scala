@@ -21,7 +21,7 @@ class EvaluatePredose {
 
         //val topics = HashMapTopicalPriorStore.fromDir(new File("data/topics"))
         val disambiguators = Set(//new TopicalDisambiguator(factory.candidateSearcher,topics),
-                                 //new TopicBiasedDisambiguator(factory.candidateSearcher,factory.contextSearcher,topics)
+                                 //new TopicalFilteredDisambiguator(factory.candidateSearcher,factory.contextSearcher,topics)
                                  new TwoStepDisambiguator(factory.candidateSearcher,factory.contextSearcher)
                                  //, new CuttingEdgeDisambiguator(factory),
                                  //new PageRankDisambiguator(factory)

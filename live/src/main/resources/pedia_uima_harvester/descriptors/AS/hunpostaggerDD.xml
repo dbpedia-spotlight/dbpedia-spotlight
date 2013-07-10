@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?><!--
+    Copyright 2012 Tamas Farkas, MTA SZTAKI, Hungary
+   
+       Licensed under the Apache License, Version 2.0 (the "License");
+       you may not use this file except in compliance with the License.
+       You may obtain a copy of the License at
+   
+           http://www.apache.org/licenses/LICENSE-2.0
+   
+       Unless required by applicable law or agreed to in writing, software
+       distributed under the License is distributed on an "AS IS" BASIS,
+       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+       See the License for the specific language governing permissions and
+       limitations under the License.
+ -->
+
+<analysisEngineDeploymentDescription xmlns="http://uima.apache.org/resourceSpecifier">
+  <name>hunpostaggerDD</name>
+  <description/>
+  <version>1.0</version>
+  <vendor/>
+  <deployment protocol="jms" provider="activemq">
+    <casPool numberOfCASes="1" initialFsHeapSize="2000000"/>
+    <service>
+      <inputQueue endpoint="hunposQ" brokerURL="tcp://jmsbroker.sztaki.hu:61616" prefetch="1"/>
+      <topDescriptor>
+        <import location="../AE/hunpostaggerAE.xml"/>
+      </topDescriptor>
+      <analysisEngine async="false">
+        <scaleout numberOfInstances="1"/>
+        <asyncPrimitiveErrorConfiguration>
+          <processCasErrors thresholdCount="0" thresholdWindow="0" thresholdAction="terminate"/>
+          <collectionProcessCompleteErrors timeout="0" additionalErrorAction="terminate"/>
+        </asyncPrimitiveErrorConfiguration>
+      </analysisEngine>
+    </service>
+  </deployment>
+</analysisEngineDeploymentDescription>
