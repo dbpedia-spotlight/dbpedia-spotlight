@@ -20,7 +20,7 @@ class GlobalCounter(rows:Int, cols:Int) {
     count.update(first,second,count(first,second)+1)
     countSum.get(first) match{
       case num:Int=>countSum.put(first,num+1)
-      case _=>countSum.put(first,0)
+      case _=>countSum.put(first,1)
     }
   }
 
