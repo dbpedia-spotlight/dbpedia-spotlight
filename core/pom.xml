@@ -240,13 +240,6 @@
             <artifactId>akka-actor</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.zkoss.theme</groupId>
-            <artifactId>breeze</artifactId>
-            <version>5.0.7</version>
-        </dependency>
-
-
     </dependencies>
 
 
