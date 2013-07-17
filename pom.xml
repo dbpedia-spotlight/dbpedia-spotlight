@@ -831,8 +831,14 @@
 
         <repository>
             <id>spotlight-releases-repository</id>
-            <url>https://github.com/sandroacoelho/maven-repo/raw/master/releases</url>
+            <url>https://github.com/dbpedia-spotlight/maven-repo/raw/master/releases</url>
         </repository>
+
+        <repository>
+            <id>spotlight-snapshots-repository</id>
+            <url>https://github.com/dbpedia-spotlight/maven-repo/raw/master/snapshots</url>
+        </repository>
+
 
     </repositories>
 
