@@ -484,15 +484,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.any23</groupId>
-                <artifactId>apache-any23-core</artifactId>
-                <version>0.7.0-incubating</version>
-                <!--
-                    License: Apache Software License, Version 2.0
-                -->
-            </dependency>
-
-            <dependency>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest_2.9.2</artifactId>
                 <version>2.0.M4</version>
@@ -770,6 +761,12 @@
                 -->
             </dependency>
 
+            <dependency>
+                <groupId>org.aksw</groupId>
+                <artifactId>nif</artifactId>
+                <version>0.1</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
@@ -831,7 +828,12 @@
 
         <repository>
             <id>spotlight-releases-repository</id>
-            <url>https://github.com/sandroacoelho/maven-repo/raw/master/releases</url>
+            <url>https://github.com/dbpedia-spotlight/maven-repo/raw/master/releases</url>
+        </repository>
+
+        <repository>
+            <id>spotlight-snapshots-repository</id>
+            <url>https://github.com/dbpedia-spotlight/maven-repo/raw/master/snapshots</url>
         </repository>
 
     </repositories>
