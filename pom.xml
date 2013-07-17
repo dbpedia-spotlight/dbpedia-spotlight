@@ -513,7 +513,7 @@
             <dependency>
                 <groupId>jdbm</groupId>
                 <artifactId>jdbm</artifactId>
-                <version>3.0</version>
+                <version>3.0-SNAPSHOT</version>
                 <!--
                   License: BSD 3-Clause
                 -->
@@ -736,7 +736,7 @@
             <dependency>
                 <groupId>weka</groupId>
                 <artifactId>kea-goss-weka</artifactId>
-                <version>5.0</version>
+                <version>5.0-SNAPSHOT</version>
                 <!--
                   License: GNU GENERAL PUBLIC LICENSE, Version 3.0
                 -->
@@ -745,7 +745,7 @@
             <dependency>
                 <groupId>edu.umd</groupId>
                 <artifactId>cloud9</artifactId>
-                <version>0.1</version>
+                <version>SNAPSHOT</version>
                 <!--
                   License: Apache Software License, Version 2.0
                 -->
