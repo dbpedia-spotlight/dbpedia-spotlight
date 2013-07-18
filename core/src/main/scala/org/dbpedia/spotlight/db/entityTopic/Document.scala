@@ -95,11 +95,7 @@ object Document{
 
   val RandomGenerator=new Random()
 
-  def init(_topicentityCount:GlobalCounter, _entitymentionCount:GlobalCounter, _entitywordCount:GlobalCounter, candmapStore:MemoryCandidateMapStore, properties: Properties){
-    topicentityCount=_topicentityCount
-    entitymentionCount=_entitymentionCount
-    entitywordCount=_entitywordCount
-
+  def init(candmapStore:MemoryCandidateMapStore, properties: Properties){
     alpha=properties.getProperty("alpha").toFloat
     beta=properties.getProperty("beta").toFloat
     gama=properties.getProperty("gama").toFloat
@@ -109,6 +105,10 @@ object Document{
     E=properties.getProperty("resourceNum").toFloat
     K=properties.getProperty("surfaceNum").toFloat
     V=properties.getProperty("tokenNum").toFloat
+
+    topicentityCount=new GlobalCounter(T.toInt,E.toInt)
+    entitymentionCount=new GlobalCounter(E.toInt,K.toInt)
+    entitywordCount=new GlobalCounter(E.toInt,V.toInt)
 
     topics=(0 until T.toInt).toArray
     candmap=candmapStore.candidates
@@ -152,5 +152,4 @@ object Document{
 
     multinomialSample(probs, entities)
   }
-
 }

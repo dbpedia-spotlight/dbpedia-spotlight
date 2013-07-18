@@ -1,7 +1,7 @@
 package org.dbpedia.spotlight.db.entitytopic
 
-import java.io.{FileInputStream, File}
-import org.dbpedia.spotlight.db.memory.{MemoryCandidateMapStore, DocumentStore}
+import java.io.{FileOutputStream, FileInputStream, File}
+import org.dbpedia.spotlight.db.memory._
 import java.util.{Locale, Properties}
 import org.dbpedia.spotlight.db.model.{ResourceStore, SurfaceFormStore, TextTokenizer}
 import org.dbpedia.spotlight.spot.Spotter
@@ -25,26 +25,18 @@ class CreateEntityTopicModel( val locale:Locale,
   val sfStore: SurfaceFormStore = searcher.sfStore
   val resStore: ResourceStore = searcher.resStore
 
-  val topicentityCount=new GlobalCounter()
-  val entitymentionCount=new GlobalCounter()
-  val entitywordCount=new GlobalCounter()
-
   val documents:ListBuffer[Document]=new ListBuffer[Document]()
 
   def learnFromWiki(wikidump:String){
-
     initializeWikiDocuments(wikidump)
-
     updateAssignments(1)//hardcode iterations of updates
   }
 
-  def updateAssignments(iterations:Int){
-    Document.init(topicentityCount,entitymentionCount,entitywordCount, candMap, properties)
 
+  def updateAssignments(iterations:Int){
     for(i <- 1 to iterations){
       documents.foreach((doc:Document)=>doc.updateAssignment())
     }
-
   }
 
 
@@ -54,7 +46,8 @@ class CreateEntityTopicModel( val locale:Locale,
    * @param wikidump filename of the wikidump
    */
   def initializeWikiDocuments(wikidump:String){
-    DocumentInitializer.init(this,100)//hardcode the topic number
+    Document.init(candMap, properties)
+    DocumentInitializer.init(this,properties.getProperty("topicNum").toInt, properties.getProperty("maxSurfaceformLen").toInt)//hardcode the topic number
 
     //parse wiki dump to get wiki pages iteratively
     val wikireader: WikipediaRecordReader = new WikipediaRecordReader(new File(wikidump))
@@ -75,8 +68,8 @@ class CreateEntityTopicModel( val locale:Locale,
       documents+=DocumentInitializer.initDocument(new Text(content),resources,surfaces,spans)
     }
   }
-
 }
+
 
 object CreateEntityTopicModel{
 
@@ -105,6 +98,15 @@ object CreateEntityTopicModel{
 
     val (tokenTypeStore, sfStore, resStore, candMapStore, _) = SpotlightModel.storesFromFolder(modelFolder)
 
+    properties.setProperty("resourceNum", resStore.asInstanceOf[MemoryResourceStore].size.toString)
+    properties.setProperty("surfaceNum", sfStore.asInstanceOf[MemorySurfaceFormStore].size.toString)
+    properties.setProperty("tokenNum", tokenTypeStore.asInstanceOf[MemoryTokenTypeStore].size.toString)
+    properties.setProperty("alpha",(50/properties.getProperty("topicNum").toFloat).toString)
+    properties.setProperty("beta", "0.1")
+    properties.setProperty("gama", (1.0/sfStore.asInstanceOf[MemorySurfaceFormStore].size).toString)
+    properties.setProperty("delta", (2000.0/tokenTypeStore.asInstanceOf[MemoryTokenTypeStore].size).toString)
+    properties.store(new FileOutputStream(new File(modelFolder,"model.properties")), "add properties for entity topic model")
+
     val tokenizer: TextTokenizer= SpotlightModel.createTokenizer(modelFolder,tokenTypeStore,properties,stopwords,cores)
     val spotter:Spotter= SpotlightModel.createSpotter(modelFolder,sfStore,stopwords,cores)
     val searcher:DBCandidateSearcher = new DBCandidateSearcher(resStore, sfStore, candMapStore)
@@ -112,10 +114,9 @@ object CreateEntityTopicModel{
     new CreateEntityTopicModel(locale,wikipediaToDBpediaClosure,tokenizer, spotter, searcher, candMapStore.asInstanceOf[MemoryCandidateMapStore], properties)
   }
 
+
   def main(args:Array[String]){
     val model:CreateEntityTopicModel=CreateEntityTopicModel.fromFolder(new File("C:\\Users\\a0082293\\Documents\\GitHub\\data\\spotlight\\nl\\model_nl"))
-
     model.learnFromWiki("../data/test.xml")
-
   }
 }
