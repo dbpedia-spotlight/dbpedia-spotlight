@@ -10,7 +10,7 @@
 
   
   <artifactId>uima</artifactId>
-  <name>Dbpedia Spotlight UIMA Integration</name>
+  <name>DBpedia Spotlight UIMA Integration</name>
  
   <properties>
        <spotlight.basedir>${project.basedir}/..</spotlight.basedir>
