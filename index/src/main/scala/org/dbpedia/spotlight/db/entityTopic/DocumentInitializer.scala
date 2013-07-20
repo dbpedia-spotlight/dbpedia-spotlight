@@ -45,10 +45,10 @@ object DocumentInitializer {
 
   def restrictedSpot(text:Text, surfaces:Array[SurfaceForm], spans:Array[Span]):Array[SurfaceFormOccurrence]={
     val docStr=text.text
-    val sfSet=collection.mutable.Set[String]()
+    val sfMap=new collection.mutable.HashMap[String, Int]()
     (surfaces, spans).zipped.foreach((sf,span)=>{
       assert(sf.name==docStr.substring(span.getStart,span.getEnd))
-      sfSet+=sf.name
+      sfMap.put(sf.name, sf.id)
     })
 
     val tokens:List[Token]=text.featureValue[List[Token]]("tokens").get
@@ -60,17 +60,21 @@ object DocumentInitializer {
         var k=0
         for(k<-startIndex until endIndex){
           val endOffset=if (k+1==tokenNum) docStr.length else tokens(k+1).offset
-          val gram=docStr.substring(token.offset, endOffset)
-          if(sfSet.contains(gram.trim()))
-            mentions+=new SurfaceFormOccurrence(new SurfaceForm(gram.trim()),null,token.offset)
+          val gram=docStr.substring(token.offset, endOffset).trim
+          sfMap.get(gram) match{
+            case Some(id)=>mentions+=new SurfaceFormOccurrence(new SurfaceForm(gram,id,0,0),null,token.offset)
+            case None=>{}
+          }
         }
       }else{
         var k=0
         val endIndex=startIndex+MaxSurfaceformLength
         for(k<-startIndex until endIndex){
           val gram=docStr.substring(token.offset, tokens(k+1).offset)
-          if(sfSet.contains(gram.trim()))
-            mentions+=new SurfaceFormOccurrence(new SurfaceForm(gram.trim()),null,token.offset)
+          sfMap.get(gram) match{
+            case Some(id)=>mentions+=new SurfaceFormOccurrence(new SurfaceForm(gram,id,0,0),null,token.offset)
+            case None=>{}
+          }
         }
       }
 
@@ -187,15 +191,17 @@ object DocumentInitializer {
 
     //for the mentions after the last link anchor
     while(j<surfaceOccr.length){
-      mentions+=surfaceOccr(i).surfaceForm.id
+      mentions+=surfaceOccr(j).surfaceForm.id
       topicOfMention+=RandomGenerator.nextInt(topicNum)
 
-      val cands=searcher.getCandidates(surfaceOccr(i).surfaceForm)
-      entityOfMention+=Document.multinomialSample(cands.map((cand:Candidate)=>cand.support.asInstanceOf[Float]).toArray, cands.map((cand:Candidate)=>cand.surfaceForm.id).toArray)
+      val cands=searcher.getCandidates(surfaceOccr(j).surfaceForm)
+      entityOfMention+=Document.multinomialSample(cands.map((cand:Candidate)=>cand.support.asInstanceOf[Float]).toArray, cands.map((cand:Candidate)=>cand.resource.id).toArray)
       incCount(topicCount,topicOfMention.last)
       incCount(entityForMentionCount,entityOfMention.last)
+
       topicentityCount.incCount(topicOfMention.last, entityOfMention.last)
       entitymentionCount.incCount(entityOfMention.last, mentions.last)
+
       j+=1
     }
 

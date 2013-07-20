@@ -115,9 +115,9 @@ object Document{
     K=properties.getProperty("surfaceNum").toFloat
     V=properties.getProperty("tokenNum").toFloat
 
-    topicentityCount=GlobalCounter(T.toInt,E.toInt)
-    entitymentionCount=GlobalCounter(E.toInt,K.toInt)
-    entitywordCount=GlobalCounter(E.toInt,V.toInt)
+    topicentityCount=GlobalCounter(T.toInt+1,E.toInt+1)
+    entitymentionCount=GlobalCounter(E.toInt+1,K.toInt+1)
+    entitywordCount=GlobalCounter(E.toInt+1,V.toInt+1)
 
     topics=(0 until T.toInt).toArray
     candmap=candmapStore.candidates
@@ -131,25 +131,32 @@ object Document{
     do{
       cumulative+=prob(i)
       i+=1
-    }while(threshold>=cumulative)
+    }while(threshold>cumulative)
 
     id(i-1)
   }
 
   def sampleTopic(topicCount:HashMap[Int,Int], entity: Int):Int={
-    val probs: Array[Float]=topics.map((t:Int)=>(topicCount.get(t)+alpha)*(topicentityCount.getCount(t,entity)+beta)/topicentityCount.getCountSum(t)+E*beta).toArray
+    val probs: Array[Float]=topics.map((t:Int)=>{
+      val first=topicCount.get(t)+alpha//no need for the denominator
+      val second=(topicentityCount.getCount(t,entity)+beta)/(topicentityCount.getCountSum(t)+E*beta)
+      first*second
+    }).toArray
+
     multinomialSample(probs, topics)
   }
 
   def sampleEntityForMention(docEntityForMentionCount:HashMap[Int,Int], docEntityForWordCount: HashMap[Int,Int], topic:Int, mention: Int):Int={
     val candidates:Array[Int]=candmap(mention)
+
     val probs: Array[Float]=candidates.map((cand:Int)=>{
-      val first:Float=topicentityCount.getCount(topic,mention)+beta
+      val first:Float=(topicentityCount.getCount(topic,cand)+beta)// (topicentityCount.getCountSum(topic)+E*beta)
       val second:Float=(entitymentionCount.getCount(cand,mention)+gama)/(entitymentionCount.getCountSum(cand)+K*gama)
-      val third:Float=Math.pow((1/docEntityForMentionCount.get(cand)+1.0).toDouble,docEntityForWordCount.get(cand).toDouble).toFloat
+      val third:Float=if(docEntityForMentionCount.get(cand)==0) 1.0f else Math.pow((1/docEntityForMentionCount.get(cand)+1.0).toDouble,docEntityForWordCount.get(cand).toDouble).toFloat
       first*second*third
     })
     multinomialSample(probs, candidates)
+
   }
 
   def sampleEntityForWord(word:Int, docEntityForMentionCount:HashMap[Int,Int], entities: Array[Int]):Int={

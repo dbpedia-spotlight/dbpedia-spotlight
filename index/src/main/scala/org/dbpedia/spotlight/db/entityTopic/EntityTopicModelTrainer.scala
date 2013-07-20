@@ -11,6 +11,7 @@ import org.dbpedia.spotlight.model.{Text}
 import opennlp.tools.util.Span
 import org.dbpedia.spotlight.db.{SpotlightModel, DBCandidateSearcher, WikipediaToDBpediaClosure}
 import scala.collection.mutable.ListBuffer
+import org.apache.commons.logging.LogFactory
 
 
 class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosure,
@@ -19,7 +20,7 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
                         val candMap: MemoryCandidateMapStore,
                         val properties: Properties
                         )  {
-
+  val LOG = LogFactory.getLog(this.getClass)
   val sfStore: SurfaceFormStore = searcher.sfStore
   val resStore: ResourceStore = searcher.resStore
 
@@ -29,14 +30,22 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
   val locale=new Locale(localeCode(0), localeCode(1))
 
   def learnFromWiki(wikidump:String, model_folder:String){
+    LOG.info("Init wiki docs...")
+    val start1 = System.currentTimeMillis()
     initializeWikiDocuments(wikidump)
+    LOG.info("Done (%d ms)".format(System.currentTimeMillis() - start1))
 
+    LOG.info("Update assignments...")
+    val start2=System.currentTimeMillis()
     updateAssignments(1)//hardcode iterations of updates
+    LOG.info("Done (%d ms)".format(System.currentTimeMillis() - start2))
 
     //save global knowledge/counters
     Document.entitymentionCount.writeToFile(model_folder+"/entitymention_count")
     Document.entitywordCount.writeToFile(model_folder+"/entityword_count")
     Document.topicentityCount.writeToFile(model_folder+"/topicentity_count")
+
+    LOG.info("Finish training")
   }
 
 

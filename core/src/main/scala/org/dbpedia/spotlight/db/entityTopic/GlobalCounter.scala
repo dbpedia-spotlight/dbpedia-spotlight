@@ -45,7 +45,7 @@ class GlobalCounter( val matrix: CSCMatrix[Int],val rowSum: HashMap[Int,Int]) {
     val writer=new BufferedWriter(new FileWriter(filePath))
     writer.write("%d x %d : %d  CSCMatrix\n".format(matrix.rows, matrix.cols, matrix.activeSize))
     matrix.activeIterator.foreach { case ((r,c),v) =>
-      writer.write("%d %d %d\n".format(r,c,v.toString))
+      writer.write("%d %d %d\n".format(r,c,v))
     }
     writer.flush()
     writer.close()
