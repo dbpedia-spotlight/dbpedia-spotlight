@@ -27,19 +27,27 @@ class Document (val mentions:Array[Int],
                 val entityForMentionCount:HashMap[Int,Int],
                 val entityForWordCount:HashMap[Int,Int]) extends  Serializable{
 
+
+  /**
+   * update document's assignments: topic for each mention, entity for each mention, entity for each word
+   * each assignment is updated: dec count, sample new assignment, inc count
+   *
+   */
   def updateAssignment(){
+
     for(i<-0 until mentions.size){
       val mention=mentions(i)
       var topic=topicOfMention(i)
       var entity=entityOfMention(i)
 
+      //update topic for mention
       decCount(topicCount, topic)
       topicentityCount.decCount(topic,entity)
       topic=Document.sampleTopic(topicCount, entity)
       topicOfMention(i)=topic
       incCount(topicCount, topic)
 
-
+      //update entity for mention
       decCount(entityForMentionCount, entity)
       entitymentionCount.decCount(entity, mention)
       entity=Document.sampleEntityForMention(entityForMentionCount, entityForWordCount,topic,mentions(i))
@@ -49,6 +57,7 @@ class Document (val mentions:Array[Int],
       topicentityCount.incCount(topic, entity)
     }
 
+    //update words' assignments
     for(i<-0 until words.size){
       val word=words(i)
       var entity=entityOfWord(i)
@@ -106,9 +115,9 @@ object Document{
     K=properties.getProperty("surfaceNum").toFloat
     V=properties.getProperty("tokenNum").toFloat
 
-    topicentityCount=new GlobalCounter(T.toInt,E.toInt)
-    entitymentionCount=new GlobalCounter(E.toInt,K.toInt)
-    entitywordCount=new GlobalCounter(E.toInt,V.toInt)
+    topicentityCount=GlobalCounter(T.toInt,E.toInt)
+    entitymentionCount=GlobalCounter(E.toInt,K.toInt)
+    entitywordCount=GlobalCounter(E.toInt,V.toInt)
 
     topics=(0 until T.toInt).toArray
     candmap=candmapStore.candidates

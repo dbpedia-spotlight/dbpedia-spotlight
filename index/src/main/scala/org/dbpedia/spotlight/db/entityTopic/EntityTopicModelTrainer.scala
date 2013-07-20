@@ -13,10 +13,8 @@ import org.dbpedia.spotlight.db.{SpotlightModel, DBCandidateSearcher, WikipediaT
 import scala.collection.mutable.ListBuffer
 
 
-class CreateEntityTopicModel( val locale:Locale,
-                        val wikiToDBpediaClosure:WikipediaToDBpediaClosure,
+class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosure,
                         val tokenizer: TextTokenizer,
-                        val spotter: Spotter,
                         val searcher: DBCandidateSearcher,
                         val candMap: MemoryCandidateMapStore,
                         val properties: Properties
@@ -26,6 +24,9 @@ class CreateEntityTopicModel( val locale:Locale,
   val resStore: ResourceStore = searcher.resStore
 
   val documents:ListBuffer[Document]=new ListBuffer[Document]()
+
+  val localeCode = properties.getProperty("locale").split("_")
+  val locale=new Locale(localeCode(0), localeCode(1))
 
   def learnFromWiki(wikidump:String){
     initializeWikiDocuments(wikidump)
@@ -71,9 +72,9 @@ class CreateEntityTopicModel( val locale:Locale,
 }
 
 
-object CreateEntityTopicModel{
+object EntityTopicModelTrainer{
 
-  def fromFolder(modelFolder: File): CreateEntityTopicModel = {
+  def fromFolder(modelFolder: File): EntityTopicModelTrainer = {
 
     val properties = new Properties()
     properties.load(new FileInputStream(new File(modelFolder, "model.properties")))
@@ -108,15 +109,14 @@ object CreateEntityTopicModel{
     properties.store(new FileOutputStream(new File(modelFolder,"model.properties")), "add properties for entity topic model")
 
     val tokenizer: TextTokenizer= SpotlightModel.createTokenizer(modelFolder,tokenTypeStore,properties,stopwords,cores)
-    val spotter:Spotter= SpotlightModel.createSpotter(modelFolder,sfStore,stopwords,cores)
     val searcher:DBCandidateSearcher = new DBCandidateSearcher(resStore, sfStore, candMapStore)
 
-    new CreateEntityTopicModel(locale,wikipediaToDBpediaClosure,tokenizer, spotter, searcher, candMapStore.asInstanceOf[MemoryCandidateMapStore], properties)
+    new EntityTopicModelTrainer(wikipediaToDBpediaClosure,tokenizer, searcher, candMapStore.asInstanceOf[MemoryCandidateMapStore], properties)
   }
 
 
   def main(args:Array[String]){
-    val model:CreateEntityTopicModel=CreateEntityTopicModel.fromFolder(new File("C:\\Users\\a0082293\\Documents\\GitHub\\data\\spotlight\\nl\\model_nl"))
+    val model:EntityTopicModelTrainer=EntityTopicModelTrainer.fromFolder(new File("C:\\Users\\a0082293\\Documents\\GitHub\\data\\spotlight\\nl\\model_nl"))
     model.learnFromWiki("../data/test.xml")
   }
 }
