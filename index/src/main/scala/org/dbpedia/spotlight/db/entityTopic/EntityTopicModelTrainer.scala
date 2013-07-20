@@ -19,7 +19,7 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
                         val candMap: MemoryCandidateMapStore,
                         val properties: Properties
                         )  {
-  val docStore: DocumentStore = new DocumentStore()
+
   val sfStore: SurfaceFormStore = searcher.sfStore
   val resStore: ResourceStore = searcher.resStore
 
@@ -28,9 +28,15 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
   val localeCode = properties.getProperty("locale").split("_")
   val locale=new Locale(localeCode(0), localeCode(1))
 
-  def learnFromWiki(wikidump:String){
+  def learnFromWiki(wikidump:String, model_folder:String){
     initializeWikiDocuments(wikidump)
+
     updateAssignments(1)//hardcode iterations of updates
+
+    //save global knowledge/counters
+    Document.entitymentionCount.writeToFile(model_folder+"/entitymention_count")
+    Document.entitywordCount.writeToFile(model_folder+"/entityword_count")
+    Document.topicentityCount.writeToFile(model_folder+"/topicentity_count")
   }
 
 
@@ -48,12 +54,11 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
    */
   def initializeWikiDocuments(wikidump:String){
     Document.init(candMap, properties)
-    DocumentInitializer.init(this,properties.getProperty("topicNum").toInt, properties.getProperty("maxSurfaceformLen").toInt)//hardcode the topic number
+    DocumentInitializer.init(this,properties.getProperty("topicNum").toInt, properties.getProperty("maxSurfaceformLen").toInt)
 
     //parse wiki dump to get wiki pages iteratively
     val wikireader: WikipediaRecordReader = new WikipediaRecordReader(new File(wikidump))
     val converter: AnnotatingMarkupParser = new AnnotatingMarkupParser(locale.getLanguage())
-
     while(wikireader.nextKeyValue()){
       //val title:String=wikireader.getCurrentKey
       //val id:String=wikireader.getWikipediaId
@@ -116,7 +121,8 @@ object EntityTopicModelTrainer{
 
 
   def main(args:Array[String]){
-    val model:EntityTopicModelTrainer=EntityTopicModelTrainer.fromFolder(new File("C:\\Users\\a0082293\\Documents\\GitHub\\data\\spotlight\\nl\\model_nl"))
-    model.learnFromWiki("../data/test.xml")
+    val file="../data/spotlight/nl/model_nl"
+    val trainer:EntityTopicModelTrainer=EntityTopicModelTrainer.fromFolder(new File(file))
+    trainer.learnFromWiki("../data/test.xml", file)
   }
 }

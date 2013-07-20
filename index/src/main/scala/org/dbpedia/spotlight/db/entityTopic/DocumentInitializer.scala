@@ -15,7 +15,6 @@ object DocumentInitializer {
 
   var MaxSurfaceformLength=0
 
-  var spotter:Spotter=null
   var tokenizer:TextTokenizer=null
   var searcher: DBCandidateSearcher = null
   var topicNum:Int=0
@@ -24,8 +23,7 @@ object DocumentInitializer {
   var entitymentionCount:GlobalCounter=null
   var entitywordCount:GlobalCounter=null
 
-  def init(model:CreateEntityTopicModel, topicN:Int, maxSurfaceformLength:Int){
-    spotter=model.spotter
+  def init(model:EntityTopicModelTrainer, topicN:Int, maxSurfaceformLength:Int){
     tokenizer=model.tokenizer
     searcher=model.searcher
     topicNum=topicN
@@ -118,9 +116,9 @@ object DocumentInitializer {
     val tokens:List[Token]=text.featureValue[List[Token]]("tokens").get
     val surfaceOccr:Array[SurfaceFormOccurrence]=restrictedSpot(text, surfaces, spans)
 
-    spotterDebug(text, surfaceOccr, spans)
-    /*tokens and mentions within two succinct link anchors are processed by assigning a token
-     *with nearest anchor's entity, and sampling an entity for a mention based on its entity distribution
+    //spotterDebug(text, surfaceOccr, spans)
+    /*tokens and mentions within two succinct link anchors are processed by associating a token
+     *with the nearest anchor's entity, and sampling an entity for a mention based on its entity distribution
      */
     var i=0
     var j=0
