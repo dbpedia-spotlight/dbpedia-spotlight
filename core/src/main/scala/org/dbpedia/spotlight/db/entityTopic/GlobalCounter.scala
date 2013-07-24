@@ -37,9 +37,17 @@ class GlobalCounter( val matrix: CSCMatrix[Int],val rowSum: HashMap[Int,Int]) {
   }
 
   def getCountSum(row: Int):Int={
-    rowSum.get(row)
+    rowSum.get(row) match{
+      case i:Int=>i
+      case _=>0
+    }
   }
 
+  def add(other:GlobalCounter){
+    other.matrix.activeIterator.foreach({case ((r,c),v)=>
+      matrix.update(r,c,v+matrix(r,c))
+    })
+  }
 
   def writeToFile( filePath:String){
     val writer=new BufferedWriter(new FileWriter(filePath))

@@ -123,6 +123,25 @@ object Document{
     candmap=candmapStore.candidates
   }
 
+  def init(topicentity:GlobalCounter, entitymention:GlobalCounter, entityword:GlobalCounter, candmapStore:MemoryCandidateMapStore, properties: Properties){
+    alpha=properties.getProperty("alpha").toFloat
+    beta=properties.getProperty("beta").toFloat
+    gama=properties.getProperty("gama").toFloat
+    delta=properties.getProperty("delta").toFloat
+
+    T=properties.getProperty("topicNum").toFloat
+    E=properties.getProperty("resourceNum").toFloat
+    K=properties.getProperty("surfaceNum").toFloat
+    V=properties.getProperty("tokenNum").toFloat
+
+    topicentityCount=topicentity
+    entitymentionCount=entitymention
+    entitywordCount=entityword
+
+    topics=(0 until T.toInt).toArray
+    candmap=candmapStore.candidates
+  }
+
   def multinomialSample(prob:Array[Float], id:Array[Int]):Int={
     val sum=prob.foldLeft(0.0f)((a,b)=>a+b)
     val threshold=RandomGenerator.nextFloat()*sum
@@ -162,6 +181,7 @@ object Document{
   def sampleEntityForWord(word:Int, docEntityForMentionCount:HashMap[Int,Int], entities: Array[Int]):Int={
     val probs:Array[Float]=entities.map((entity:Int)=>{
       val first:Float=docEntityForMentionCount.get(entity).toFloat
+
       val second:Float=(entitywordCount.getCount(entity, word)+delta)/(entitywordCount.getCountSum(entity)+V*delta)
       first*second
     })

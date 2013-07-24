@@ -4,14 +4,15 @@ import java.io.{FileOutputStream, FileInputStream, File}
 import org.dbpedia.spotlight.db.memory._
 import java.util.{Locale, Properties}
 import org.dbpedia.spotlight.db.model.{ResourceStore, SurfaceFormStore, TextTokenizer}
-import org.dbpedia.spotlight.spot.Spotter
 import org.dbpedia.spotlight.entitytopic.{AnnotatingMarkupParser, WikipediaRecordReader, Annotation}
 import scala.collection.JavaConversions._
-import org.dbpedia.spotlight.model.{Text}
+import org.dbpedia.spotlight.model.{DBpediaResource, Text}
 import opennlp.tools.util.Span
 import org.dbpedia.spotlight.db.{SpotlightModel, DBCandidateSearcher, WikipediaToDBpediaClosure}
 import scala.collection.mutable.ListBuffer
 import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.model.SurfaceForm
+import java.util.concurrent.{ExecutorService, TimeUnit, Executors}
 
 
 class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosure,
@@ -32,8 +33,10 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
   def learnFromWiki(wikidump:String, model_folder:String){
     LOG.info("Init wiki docs...")
     val start1 = System.currentTimeMillis()
-    initializeWikiDocuments(wikidump)
+    val counter=initializeWikiDocuments(wikidump,5)
     LOG.info("Done (%d ms)".format(System.currentTimeMillis() - start1))
+
+    Document.init(counter._1,counter._2,counter._3,candMap,properties)
 
     LOG.info("Update assignments...")
     val start2=System.currentTimeMillis()
@@ -50,8 +53,15 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
 
 
   def updateAssignments(iterations:Int){
+    val toal:Int=documents.size
     for(i <- 1 to iterations){
-      documents.foreach((doc:Document)=>doc.updateAssignment())
+      var j:Int=0
+      documents.foreach((doc:Document)=>{
+        doc.updateAssignment()
+        j+=1
+        if(j%100==0)
+          LOG.info("%d % of %d-th iteration".format(j*100/toal, i))
+      })
     }
   }
 
@@ -61,10 +71,11 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
    *
    * @param wikidump filename of the wikidump
    */
-  def initializeWikiDocuments(wikidump:String){
-    Document.init(candMap, properties)
-    DocumentInitializer.init(this,properties.getProperty("topicNum").toInt, properties.getProperty("maxSurfaceformLen").toInt)
+  def initializeWikiDocuments(wikidump:String, threadNum:Int):Triple[GlobalCounter,GlobalCounter,GlobalCounter]={
+    val initializers=(0 until threadNum).map(_=>DocumentInitializer(tokenizer,searcher,properties))
+    val pool=Executors.newFixedThreadPool(threadNum)
 
+    var parsedDocs=0
     //parse wiki dump to get wiki pages iteratively
     val wikireader: WikipediaRecordReader = new WikipediaRecordReader(new File(wikidump))
     val converter: AnnotatingMarkupParser = new AnnotatingMarkupParser(locale.getLanguage())
@@ -76,11 +87,69 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
       val annotations: List[Annotation]=converter.getWikiLinkAnnotations().toList
 
       //parse the wiki page to get link anchors: each link anchor has a surface form, dbpedia resource, span attribute
-      val surfaces = annotations.map((a: Annotation)=> sfStore.getSurfaceForm(content.substring(a.begin,a.end))).toArray
-      val resources = annotations.map((a: Annotation) => resStore.getResourceByName(wikiToDBpediaClosure.wikipediaToDBpediaURI(a.value))).toArray
-      val spans = annotations.map((a: Annotation) => new Span(a.begin,a.end)).toArray
+      val surfaces=new ListBuffer[SurfaceForm]()
+      val resources=new ListBuffer[DBpediaResource]()
+      val spans=new ListBuffer[Span]()
+      annotations.foreach((a: Annotation)=>{
+        try{
+          val sf=sfStore.getSurfaceForm(content.substring(a.begin,a.end))
+          val res=resStore.getResourceByName(wikiToDBpediaClosure.wikipediaToDBpediaURI(a.value))
+          val span=new Span(a.begin,a.end)
+          surfaces+=sf
+          resources+=res
+          spans+=span
+        }catch{
+          case _=>None
+        }
+      })
 
-      documents+=DocumentInitializer.initDocument(new Text(content),resources,surfaces,spans)
+      if(resources.size>0){
+        var idleInitializer=None.asInstanceOf[Option[DocumentInitializer]]
+        while(idleInitializer==None)
+          idleInitializer=initializers.find((initializer:DocumentInitializer)=>initializer.isRunning==false)
+        val runner=idleInitializer.get
+        runner.set(new Text(content),resources.toArray,surfaces.toArray,spans.toArray)
+        pool.execute(runner)
+
+        parsedDocs+=1
+        if(parsedDocs%100==0)
+          LOG.info("%d docs parsed".format(parsedDocs))
+      }
+    }
+    shutdownAndAwaitTermination(pool)
+    merge(initializers.toArray)
+  }
+
+  def merge(initializers:Array[DocumentInitializer]):Triple[GlobalCounter,GlobalCounter,GlobalCounter]={
+    val ret=initializers(0)
+    documents++=ret.documents
+    (1 until initializers.length).foreach((i:Int)=>{
+      ret.topicentityCount.add(initializers(i).topicentityCount)
+      ret.entitymentionCount.add(initializers(i).entitymentionCount)
+      ret.entitywordCount.add(initializers(i).entitywordCount)
+      documents++=initializers(i).documents
+    })
+
+    Triple(ret.topicentityCount,ret.entitymentionCount,ret.entitywordCount)
+  }
+
+  def shutdownAndAwaitTermination(pool:ExecutorService) {
+    pool.shutdown(); // Disable new tasks from being submitted
+    try {
+      // Wait a while for existing tasks to terminate
+      if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
+        pool.shutdownNow(); // Cancel currently executing tasks
+        // Wait a while for tasks to respond to being cancelled
+        if (!pool.awaitTermination(60, TimeUnit.SECONDS))
+          LOG.info("Pool did not terminate");
+      }
+    } catch {
+      case e:InterruptedException=>{
+        // (Re-)Cancel if current thread also interrupted
+        pool.shutdownNow();
+        // Preserve interrupt status
+        Thread.currentThread().interrupt();
+      }
     }
   }
 }
@@ -130,8 +199,9 @@ object EntityTopicModelTrainer{
 
 
   def main(args:Array[String]){
-    val file="../data/spotlight/nl/model_nl"
-    val trainer:EntityTopicModelTrainer=EntityTopicModelTrainer.fromFolder(new File(file))
-    trainer.learnFromWiki("../data/test.xml", file)
+    val model_dir=args(0)
+    val wikidump=args(1)
+    val trainer:EntityTopicModelTrainer=EntityTopicModelTrainer.fromFolder(new File(model_dir))
+    trainer.learnFromWiki(wikidump, model_dir)
   }
 }
