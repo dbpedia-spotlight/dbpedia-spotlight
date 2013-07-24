@@ -60,7 +60,7 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
         doc.updateAssignment()
         j+=1
         if(j%100==0)
-          LOG.info("%d % of %d-th iteration".format(j*100/toal, i))
+          LOG.info("%d %% of %d-th iteration".format(j*100/toal, i))
       })
     }
   }
@@ -202,6 +202,9 @@ object EntityTopicModelTrainer{
   def main(args:Array[String]){
     val model_dir=args(0)
     val wikidump=args(1)
+
+    System.out.println(model_dir, wikidump)
+
     var threadNum=5
     var topicNum=100
     if(args.length>2)
