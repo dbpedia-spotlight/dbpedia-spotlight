@@ -51,9 +51,9 @@ class GlobalCounter( val matrix: CSCMatrix[Int],val rowSum: HashMap[Int,Int]) {
 
   def writeToFile( filePath:String){
     val writer=new BufferedWriter(new FileWriter(filePath))
-    writer.write("%d x %d : %d  CSCMatrix\n".format(matrix.rows, matrix.cols, matrix.activeSize))
+    writer.write("%d x %d  CSCMatrix\n".format(matrix.rows, matrix.cols))
     matrix.activeIterator.foreach { case ((r,c),v) =>
-      writer.write("%d %d %d\n".format(r,c,v))
+      if(v>0)  writer.write("%d %d %d\n".format(r,c,v))
     }
     writer.flush()
     writer.close()
