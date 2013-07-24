@@ -30,7 +30,7 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
   val localeCode = properties.getProperty("locale").split("_")
   val locale=new Locale(localeCode(0), localeCode(1))
 
-  def learnFromWiki(wikidump:String, model_folder:String){
+  def learnFromWiki(wikidump:String, model_folder:String, threadNum:Int){
     LOG.info("Init wiki docs...")
     val start1 = System.currentTimeMillis()
     val counter=initializeWikiDocuments(wikidump,5)
@@ -157,7 +157,7 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
 
 object EntityTopicModelTrainer{
 
-  def fromFolder(modelFolder: File): EntityTopicModelTrainer = {
+  def fromFolder(modelFolder: File, topicNum:Int): EntityTopicModelTrainer = {
 
     val properties = new Properties()
     properties.load(new FileInputStream(new File(modelFolder, "model.properties")))
@@ -176,8 +176,8 @@ object EntityTopicModelTrainer{
 
     val wikipediaToDBpediaClosure = new WikipediaToDBpediaClosure(
       namespace,
-      new FileInputStream(new File(modelFolder, "redirects.nt")),
-      new FileInputStream(new File(modelFolder, "disambiguations.nt"))
+      new FileInputStream(new File(modelFolder, "entitytopic/redirects.nt")),
+      new FileInputStream(new File(modelFolder, "entitytopic/disambiguations.nt"))
     )
 
     val (tokenTypeStore, sfStore, resStore, candMapStore, _) = SpotlightModel.storesFromFolder(modelFolder)
@@ -185,7 +185,8 @@ object EntityTopicModelTrainer{
     properties.setProperty("resourceNum", resStore.asInstanceOf[MemoryResourceStore].size.toString)
     properties.setProperty("surfaceNum", sfStore.asInstanceOf[MemorySurfaceFormStore].size.toString)
     properties.setProperty("tokenNum", tokenTypeStore.asInstanceOf[MemoryTokenTypeStore].size.toString)
-    properties.setProperty("alpha",(50/properties.getProperty("topicNum").toFloat).toString)
+    properties.setProperty("topicNum", topicNum.toString)
+    properties.setProperty("alpha",(50/topicNum.toFloat).toString)
     properties.setProperty("beta", "0.1")
     properties.setProperty("gama", (1.0/sfStore.asInstanceOf[MemorySurfaceFormStore].size).toString)
     properties.setProperty("delta", (2000.0/tokenTypeStore.asInstanceOf[MemoryTokenTypeStore].size).toString)
@@ -201,7 +202,14 @@ object EntityTopicModelTrainer{
   def main(args:Array[String]){
     val model_dir=args(0)
     val wikidump=args(1)
-    val trainer:EntityTopicModelTrainer=EntityTopicModelTrainer.fromFolder(new File(model_dir))
-    trainer.learnFromWiki(wikidump, model_dir)
+    var threadNum=5
+    var topicNum=100
+    if(args.length>2)
+      threadNum=args(2).toInt
+    if(args.length>3)
+      topicNum=args(3).toInt
+
+    val trainer:EntityTopicModelTrainer=EntityTopicModelTrainer.fromFolder(new File(model_dir),topicNum)
+    trainer.learnFromWiki(wikidump, model_dir+"/entitytopic", threadNum)
   }
 }
