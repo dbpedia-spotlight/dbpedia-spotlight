@@ -28,7 +28,6 @@ import org.dbpedia.spotlight.web.rest.Server;
 import org.dbpedia.spotlight.web.rest.ServerUtils;
 import org.dbpedia.spotlight.web.rest.SpotlightInterface;
 import org.dbpedia.spotlight.web.rest.output.Annotation;
-import org.dbpedia.spotlight.web.rest.output.OutputSerializer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -36,7 +35,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -58,8 +56,6 @@ public class Spot {
     // Annotation interface
     private static SpotlightInterface annotationInterface =  new SpotlightInterface("/spot");
 
-    private NIFOutputFormatter outputFormatter = new NIFOutputFormatter();
-    
     @GET
     @Produces({MediaType.TEXT_XML,MediaType.APPLICATION_XML})
     public Response getXML(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
@@ -116,13 +112,7 @@ public class Spot {
         try {
             String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
             List<SurfaceFormOccurrence> spots = annotationInterface.spot(spotterName, new Text(textToProcess));
-
-	    HashMap<String, Object> options = new HashMap<String, Object>();
-	    options.put("prefix", prefix);
-	    options.put("format", format);
-	    options.put("urirecipe", recipe);
-	    options.put("context-length", ctxLength);
-	    String response = outputFormatter.fromSurfaceFormOccs(text, spots, options);
+	    String response = NIFOutputFormatter.fromSurfaceFormOccs(text, spots, format, prefix);
             return ServerUtils.ok(response);
         } catch (Exception e) {
             e.printStackTrace();

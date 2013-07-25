@@ -19,14 +19,10 @@
 package org.dbpedia.spotlight.web.rest.resources;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.web.rest.Server;
 import org.dbpedia.spotlight.web.rest.ServerUtils;
 import org.dbpedia.spotlight.web.rest.SpotlightInterface;
-
-import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy;
-import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -138,22 +134,20 @@ public class Annotate {
 			   @DefaultValue("Default") @QueryParam("spotter") String spotterName,
 			   @DefaultValue("Default") @QueryParam("disambiguator") String disambiguatorName,
 			   @QueryParam("prefix") String prefix,
-			   @DefaultValue("offset") @QueryParam("urirecipe") String recipe,
-			   @DefaultValue("10") @QueryParam("context-length") int ctxLength,
 			   @Context HttpServletRequest request) {
         String clientIp = request.getRemoteAddr();
 
-	String format = null;
+	String format = "turtle";
 	String accept = request.getHeader("accept");
-	if (accept.equals("text/turtle"))
+	if (accept.equalsIgnoreCase("text/turtle"))
 	    format = "turtle";
-	else if (accept.equals("text/plain"))
+	else if (accept.equalsIgnoreCase("text/plain"))
 	    format = "ntriples";
-	else if (accept.equals("application/rdf+xml"))
+	else if (accept.equalsIgnoreCase("application/rdf+xml"))
 	    format = "rdfxml";
 
 	try {
-	    return ServerUtils.ok(annotationInterface.getNIF(text, inUrl, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName, disambiguatorName, format, prefix, recipe, ctxLength));
+	    return ServerUtils.ok(annotationInterface.getNIF(text, inUrl, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName, disambiguatorName, format, prefix, request.getRequestURL().toString()));
        } catch (Exception e) {
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(accept).build());
         }
@@ -259,7 +253,7 @@ public class Annotate {
       @DefaultValue("10") @FormParam("context-length") int ctxLength,
       @Context HttpServletRequest request
       ) {
-	return getNIF(text,inUrl,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,spotter,disambiguatorName,prefix,recipe,ctxLength,request);
+	return getNIF(text,inUrl,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,spotter,disambiguatorName,prefix,request);
     }
 
     @POST
