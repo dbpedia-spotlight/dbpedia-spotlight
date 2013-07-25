@@ -134,17 +134,17 @@ public class Disambiguate {
     ) {
         String clientIp = request.getRemoteAddr();
 
-	String format = null;
-	String accept = request.getHeader("accept");
-	if (accept.equals("text/turtle"))
-	    format = "turtle";
-	else if (accept.equals("text/plain"))
-	    format = "ntriples";
-	else if (accept.equals("application/rdf+xml"))
-	    format = "rdfxml";
+        String format = null;
+        String accept = request.getHeader("accept");
+        if (accept.equals("text/turtle"))
+            format = "turtle";
+        else if (accept.equals("text/plain"))
+            format = "ntriples";
+        else if (accept.equals("application/rdf+xml"))
+            format = "rdfxml";
 
         try {
-            return ServerUtils.ok(disambigInterface.getNIF(text, inUrl, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.SpotXmlParser.name(), disambiguatorName, format, prefix, recipe, ctxLength));
+            return ServerUtils.ok(disambigInterface.getNIF(text, inUrl, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.SpotXmlParser.name(), disambiguatorName, format, prefix, request.getRequestURL().toString()));
         } catch (Exception e) {
             e.printStackTrace();
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(accept).build());
