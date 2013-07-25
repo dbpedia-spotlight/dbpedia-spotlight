@@ -484,15 +484,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.any23</groupId>
-                <artifactId>apache-any23-core</artifactId>
-                <version>0.7.0-incubating</version>
-                <!--
-                    License: Apache Software License, Version 2.0
-                -->
-            </dependency>
-
-            <dependency>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest_2.9.2</artifactId>
                 <version>2.0.M4</version>
@@ -768,6 +759,12 @@
                 <!--
                   License: BSD 3-Clause
                 -->
+            </dependency>
+
+            <dependency>
+                <groupId>org.aksw</groupId>
+                <artifactId>nif</artifactId>
+                <version>0.1</version>
             </dependency>
 
         </dependencies>
