@@ -35,7 +35,7 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
     (surfaces, spans).zipped.foreach((sf,span)=>{
       if(sf.name!=docStr.substring(span.getStart,span.getEnd))
         System.out.println(sf.name, docStr.substring(span.getStart,span.getEnd))
-      sfMap.put(sf.name, sf.id)
+      else sfMap.put(sf.name, sf.id)
     })
 
     val tokens:List[Token]=text.featureValue[List[Token]]("tokens").get
