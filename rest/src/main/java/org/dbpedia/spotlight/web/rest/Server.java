@@ -88,49 +88,14 @@ public class Server {
         if(args[0].endsWith(".properties")) {
             //We are using the old-style configuration file:
 
-            //Initialization, check values
-            try {
-                String configFileName = args[0];
-                configuration = new SpotlightConfiguration(configFileName);
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.err.println("\n"+usage);
-                System.exit(1);
-            }
-
+            initByPropertiesFile(args[0]);
             serverURI = new URI(configuration.getServerURI());
-
-            // Set static annotator that will be used by Annotate and Disambiguate
-            final SpotlightFactory factory = new SpotlightFactory(configuration);
-
-            setDisambiguators(factory.disambiguators());
-            setSpotters(factory.spotters());
-            setNamespacePrefix(configuration.getDbpediaResource());
-            setSparqlExecuter(configuration.getSparqlEndpoint(), configuration.getSparqlMainGraph());
-            setSimilarityThresholds(configuration.getSimilarityThresholds());
 
         } else {
             //We are using a model folder:
 
             serverURI = new URI(args[1]);
-
-            File modelFolder = null;
-            try {
-                modelFolder = new File(args[0]);
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.err.println("\n"+usage);
-                System.exit(1);
-            }
-
-            SpotlightModel db = SpotlightModel.fromFolder(modelFolder);
-
-
-            setNamespacePrefix(db.properties().getProperty("namespace"));
-            setTokenizer(db.tokenizer());
-            setSpotters(db.spotters());
-            setDisambiguators(db.disambiguators());
-            setSparqlExecuter(db.properties().getProperty("endpoint", ""),db.properties().getProperty("graph", ""));
+            initByModel(args[0]);
         }
 
         //ExternalUriWadlGeneratorConfig.setUri(configuration.getServerURI()); //TODO get another parameter, maybe getExternalServerURI since Grizzly will use this in order to find out to which port to bind
@@ -285,5 +250,69 @@ public class Server {
 
     public static  List<Double> getSimilarityThresholds(){
        return similarityThresholds;
+    }
+
+
+    public static void initSpotlightConfiguration(String configFileName) throws InitializationException {
+
+        if(configFileName.endsWith(".properties")) {
+
+            initByPropertiesFile(configFileName);
+
+        } else {
+
+            //We are using a model folder:
+            initByModel(configFileName);
+
+        }
+
+        LOG.info(String.format("Initiated %d disambiguators.",disambiguators.size()));
+
+        LOG.info(String.format("Initiated %d spotters.",spotters.size()));
+
+    }
+
+    private static void initByPropertiesFile(String configFileName) throws  InitializationException {
+
+        //We are using the old-style configuration file:
+        //Initialization, check values
+        try {
+            configuration = new SpotlightConfiguration(configFileName);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("\n"+ usage);
+            System.exit(1);
+        }
+        // Set static annotator that will be used by Annotate and Disambiguate
+        final SpotlightFactory factory  = new SpotlightFactory(configuration);
+        setDisambiguators(factory.disambiguators());
+        setSpotters(factory.spotters());
+        setNamespacePrefix(configuration.getDbpediaResource());
+        setSparqlExecuter(configuration.getSparqlEndpoint(), configuration.getSparqlMainGraph());
+        setSimilarityThresholds(configuration.getSimilarityThresholds());
+
+    }
+
+    private static void initByModel(String folder) throws InitializationException {
+
+        File modelFolder = null;
+
+        try {
+            modelFolder = new File(folder);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("\n"+usage);
+            System.exit(1);
+        }
+
+
+        SpotlightModel db = SpotlightModel.fromFolder(modelFolder);
+
+        setNamespacePrefix(db.properties().getProperty("namespace"));
+        setTokenizer(db.tokenizer());
+        setSpotters(db.spotters());
+        setDisambiguators(db.disambiguators());
+        setSparqlExecuter(db.properties().getProperty("endpoint", ""),db.properties().getProperty("graph", ""));
+
     }
 }
