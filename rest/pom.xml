@@ -132,14 +132,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.any23</groupId>
-            <artifactId>apache-any23-core</artifactId>
-            <exclusions>
-                <exclusion> <!-- was not available at the moment of writing -->
-                    <groupId>org.apache.commons</groupId>
-                    <artifactId>commons-csv</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>org.aksw</groupId>
+            <artifactId>nif</artifactId>
         </dependency>
     </dependencies>
 
