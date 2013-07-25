@@ -770,6 +770,15 @@
                 -->
             </dependency>
 
+            <dependency>
+                <groupId>org.aksw</groupId>
+                <artifactId>nif</artifactId>
+                <version>0.1</version>
+                <!--
+                  License: Apache Software License, Version 2.0
+                -->
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
