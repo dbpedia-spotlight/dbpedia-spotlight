@@ -72,7 +72,7 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
    * @param wikidump filename of the wikidump
    */
   def initializeWikiDocuments(wikidump:String, threadNum:Int):Triple[GlobalCounter,GlobalCounter,GlobalCounter]={
-    val initializers=(0 until threadNum).map(_=>DocumentInitializer(tokenizer,searcher,properties))
+    val initializers=(0 until threadNum+1).map(_=>DocumentInitializer(tokenizer,searcher,properties))
     val pool=Executors.newFixedThreadPool(threadNum)
 
     var parsedDocs=0
@@ -109,8 +109,13 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
           idleInitializer=initializers.find((initializer:DocumentInitializer)=>initializer.isRunning==false)
         val runner=idleInitializer.get
         runner.set(new Text(content),resources.toArray,surfaces.toArray,spans.toArray)
-        pool.execute(runner)
-
+        try{
+          pool.execute(runner)
+        }catch{
+          case e: java.util.concurrent.TimeoutException=>{
+            LOG.error("timeout exception")
+          }
+        }
         parsedDocs+=1
         if(parsedDocs%100==0)
           LOG.info("%d docs parsed".format(parsedDocs))
