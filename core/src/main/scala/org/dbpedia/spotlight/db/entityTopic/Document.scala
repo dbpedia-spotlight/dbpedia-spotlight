@@ -150,7 +150,9 @@ object Document{
     do{
       cumulative+=prob(i)
       i+=1
-    }while(threshold>cumulative)
+    }while(threshold>cumulative&&prob.length>i)
+    if(threshold>cumulative)
+      System.out.println(threshold, cumulative, prob.toString)
 
     id(i-1)
   }
