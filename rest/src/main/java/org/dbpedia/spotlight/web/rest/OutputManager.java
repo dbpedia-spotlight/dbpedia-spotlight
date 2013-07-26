@@ -25,7 +25,6 @@ import net.sf.json.xml.XMLSerializer;
 import org.dbpedia.spotlight.exceptions.OutputException;
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence;
 import org.dbpedia.spotlight.model.OntologyType;
-import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SurfaceForm;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -40,9 +39,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
-import org.dbpedia.spotlight.web.rest.NIFOutputFormatter;
 // SAX classes.
 //JAXP 1.1
 //JSON classes
@@ -54,8 +51,7 @@ import org.dbpedia.spotlight.web.rest.NIFOutputFormatter;
  */
 public class OutputManager {
 
-    private NIFOutputFormatter outputFormatter = new NIFOutputFormatter();
-    
+
     private TransformerHandler initXMLDoc(ByteArrayOutputStream out) throws SAXException, TransformerConfigurationException {
         StreamResult streamResult = new StreamResult(out);
         SAXTransformerFactory tf = (SAXTransformerFactory) SAXTransformerFactory.newInstance();
@@ -113,14 +109,8 @@ public class OutputManager {
         return xml;
     }
 
-    protected String makeNIF(String text, List<DBpediaResourceOccurrence> occList, String format, String prefix, String recipe, int ctxLength) throws OutputException {
-	HashMap<String, Object> options = new HashMap<String, Object>();
-	options.put("prefix", prefix);
-	options.put("format", format);
-	options.put("urirecipe", recipe);
-	options.put("context-length", ctxLength);
-	
-	return outputFormatter.fromResourceOccs(text, occList, options);
+    protected String makeNIF(String text, List<DBpediaResourceOccurrence> occList, String format, String prefix) throws OutputException {
+    	return NIFOutputFormatter.fromResourceOccs(text, occList, format, prefix);
     }
 
     protected void getResourcesXml(List<DBpediaResourceOccurrence> occList, TransformerHandler hd, AttributesImpl atts) throws SAXException {
