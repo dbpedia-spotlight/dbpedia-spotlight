@@ -76,7 +76,6 @@ class Document (val mentions:Array[Int],
     }
   }
 
-
   def decCount(map:HashMap[Int,Int],key:Int){
     map.get(key) match{
       case a: Int=>map.put(key,a-1)
@@ -147,13 +146,15 @@ object Document{
     val threshold=RandomGenerator.nextFloat()*sum
     var cumulative=0.0f
     var i=0;
-    do{
-      cumulative+=prob(i)
-      i+=1
-    }while(threshold>cumulative&&prob.length>i)
-    if(threshold>cumulative)
-      System.out.println(threshold, cumulative, prob.toString)
-
+    try{
+      do{
+        cumulative+=prob(i)
+        i+=1
+      }while(threshold>cumulative && prob.length>i)
+    }catch{
+      case e:java.lang.ArrayIndexOutOfBoundsException=>
+        System.out.println(threshold, cumulative, prob.toString)
+    }
     id(i-1)
   }
 

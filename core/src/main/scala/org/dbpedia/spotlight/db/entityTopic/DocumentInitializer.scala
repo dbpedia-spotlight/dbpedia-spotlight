@@ -2,7 +2,7 @@ package org.dbpedia.spotlight.db.entitytopic
 
 import scala.collection.mutable.ListBuffer
 import org.dbpedia.spotlight.spot.Spotter
-import org.dbpedia.spotlight.db.{DBCandidateSearcher}
+import org.dbpedia.spotlight.db.DBCandidateSearcher
 import org.dbpedia.spotlight.db.model.TextTokenizer
 import org.dbpedia.spotlight.model._
 import opennlp.tools.util.Span
