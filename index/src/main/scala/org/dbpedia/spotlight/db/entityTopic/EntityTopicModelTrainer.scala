@@ -6,12 +6,11 @@ import java.util.{Locale, Properties}
 import org.dbpedia.spotlight.db.model.{ResourceStore, SurfaceFormStore, TextTokenizer}
 import org.dbpedia.spotlight.entitytopic.{AnnotatingMarkupParser, WikipediaRecordReader, Annotation}
 import scala.collection.JavaConversions._
-import org.dbpedia.spotlight.model.{DBpediaResource, Text}
+import org.dbpedia.spotlight.model.{SurfaceFormOccurrence, DBpediaResource, Text, SurfaceForm}
 import opennlp.tools.util.Span
 import org.dbpedia.spotlight.db.{SpotlightModel, DBCandidateSearcher, WikipediaToDBpediaClosure}
 import scala.collection.mutable.ListBuffer
 import org.apache.commons.logging.LogFactory
-import org.dbpedia.spotlight.model.SurfaceForm
 import java.util.concurrent.{ExecutorService, TimeUnit, Executors}
 
 
@@ -57,7 +56,7 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
     for(i <- 1 to iterations){
       var j:Int=0
       documents.foreach((doc:Document)=>{
-        doc.updateAssignment()
+        doc.updateAssignment(true)
         j+=1
         if(j%100==0)
           LOG.info("%d %% of %d-th iteration".format(j*100/toal, i))
@@ -87,17 +86,13 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
       val annotations: List[Annotation]=converter.getWikiLinkAnnotations().toList
 
       //parse the wiki page to get link anchors: each link anchor has a surface form, dbpedia resource, span attribute
-      val surfaces=new ListBuffer[SurfaceForm]()
+      val surfaceOccrs=new ListBuffer[SurfaceFormOccurrence]()
       val resources=new ListBuffer[DBpediaResource]()
-      val spans=new ListBuffer[Span]()
+
       annotations.foreach((a: Annotation)=>{
         try{
-          val sf=sfStore.getSurfaceForm(content.substring(a.begin,a.end))
-          val res=resStore.getResourceByName(wikiToDBpediaClosure.wikipediaToDBpediaURI(a.value))
-          val span=new Span(a.begin,a.end)
-          surfaces+=sf
-          resources+=res
-          spans+=span
+          surfaceOccrs+=new SurfaceFormOccurrence(sfStore.getSurfaceForm(content.substring(a.begin,a.end)),null, a.begin)
+          resources+=resStore.getResourceByName(wikiToDBpediaClosure.wikipediaToDBpediaURI(a.value))
         }catch{
           case _=>None
         }
@@ -108,7 +103,7 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
         while(idleInitializer==None)
           idleInitializer=initializers.find((initializer:DocumentInitializer)=>initializer.isRunning==false)
         val runner=idleInitializer.get
-        runner.set(new Text(content),resources.toArray,surfaces.toArray,spans.toArray)
+        runner.set(new Text(content),resources.toArray,surfaceOccrs.toArray)
         try{
           pool.execute(runner)
         }catch{

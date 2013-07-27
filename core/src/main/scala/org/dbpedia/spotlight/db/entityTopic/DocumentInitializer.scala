@@ -18,7 +18,7 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
                           val MaxSurfaceformLength:Int
 ) extends Runnable{
 
-  val RandomGenerator=new Random();
+
   val documents:ListBuffer[Document]=new ListBuffer[Document]()
   var isRunning:Boolean=false
 
@@ -29,13 +29,11 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
     }
   }
 
-  def restrictedSpot(text:Text, surfaces:Array[SurfaceForm], spans:Array[Span]):Array[SurfaceFormOccurrence]={
+  def restrictedSpot(text:Text, surfaceOccrs:Array[SurfaceFormOccurrence]):Array[SurfaceFormOccurrence]={
     val docStr=text.text
-    val sfMap=new collection.mutable.HashMap[String, Int]()
-    (surfaces, spans).zipped.foreach((sf,span)=>{
-      if(sf.name!=docStr.substring(span.getStart,span.getEnd))
-        System.out.println(sf.name, docStr.substring(span.getStart,span.getEnd))
-      else sfMap.put(sf.name, sf.id)
+    val sfMap=new collection.mutable.HashMap[String, SurfaceForm]()
+    surfaceOccrs.foreach((sfOccr)=>{
+       sfMap.put(sfOccr.surfaceForm.name, sfOccr.surfaceForm)
     })
 
     val tokens:List[Token]=text.featureValue[List[Token]]("tokens").get
@@ -49,7 +47,7 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
           val endOffset=if (k+1==tokenNum) docStr.length else tokens(k+1).offset
           val gram=docStr.substring(token.offset, endOffset).trim
           sfMap.get(gram) match{
-            case Some(id)=>mentions+=new SurfaceFormOccurrence(new SurfaceForm(gram,id,0,0),null,token.offset)
+            case Some(sf)=>mentions+=new SurfaceFormOccurrence(sf,null,token.offset)
             case None=>{}
           }
         }
@@ -59,7 +57,7 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
         for(k<-startIndex until endIndex){
           val gram=docStr.substring(token.offset, tokens(k+1).offset)
           sfMap.get(gram) match{
-            case Some(id)=>mentions+=new SurfaceFormOccurrence(new SurfaceForm(gram,id,0,0),null,token.offset)
+            case Some(sf)=>mentions+=new SurfaceFormOccurrence(sf,null,token.offset)
             case None=>{}
           }
         }
@@ -92,27 +90,27 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
     })
   }
 
-  var retDoc:Document=null
+
   var text:Text=null
-  var resources: Array[DBpediaResource]=null
-  var surfaces:Array[SurfaceForm]=null
-  var spans:Array[Span]=null
-  def initDocument(text:Text, resources: Array[DBpediaResource], surfaces:Array[SurfaceForm], spans:Array[Span]):Document={
-    set(text, resources, surfaces, spans)
+  var goldResources: Array[DBpediaResource]=null
+  var goldSurfaceOccrs:Array[SurfaceFormOccurrence]=null
+
+
+  def initDocument(text:Text, resources: Array[DBpediaResource], surfaces:Array[SurfaceFormOccurrence]):Document={
+    set(text, resources, surfaces)
     run()
-    retDoc
+    documents.last
   }
 
-  def set(t:Text, r: Array[DBpediaResource], s:Array[SurfaceForm], sp:Array[Span]){
+  def set(t:Text, resources: Array[DBpediaResource], surfaceOccrs:Array[SurfaceFormOccurrence]){
     text=t
-    resources=r
-    surfaces=s
-    spans=sp
+    goldResources=resources
+    goldSurfaceOccrs=surfaceOccrs
     isRunning=true
   }
 
   def run(){
-    val mentions:ListBuffer[Int]=new ListBuffer[Int]()
+    val mentions=new ListBuffer[SurfaceFormOccurrence]()
     val words:ListBuffer[Int]=new ListBuffer[Int]()
     val entityOfMention:ListBuffer[Int]=new ListBuffer[Int]()
     val topicOfMention: ListBuffer[Int]=new ListBuffer[Int]()
@@ -124,7 +122,7 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
 
     tokenizer.tokenizeMaybe(text)
     val tokens:List[Token]=text.featureValue[List[Token]]("tokens").get
-    val surfaceOccr:Array[SurfaceFormOccurrence]=restrictedSpot(text, surfaces, spans)
+    val surfaceOccrs:Array[SurfaceFormOccurrence]=restrictedSpot(text,goldSurfaceOccrs)
 
     //spotterDebug(text, surfaceOccr, spans)
     /*tokens and mentions within two succinct link anchors are processed by associating a token
@@ -132,13 +130,13 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
      */
     var i=0
     var j=0
-    var prevRes=resources(0)
-    var prevSpan=new Span(0,0)
-    (resources,surfaces,spans).zipped.foreach((res:DBpediaResource,surface:SurfaceForm,span:Span)=>{
+    var prevRes=goldResources(0)
+    var prevOffset=0
+    (goldResources,goldSurfaceOccrs).zipped.foreach((res:DBpediaResource,sfOccr:SurfaceFormOccurrence)=>{
       //for tokens
-      while(i<tokens.length && tokens(i).offset<span.getStart()){
+      while(i<tokens.length && tokens(i).offset<sfOccr.textOffset){
         words+=tokens(i).tokenType.id
-        if(span.getStart-tokens(i).offset>tokens(i).offset-prevSpan.getStart)
+        if(sfOccr.textOffset-tokens(i).offset>tokens(i).offset-prevOffset)
           entityOfWord+=prevRes.id
         else entityOfWord+=res.id
 
@@ -146,12 +144,12 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
         entitywordCount.incCount(entityOfWord.last, words.last)
 
         prevRes=res
-        prevSpan=span
+        prevOffset=sfOccr.textOffset
         i+=1
       }
 
       //tokens of the link anchor are assigned with the link's target entity
-      while(i<tokens.length && tokens(i).offset<span.getEnd()){
+      while(i<tokens.length && tokens(i).offset<sfOccr.textOffset+sfOccr.surfaceForm.name.length){
         words+=tokens(i).tokenType.id
         entityOfWord+=res.id
         incCount(entityForWordCount,res.id)
@@ -160,63 +158,62 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
       }
 
       //for mentions
-      while(j<surfaceOccr.length &&  surfaceOccr(j).textOffset<span.getStart()){
-        val cands=searcher.getCandidates(surfaceOccr(j).surfaceForm)
+      while(j<surfaceOccrs.length &&  surfaceOccrs(j).textOffset<sfOccr.textOffset){
+        val cands=searcher.getCandidates(surfaceOccrs(j).surfaceForm)
         if(cands.size>0){
-          mentions+=surfaceOccr(j).surfaceForm.id
-          topicOfMention+=RandomGenerator.nextInt(topicNum)
+          mentions+=surfaceOccrs(j)
+          topicOfMention+=DocumentInitializer.RandomGenerator.nextInt(topicNum)
           entityOfMention+=Document.multinomialSample(cands.map((cand:Candidate)=>cand.support.asInstanceOf[Float]).toArray, cands.map((cand:Candidate)=>cand.resource.id).toArray)
 
           incCount(topicCount,topicOfMention.last)
           incCount(entityForMentionCount,entityOfMention.last)
           topicentityCount.incCount(topicOfMention.last, entityOfMention.last)
-          entitymentionCount.incCount(entityOfMention.last, mentions.last)
+          entitymentionCount.incCount(entityOfMention.last, mentions.last.surfaceForm.id)
           }
         j+=1
       }
 
       //mention of the link anchor are assigned with the link's target entity
-      if(searcher.getCandidates(surface).size>0){
-        mentions+=surface.id
+      if(searcher.getCandidates(sfOccr.surfaceForm).size>0){
+        mentions+=sfOccr
         entityOfMention+=res.id
-        topicOfMention+=RandomGenerator.nextInt(topicNum)
+        topicOfMention+=DocumentInitializer.RandomGenerator.nextInt(topicNum)
 
         incCount(topicCount,topicOfMention.last)
         incCount(entityForMentionCount,entityOfMention.last)
         topicentityCount.incCount(topicOfMention.last, entityOfMention.last)
-        entitymentionCount.incCount(entityOfMention.last, mentions.last)
+        entitymentionCount.incCount(entityOfMention.last, mentions.last.surfaceForm.id)
       }
     })
 
     //for the tokens after the last link anchor
     while(i<tokens.length){
       words+=tokens(i).tokenType.id
-      entityOfWord+=resources.last.id
+      entityOfWord+=goldResources.last.id
 
-      incCount(entityForWordCount,resources.last.id)
+      incCount(entityForWordCount,goldResources.last.id)
       entitywordCount.incCount(entityOfWord.last, words.last)
       i+=1
     }
 
     //for the mentions after the last link anchor
-    while(j<surfaceOccr.length){
-      val cands=searcher.getCandidates(surfaceOccr(j).surfaceForm)
+    while(j<surfaceOccrs.length){
+      val cands=searcher.getCandidates(surfaceOccrs(j).surfaceForm)
       if(cands.size>0){
-        mentions+=surfaceOccr(j).surfaceForm.id
-        topicOfMention+=RandomGenerator.nextInt(topicNum)
+        mentions+=surfaceOccrs(j)
+        topicOfMention+=DocumentInitializer.RandomGenerator.nextInt(topicNum)
 
         entityOfMention+=Document.multinomialSample(cands.map((cand:Candidate)=>cand.support.asInstanceOf[Float]).toArray, cands.map((cand:Candidate)=>cand.resource.id).toArray)
         incCount(topicCount,topicOfMention.last)
         incCount(entityForMentionCount,entityOfMention.last)
 
         topicentityCount.incCount(topicOfMention.last, entityOfMention.last)
-        entitymentionCount.incCount(entityOfMention.last, mentions.last)
+        entitymentionCount.incCount(entityOfMention.last, mentions.last.surfaceForm.id)
       }
       j+=1
     }
 
-    retDoc=new Document(mentions.toArray,words.toArray,entityOfMention.toArray,topicOfMention.toArray,entityOfWord.toArray, topicCount,entityForMentionCount,entityForWordCount)
-    documents+=retDoc
+    documents+=new Document(mentions.toArray,words.toArray,entityOfMention.toArray,topicOfMention.toArray,entityOfWord.toArray, topicCount,entityForMentionCount,entityForWordCount)
     isRunning=false
   }
 
@@ -224,6 +221,7 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
 
 
 object DocumentInitializer{
+  val RandomGenerator=new Random();
   def apply(tokenizer:TextTokenizer, searcher: DBCandidateSearcher, properties:Properties):DocumentInitializer={
     val T=properties.getProperty("topicNum").toFloat
     val E=properties.getProperty("resourceNum").toFloat

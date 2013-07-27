@@ -5,6 +5,8 @@ import java.util.Random
 import Document._
 import org.dbpedia.spotlight.db.memory.MemoryCandidateMapStore
 import java.lang.Math
+import org.dbpedia.spotlight.model.{DBpediaResourceOccurrence, SurfaceFormOccurrence}
+import org.dbpedia.spotlight.model.Factory.SurfaceFormOccurrence
 
 
 /**
@@ -18,7 +20,7 @@ import java.lang.Math
  * @param entityForMentionCount count of entity e being assigned to mention in this document
  * @param entityForWordCount count of entity e being assigned to word in this document
  */
-class Document (val mentions:Array[Int],
+class Document (val mentions:Array[SurfaceFormOccurrence],
                 val words:Array[Int],
                 val entityOfMention:Array[Int],
                 val topicOfMention:Array[Int],
@@ -33,39 +35,69 @@ class Document (val mentions:Array[Int],
    * each assignment is updated: dec count, sample new assignment, inc count
    *
    */
-  def updateAssignment(){
+  def updateAssignment(training:Boolean){
 
-    for(i<-0 until mentions.size){
-      val mention=mentions(i)
-      var topic=topicOfMention(i)
-      var entity=entityOfMention(i)
+    if(training){
+      for(i<-0 until mentions.size){
+        val mention=mentions(i).surfaceForm.id
+        var topic=topicOfMention(i)
+        var entity=entityOfMention(i)
 
-      //update topic for mention
-      decCount(topicCount, topic)
-      topicentityCount.decCount(topic,entity)
-      topic=Document.sampleTopic(topicCount, entity)
-      topicOfMention(i)=topic
-      incCount(topicCount, topic)
+        //update topic for mention
+        decCount(topicCount, topic)
+        topicentityCount.decCount(topic,entity)
+        topic=Document.sampleTopic(topicCount, entity)
+        topicOfMention(i)=topic
+        incCount(topicCount, topic)
 
-      //update entity for mention
-      decCount(entityForMentionCount, entity)
-      entitymentionCount.decCount(entity, mention)
-      entity=Document.sampleEntityForMention(entityForMentionCount, entityForWordCount,topic,mentions(i))
-      entityOfMention(i)=entity
-      incCount(entityForMentionCount, entity)
-      entitymentionCount.incCount(entity, mention)
-      topicentityCount.incCount(topic, entity)
-    }
+        //update entity for mention
+        decCount(entityForMentionCount, entity)
+        entitymentionCount.decCount(entity, mention)
+        entity=Document.sampleEntityForMention(entityForMentionCount, entityForWordCount,topic,mentions(i).surfaceForm.id)
+        entityOfMention(i)=entity
+        incCount(entityForMentionCount, entity)
+        entitymentionCount.incCount(entity, mention)
+        topicentityCount.incCount(topic, entity)
+      }
 
-    //update words' assignments
-    for(i<-0 until words.size){
-      val word=words(i)
-      var entity=entityOfWord(i)
+      //update words' assignments
+      for(i<-0 until words.size){
+        val word=words(i)
+        var entity=entityOfWord(i)
 
-      decCount(entityForWordCount, entity)
-      entity=Document.sampleEntityForWord(word,entityForMentionCount,entityOfMention)
-      incCount(entityForWordCount,entity)
-      entitywordCount.incCount(entity,word)
+        decCount(entityForWordCount, entity)
+        entity=Document.sampleEntityForWord(word,entityForMentionCount,entityOfMention)
+        incCount(entityForWordCount,entity)
+        entitywordCount.incCount(entity,word)
+      }
+    }else{
+      for(i<-0 until mentions.size){
+        val mention=mentions(i).surfaceForm.id
+        var topic=topicOfMention(i)
+        var entity=entityOfMention(i)
+
+        //update topic for mention
+        decCount(topicCount, topic)
+        topic=Document.sampleTopic(topicCount, entity)
+        topicOfMention(i)=topic
+        incCount(topicCount, topic)
+
+        //update entity for mention
+        decCount(entityForMentionCount, entity)
+        entity=Document.sampleEntityForMention(entityForMentionCount, entityForWordCount,topic,mentions(i).surfaceForm.id)
+        entityOfMention(i)=entity
+        incCount(entityForMentionCount, entity)
+      }
+
+      //update words' assignments
+      for(i<-0 until words.size){
+        val word=words(i)
+        var entity=entityOfWord(i)
+
+        decCount(entityForWordCount, entity)
+        entity=Document.sampleEntityForWord(word,entityForMentionCount,entityOfMention)
+        incCount(entityForWordCount,entity)
+      }
     }
   }
 
