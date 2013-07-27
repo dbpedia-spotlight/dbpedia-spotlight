@@ -17,6 +17,8 @@ class EntityTopicModel(val tokenizer:TextTokenizer,
 
   val docInitializer=DocumentInitializer(tokenizer,searcher,properties)
 
+  val gibbsSteps=properties.getProperty("gibbsSteps").toInt
+
   def name="Entity Topic Model"
 
   def disambiguate(paragraph:Paragraph):  List[DBpediaResourceOccurrence]={
@@ -39,8 +41,8 @@ class EntityTopicModel(val tokenizer:TextTokenizer,
   }
 
   def mapResult(doc:Document):Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]={
-    val map=Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]()
-    (doc.mentions,doc.entityOfMention).zipped.foreach((mention,entity)=>map+(mention->searcher.resStore.getResource(entity)))
+    var map=Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]()
+    (doc.mentions,doc.entityOfMention).zipped.foreach((mention,entity)=>map+=(mention->List(Factory.DBpediaResourceOccurrence.from(mention,searcher.resStore.getResource(entity),0.0))))
     map
   }
 
@@ -60,7 +62,9 @@ class EntityTopicModel(val tokenizer:TextTokenizer,
     })
 
     val doc=docInitializer.initDocument(paragraph.text,resources.toArray,mentions.toArray)
-    doc.updateAssignment(false)
+    (0 until gibbsSteps).foreach(_=>
+      doc.updateAssignment(false)
+    )
     doc
   }
 }

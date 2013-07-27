@@ -34,7 +34,7 @@ object EvaluateEntityTopicModel {
 
     val disambiguator = model
 
-    val corpusDisambiguate = new WikipediaHeldoutCorpus(Source.fromFile(heldout).getLines().toSeq.take(6000), Option(wikipediaToDBpediaClosure), Option(disambiguator.searcher))
+    val corpusDisambiguate = new WikipediaHeldoutCorpus(Source.fromFile(heldout).getLines().toSeq.take(1000), Option(wikipediaToDBpediaClosure), Option(disambiguator.searcher))
     val memInit = (Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / (1024 * 1024)
     System.err.println("Memory footprint (corpus): %s".format( memInit ) )
 

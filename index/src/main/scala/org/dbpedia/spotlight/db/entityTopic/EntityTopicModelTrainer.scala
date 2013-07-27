@@ -23,6 +23,7 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
   val LOG = LogFactory.getLog(this.getClass)
   val sfStore: SurfaceFormStore = searcher.sfStore
   val resStore: ResourceStore = searcher.resStore
+  val gibbsSteps=properties.getProperty("gibbsSteps").toInt
 
   val documents:ListBuffer[Document]=new ListBuffer[Document]()
 
@@ -39,7 +40,9 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
 
     LOG.info("Update assignments...")
     val start2=System.currentTimeMillis()
-    updateAssignments(1)//hardcode iterations of updates
+    (0 until gibbsSteps).foreach((step:Int)=>
+      updateAssignments(step)//hardcode iterations of updates
+    )
     LOG.info("Done (%d ms)".format(System.currentTimeMillis() - start2))
 
     //save global knowledge/counters

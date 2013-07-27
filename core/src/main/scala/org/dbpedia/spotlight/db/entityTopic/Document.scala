@@ -96,12 +96,7 @@ class Document (val mentions:Array[SurfaceFormOccurrence],
         var entity=entityOfWord(i)
 
         decCount(entityForWordCount, entity)
-        try{
         entity=Document.sampleEntityForWord(word,entityForMentionCount,entityOfMention)
-        }catch{
-          case e:java.lang.IndexOutOfBoundsException=>
-            System.out.println('s')
-        }
         incCount(entityForWordCount,entity)
       }
     }
@@ -184,15 +179,12 @@ object Document{
     val threshold=RandomGenerator.nextFloat()*sum
     var cumulative=0.0f
     var i=0;
-    try{
-      do{
-        cumulative+=prob(i)
-        i+=1
-      }while(threshold>cumulative && prob.length>i)
-    }catch{
-      case e:java.lang.ArrayIndexOutOfBoundsException=>
-        System.out.println(threshold, cumulative, prob.toString)
-    }
+
+    do{
+      cumulative+=prob(i)
+      i+=1
+    }while(threshold>cumulative && prob.length>i)
+
     id(i-1)
   }
 

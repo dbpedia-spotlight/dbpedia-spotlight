@@ -40,8 +40,7 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
     val tokenNum=tokens.size
     val mentions=new ListBuffer[SurfaceFormOccurrence]()
     tokens.zipWithIndex.foreach{case (token, startIndex)=>{
-      if (tokenNum<=startIndex+MaxSurfaceformLength){
-        val endIndex=tokenNum
+        val endIndex=if (tokenNum<startIndex+MaxSurfaceformLength) tokenNum else startIndex+MaxSurfaceformLength
         var k=0
         for(k<-startIndex until endIndex){
           val endOffset=if (k+1==tokenNum) docStr.length else tokens(k+1).offset
@@ -51,19 +50,8 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
             case None=>{}
           }
         }
-      }else{
-        var k=0
-        val endIndex=startIndex+MaxSurfaceformLength
-        for(k<-startIndex until endIndex){
-          val gram=docStr.substring(token.offset, tokens(k+1).offset)
-          sfMap.get(gram) match{
-            case Some(sf)=>mentions+=new SurfaceFormOccurrence(sf,null,token.offset)
-            case None=>{}
-          }
-        }
       }
-
-    }}
+    }
     mentions.toArray
   }
 
