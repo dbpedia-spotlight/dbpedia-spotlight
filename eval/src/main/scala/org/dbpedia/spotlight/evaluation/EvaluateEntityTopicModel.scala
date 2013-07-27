@@ -11,14 +11,15 @@ import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.model.Paragraph
 import scala.io.Source
 import org.dbpedia.spotlight.db.concurrent.SpotterWrapper
+import org.dbpedia.spotlight.db.entitytopic.EntityTopicModel
 
 object EvaluateEntityTopicModel {
 
 
   def main(args: Array[String]) {
 
-    val model = SpotlightModel.fromFolder(new File(args(0)))
-    val (_, sfStore, resStore, candMapStore, _) = SpotlightModel.storesFromFolder(new File(args(0)))
+    val model = EntityTopicModel.fromFolder(new File(args(0)))
+    //val (_, sfStore, resStore, candMapStore, _) = SpotlightModel.storesFromFolder(new File(args(0)))
 
     val memLoaded = (Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / (1024 * 1024)
     System.err.println("Memory footprint (model loaded): %s".format( memLoaded ) )
@@ -31,41 +32,22 @@ object EvaluateEntityTopicModel {
       new FileInputStream(new File(args(1), "disambiguations.nt"))
     )
 
+    val disambiguator = model
 
-    val spotter = model.spotters.get(SpotterPolicy.Default)
-    val disambiguator = model.disambiguators.get(DisambiguationPolicy.Default)
-
-    val corpusDisambiguate = new WikipediaHeldoutCorpus(Source.fromFile(heldout).getLines().toSeq.take(6000), Option(wikipediaToDBpediaClosure), Option(disambiguator.disambiguator.asInstanceOf[DBTwoStepDisambiguator].candidateSearcher))
+    val corpusDisambiguate = new WikipediaHeldoutCorpus(Source.fromFile(heldout).getLines().toSeq.take(6000), Option(wikipediaToDBpediaClosure), Option(disambiguator.searcher))
     val memInit = (Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / (1024 * 1024)
     System.err.println("Memory footprint (corpus): %s".format( memInit ) )
 
 
-    //Time performance:
-    val startTime = System.nanoTime()
-    corpusDisambiguate.foreach(p => {
-      val text = p.text
-      model.tokenizer.tokenizeMaybe(text)
-      val spots = spotter.extract(text)
-      disambiguator.disambiguate(new Paragraph("", text, spots.toList))
-    })
-    val endTime = System.nanoTime()
-    val t = (endTime-startTime) / 1000000000
-    System.err.println("Annotation time: %s sec".format( t ))
-    System.err.println("Annotation time avg: %s sec".format( t / corpusDisambiguate.size.toDouble) )
+    //disambiguator.disambiguator.asInstanceOf[DBTwoStepDisambiguator].tokenizer = model.tokenizer
 
-    val memFinal = (Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / (1024 * 1024)
-    System.err.println("Memory footprint: %s".format( memFinal ) )
-
-
-    disambiguator.disambiguator.asInstanceOf[DBTwoStepDisambiguator].tokenizer = model.tokenizer
-
-    val baseline: DBBaselineDisambiguator = new DBBaselineDisambiguator(sfStore, resStore, candMapStore)
+    //val baseline: DBBaselineDisambiguator = new DBBaselineDisambiguator(model.searcher.sfStore, model.searcher.resStore, model)
 
     //Evaluate full:
-    EvaluateParagraphDisambiguator.evaluate(corpusDisambiguate, disambiguator.disambiguator, List(), List())
+    EvaluateParagraphDisambiguator.evaluate(corpusDisambiguate, disambiguator, List(), List())
 
     //Evaluate baseline:
-    EvaluateParagraphDisambiguator.evaluate(corpusDisambiguate, baseline, List(), List())
+    //EvaluateParagraphDisambiguator.evaluate(corpusDisambiguate, baseline, List(), List())
 
   }
 }

@@ -3,6 +3,7 @@ package org.dbpedia.spotlight.db.entitytopic
 import java.util.HashMap
 import breeze.linalg.CSCMatrix
 import java.io.{FileReader, BufferedReader, FileWriter, BufferedWriter}
+import org.apache.commons.logging.LogFactory
 
 
 /**
@@ -51,7 +52,11 @@ class GlobalCounter( val matrix: CSCMatrix[Int],val rowSum: HashMap[Int,Int]) {
 
   def writeToFile( filePath:String){
     val writer=new BufferedWriter(new FileWriter(filePath))
-    writer.write("%d x %d  CSCMatrix\n".format(matrix.rows, matrix.cols))
+    var size=0
+    matrix.activeIterator.foreach { case ((r,c),v) =>
+      if(v>0) size+=1
+    }
+    writer.write("%d x %d : %d CSCMatrix\n".format(matrix.rows, matrix.cols, size))
     matrix.activeIterator.foreach { case ((r,c),v) =>
       if(v>0)  writer.write("%d %d %d\n".format(r,c,v))
     }
@@ -61,7 +66,7 @@ class GlobalCounter( val matrix: CSCMatrix[Int],val rowSum: HashMap[Int,Int]) {
 }
 
 object GlobalCounter{
-
+  val LOG = LogFactory.getLog(this.getClass)
   def apply(rows:Int, cols:Int):GlobalCounter={
     val matrix: CSCMatrix[Int]=CSCMatrix.zeros(rows,cols)
     val rowSum: HashMap[Int,Int]=new HashMap[Int, Int]()
@@ -69,6 +74,8 @@ object GlobalCounter{
   }
 
   def readFromFile(filePath:String):GlobalCounter={
+    LOG.info("reading global counter...")
+
     val rowSum: HashMap[Int,Int]=new HashMap[Int, Int]()
 
     val reader=new BufferedReader(new FileReader(filePath))

@@ -84,18 +84,24 @@ class Document (val mentions:Array[SurfaceFormOccurrence],
 
         //update entity for mention
         decCount(entityForMentionCount, entity)
-        entity=Document.sampleEntityForMention(entityForMentionCount, entityForWordCount,topic,mentions(i).surfaceForm.id)
+        entity=Document.sampleEntityForMention(entityForMentionCount, entityForWordCount,topic,mention)
         entityOfMention(i)=entity
         incCount(entityForMentionCount, entity)
       }
 
       //update words' assignments
+
       for(i<-0 until words.size){
         val word=words(i)
         var entity=entityOfWord(i)
 
         decCount(entityForWordCount, entity)
+        try{
         entity=Document.sampleEntityForWord(word,entityForMentionCount,entityOfMention)
+        }catch{
+          case e:java.lang.IndexOutOfBoundsException=>
+            System.out.println('s')
+        }
         incCount(entityForWordCount,entity)
       }
     }

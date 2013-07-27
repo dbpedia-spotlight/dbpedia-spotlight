@@ -32,7 +32,7 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
   def learnFromWiki(wikidump:String, model_folder:String, threadNum:Int){
     LOG.info("Init wiki docs...")
     val start1 = System.currentTimeMillis()
-    val counter=initializeWikiDocuments(wikidump,5)
+    val counter=initializeWikiDocuments(wikidump,threadNum)
     LOG.info("Done (%d ms)".format(System.currentTimeMillis() - start1))
 
     Document.init(counter._1,counter._2,counter._3,candMap,properties)
@@ -71,7 +71,7 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
    * @param wikidump filename of the wikidump
    */
   def initializeWikiDocuments(wikidump:String, threadNum:Int):Triple[GlobalCounter,GlobalCounter,GlobalCounter]={
-    val initializers=(0 until threadNum+1).map(_=>DocumentInitializer(tokenizer,searcher,properties))
+    val initializers=(0 until threadNum+1).map(_=>DocumentInitializer(tokenizer,searcher,properties,true))
     val pool=Executors.newFixedThreadPool(threadNum)
 
     var parsedDocs=0

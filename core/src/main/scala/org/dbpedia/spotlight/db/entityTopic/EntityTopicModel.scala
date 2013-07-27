@@ -11,10 +11,11 @@ import scala.collection.mutable.ListBuffer
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguator
 import org.dbpedia.spotlight.db.memory.MemoryCandidateMapStore
 
-class EntityTopicModel(val searcher: DBCandidateSearcher,
+class EntityTopicModel(val tokenizer:TextTokenizer,
+                       val searcher: DBCandidateSearcher,
                        val properties: Properties) extends ParagraphDisambiguator{
 
-  val docInitializer=DocumentInitializer(null,searcher,properties)
+  val docInitializer=DocumentInitializer(tokenizer,searcher,properties)
 
   def name="Entity Topic Model"
 
@@ -29,8 +30,12 @@ class EntityTopicModel(val searcher: DBCandidateSearcher,
   }
 
   def bestK(paragraph: Paragraph, k: Int): Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]={
-    val doc=inference(paragraph)
-    mapResult(doc)
+    if(paragraph.getOccurrences().size()>0){
+      val doc=inference(paragraph)
+      mapResult(doc)
+    }else{
+      null
+    }
   }
 
   def mapResult(doc:Document):Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]={
@@ -63,7 +68,7 @@ class EntityTopicModel(val searcher: DBCandidateSearcher,
 
 object EntityTopicModel{
 
-  def fromFolder(modelFolder: File, topicNum:Int): EntityTopicModel = {
+  def fromFolder(modelFolder: File, topicNum:Int=100): EntityTopicModel = {
     val properties = new Properties()
     properties.load(new FileInputStream(new File(modelFolder, "model.properties")))
 
@@ -76,11 +81,11 @@ object EntityTopicModel{
     //val spotter=SpotlightModel.createSpotter(modelFolder,sfStore,stopwords,cores)
 
     val topicentity=GlobalCounter.readFromFile(modelFolder+"/entitytopic/topicentity_count")
-    val entitymention=GlobalCounter.readFromFile(modelFolder+"/entitymention/entitymention_count")
-    val entityword=GlobalCounter.readFromFile(modelFolder+"entityword_count")
+    val entitymention=GlobalCounter.readFromFile(modelFolder+"/entitytopic/entitymention_count")
+    val entityword=GlobalCounter.readFromFile(modelFolder+"/entitytopic/entityword_count")
 
     Document.init(topicentity,entitymention,entityword,candMapStore.asInstanceOf[MemoryCandidateMapStore],properties)
-    new EntityTopicModel(searcher, properties)
+    new EntityTopicModel(tokenizer, searcher, properties)
   }
 
 }
