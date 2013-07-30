@@ -13,6 +13,7 @@ import scala.collection.mutable.ListBuffer
 import org.apache.commons.logging.LogFactory
 import java.util.concurrent.{ExecutorService, TimeUnit, Executors}
 import org.dbpedia.spotlight.model.Factory.DBpediaResourceOccurrence
+import org.dbpedia.spotlight.exceptions.{NotADBpediaResourceException, SurfaceFormNotFoundException, DBpediaResourceNotFoundException}
 
 
 class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosure,
@@ -79,6 +80,8 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
     val pool=Executors.newFixedThreadPool(threadNum)
 
     var parsedDocs=0
+    var unknownSF=0
+    var unknownRes=0
     //parse wiki dump to get wiki pages iteratively
     val wikireader: WikipediaRecordReader = new WikipediaRecordReader(new File(wikidump))
     val converter: AnnotatingMarkupParser = new AnnotatingMarkupParser(locale.getLanguage())
@@ -92,15 +95,17 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
       //parse the wiki page to get link anchors: each link anchor has a surface form, dbpedia resource, span attribute
       val resOccrs=new ListBuffer[DBpediaResourceOccurrence]()
 
+      try{
       annotations.foreach((a: Annotation)=>{
-        try{
-          val sfOccr=new SurfaceFormOccurrence(sfStore.getSurfaceForm(content.substring(a.begin,a.end)),null, a.begin)
-          val res=resStore.getResourceByName(wikiToDBpediaClosure.wikipediaToDBpediaURI(a.value))
-          resOccrs+=DBpediaResourceOccurrence.from(sfOccr, res, 0.0)
-        }catch{
-          case _=>None
-        }
+        val sfOccr=new SurfaceFormOccurrence(sfStore.getSurfaceForm(content.substring(a.begin,a.end)),new Text(content), a.begin)
+        val res=resStore.getResourceByName(wikiToDBpediaClosure.wikipediaToDBpediaURI(a.value))
+        resOccrs+=DBpediaResourceOccurrence.from(sfOccr, res, 0.0)
       })
+      }catch{
+        case e:DBpediaResourceNotFoundException=>{unknownRes+=1}
+        case e:SurfaceFormNotFoundException=>{unknownSF+=1}
+        case e:NotADBpediaResourceException=>{unknownRes+=1}
+      }
 
       if(resOccrs.size>0){
         var idleInitializer=None.asInstanceOf[Option[DocumentInitializer]]
@@ -118,7 +123,7 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
         parsedDocs+=1
         if(parsedDocs%100==0){
           val memLoaded = (Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / (1024 * 1024)
-          LOG.info("%d docs parsed, mem %d M".format(parsedDocs, memLoaded))
+          LOG.info("%d docs parsed, unknown sf %d, unknown res %d, mem %d M".format(parsedDocs, unknownSF, unknownRes, memLoaded))
         }
       }
     }

@@ -34,11 +34,12 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
   def spot(text:String, tokens:List[Token], start:Int, end:Int, map:collection.mutable.HashMap[String, DBpediaResourceOccurrence]):ListBuffer[DBpediaResourceOccurrence]={
     val resOccrs=new ListBuffer[DBpediaResourceOccurrence]()
     (start until end).foreach(k=>{
-      val maxLen=if (end-k>MaxSurfaceformLength) MaxSurfaceformLength else end-start
+      val maxLen=if (end-k>MaxSurfaceformLength) MaxSurfaceformLength else end-k
       (k until k+maxLen ).foreach(e=>{
-        val gram=text.substring(tokens(k).offset, tokens(e).offset+tokens(e).token.length)
+        val gram=text.substring(tokens(k).offset, tokens(e).offset+tokens(e).token.length).trim
         map.get(gram) match{
-          case Some(resOccr)=> resOccrs+=DBpediaResourceOccurrence.from(new SurfaceFormOccurrence(resOccr.surfaceForm, null, tokens(k).offset),resOccr.resource,0.0)
+          case Some(resOccr)=> resOccrs+=DBpediaResourceOccurrence.from(new SurfaceFormOccurrence(resOccr.surfaceForm, resOccr.context, tokens(k).offset),resOccr.resource,0.0)
+          case None=>{}
         }
       })
     })
@@ -61,6 +62,9 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
         k+=1
       if(k<tokens.size&&k>start)
         retResOccrs++=spot(text.text, tokens, start, k, sfMap)
+      retResOccrs+=resOccr
+      while(k<tokens.size&&tokens(k).offset<resOccr.textOffset+resOccr.surfaceForm.name.length)
+        k+=1
     })
 
     if(k<tokens.size)
@@ -161,7 +165,7 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
 
       //mention of the link anchor are assigned with the link's target entity
       if(searcher.getCandidates(resOccr.surfaceForm).size>0){
-        mentions+=new SurfaceFormOccurrence(resOccr.surfaceForm, null, offset)
+        mentions+=new SurfaceFormOccurrence(resOccr.surfaceForm, resOccr.context, offset)
         entityOfMention+=res.id
         topicOfMention+=DocumentInitializer.RandomGenerator.nextInt(topicNum)
 
