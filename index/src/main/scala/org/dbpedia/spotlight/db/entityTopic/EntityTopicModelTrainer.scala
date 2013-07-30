@@ -6,12 +6,13 @@ import java.util.{Locale, Properties}
 import org.dbpedia.spotlight.db.model.{ResourceStore, SurfaceFormStore, TextTokenizer}
 import org.dbpedia.spotlight.entitytopic.{AnnotatingMarkupParser, WikipediaRecordReader, Annotation}
 import scala.collection.JavaConversions._
-import org.dbpedia.spotlight.model.{SurfaceFormOccurrence, DBpediaResource, Text, SurfaceForm}
+import org.dbpedia.spotlight.model._
 import opennlp.tools.util.Span
 import org.dbpedia.spotlight.db.{SpotlightModel, DBCandidateSearcher, WikipediaToDBpediaClosure}
 import scala.collection.mutable.ListBuffer
 import org.apache.commons.logging.LogFactory
 import java.util.concurrent.{ExecutorService, TimeUnit, Executors}
+import org.dbpedia.spotlight.model.Factory.DBpediaResourceOccurrence
 
 
 class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosure,
@@ -89,24 +90,24 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
       val annotations: List[Annotation]=converter.getWikiLinkAnnotations().toList
 
       //parse the wiki page to get link anchors: each link anchor has a surface form, dbpedia resource, span attribute
-      val surfaceOccrs=new ListBuffer[SurfaceFormOccurrence]()
-      val resources=new ListBuffer[DBpediaResource]()
+      val resOccrs=new ListBuffer[DBpediaResourceOccurrence]()
 
       annotations.foreach((a: Annotation)=>{
         try{
-          surfaceOccrs+=new SurfaceFormOccurrence(sfStore.getSurfaceForm(content.substring(a.begin,a.end)),null, a.begin)
-          resources+=resStore.getResourceByName(wikiToDBpediaClosure.wikipediaToDBpediaURI(a.value))
+          val sfOccr=new SurfaceFormOccurrence(sfStore.getSurfaceForm(content.substring(a.begin,a.end)),null, a.begin)
+          val res=resStore.getResourceByName(wikiToDBpediaClosure.wikipediaToDBpediaURI(a.value))
+          resOccrs+=DBpediaResourceOccurrence.from(sfOccr, res, 0.0)
         }catch{
           case _=>None
         }
       })
 
-      if(resources.size>0){
+      if(resOccrs.size>0){
         var idleInitializer=None.asInstanceOf[Option[DocumentInitializer]]
         while(idleInitializer==None)
           idleInitializer=initializers.find((initializer:DocumentInitializer)=>initializer.isRunning==false)
         val runner=idleInitializer.get
-        runner.set(new Text(content),resources.toArray,surfaceOccrs.toArray)
+        runner.set(new Text(content),resOccrs.toArray)
         try{
           pool.execute(runner)
         }catch{

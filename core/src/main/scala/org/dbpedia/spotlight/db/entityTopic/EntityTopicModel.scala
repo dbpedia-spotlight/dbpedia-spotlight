@@ -6,10 +6,10 @@ import org.dbpedia.spotlight.db.{DBCandidateSearcher, SpotlightModel}
 import org.dbpedia.spotlight.db.model.TextTokenizer
 import org.dbpedia.spotlight.model._
 import scala.collection.JavaConverters._
-import opennlp.tools.util.Span
 import scala.collection.mutable.ListBuffer
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguator
 import org.dbpedia.spotlight.db.memory.MemoryCandidateMapStore
+import org.dbpedia.spotlight.model.Factory.DBpediaResourceOccurrence
 
 class EntityTopicModel(val tokenizer:TextTokenizer,
                        val searcher: DBCandidateSearcher,
@@ -48,20 +48,16 @@ class EntityTopicModel(val tokenizer:TextTokenizer,
 
   def inference(paragraph: Paragraph):Document={
     val surfaceOccrs=paragraph.getOccurrences().asScala
-    val mentions=new ListBuffer[SurfaceFormOccurrence]()
-    val resources=new ListBuffer[DBpediaResource]()
-
+    val resOccrs=new ListBuffer[DBpediaResourceOccurrence]()
     surfaceOccrs.foreach((sfOccr:SurfaceFormOccurrence)=>{
       val cands=searcher.getCandidates(sfOccr.surfaceForm)
       if(cands.size>0){
         val resId=Document.multinomialSample(cands.map((cand:Candidate)=>cand.support.asInstanceOf[Float]).toArray, cands.map((cand:Candidate)=>cand.resource.id).toArray)
-        mentions+=sfOccr
-        resources+=searcher.resStore.getResource(resId)
-        //spans+=new Span(sfOccr.textOffset,sfOccr.textOffset+sfOccr.surfaceForm.name.length)
+        resOccrs+=DBpediaResourceOccurrence.from(sfOccr, searcher.resStore.getResource(resId), 0.0)
       }
     })
 
-    val doc=docInitializer.initDocument(paragraph.text,resources.toArray,mentions.toArray)
+    val doc=docInitializer.initDocument(paragraph.text,resOccrs.toArray)
     (0 until gibbsSteps).foreach(_=>
       doc.updateAssignment(false)
     )

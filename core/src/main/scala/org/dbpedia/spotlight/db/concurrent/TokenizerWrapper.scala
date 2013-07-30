@@ -21,7 +21,7 @@ import org.dbpedia.spotlight.db.model.{StringTokenizer, TextTokenizer}
 
 class TokenizerWrapper(val tokenizers: Seq[TextTokenizer]) extends TextTokenizer {
 
-  var requestTimeout = 60
+  var requestTimeout = 180
 
   val system = ActorSystem()
   val workers = tokenizers.map { case tokenizer: TextTokenizer =>
