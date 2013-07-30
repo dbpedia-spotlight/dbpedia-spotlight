@@ -116,8 +116,10 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
           }
         }
         parsedDocs+=1
-        if(parsedDocs%100==0)
-          LOG.info("%d docs parsed".format(parsedDocs))
+        if(parsedDocs%100==0){
+          val memLoaded = (Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / (1024 * 1024)
+          LOG.info("%d docs parsed, mem %d M".format(parsedDocs, memLoaded))
+        }
       }
     }
     shutdownAndAwaitTermination(pool)
