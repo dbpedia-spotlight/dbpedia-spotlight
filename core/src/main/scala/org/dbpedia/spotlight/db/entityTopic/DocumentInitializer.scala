@@ -8,6 +8,7 @@ import org.dbpedia.spotlight.model._
 import opennlp.tools.util.Span
 import java.util.{Properties, HashMap}
 import scala.util.Random
+import org.dbpedia.spotlight.model.Factory.DBpediaResourceOccurrence
 
 class DocumentInitializer(val topicentityCount:GlobalCounter,
                           val entitymentionCount:GlobalCounter,
@@ -20,6 +21,7 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
 ) extends Runnable{
 
   val documents:ListBuffer[Document]=new ListBuffer[Document]()
+  var newestDoc:Document=null
   var isRunning:Boolean=false
 
   def incCount(map:HashMap[Int,Int],key:Int){
@@ -84,10 +86,10 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
   var goldSurfaceOccrs:Array[SurfaceFormOccurrence]=null
 
 
-  def initDocument(text:Text, resources: Array[DBpediaResource], surfaces:Array[SurfaceFormOccurrence]):Document={
-    set(text, resources, surfaces)
+  def initDocument(text:Text, resources: Array[DBpediaResource], sfOccrs:Array[SurfaceFormOccurrence]):Document={
+    set(text, resources, sfOccrs)
     run()
-    documents.last
+    newestDoc
   }
 
   def set(t:Text, resources: Array[DBpediaResource], surfaceOccrs:Array[SurfaceFormOccurrence]){
@@ -133,9 +135,6 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
 
           incCount(entityForWordCount,entityOfWord.last)
           entitywordCount.incCount(entityOfWord.last, words.last)
-
-          prevRes=res
-          prevOffset=sfOccr.textOffset
           i+=1
         }
 
@@ -164,7 +163,7 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
           j+=1
         }
 
-        //mention of the link anchor are assigned with the link's target entity
+        //mention of the link anchor is assigned with the link's target entity
         if(searcher.getCandidates(sfOccr.surfaceForm).size>0){
           mentions+=sfOccr
           entityOfMention+=res.id
@@ -203,6 +202,7 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
         }
         j+=1
       }
+      documents+=new Document(mentions.toArray,words.toArray,entityOfMention.toArray,topicOfMention.toArray,entityOfWord.toArray, topicCount,entityForMentionCount,entityForWordCount)
     }else{
       (goldResources,goldSurfaceOccrs).zipped.foreach((res:DBpediaResource,sfOccr:SurfaceFormOccurrence)=>{
         sfOccr.surfaceForm.id=searcher.sfStore.getSurfaceForm(sfOccr.surfaceForm.name).id
@@ -246,8 +246,9 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
         incCount(entityForWordCount,goldResources.last.id)
         i+=1
       }
+
+      newestDoc=new Document(mentions.toArray,words.toArray,entityOfMention.toArray,topicOfMention.toArray,entityOfWord.toArray, topicCount,entityForMentionCount,entityForWordCount)
     }
-    documents+=new Document(mentions.toArray,words.toArray,entityOfMention.toArray,topicOfMention.toArray,entityOfWord.toArray, topicCount,entityForMentionCount,entityForWordCount)
     isRunning=false
   }
 
