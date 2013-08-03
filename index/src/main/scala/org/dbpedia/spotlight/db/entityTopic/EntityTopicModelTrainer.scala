@@ -41,9 +41,7 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
 
     LOG.info("Update assignments...")
     val start2=System.currentTimeMillis()
-    (0 until gibbsSteps).foreach((step:Int)=>
-      updateAssignments(step)//hardcode iterations of updates
-    )
+    updateAssignments(gibbsSteps)
     LOG.info("Done (%d ms)".format(System.currentTimeMillis() - start2))
 
     //save global knowledge/counters
@@ -74,6 +72,7 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
 
   /**
    *init the assignments for each document
+   * multiple DocmentInitializers works parallelly
    *
    * @param wikidump filename of the wikidump
    */
@@ -81,28 +80,31 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
     val initializers=(0 until threadNum+1).map(_=>DocumentInitializer(tokenizer,searcher,properties,true))
     val pool=Executors.newFixedThreadPool(threadNum)
 
-    var parsedDocs=0
-    var unknownSF=0
-    var unknownRes=0
-    //parse wiki dump to get wiki pages iteratively
+    //parse wiki dump
     val wikireader: WikipediaRecordReader = new WikipediaRecordReader(new File(wikidump))
     val converter: AnnotatingMarkupParser = new AnnotatingMarkupParser(locale.getLanguage())
+
+    var parsedDocs=0
+    var parsedRes=0
+    var unknownSF=0
+    var unknownRes=0
+    var emptyCands=0
     while(wikireader.nextKeyValue()){
-      //val title:String=wikireader.getCurrentKey
-      //val id:String=wikireader.getWikipediaId
+      val content = converter.parse(wikireader.getCurrentValue)
+      val annotations=converter.getWikiLinkAnnotations().toList
 
-      val content: String = converter.parse(wikireader.getCurrentValue)
-      val annotations: List[Annotation]=converter.getWikiLinkAnnotations().toList
-
-      //parse the wiki page to get link anchors: each link anchor has a surface form, dbpedia resource, span attribute
+      //parse the wiki page to get link anchors: each link anchor is wrapped into a dbpediaresourceoccrrence instance
       val resOccrs=new ListBuffer[DBpediaResourceOccurrence]()
-
-
       annotations.foreach((a: Annotation)=>{
         try{
           val sfOccr=new SurfaceFormOccurrence(sfStore.getSurfaceForm(content.substring(a.begin,a.end)),new Text(content), a.begin)
-          val res=resStore.getResourceByName(wikiToDBpediaClosure.wikipediaToDBpediaURI(a.value))
-          resOccrs+=DBpediaResourceOccurrence.from(sfOccr, res, 0.0)
+          if(candMap.getCandidates(sfOccr.surfaceForm).size>0){
+            val res=resStore.getResourceByName(wikiToDBpediaClosure.wikipediaToDBpediaURI(a.value))
+            resOccrs+=DBpediaResourceOccurrence.from(sfOccr, res, 0.0)
+            parsedRes+=1
+          }else{
+            emptyCands+=1
+          }
         }catch{
           case e:DBpediaResourceNotFoundException=>{unknownRes+=1}
           case e:SurfaceFormNotFoundException=>{unknownSF+=1}
@@ -127,7 +129,8 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
         parsedDocs+=1
         if(parsedDocs%100==0){
           val memLoaded = (Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / (1024 * 1024)
-          LOG.info("%d docs parsed, unknown sf %d, unknown res %d, mem %d M".format(parsedDocs, unknownSF, unknownRes, memLoaded))
+          LOG.info("%d docs parsed, parsed res %d unknown sf %d, unknown res %d, empty cands %d, mem %d M".format(
+            parsedDocs, parsedRes, unknownSF, unknownRes, emptyCands, memLoaded))
         }
       }
     }
@@ -215,25 +218,40 @@ object EntityTopicModelTrainer{
 
 
   def main(args:Array[String]){
-    val model_dir=args(0)
-    val wikidump=args(1)
-    val entity_dir=args(2)
-
-    System.out.println(model_dir, wikidump)
-
+    var spotlightmodel_path="model"
+    var data_path="data"
+    var entitytopicmodel_path="entitytopic"
     var threadNum=3
     var gibbsSteps=10
     var topicNum=100
-    if(args.length>3)
-      threadNum=args(3).toInt
 
-    if(args.length>4)
-      gibbsSteps=args(4).toInt
+    var i=0
+    while(i<args.length){
+      if(args(i)=="-spotlightmodel"){
+        spotlightmodel_path=args(i+1)
+        i+=2
+      }else if(args(i)=="-data"){
+        data_path=args(i+1)
+        i+=2
+      }else if(args(i)=="-entitytopic"){
+        entitytopicmodel_path=args(i+1)
+        i+=2
+      }else if(args(i)=="-threads"){
+        threadNum=args(i+1).toInt
+        i+=2
+      }else if(args(i)=="-gibbs"){
+        gibbsSteps=args(i+1).toInt
+        i+=2
+      }else if(args(i)=="-topics"){
+        topicNum=args(i+1).toInt
+        i+=2
+      }else{
+        i+=1
+      }
+    }
 
-    if(args.length>5)
-      topicNum=args(5).toInt
 
-    val trainer:EntityTopicModelTrainer=EntityTopicModelTrainer.fromFolder(new File(model_dir),topicNum)
-    trainer.learnFromWiki(wikidump, model_dir+"/"+entity_dir+gibbsSteps,threadNum,gibbsSteps)
+    val trainer:EntityTopicModelTrainer=EntityTopicModelTrainer.fromFolder(new File(spotlightmodel_path),topicNum)
+    trainer.learnFromWiki(data_path, entitytopicmodel_path, threadNum, gibbsSteps)
   }
 }

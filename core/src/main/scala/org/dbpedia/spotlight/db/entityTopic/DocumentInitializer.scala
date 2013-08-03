@@ -1,7 +1,6 @@
 package org.dbpedia.spotlight.db.entitytopic
 
 import scala.collection.mutable.ListBuffer
-import org.dbpedia.spotlight.spot.Spotter
 import org.dbpedia.spotlight.db.DBCandidateSearcher
 import org.dbpedia.spotlight.db.model.TextTokenizer
 import org.dbpedia.spotlight.model._
@@ -115,9 +114,9 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
   def run(){
     val mentions=new ListBuffer[SurfaceFormOccurrence]()
     val words:ListBuffer[Int]=new ListBuffer[Int]()
-    val entityOfMention:ListBuffer[Int]=new ListBuffer[Int]()
-    val topicOfMention: ListBuffer[Int]=new ListBuffer[Int]()
-    val entityOfWord:ListBuffer[Int]=new ListBuffer[Int]()
+    val mentionEntities:ListBuffer[Int]=new ListBuffer[Int]()
+    val topics: ListBuffer[Int]=new ListBuffer[Int]()
+    val wordEntities:ListBuffer[Int]=new ListBuffer[Int]()
 
     val topicCount:HashMap[Int,Int]=new HashMap[Int,Int]()
     val entityForMentionCount:HashMap[Int,Int]=new HashMap[Int,Int]()
@@ -126,11 +125,6 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
     tokenizer.tokenizeMaybe(text)
     val tokens:List[Token]=text.featureValue[List[Token]]("tokens").get.filter((token:Token)=>token.tokenType.id>0)
 
-
-    //spotterDebug(text, surfaceOccr, spans)
-    /*tokens and mentions within two succinct link anchors are processed by associating a token
-     *with the nearest anchor's entity, and sampling an entity for a mention based on its entity distribution
-     */
     var i=0
     var prevRes=resourceOccrs(0).resource
     var prevOffset=0
@@ -138,43 +132,44 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
       resourceOccrs=restrictedSpot(text,resourceOccrs)
     else
       (resourceOccrs).foreach((resOccr:DBpediaResourceOccurrence)=>
-        resOccr.surfaceForm.id=searcher.sfStore.getSurfaceForm(resOccr.surfaceForm.name).id
+        if (resOccr.surfaceForm.id==0)
+          resOccr.surfaceForm.id=searcher.sfStore.getSurfaceForm(resOccr.surfaceForm.name).id
       )
 
     (resourceOccrs).foreach((resOccr:DBpediaResourceOccurrence)=>{
       val offset=resOccr.textOffset
       val res=resOccr.resource
-      //for tokens
+
+      //tokens and mentions within two succinct link anchors are processed by associating a token with the nearest anchor's entity
       while(i<tokens.length && tokens(i).offset<offset){
         words+=tokens(i).tokenType.id
         if(offset-tokens(i).offset>tokens(i).offset-prevOffset)
-          entityOfWord+=prevRes.id
-        else entityOfWord+=res.id
-
-        incCount(entityForWordCount,entityOfWord.last)
-        entitywordCount.incCount(entityOfWord.last, words.last)
+          wordEntities+=prevRes.id
+        else wordEntities+=res.id
+        incCount(entityForWordCount,wordEntities.last)
+        entitywordCount.incCount(wordEntities.last, words.last)
         i+=1
       }
 
       //tokens of the link anchor are assigned with the link's target entity
       while(i<tokens.length && tokens(i).offset<offset+resOccr.surfaceForm.name.length){
         words+=tokens(i).tokenType.id
-        entityOfWord+=res.id
-        incCount(entityForWordCount,entityOfWord.last)
-        entitywordCount.incCount(entityOfWord.last, words.last)
+        wordEntities+=res.id
+        incCount(entityForWordCount,wordEntities.last)
+        entitywordCount.incCount(wordEntities.last, words.last)
         i+=1
       }
 
       //mention of the link anchor are assigned with the link's target entity
       if(searcher.getCandidates(resOccr.surfaceForm).size>0){
         mentions+=new SurfaceFormOccurrence(resOccr.surfaceForm, resOccr.context, offset)
-        entityOfMention+=res.id
-        topicOfMention+=DocumentInitializer.RandomGenerator.nextInt(topicNum)
+        mentionEntities+=res.id
+        topics+=DocumentInitializer.RandomGenerator.nextInt(topicNum)
 
-        incCount(topicCount,topicOfMention.last)
-        incCount(entityForMentionCount,entityOfMention.last)
-        topicentityCount.incCount(topicOfMention.last,entityOfMention.last)
-        entitymentionCount.incCount(entityOfMention.last, mentions.last.surfaceForm.id)
+        incCount(topicCount,topics.last)
+        incCount(entityForMentionCount,mentionEntities.last)
+        topicentityCount.incCount(topics.last,mentionEntities.last)
+        entitymentionCount.incCount(mentionEntities.last, mentions.last.surfaceForm.id)
 
       }
       prevRes=res
@@ -184,12 +179,13 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
     //for the tokens after the last link anchor
     while(i<tokens.length){
       words+=tokens(i).tokenType.id
-      entityOfWord+=resourceOccrs.last.resource.id
-      incCount(entityForWordCount,entityOfWord.last)
+      wordEntities+=resourceOccrs.last.resource.id
+      incCount(entityForWordCount,wordEntities.last)
+      entitywordCount.incCount(wordEntities.last, words.last)
       i+=1
     }
 
-    newestDoc=new Document(mentions.toArray,words.toArray,entityOfMention.toArray,topicOfMention.toArray,entityOfWord.toArray, topicCount,entityForMentionCount,entityForWordCount)
+    newestDoc=new Document(mentions.toArray,words.toArray,mentionEntities.toArray,topics.toArray,wordEntities.toArray, topicCount,entityForMentionCount,entityForWordCount)
     if(isTraning)
       documents+=newestDoc
     isRunning=false

@@ -6,7 +6,7 @@ import Document._
 import org.dbpedia.spotlight.db.memory.MemoryCandidateMapStore
 import java.lang.Math
 import org.dbpedia.spotlight.model.{DBpediaResourceOccurrence, SurfaceFormOccurrence}
-import org.dbpedia.spotlight.model.Factory.SurfaceFormOccurrence
+import scala.collection.JavaConverters._
 
 
 /**
@@ -66,7 +66,8 @@ class Document (val mentions:Array[SurfaceFormOccurrence],
         var entity=entityOfWord(i)
 
         decCount(entityForWordCount, entity)
-        entity=Document.sampleEntityForWord(word,entityForMentionCount,entityOfMention)
+        entitywordCount.decCount(entity,word)
+        entity=Document.sampleEntityForWord(word,entityForMentionCount)
         entityOfWord(i)=entity
         incCount(entityForWordCount,entity)
         entitywordCount.incCount(entity,word)
@@ -91,13 +92,12 @@ class Document (val mentions:Array[SurfaceFormOccurrence],
       }
 
       //update words' assignments
-
       for(i<-0 until words.size){
         val word=words(i)
         var entity=entityOfWord(i)
 
         decCount(entityForWordCount, entity)
-        entity=Document.sampleEntityForWord(word,entityForMentionCount,entityOfMention)
+        entity=Document.sampleEntityForWord(word,entityForMentionCount)
         entityOfWord(i)=entity
         incCount(entityForWordCount,entity)
       }
@@ -211,13 +211,12 @@ object Document{
       first*second*third
     })
     multinomialSample(probs, candidates)
-
   }
 
-  def sampleEntityForWord(word:Int, docEntityForMentionCount:HashMap[Int,Int], entities: Array[Int]):Int={
+  def sampleEntityForWord(word:Int, docEntityForMentionCount:HashMap[Int,Int]):Int={
+    val entities=docEntityForMentionCount.keySet().asScala.toArray
     val probs:Array[Float]=entities.map((entity:Int)=>{
       val first:Float=docEntityForMentionCount.get(entity).toFloat
-
       val second:Float=(entitywordCount.getCount(entity, word)+delta)/(entitywordCount.getCountSum(entity)+V*delta)
       first*second
     })
