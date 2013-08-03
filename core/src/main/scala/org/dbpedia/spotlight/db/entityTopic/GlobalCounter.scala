@@ -63,7 +63,7 @@ class GlobalCounter( val matrix: Array[HashMap[Int,Int]],val rowSum: Array[Int])
     })
   }
 
-  def writeToFile( filePath:String){
+  def writeToFile(filePath:String){
     val writer=new BufferedWriter(new FileWriter(filePath))
 
     writer.write("%d  CSCMatrix".format(matrix.length))

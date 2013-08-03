@@ -7,7 +7,6 @@ import org.dbpedia.spotlight.db.model.{ResourceStore, SurfaceFormStore, TextToke
 import org.dbpedia.spotlight.entitytopic.{AnnotatingMarkupParser, WikipediaRecordReader, Annotation}
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.model._
-import opennlp.tools.util.Span
 import org.dbpedia.spotlight.db.{SpotlightModel, DBCandidateSearcher, WikipediaToDBpediaClosure}
 import scala.collection.mutable.ListBuffer
 import org.apache.commons.logging.LogFactory
@@ -25,14 +24,14 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
   val LOG = LogFactory.getLog(this.getClass)
   val sfStore: SurfaceFormStore = searcher.sfStore
   val resStore: ResourceStore = searcher.resStore
-  val gibbsSteps=properties.getProperty("gibbsSteps").toInt
+  //val gibbsSteps=properties.getProperty("gibbsSteps").toInt
 
   val documents:ListBuffer[Document]=new ListBuffer[Document]()
 
   val localeCode = properties.getProperty("locale").split("_")
   val locale=new Locale(localeCode(0), localeCode(1))
 
-  def learnFromWiki(wikidump:String, model_folder:String, threadNum:Int){
+  def learnFromWiki(wikidump:String, model_folder:String, threadNum:Int, gibbsSteps:Int){
     LOG.info("Init wiki docs...")
     val start1 = System.currentTimeMillis()
     val counter=initializeWikiDocuments(wikidump,threadNum)
@@ -48,6 +47,9 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
     LOG.info("Done (%d ms)".format(System.currentTimeMillis() - start2))
 
     //save global knowledge/counters
+    val modelDir = new File(model_folder)
+    if(!modelDir.exists())
+      modelDir.mkdir()
     Document.entitymentionCount.writeToFile(model_folder+"/entitymention_count")
     Document.entitywordCount.writeToFile(model_folder+"/entityword_count")
     Document.topicentityCount.writeToFile(model_folder+"/topicentity_count")
@@ -215,17 +217,23 @@ object EntityTopicModelTrainer{
   def main(args:Array[String]){
     val model_dir=args(0)
     val wikidump=args(1)
+    val entity_dir=args(2)
 
     System.out.println(model_dir, wikidump)
 
-    var threadNum=5
+    var threadNum=3
+    var gibbsSteps=10
     var topicNum=100
-    if(args.length>2)
-      threadNum=args(2).toInt
     if(args.length>3)
-      topicNum=args(3).toInt
+      threadNum=args(3).toInt
+
+    if(args.length>4)
+      gibbsSteps=args(4).toInt
+
+    if(args.length>5)
+      topicNum=args(5).toInt
 
     val trainer:EntityTopicModelTrainer=EntityTopicModelTrainer.fromFolder(new File(model_dir),topicNum)
-    trainer.learnFromWiki(wikidump, model_dir+"/entitytopic", threadNum)
+    trainer.learnFromWiki(wikidump, model_dir+"/"+entity_dir+gibbsSteps,threadNum,gibbsSteps)
   }
 }
