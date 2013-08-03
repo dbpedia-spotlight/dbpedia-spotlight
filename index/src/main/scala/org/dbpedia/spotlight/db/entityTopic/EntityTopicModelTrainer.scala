@@ -95,17 +95,19 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
       //parse the wiki page to get link anchors: each link anchor has a surface form, dbpedia resource, span attribute
       val resOccrs=new ListBuffer[DBpediaResourceOccurrence]()
 
-      try{
+
       annotations.foreach((a: Annotation)=>{
-        val sfOccr=new SurfaceFormOccurrence(sfStore.getSurfaceForm(content.substring(a.begin,a.end)),new Text(content), a.begin)
-        val res=resStore.getResourceByName(wikiToDBpediaClosure.wikipediaToDBpediaURI(a.value))
-        resOccrs+=DBpediaResourceOccurrence.from(sfOccr, res, 0.0)
+        try{
+          val sfOccr=new SurfaceFormOccurrence(sfStore.getSurfaceForm(content.substring(a.begin,a.end)),new Text(content), a.begin)
+          val res=resStore.getResourceByName(wikiToDBpediaClosure.wikipediaToDBpediaURI(a.value))
+          resOccrs+=DBpediaResourceOccurrence.from(sfOccr, res, 0.0)
+        }catch{
+          case e:DBpediaResourceNotFoundException=>{unknownRes+=1}
+          case e:SurfaceFormNotFoundException=>{unknownSF+=1}
+          case e:NotADBpediaResourceException=>{unknownRes+=1}
+        }
       })
-      }catch{
-        case e:DBpediaResourceNotFoundException=>{unknownRes+=1}
-        case e:SurfaceFormNotFoundException=>{unknownSF+=1}
-        case e:NotADBpediaResourceException=>{unknownRes+=1}
-      }
+
 
       if(resOccrs.size>0){
         var idleInitializer=None.asInstanceOf[Option[DocumentInitializer]]

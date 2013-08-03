@@ -67,6 +67,7 @@ class Document (val mentions:Array[SurfaceFormOccurrence],
 
         decCount(entityForWordCount, entity)
         entity=Document.sampleEntityForWord(word,entityForMentionCount,entityOfMention)
+        entityOfWord(i)=entity
         incCount(entityForWordCount,entity)
         entitywordCount.incCount(entity,word)
       }
@@ -97,6 +98,7 @@ class Document (val mentions:Array[SurfaceFormOccurrence],
 
         decCount(entityForWordCount, entity)
         entity=Document.sampleEntityForWord(word,entityForMentionCount,entityOfMention)
+        entityOfWord(i)=entity
         incCount(entityForWordCount,entity)
       }
     }
@@ -111,7 +113,8 @@ class Document (val mentions:Array[SurfaceFormOccurrence],
 
   def decCount(map:HashMap[Int,Int],key:Int){
     map.get(key) match{
-      case a: Int=>map.put(key,a-1)
+      case a: Int=>if (a>0) map.put(key,a-1) else throw new IllegalArgumentException("dec empty entry of doc counter")
+      case _=> throw new IllegalArgumentException("dec null entry of doc counter")
     }
   }
 

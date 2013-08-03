@@ -152,6 +152,7 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
         else entityOfWord+=res.id
 
         incCount(entityForWordCount,entityOfWord.last)
+        entitywordCount.incCount(entityOfWord.last, words.last)
         i+=1
       }
 
@@ -160,6 +161,7 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
         words+=tokens(i).tokenType.id
         entityOfWord+=res.id
         incCount(entityForWordCount,entityOfWord.last)
+        entitywordCount.incCount(entityOfWord.last, words.last)
         i+=1
       }
 
@@ -171,6 +173,9 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
 
         incCount(topicCount,topicOfMention.last)
         incCount(entityForMentionCount,entityOfMention.last)
+        topicentityCount.incCount(topicOfMention.last,entityOfMention.last)
+        entitymentionCount.incCount(entityOfMention.last, mentions.last.surfaceForm.id)
+
       }
       prevRes=res
       prevOffset=offset
