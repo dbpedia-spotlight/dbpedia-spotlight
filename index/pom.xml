@@ -48,6 +48,13 @@
                 <configuration>
                     <launchers>
                         <launcher>
+                            <id>TrainEntityTopicModel</id>
+                            <mainClass>org.dbpedia.spotlight.db.entitytopic.EntityTopicModelTrainer</mainClass>
+                            <jvmArgs>
+                                <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
+                            </jvmArgs>
+                        </launcher>
+                        <launcher>
                             <id>ExtractCandidateMap</id>
                             <mainClass>org.dbpedia.spotlight.util.ExtractCandidateMap</mainClass>
                             <jvmArgs>
