@@ -34,7 +34,7 @@ class GlobalCounter( val matrix: Array[HashMap[Int,Int]],val rowSum: Array[Int])
       case v:Int=>if (v>0) rowMap.put(col, v-1) else throw new IllegalArgumentException("decrease 0 matrix entry")
       case _=> throw new IllegalArgumentException("decrease null entry")
     }
-    rowSum(col)-=1
+    rowSum(row)-=1
   }
 
   def getCount(row: Int, col: Int):Int={
