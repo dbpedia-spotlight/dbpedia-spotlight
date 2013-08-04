@@ -206,9 +206,9 @@ object DocumentInitializer{
       val K=properties.getProperty("surfaceNum").toFloat
       val V=properties.getProperty("tokenNum").toFloat
 
-      val topicentityCount=GlobalCounter("topicentity_count",T.toInt+1,E.toInt+1)
-      val entitymentionCount=GlobalCounter("entitymention_count",E.toInt+1,K.toInt+1)
-      val entitywordCount=GlobalCounter("entityword_count",E.toInt+1,V.toInt+1)
+      val topicentityCount=GlobalCounter("topicentity_count",T.toInt,E.toInt)
+      val entitymentionCount=GlobalCounter("entitymention_count",E.toInt,K.toInt)
+      val entitywordCount=GlobalCounter("entityword_count",E.toInt,V.toInt)
 
       new DocumentInitializer(topicentityCount,entitymentionCount,entitywordCount,tokenizer,searcher,topicNum,maxSurfaceformLen,true)
      }else{
