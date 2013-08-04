@@ -227,7 +227,7 @@ object EntityTopicModelTrainer{
 
     var i=0
     while(i<args.length){
-      if(args(i)=="-spotlightmodel"){
+      if(args(i)=="-spotlight"){
         spotlightmodel_path=args(i+1)
         i+=2
       }else if(args(i)=="-data"){
