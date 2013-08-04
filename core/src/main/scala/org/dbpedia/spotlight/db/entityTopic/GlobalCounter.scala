@@ -61,6 +61,10 @@ class GlobalCounter( val matrix: Array[HashMap[Int,Int]],val rowSum: Array[Int])
         }
       })
     })
+
+    (0 until rowSum.length).foreach((i:Int)=>{
+      rowSum(i)+=other.rowSum(i)
+    })
   }
 
   def writeToFile(filePath:String){
