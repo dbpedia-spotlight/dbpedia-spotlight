@@ -113,7 +113,7 @@
 
         <dependency>
             <groupId>org.semanticweb.yars</groupId>
-            <artifactId>nx-parser</artifactId>
+            <artifactId>nxparser</artifactId>
         </dependency>
 
         <dependency>

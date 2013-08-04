@@ -50,8 +50,7 @@
         <module>eval</module>
 	    <module>uima</module>
         <module>dist</module>
-      <module>live</module>
-      <module>topical</module>
+        <module>rest-tomcat</module>
     </modules>
 
     <build>
@@ -172,206 +171,12 @@
                     </execution>
                 </executions>
             </plugin>
-
+           <!--
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-install-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>install-dbpedia-jar</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <groupId>org.dbpedia.extraction</groupId>
-                            <artifactId>core</artifactId>
-                            <version>3.8</version>
-                            <packaging>jar</packaging>
-                            <file>${spotlight.basedir}/lib/dbpedia-extraction-core-3.8.jar</file>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>install-nx-parser-jar</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <groupId>org.semanticweb.yars</groupId>
-                            <artifactId>nx-parser</artifactId>
-                            <version>1.1</version>
-                            <packaging>jar</packaging>
-                            <file>${spotlight.basedir}/lib/nxparser-1.1.jar</file>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>install-lingpipe-jar</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <groupId>com.aliasi</groupId>
-                            <artifactId>lingpipe</artifactId>
-                            <version>4.1.0</version>
-                            <packaging>jar</packaging>
-                            <file>${spotlight.basedir}/lib/lingpipe-4.1.0.jar</file>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>install-cloud9-jar</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <groupId>edu.umd</groupId>
-                            <artifactId>cloud9</artifactId>
-                            <version>SNAPSHOT</version>
-                            <packaging>jar</packaging>
-                            <file>${spotlight.basedir}/lib/cloud9.jar</file>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>install-kea-goss-weka-jar</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <groupId>weka</groupId>
-                            <artifactId>kea-goss-weka</artifactId>
-                            <version>5.0</version>
-                            <packaging>jar</packaging>
-                            <file>${spotlight.basedir}/lib/kea-goss-5.0-weka-3.7.3-SNAPSHOT.jar</file>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>install-weka-jar</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <groupId>weka</groupId>
-                            <artifactId>weka</artifactId>
-                            <version>3.7.3</version>
-                            <packaging>jar</packaging>
-                            <file>${spotlight.basedir}/lib/weka-trunk.jar</file>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>install-jdbm-jar</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <groupId>jdbm</groupId>
-                            <artifactId>jdbm</artifactId>
-                            <version>3.0-SNAPSHOT</version>
-                            <packaging>jar</packaging>
-                            <file>${spotlight.basedir}/lib/JDBM-3.0-alpha3.jar</file>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>install-scalaahocorasick-jar</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <groupId>scala.ahocorasick</groupId>
-                            <artifactId>spotter-aho</artifactId>
-                            <version>0.1</version>
-                            <packaging>jar</packaging>
-                            <file>${spotlight.basedir}/lib/scala-aho-corasick-0.1.jar</file>
-                        </configuration>
-                    </execution>
-
-                    <!--Dependencies for dbpedia spotlight live-->
-
-                    <execution>
-                        <id>install-hunposchain0.6_mod-jar</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <groupId>org.wiki.harvester.dependency</groupId>
-                            <artifactId>hunposchain0.6_mod</artifactId>
-                            <version>1.0</version>
-                            <packaging>jar</packaging>
-                            <file>${spotlight.basedir}/lib/hunposchain0.6_mod.jar</file>
-                        </configuration>
-                    </execution>
-
-                    <execution>
-                        <id>install-morphadorner-jar</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <groupId>org.wiki.harvester.dependency</groupId>
-                            <artifactId>morphadorner</artifactId>
-                            <version>1.0</version>
-                            <packaging>jar</packaging>
-                            <file>${spotlight.basedir}/lib/morphadorner.jar</file>
-                        </configuration>
-                    </execution>
-
-                    <execution>
-                        <id>install-pedia.uima.harvester-jar</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <groupId>org.wiki.harvester.dependency</groupId>
-                            <artifactId>pedia.uima.harvester</artifactId>
-                            <version>1.0</version>
-                            <packaging>jar</packaging>
-                            <file>${spotlight.basedir}/lib/pedia.uima.harvester.jar</file>
-                        </configuration>
-                    </execution>
-
-                    <execution>
-                        <id>install-sztakipedia-parser-0.1.1b-jar</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <groupId>org.wiki.harvester.dependency</groupId>
-                            <artifactId>sztakipedia-parser-0.1.1b</artifactId>
-                            <version>1.0</version>
-                            <packaging>jar</packaging>
-                            <file>${spotlight.basedir}/lib/sztakipedia-parser-0.1.1b.jar</file>
-                        </configuration>
-                    </execution>
-
-                    <execution>
-                        <id>install-textcat-1.0.1-jar</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <groupId>org.wiki.harvester.dependency</groupId>
-                            <artifactId>textcat-1.0.1</artifactId>
-                            <version>1.0</version>
-                            <packaging>jar</packaging>
-                            <file>${spotlight.basedir}/lib/textcat-1.0.1.jar</file>
-                        </configuration>
-                    </execution>
-
-                    <!--Spotlight live dependencies-->
-
-                </executions>
             </plugin>
-
+            -->
         </plugins>
     </build>
 
@@ -932,7 +737,7 @@
             <dependency>
                 <groupId>weka</groupId>
                 <artifactId>kea-goss-weka</artifactId>
-                <version>5.0</version>
+                <version>5.0-SNAPSHOT</version>
                 <!--
                   License: GNU GENERAL PUBLIC LICENSE, Version 3.0
                 -->
@@ -959,11 +764,20 @@
 
             <dependency>
                 <groupId>org.semanticweb.yars</groupId>
-                <artifactId>nx-parser</artifactId>
+                <artifactId>nxparser</artifactId>
                 <version>1.1</version>
                 <!--
                   License: BSD 3-Clause
                 -->
+            </dependency>
+
+            <dependency>
+                <groupId>com.sun.jersey</groupId>
+                <artifactId>jersey-servlet</artifactId>
+                <version>${jersey.version}</version>
+                <!--
+                     License: CDDL v.1.1 andd GPL v.2
+                 -->
             </dependency>
 
         </dependencies>
@@ -1024,6 +838,18 @@
             <id>akka</id>
             <url>http://repo.akka.io/releases/</url>
         </repository>
+
+        <repository>
+            <id>spotlight-releases-repository</id>
+            <url>https://github.com/dbpedia-spotlight/maven-repo/raw/master/releases</url>
+        </repository>
+
+        <repository>
+            <id>spotlight-snapshots-repository</id>
+            <url>https://github.com/dbpedia-spotlight/maven-repo/raw/master/snapshots</url>
+        </repository>
+
+
     </repositories>
 
     <pluginRepositories>
