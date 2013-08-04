@@ -1,7 +1,7 @@
 package org.dbpedia.spotlight.db.entitytopic
 
 import java.util.HashMap
-import java.io.{FileReader, BufferedReader, FileWriter, BufferedWriter}
+import java.io._
 import org.apache.commons.logging.LogFactory
 import scala.collection.JavaConverters._
 
@@ -16,7 +16,7 @@ import scala.collection.JavaConverters._
  * @param rowSum
  */
 
-class GlobalCounter( val matrix: Array[HashMap[Int,Int]],val rowSum: Array[Int]) {
+class GlobalCounter(val name:String, val matrix: Array[HashMap[Int,Int]],val rowSum: Array[Int]) {
 
   def incCount(row: Int, col: Int){
     val rowMap=matrix(row)
@@ -31,10 +31,12 @@ class GlobalCounter( val matrix: Array[HashMap[Int,Int]],val rowSum: Array[Int])
   def decCount(row: Int, col: Int){
     val rowMap=matrix(row)
     rowMap.get(col) match{
-      case v:Int=>if (v>0) rowMap.put(col, v-1) else throw new IllegalArgumentException("decrease 0 matrix entry")
-      case _=> throw new IllegalArgumentException("decrease null entry")
+      case v:Int=>if (v>0) rowMap.put(col, v-1) else throw new IllegalArgumentException("decrease 0 matrix entry %d %d %s".format(row,col,name))
+      case _=> throw new IllegalArgumentException("decrease null entry %d %d %s".format(row,col,name))
     }
-    rowSum(row)-=1
+    if(rowSum(row)>0)
+      rowSum(row)-=1
+    else throw new IllegalArgumentException("decrease 0 rowSum %d %d %s".format(row,col,name))
   }
 
   def getCount(row: Int, col: Int):Int={
@@ -70,7 +72,7 @@ class GlobalCounter( val matrix: Array[HashMap[Int,Int]],val rowSum: Array[Int])
   def writeToFile(filePath:String){
     val writer=new BufferedWriter(new FileWriter(filePath))
 
-    writer.write("%d  CSCMatrix".format(matrix.length))
+    writer.write("%d %s".format(matrix.length,name))
     (matrix).zipWithIndex.foreach{case (map:HashMap[Int,Int],id:Int)=>{
       writer.write("\n%d %d".format(id, rowSum(id)))
       map.asScala.foreach{case (k,v)=>{
@@ -85,25 +87,26 @@ class GlobalCounter( val matrix: Array[HashMap[Int,Int]],val rowSum: Array[Int])
 
 object GlobalCounter{
   val LOG = LogFactory.getLog(this.getClass)
-  def apply(rows:Int, cols:Int):GlobalCounter={
+  def apply(name:String, rows:Int, cols:Int):GlobalCounter={
     val matrix=new Array[HashMap[Int,Int]](rows)
     (0 until rows).foreach((i:Int)=>{
       matrix(i)=new HashMap[Int,Int](cols/1000)
     })
 
     val rowSum=new Array[Int](rows)
-    new GlobalCounter(matrix, rowSum)
+    new GlobalCounter(name, matrix, rowSum)
   }
 
   def readFromFile(filePath:String):GlobalCounter={
     LOG.info("reading global counter...")
 
-    val reader=new BufferedReader(new FileReader(filePath))
+    val file=new File(filePath)
+    val reader=new BufferedReader(new FileReader(file))
     val metaString=reader.readLine()
     val fields=metaString.split(" ")
     val rows=fields(0).toInt
 
-    val counter=GlobalCounter(rows,0)
+    val counter=GlobalCounter(file.getName(),rows,0)
 
     (0 until rows).foreach((row:Int)=>{
       val string=reader.readLine()
