@@ -150,9 +150,9 @@ object Document{
     K=properties.getProperty("surfaceNum").toFloat
     V=properties.getProperty("tokenNum").toFloat
 
-    topicentityCount=GlobalCounter(T.toInt+1,E.toInt+1)
-    entitymentionCount=GlobalCounter(E.toInt+1,K.toInt+1)
-    entitywordCount=GlobalCounter(E.toInt+1,V.toInt+1)
+    topicentityCount=GlobalCounter("topicentity_count",T.toInt+1,E.toInt+1)
+    entitymentionCount=GlobalCounter("entitymention_count",E.toInt+1,K.toInt+1)
+    entitywordCount=GlobalCounter("entityword_count",E.toInt+1,V.toInt+1)
 
     topics=(0 until T.toInt).toArray
     candmap=candmapStore.candidates
