@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?><!-- Copyright 2012 Tamas Farkas, MTA 
+	SZTAKI, Hungary Licensed under the Apache License, Version 2.0 (the "License"); 
+	you may not use this file except in compliance with the License. You may 
+	obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 
+	Unless required by applicable law or agreed to in writing, software distributed 
+	under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES 
+	OR CONDITIONS OF ANY KIND, either express or implied. See the License for 
+	the specific language governing permissions and limitations under the License. -->
+
+<cpeDescription xmlns="http://uima.apache.org/resourceSpecifier">
+	<collectionReader>
+		<collectionIterator>
+			<descriptor>
+				<import location="../CAS/HTTPCollectionReader.xml" />
+			</descriptor>
+			<configurationParameterSettings>
+				<nameValuePair>
+					<name>OutputSofa</name>
+					<value>
+						<string>rawwiki</string>
+					</value>
+				</nameValuePair>
+				<nameValuePair>
+					<name>Ports</name>
+					<value>
+						<array>
+							<integer>8888</integer>
+						</array>
+					</value>
+				</nameValuePair>
+				<nameValuePair>
+					<name>MaxRequestSize</name>
+					<value>
+						<integer>10000000</integer>
+					</value>
+				</nameValuePair>
+				<nameValuePair>
+					<name>QueueSize</name>
+					<value>
+						<integer>100</integer>
+					</value>
+				</nameValuePair>
+			</configurationParameterSettings>
+		</collectionIterator>
+	</collectionReader>
+	<casProcessors casPoolSize="3" processingUnitThreadCount="3">
+		<casProcessor deployment="integrated"
+			name="Wiki Parser, Category, Tokenizer">
+			<descriptor>
+				<import location="../AAE/parser_wst_indexerAAE.xml" />
+			</descriptor>
+			<deploymentParameters />
+			<errorHandling>
+				<errorRateThreshold action="continue" value="100/1000" />
+				<maxConsecutiveRestarts action="continue"
+					value="30" />
+				<timeout max="1000000" default="-1" />
+			</errorHandling>
+			<!-- <checkpoint batch="10000" time="1000ms"/> -->
+			<checkpoint batch="10000" />
+			<configurationParameterSettings>
+				<nameValuePair>
+					<name>LocaleAbbrev</name>
+					<value>
+						<string>en</string>
+					</value>
+				</nameValuePair>
+			</configurationParameterSettings>
+		</casProcessor>
+		<casProcessor deployment="integrated" name="ExternalConsumerAE">
+			<descriptor>
+				<import location="../CAS/ExternalConsumerAE.xml" />
+			</descriptor>
+			<deploymentParameters />
+			<errorHandling>
+				<errorRateThreshold action="continue" value="100/1000" />
+				<maxConsecutiveRestarts action="continue"
+					value="30" />
+				<timeout max="1000000" default="-1" />
+			</errorHandling>
+			<!-- <checkpoint batch="10000" time="1000ms"/> -->
+			<checkpoint batch="10000" />
+			<configurationParameterSettings>
+				<nameValuePair>
+					<name>ExternalProcessorParams</name>
+					<value>
+						<array>
+							<string>1000</string>
+						</array>
+					</value>
+				</nameValuePair>
+				<nameValuePair>
+					<name>SofaNames</name>
+					<value>
+						<array>
+							<string>parsed</string>
+							<string>rawwiki</string>
+						</array>
+					</value>
+				</nameValuePair>
+				<nameValuePair>
+					<name>AnnotationSofaName</name>
+					<value>
+						<string>parsed</string>
+					</value>
+				</nameValuePair>
+				<nameValuePair>
+					<name>ExternalProcessorClassName</name>
+					<value>
+						<string>org.dbpedia.spotlight.feed.WikipediaUpdateFeed</string>
+					</value>
+				</nameValuePair>
+			</configurationParameterSettings>
+		</casProcessor>
+	</casProcessors>
+	<cpeConfig>
+		<numToProcess>-1</numToProcess>
+		<deployAs>immediate</deployAs>
+
+		<!-- <checkpoint batch="10000" time="300000ms"/> -->
+		<checkpoint batch="1000" />
+		<timerImpl />
+	</cpeConfig>
+</cpeDescription>
