@@ -90,7 +90,7 @@ object GlobalCounter{
   def apply(name:String, rows:Int, cols:Int):GlobalCounter={
     val matrix=new Array[HashMap[Int,Int]](rows)
     (0 until rows).foreach((i:Int)=>{
-      matrix(i)=new HashMap[Int,Int](cols/1000)
+      matrix(i)=new HashMap[Int,Int](10)//cols/10000)
     })
 
     val rowSum=new Array[Int](rows)

@@ -1,7 +1,9 @@
-package org.dbpedia.spotlight.db.entityTopic
+package org.dbpedia.spotlight.db.entitytopic
 
 import org.dbpedia.spotlight.db.entitytopic.Document
 import com.esotericsoftware.kryo.io.{Output, Input}
+import java.io.{FileInputStream, FileOutputStream}
+import com.esotericsoftware.kryo.Kryo
 
 /**
  * Created with IntelliJ IDEA.
@@ -13,39 +15,66 @@ import com.esotericsoftware.kryo.io.{Output, Input}
 class DocumentCorpus (val diskPath:String, val capacity:Int){
 
   val docs=new Array[Document](capacity)
-  val size=0
-  val total=0
+  var size:Int=0
+  var total:Int=0
 
-  var outStream:Output=null
+  var outputStream:Output=null
   var inputStream:Input=null
 
-  def this(val diskPath){
-    this(diskPath, 10000)
+  def this(diskPath:String){
+    this(diskPath, 1000)
   }
 
   def add(doc:Document){
-    if (size+1==capacity)
+    if (size==capacity)
       saveDocs()
 
     docs(size)=doc
     size+=1
+    total+=1
   }
 
   def saveDocs() {
-    if(outStream==null)
-      outStream=new Output(new FileOutputStream(diskPath))
-    total+=size
+    if(outputStream==null)
+      outputStream=new Output(new FileOutputStream(diskPath))
+    val kryo=new Kryo()
+    kryo.setRegistrationRequired(false)
+    (0 until size).foreach((i:Int)=>{
+      val doc=docs(i)
+      kryo.writeClassAndObject(outputStream, doc)
+    })
+    size=0
+  }
+
+  def closeOutputStream(){
+    if(size<total){
+      saveDocs()
+      outputStream.flush()
+      outputStream.close()
+    }
+    outputStream=null
   }
 
   def loadDocs():Array[Document]={
-    if(inputStream==null)
-      inputStream=new Input(new FileInputStream(diskPath))
+    if(size==total)
+      docs
+    else{
+      if(inputStream==null)
+        inputStream=new Input(new FileInputStream(diskPath))
 
-    val retDocs=new Array[Document](total)
-    /*
-    TDO: read docs
-     */
-    retDocs
+      val kryo=new Kryo()
+      kryo.setRegistrationRequired(false)
+      val retDocs=new Array[Document](total)
+      (0 until total).foreach((i:Int)=>{
+        retDocs(i)= kryo.readClassAndObject(inputStream).asInstanceOf[Document]
+      })
+      closeInputStream()
+      retDocs
+    }
   }
 
+  def closeInputStream(){
+    inputStream.close()
+    inputStream=null
+  }
 }

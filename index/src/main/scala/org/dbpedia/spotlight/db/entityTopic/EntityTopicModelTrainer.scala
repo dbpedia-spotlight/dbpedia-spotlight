@@ -13,7 +13,7 @@ import org.apache.commons.logging.LogFactory
 import java.util.concurrent.{ExecutorService, TimeUnit, Executors}
 import org.dbpedia.spotlight.model.Factory.DBpediaResourceOccurrence
 import org.dbpedia.spotlight.exceptions.{NotADBpediaResourceException, SurfaceFormNotFoundException, DBpediaResourceNotFoundException}
-import org.dbpedia.spotlight.db.entityTopic.DocumentCorpus
+import org.dbpedia.spotlight.db.entitytopic.DocumentCorpus
 
 
 class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosure,
@@ -58,6 +58,7 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
 
 
   def updateAssignments(iterations:Int){
+    val total=docCorpusList.foldLeft[Int](0)((num:Int, corpus:DocumentCorpus)=>num+corpus.total)
     for(i <- 1 to iterations){
       var j:Int=0
       docCorpusList.foreach((corpus:DocumentCorpus)=>{
@@ -66,7 +67,7 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
           doc.updateAssignment(true)
           j+=1
           if(j%100==0)
-            LOG.info("%d %% of %d-th iteration".format(j*100/toal, i))
+            LOG.info("%d %% of %d-th iteration".format(j*100/total, i))
         })
       })
     }
@@ -81,7 +82,7 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
    */
   def initializeWikiDocuments(wikidump:String, model_foleder: String, threadNum:Int):Triple[GlobalCounter,GlobalCounter,GlobalCounter]={
     val initializers=(0 until threadNum+1).map((k:Int)=>{
-      val docTmpStore=model_foleder+"/doc"+k.toString()
+      val docTmpStore=model_foleder+"/docCorpus"+k.toString()
       DocumentInitializer(tokenizer,searcher,properties,docTmpStore, true)
     })
     val pool=Executors.newFixedThreadPool(threadNum)
@@ -146,12 +147,14 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
 
   def merge(initializers:Array[DocumentInitializer]):Triple[GlobalCounter,GlobalCounter,GlobalCounter]={
     val ret=initializers(0)
-    documents++=ret.documents
+    docCorpusList+=ret.docCorpus
+    ret.docCorpus.closeOutputStream()
     (1 until initializers.length).foreach((i:Int)=>{
       ret.topicentityCount.add(initializers(i).topicentityCount)
       ret.entitymentionCount.add(initializers(i).entitymentionCount)
       ret.entitywordCount.add(initializers(i).entitywordCount)
-      documents++=initializers(i).documents
+      docCorpusList+=initializers(i).docCorpus
+      initializers(i).docCorpus.closeOutputStream()
     })
 
     Triple(ret.topicentityCount,ret.entitymentionCount,ret.entitywordCount)
@@ -227,7 +230,7 @@ object EntityTopicModelTrainer{
     var spotlightmodel_path="model"
     var data_path="data"
     var entitytopicmodel_path="entitytopic"
-    var threadNum=3
+    var threadNum=2
     var gibbsSteps=10
     var topicNum=100
 
@@ -255,7 +258,6 @@ object EntityTopicModelTrainer{
         i+=1
       }
     }
-
 
     val trainer:EntityTopicModelTrainer=EntityTopicModelTrainer.fromFolder(new File(spotlightmodel_path),topicNum)
     trainer.learnFromWiki(data_path, entitytopicmodel_path, threadNum, gibbsSteps)

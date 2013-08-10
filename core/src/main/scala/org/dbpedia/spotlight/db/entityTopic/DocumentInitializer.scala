@@ -8,7 +8,7 @@ import opennlp.tools.util.Span
 import java.util.{Properties, HashMap}
 import scala.util.Random
 import org.dbpedia.spotlight.model.Factory.DBpediaResourceOccurrence
-import org.dbpedia.spotlight.db.entityTopic.DocumentCorpus
+
 
 class DocumentInitializer(val topicentityCount:GlobalCounter,
                           val entitymentionCount:GlobalCounter,
@@ -198,7 +198,7 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
 
 object DocumentInitializer{
   val RandomGenerator=new Random();
-  def apply(tokenizer:TextTokenizer, searcher: DBCandidateSearcher, properties:Properties, docTmpStore:String, isTraining:Boolean=false):DocumentInitializer={
+  def apply(tokenizer:TextTokenizer, searcher: DBCandidateSearcher, properties:Properties, docTmpStore:String="docCorpus", isTraining:Boolean=false):DocumentInitializer={
     val topicNum=properties.getProperty("topicNum").toInt
     val maxSurfaceformLen=properties.getProperty("maxSurfaceformLen").toInt
 
@@ -214,7 +214,7 @@ object DocumentInitializer{
 
       new DocumentInitializer(topicentityCount,entitymentionCount,entitywordCount,tokenizer,searcher,topicNum,maxSurfaceformLen,docTmpStore,true)
      }else{
-       new DocumentInitializer(null,null,null,tokenizer,searcher,topicNum,maxSurfaceformLen)
+       new DocumentInitializer(null,null,null,tokenizer,searcher,topicNum,maxSurfaceformLen,docTmpStore,isTraining)
     }
   }
 
