@@ -7,6 +7,7 @@ import org.dbpedia.spotlight.db.memory.MemoryCandidateMapStore
 import java.lang.Math
 import org.dbpedia.spotlight.model.{DBpediaResourceOccurrence, SurfaceFormOccurrence}
 import scala.collection.JavaConverters._
+import com.esotericsoftware.kryo.io.Output
 
 
 /**

@@ -13,6 +13,7 @@ import org.apache.commons.logging.LogFactory
 import java.util.concurrent.{ExecutorService, TimeUnit, Executors}
 import org.dbpedia.spotlight.model.Factory.DBpediaResourceOccurrence
 import org.dbpedia.spotlight.exceptions.{NotADBpediaResourceException, SurfaceFormNotFoundException, DBpediaResourceNotFoundException}
+import org.dbpedia.spotlight.db.entityTopic.DocumentCorpus
 
 
 class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosure,
@@ -26,7 +27,7 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
   val resStore: ResourceStore = searcher.resStore
   //val gibbsSteps=properties.getProperty("gibbsSteps").toInt
 
-  val documents:ListBuffer[Document]=new ListBuffer[Document]()
+  val docCorpusList=new ListBuffer[DocumentCorpus]()
 
   val localeCode = properties.getProperty("locale").split("_")
   val locale=new Locale(localeCode(0), localeCode(1))
@@ -34,10 +35,10 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
   def learnFromWiki(wikidump:String, model_folder:String, threadNum:Int, gibbsSteps:Int){
     LOG.info("Init wiki docs...")
     val start1 = System.currentTimeMillis()
-    val counter=initializeWikiDocuments(wikidump,threadNum)
+    val globalcounters=initializeWikiDocuments(wikidump,model_folder, threadNum)
     LOG.info("Done (%d ms)".format(System.currentTimeMillis() - start1))
 
-    Document.init(counter._1,counter._2,counter._3,candMap,properties)
+    Document.init(globalcounters._1,globalcounters._2,globalcounters._3,candMap,properties)
 
     LOG.info("Update assignments...")
     val start2=System.currentTimeMillis()
@@ -57,14 +58,16 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
 
 
   def updateAssignments(iterations:Int){
-    val toal:Int=documents.size
     for(i <- 1 to iterations){
       var j:Int=0
-      documents.foreach((doc:Document)=>{
-        doc.updateAssignment(true)
-        j+=1
-        if(j%100==0)
-          LOG.info("%d %% of %d-th iteration".format(j*100/toal, i))
+      docCorpusList.foreach((corpus:DocumentCorpus)=>{
+        val documents=corpus.loadDocs()
+        documents.foreach((doc:Document)=>{
+          doc.updateAssignment(true)
+          j+=1
+          if(j%100==0)
+            LOG.info("%d %% of %d-th iteration".format(j*100/toal, i))
+        })
       })
     }
   }
@@ -76,8 +79,11 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
    *
    * @param wikidump filename of the wikidump
    */
-  def initializeWikiDocuments(wikidump:String, threadNum:Int):Triple[GlobalCounter,GlobalCounter,GlobalCounter]={
-    val initializers=(0 until threadNum+1).map(_=>DocumentInitializer(tokenizer,searcher,properties,true))
+  def initializeWikiDocuments(wikidump:String, model_foleder: String, threadNum:Int):Triple[GlobalCounter,GlobalCounter,GlobalCounter]={
+    val initializers=(0 until threadNum+1).map((k:Int)=>{
+      val docTmpStore=model_foleder+"/doc"+k.toString()
+      DocumentInitializer(tokenizer,searcher,properties,docTmpStore, true)
+    })
     val pool=Executors.newFixedThreadPool(threadNum)
 
     //parse wiki dump

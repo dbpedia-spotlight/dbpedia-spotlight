@@ -8,6 +8,7 @@ import opennlp.tools.util.Span
 import java.util.{Properties, HashMap}
 import scala.util.Random
 import org.dbpedia.spotlight.model.Factory.DBpediaResourceOccurrence
+import org.dbpedia.spotlight.db.entityTopic.DocumentCorpus
 
 class DocumentInitializer(val topicentityCount:GlobalCounter,
                           val entitymentionCount:GlobalCounter,
@@ -16,10 +17,11 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
                           val searcher: DBCandidateSearcher,
                           val topicNum:Int,
                           val MaxSurfaceformLength:Int,
+                          val docTmpStore:String="",
                           val isTraning:Boolean=false
 ) extends Runnable{
 
-  val documents:ListBuffer[Document]=new ListBuffer[Document]()
+  val docCorpus=new DocumentCorpus(docTmpStore)
   var newestDoc:Document=null
   var isRunning:Boolean=false
 
@@ -187,7 +189,7 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
 
     newestDoc=new Document(mentions.toArray,words.toArray,mentionEntities.toArray,topics.toArray,wordEntities.toArray, topicCount,entityForMentionCount,entityForWordCount)
     if(isTraning)
-      documents+=newestDoc
+      docCorpus.add(newestDoc)
     isRunning=false
   }
 
@@ -196,7 +198,7 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
 
 object DocumentInitializer{
   val RandomGenerator=new Random();
-  def apply(tokenizer:TextTokenizer, searcher: DBCandidateSearcher, properties:Properties, isTraining:Boolean=false):DocumentInitializer={
+  def apply(tokenizer:TextTokenizer, searcher: DBCandidateSearcher, properties:Properties, docTmpStore:String, isTraining:Boolean=false):DocumentInitializer={
     val topicNum=properties.getProperty("topicNum").toInt
     val maxSurfaceformLen=properties.getProperty("maxSurfaceformLen").toInt
 
@@ -210,7 +212,7 @@ object DocumentInitializer{
       val entitymentionCount=GlobalCounter("entitymention_count",E.toInt,K.toInt)
       val entitywordCount=GlobalCounter("entityword_count",E.toInt,V.toInt)
 
-      new DocumentInitializer(topicentityCount,entitymentionCount,entitywordCount,tokenizer,searcher,topicNum,maxSurfaceformLen,true)
+      new DocumentInitializer(topicentityCount,entitymentionCount,entitywordCount,tokenizer,searcher,topicNum,maxSurfaceformLen,docTmpStore,true)
      }else{
        new DocumentInitializer(null,null,null,tokenizer,searcher,topicNum,maxSurfaceformLen)
     }
