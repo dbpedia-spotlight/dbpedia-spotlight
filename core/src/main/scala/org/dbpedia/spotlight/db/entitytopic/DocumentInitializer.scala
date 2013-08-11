@@ -21,7 +21,7 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
                           val isTraning:Boolean=false
 ) extends Runnable{
 
-  val docCorpus=new DocumentCorpus(docTmpStore)
+  val docCorpus=new DocumentCorpus(docCorpusFile)
   var newestDoc:Document=null
   var isRunning:Boolean=false
 
