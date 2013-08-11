@@ -19,7 +19,7 @@ import org.dbpedia.spotlight.model.{DBpediaResourceOccurrence, SurfaceFormOccurr
  * @param entityForMentionCount count of entity e being assigned to mention in this document
  * @param entityForWordCount count of entity e being assigned to word in this document
  */
-class Document () extends  Serializable{
+class Document extends  Serializable{
 
   var mentions:Array[SurfaceFormOccurrence]=null
   var words:Array[Int]=null
