@@ -30,6 +30,10 @@ class Document (val mentions:Array[SurfaceFormOccurrence],
                 val entityForMentionCount:HashMap[Int,Int],
                 val entityForWordCount:HashMap[Int,Int]) extends  Serializable{
 
+  def this(){
+    this(new Array[SurfaceFormOccurrence](),new Array[Int](),new Array[Int](),new Array[Int](),new Array[Int](),
+      HashMap[Int,Int](),HashMap[Int,Int](),HashMap[Int,Int]())
+  }
 
   /**
    * update document's assignments: topic for each mention, entity for each mention, entity for each word
