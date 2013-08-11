@@ -17,7 +17,7 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
                           val searcher: DBCandidateSearcher,
                           val topicNum:Int,
                           val MaxSurfaceformLength:Int,
-                          val docTmpStore:String="",
+                          val docCorpusFile:String="",
                           val isTraning:Boolean=false
 ) extends Runnable{
 
