@@ -6,9 +6,6 @@ import Document._
 import org.dbpedia.spotlight.db.memory.MemoryCandidateMapStore
 import java.lang.Math
 import org.dbpedia.spotlight.model.{DBpediaResourceOccurrence, SurfaceFormOccurrence}
-import scala.collection.JavaConverters._
-import com.esotericsoftware.kryo.io.Output
-
 
 /**
  *
@@ -21,19 +18,17 @@ import com.esotericsoftware.kryo.io.Output
  * @param entityForMentionCount count of entity e being assigned to mention in this document
  * @param entityForWordCount count of entity e being assigned to word in this document
  */
-class Document (val mentions:Array[SurfaceFormOccurrence],
-                val words:Array[Int],
-                val entityOfMention:Array[Int],
-                val topicOfMention:Array[Int],
-                val entityOfWord:Array[Int],
-                val topicCount:HashMap[Int,Int],
-                val entityForMentionCount:HashMap[Int,Int],
-                val entityForWordCount:HashMap[Int,Int]) extends  Serializable{
+class Document () extends  Serializable{
 
-  def this(){
-    this(new Array[SurfaceFormOccurrence](),new Array[Int](),new Array[Int](),new Array[Int](),new Array[Int](),
-      HashMap[Int,Int](),HashMap[Int,Int](),HashMap[Int,Int]())
-  }
+  var mentions:Array[SurfaceFormOccurrence]=null
+  var words:Array[Int]=null
+  var entityOfMention:Array[Int]=null
+  var topicOfMention:Array[Int]=null
+  var entityOfWord:Array[Int]=null
+  var topicCount:HashMap[Int,Int]=null
+  var entityForMentionCount:HashMap[Int,Int]=null
+  var entityForWordCount:HashMap[Int,Int]=null
+
 
   /**
    * update document's assignments: topic for each mention, entity for each mention, entity for each word
@@ -143,6 +138,21 @@ object Document{
   var topics:Array[Int]=null
 
   val RandomGenerator=new Random()
+
+  def apply(mentions:Array[SurfaceFormOccurrence],words:Array[Int],entityOfMention:Array[Int],topicOfMention:Array[Int],entityOfWord:Array[Int],
+            topicCount:HashMap[Int,Int],entityForMentionCount:HashMap[Int,Int],entityForWordCount:HashMap[Int,Int]):Document={
+    val doc=new Document()
+    doc.mentions=mentions
+    doc.words=words
+    doc.entityOfMention=entityOfMention
+    doc.topicOfMention=topicOfMention
+    doc.entityOfWord=entityOfWord
+    doc.topicCount=topicCount
+    doc.entityForMentionCount=entityForMentionCount
+    doc.entityForWordCount=entityForWordCount
+
+    doc
+  }
 
   def init(candmapStore:MemoryCandidateMapStore, properties: Properties){
     alpha=properties.getProperty("alpha").toFloat
