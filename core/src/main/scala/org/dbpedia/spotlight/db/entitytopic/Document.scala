@@ -5,6 +5,7 @@ import java.util.Random
 import Document._
 import org.dbpedia.spotlight.db.memory.MemoryCandidateMapStore
 import java.lang.Math
+import scala.collection.JavaConverters._
 import org.dbpedia.spotlight.model.{DBpediaResourceOccurrence, SurfaceFormOccurrence}
 
 /**
