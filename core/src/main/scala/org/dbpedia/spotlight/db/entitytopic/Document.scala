@@ -6,7 +6,10 @@ import Document._
 import org.dbpedia.spotlight.db.memory.MemoryCandidateMapStore
 import java.lang.Math
 import scala.collection.JavaConverters._
-import org.dbpedia.spotlight.model.{DBpediaResourceOccurrence, SurfaceFormOccurrence}
+import org.dbpedia.spotlight.model.{SurfaceForm, DBpediaResourceOccurrence, SurfaceFormOccurrence}
+import java.io.{BufferedReader, BufferedWriter}
+import scala.Array
+import org.dbpedia.spotlight.model.Factory.SurfaceFormOccurrence
 
 /**
  *
@@ -19,17 +22,15 @@ import org.dbpedia.spotlight.model.{DBpediaResourceOccurrence, SurfaceFormOccurr
  * @param entityForMentionCount count of entity e being assigned to mention in this document
  * @param entityForWordCount count of entity e being assigned to word in this document
  */
-class Document extends  Serializable{
-
-  var mentions:Array[SurfaceFormOccurrence]=null
-  var words:Array[Int]=null
-  var entityOfMention:Array[Int]=null
-  var topicOfMention:Array[Int]=null
-  var entityOfWord:Array[Int]=null
-  var topicCount:HashMap[Int,Int]=null
-  var entityForMentionCount:HashMap[Int,Int]=null
-  var entityForWordCount:HashMap[Int,Int]=null
-
+class Document(val mentions:Array[SurfaceFormOccurrence],
+               val words:Array[Int],
+               val entityOfMention:Array[Int],
+               val topicOfMention:Array[Int],
+               val entityOfWord:Array[Int],
+               val topicCount:HashMap[Int,Int],
+               val entityForMentionCount:HashMap[Int,Int],
+               val entityForWordCount:HashMap[Int,Int]
+) extends  Serializable{
 
   /**
    * update document's assignments: topic for each mention, entity for each mention, entity for each word
@@ -119,6 +120,59 @@ class Document extends  Serializable{
     }
   }
 
+  def saveIntArray(out:BufferedWriter, content:Array[Int]){
+    out.write(content.length.toString)
+    out.write(":")
+    content.foreach((k:Int)=>{
+      out.write(k.toString)
+      out.write(",")
+    })
+    out.write("\t")
+  }
+
+  def saveHashMap(out:BufferedWriter, map:HashMap[Int,Int]){
+    var num=0
+    map.values().asScala.foreach((v:Int)=> {
+      if (v>0)
+        num+=1
+    })
+    out.write(num.toString)
+    out.write(":")
+    map.entrySet().asScala.foreach((entry)=>{
+      if(entry.getValue>0){
+        out.write(entry.getKey.toString)
+        out.write("=")
+        out.write(entry.getValue.toString)
+        out.write(",")
+      }
+    })
+    out.write("\t")
+  }
+
+  def saveSfOccrArray(out:BufferedWriter, sfoccrs:Array[SurfaceFormOccurrence]){
+    out.write(sfoccrs.length.toString)
+    //out.write(":")
+    sfoccrs.foreach((sfoccr:SurfaceFormOccurrence)=>{
+      out.write("["+sfoccr.surfaceForm.name+"]")
+      out.write(sfoccr.surfaceForm.id.toString)
+      out.write(" ")
+      out.write(sfoccr.textOffset.toString)
+    })
+    out.write("\t")
+  }
+
+  def save(out:BufferedWriter){
+    saveSfOccrArray(out,mentions)
+    saveIntArray(out,words)
+    saveIntArray(out,entityOfMention)
+    saveIntArray(out,topicOfMention)
+    saveIntArray(out,entityOfWord)
+    saveHashMap(out,topicCount)
+    saveHashMap(out,entityForMentionCount)
+    saveHashMap(out,entityForWordCount)
+    out.newLine()
+  }
+
 }
 
 object Document{
@@ -140,19 +194,63 @@ object Document{
 
   val RandomGenerator=new Random()
 
-  def apply(mentions:Array[SurfaceFormOccurrence],words:Array[Int],entityOfMention:Array[Int],topicOfMention:Array[Int],entityOfWord:Array[Int],
-            topicCount:HashMap[Int,Int],entityForMentionCount:HashMap[Int,Int],entityForWordCount:HashMap[Int,Int]):Document={
-    val doc=new Document()
-    doc.mentions=mentions
-    doc.words=words
-    doc.entityOfMention=entityOfMention
-    doc.topicOfMention=topicOfMention
-    doc.entityOfWord=entityOfWord
-    doc.topicCount=topicCount
-    doc.entityForMentionCount=entityForMentionCount
-    doc.entityForWordCount=entityForWordCount
+  def loadSfoccrArray(str:String):Array[SurfaceFormOccurrence]={
+    val fields=str.split("[\\[\\]]")
+    val num=fields(0).toInt
+    //val sfoccrs=new Array[SurfaceFormOccurrence](num)
+    var k=0
+    val sfoccrs=(0 until num).map((i:Int)=>{
+      val sfName=fields(k+1)
+      val idoffsetstr=fields(k+2).split(" ")
+      val id=idoffsetstr(0).toInt
+      val textoffset=idoffsetstr(1).toInt
+      k+=2
+      new SurfaceFormOccurrence(new SurfaceForm(sfName,id,0,0),null,textoffset)
+    }).toArray
+    sfoccrs
+  }
 
-    doc
+  def loadIntArray(str:String):Array[Int]={
+    val fields=str.split("[:,]")
+    val num=fields(0).toInt
+    var k=0
+    val retArray=(0 until num).map((i:Int)=>{
+      k+=1
+      fields(k).toInt
+    }).toArray
+    retArray
+  }
+
+  def loadHashMap(str:String):HashMap[Int,Int]={
+    val fields=str.split("[:=,]")
+    val num=fields(0).toInt
+    var k=0
+    val map=new HashMap[Int,Int](num*2)
+    (0 until num).foreach(_=>{
+      val key=fields(k+1).toInt
+      val value=fields(k+2).toInt
+      k+=2
+      map.put(key,value)
+    })
+    map
+  }
+
+  def load(in:BufferedReader):Document={
+    val line=in.readLine()
+    if (line!=null){
+      val fields=line.split("\t")
+      val mentions=loadSfoccrArray(fields(0))
+      val words=loadIntArray(fields(1))
+      val entityOfMention=loadIntArray(fields(2))
+      val topicOfMention=loadIntArray(fields(3))
+      val entityOfWord=loadIntArray(fields(4))
+      val topicCount=loadHashMap(fields(5))
+      val entityForMentionCount=loadHashMap(fields(6))
+      val entityForWordCount=loadHashMap(fields(7))
+      new Document(mentions,words,entityOfMention,topicOfMention,entityOfWord,topicCount,entityForMentionCount,entityForWordCount)
+    }else{
+      null
+    }
   }
 
   def init(candmapStore:MemoryCandidateMapStore, properties: Properties){

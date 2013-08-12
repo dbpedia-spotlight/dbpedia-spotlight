@@ -187,7 +187,7 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
       i+=1
     }
 
-    newestDoc=Document(mentions.toArray,words.toArray,mentionEntities.toArray,topics.toArray,wordEntities.toArray, topicCount,entityForMentionCount,entityForWordCount)
+    newestDoc=new Document(mentions.toArray,words.toArray,mentionEntities.toArray,topics.toArray,wordEntities.toArray, topicCount,entityForMentionCount,entityForWordCount)
     if(isTraning)
       docCorpus.add(newestDoc)
     isRunning=false

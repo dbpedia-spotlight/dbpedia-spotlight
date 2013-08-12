@@ -2,8 +2,9 @@ package org.dbpedia.spotlight.db.entitytopic
 
 import org.dbpedia.spotlight.db.entitytopic.Document
 import com.esotericsoftware.kryo.io.{Output, Input}
-import java.io.{FileInputStream, FileOutputStream}
+import java.io._
 import com.esotericsoftware.kryo.Kryo
+import scala.collection.mutable.ListBuffer
 
 /**
  * Created with IntelliJ IDEA.
@@ -18,8 +19,8 @@ class DocumentCorpus (val diskPath:String, val capacity:Int){
   var size:Int=0
   var total:Int=0
 
-  var outputStream:Output=null
-  var inputStream:Input=null
+  var outputStream:BufferedWriter=null
+  var inputStream:BufferedReader=null
 
   def this(diskPath:String){
     this(diskPath, 1000)
@@ -36,41 +37,30 @@ class DocumentCorpus (val diskPath:String, val capacity:Int){
 
   def saveDocs() {
     if(outputStream==null)
-      outputStream=new Output(new FileOutputStream(diskPath))
-    val kryo=new Kryo()
-    kryo.setRegistrationRequired(false)
+      outputStream=new BufferedWriter(new FileWriter(diskPath))
+
     (0 until size).foreach((i:Int)=>{
-      val doc=docs(i)
-      kryo.writeClassAndObject(outputStream, doc)
+      docs(i).save(outputStream)
     })
     size=0
   }
 
   def closeOutputStream(){
-    if(size<total){
-      saveDocs()
-      outputStream.flush()
-      outputStream.close()
-    }
+    saveDocs()
+    outputStream.flush()
+    outputStream.close()
     outputStream=null
   }
 
   def loadDocs():Array[Document]={
-    if(size==total)
-      docs
-    else{
-      if(inputStream==null)
-        inputStream=new Input(new FileInputStream(diskPath))
+    if(inputStream==null)
+      inputStream=new BufferedReader(new FileReader(diskPath))
 
-      val kryo=new Kryo()
-      kryo.setRegistrationRequired(false)
-      val retDocs=new Array[Document](total)
-      (0 until total).foreach((i:Int)=>{
-        retDocs(i)= kryo.readClassAndObject(inputStream).asInstanceOf[Document]
-      })
-      closeInputStream()
-      retDocs
-    }
+    val retDocs=new ListBuffer[Document]()
+    var doc:Document=null
+    while((doc=Document.load(inputStream))!=null)
+      retDocs+=doc
+    retDocs.toArray
   }
 
   def closeInputStream(){
