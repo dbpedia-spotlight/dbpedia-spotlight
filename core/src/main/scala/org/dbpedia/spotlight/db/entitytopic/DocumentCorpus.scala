@@ -67,6 +67,7 @@ class DocumentCorpus (val diskPath:String, val capacity:Int){
         num+=1
       }
     }
+    closeInputStream()
     retDocs.toArray
   }
 

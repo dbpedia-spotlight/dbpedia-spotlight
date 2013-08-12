@@ -62,7 +62,7 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
       LOG.info("Done (%d ms)".format(System.currentTimeMillis() - start))
 
       Document.init(globalcounters._1,globalcounters._2,globalcounters._3,candMap,properties)
-      saveGlobalCounters(model_folder+"/tmpcounters")
+      saveGlobalCounters(model_folder)
      }else{
       LOG.info("load documents...")
       val tmpcorpus=new File(model_folder+"/tmpcorpus")
@@ -72,7 +72,7 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
       })
 
       LOG.info("load global counters...")
-      val globalcounters=readGlobalCounters(model_folder+"/tmpcounters")
+      val globalcounters=readGlobalCounters(model_folder)
       Document.init(globalcounters._1,globalcounters._2,globalcounters._3,candMap,properties)
     }
 
@@ -91,18 +91,20 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
     var total=docCorpusList.foldLeft[Int](0)((num:Int, corpus:DocumentCorpus)=>num+corpus.total)
     if (total==0)
       total=100
-    for(i <- 1 to iterations){
+    ( 1 to iterations).foreach((i:Int)=>{
       var j:Int=0
       docCorpusList.foreach((corpus:DocumentCorpus)=>{
         val documents=corpus.loadDocs()
         documents.foreach((doc:Document)=>{
           doc.updateAssignment(true)
+          corpus.add(doc)
           j+=1
           if(j%100==0)
             LOG.info("%d %% of %d-th iteration".format(j*100/total, i))
         })
+        corpus.closeOutputStream()
       })
-    }
+    })
   }
 
 
