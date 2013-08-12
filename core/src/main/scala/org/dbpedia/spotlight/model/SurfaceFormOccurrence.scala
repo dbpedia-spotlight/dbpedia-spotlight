@@ -16,10 +16,10 @@
 
 package org.dbpedia.spotlight.model
 
-class SurfaceFormOccurrence(val surfaceForm : SurfaceForm,
-                            val context : Text,
+class SurfaceFormOccurrence(var surfaceForm : SurfaceForm,
+                            var context : Text,
                             var textOffset : Int,
-                            val provenance : Provenance.Value,
+                            var provenance : Provenance.Value,
                             var spotProb : Double = -1) extends HasFeatures with Ordered[SurfaceFormOccurrence]
 {
 
@@ -27,6 +27,11 @@ class SurfaceFormOccurrence(val surfaceForm : SurfaceForm,
     def this(surfaceForm : SurfaceForm, context : Text, textOffset : Int) =
     {
         this(surfaceForm, context, textOffset, provenance = Provenance.Undefined)
+    }
+
+    def this()=
+    {
+        this(null,null,0)
     }
 
     def setTextOffset(newTextOffset: Int) {
