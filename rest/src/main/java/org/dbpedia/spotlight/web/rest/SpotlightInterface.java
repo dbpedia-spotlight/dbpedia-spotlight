@@ -30,6 +30,7 @@ import org.dbpedia.spotlight.filter.visitor.OccsFilter;
 import org.dbpedia.spotlight.model.*;
 import org.dbpedia.spotlight.spot.Spotter;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -268,25 +269,23 @@ public class SpotlightInterface {
                          String disambiguator,
 			 String format,
 			 String prefix,
-			 String recipe,
-			 int ctxLength
-   ) throws Exception {
+			 String requestedURL) throws Exception {
         String result;
         String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
 
-	// when no prefix argument specified and url param is used the prefix
-	// is set to the given url
-	if (prefix == null && !inUrl.equals(""))
-	    prefix = inUrl + "#";
-	// when no prefix argument specified and text param is used the prefix
-	// is set to the spotlight url + the given text
-	else if (prefix == null && !text.equals(""))
-	    prefix = "http://spotlight.dbpedia.org/rest/document/?text="+text+"#";
+	    // when no prefix argument specified and url param is used the prefix
+	    // is set to the given url
+	    if (prefix == null && !inUrl.equals(""))
+	        prefix = inUrl;
+	        // when no prefix argument specified and text param is used the prefix
+	        // is set to the spotlight url + the given text
+	    else if (prefix == null && !text.equals(""))
+	        prefix = requestedURL.concat("/?text=").concat(URLEncoder.encode(text, "UTF-8"));
 	
-	List<DBpediaResourceOccurrence> occs = getOccurrences(textToProcess, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter,disambiguator);
-	result = outputManager.makeNIF(textToProcess, occs, format, prefix, recipe, ctxLength);
+	    List<DBpediaResourceOccurrence> occs = getOccurrences(textToProcess, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter,disambiguator);
+	    result = outputManager.makeNIF(textToProcess, occs, format, prefix);
 
-	LOG.info("NIF format: " + format);
+	    LOG.info("NIF format: " + format);
         LOG.debug("****************************************************************");
 
         return result;

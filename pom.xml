@@ -48,8 +48,8 @@
         <module>rest</module>
         <module>index</module>
         <module>eval</module>
-	<module>uima</module>
-	<!--
+	    <module>uima</module>
+	    <!--
         <module>topical</module>
         <module>live</module>
         -->
@@ -883,6 +883,15 @@
                 <groupId>org.apache.xmlbeans</groupId>
                 <artifactId>xmlbeans</artifactId>
                 <version>2.4.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.aksw</groupId>
+                <artifactId>nif</artifactId>
+                <version>0.1</version>
+                <!--
+                  License: Apache Software License, Version 2.0
+                -->
             </dependency>
 
         </dependencies>
