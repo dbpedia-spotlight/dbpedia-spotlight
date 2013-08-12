@@ -1,0 +1,224 @@
+<topics>
+
+  <!-- Arts and entertainment-->
+
+  <topic name="tvseries_animation_cartoon">  <!-- renamed from animation_cartoon because many tv series occurred-->
+    <iptc mediatopic="20000003"/>
+    <iptc mediatopic="20000004"/>
+    <categories>Animation,Cartooning</categories>
+  </topic>
+
+  <topic name="cinema">
+    <iptc mediatopic="20000005"/>
+    <categories>Film</categories>
+  </topic>
+
+
+  <topic name="literature">
+    <iptc mediatopic="20000013"/>
+    <categories>Literature</categories>
+  </topic>
+
+  <topic name="music">
+    <iptc mediatopic="20000018"/>
+    <categories>Music,Music_genres,20th-century_music_genres</categories>
+  </topic>
+
+  <topic name="performing_arts"> <!--"theatre_dance_opera" renamed because many things from all performing arts occured-->
+    <iptc mediatopic="20000028"/>
+    <iptc mediatopic="20000029"/>
+    <iptc mediatopic="20000007"/>
+    <categories>Opera,Opera_genres,Dance,Theatre</categories>
+  </topic>
+
+  <!-- Visual arts -->
+
+  <topic name="architecture">
+    <iptc mediatopic="20000032"/>
+    <categories>Architecture</categories>
+    <!--feed url="http://topics.nytimes.com/top/reference/timestopics/subjects/a/architecture/index.html?rss=1"/>
+    <feed url="http://www.architectsjournal.co.uk/XmlServers/navsectionRSS.aspx?navsectioncode=3"/-->
+  </topic>
+
+  <topic name="painting_drawing">
+    <iptc mediatopic="20000035"/>
+    <iptc mediatopic="20000034"/>
+    <categories>Painting,Drawing</categories>
+  </topic>
+
+  <topic name="sculpture">
+    <iptc mediatopic="20000037"/>
+    <categories>Sculpture</categories>
+  </topic>
+
+  <!-- economy, business, finance-->
+
+  <topic name="economy_business_finance">
+    <iptc mediatopic="20000344"/>
+    <categories>Business,Finance</categories>
+  </topic>
+
+  <!-- natural science -->
+
+  <topic name="biology">
+    <iptc mediatopic="20000719"/>
+    <categories>Biology</categories>
+    <!--feed url="http://feeds.biologynews.net/biologynews/headlines?format=xml"/-->
+  </topic>
+
+  <topic name="chemistry">
+    <iptc mediatopic="20000725"/>
+    <categories>Chemistry</categories>
+  </topic>
+
+  <topic name="geology_prehistoriclife"><!--"geology"-->
+    <iptc mediatopic="20000727"/>
+    <categories>Geology</categories>
+  </topic>
+
+  <topic name="physics">
+    <iptc mediatopic="20000731"/>
+    <categories>Physics</categories>
+  </topic>
+
+
+  <!-- Technology and Engineering-->
+
+  <topic name="technology_engineering">
+    <iptc mediatopic="20000756"/>
+    <categories>Technology,Engineering</categories>
+  </topic>
+
+  <!-- Crime, Law, Justice -->
+
+  <topic name="crime">
+    <iptc mediatopic="20000082"/>
+    <categories>Criminology,Crime</categories>
+  </topic>
+
+  <topic name="law">
+    <iptc mediatopic="20000121"/>
+    <categories>Law</categories>
+  </topic>
+
+  <!-- Education -->
+  <topic name="education">
+    <iptc mediatopic="05000000"/>
+    <categories>Education</categories>
+  </topic>
+
+
+  <!-- Food, Drinks, Cuisine -->
+  <topic name="food_drink_cuisine">
+    <iptc mediatopic="20000248"/>
+    <iptc mediatopic="20000244"/>
+    <categories>Food_and_drink,Cuisine</categories>
+  </topic>
+
+  <!-- Social Sciences -->
+
+  <topic name="anthropology">
+    <iptc mediatopic="20000743"/>
+    <categories>Anthropology</categories>
+  </topic>
+
+  <topic name="archaeology">
+    <iptc mediatopic="20000744"/>
+    <categories>Archaeology</categories>
+  </topic>
+
+  <topic name="economics">
+    <iptc mediatopic="20000745"/>
+    <categories>Economics</categories>
+  </topic>
+
+  <topic name="geography">
+    <iptc mediatopic="20000746"/>
+    <categories>Geography,Places</categories>
+  </topic>
+
+  <topic name="history">
+    <iptc mediatopic="20000747"/>
+    <categories>History,Chronology</categories>
+  </topic>
+
+  <topic name="philosophy">
+    <iptc mediatopic="20000751"/>
+    <categories>Philosophy</categories>
+  </topic>
+
+  <topic name="psychology">
+    <iptc mediatopic="20000753"/>
+    <categories>Psychology</categories>
+  </topic>
+
+  <!-- politics -->
+
+  <topic name="politics">
+    <iptc mediatopic="11000000"/>
+    <iptc mediatopic="20000752"/>
+    <categories>Politics,Political_science</categories>
+  </topic>
+
+  <!-- Health -->
+  <topic name="health">
+    <iptc mediatopic="07000000"/>
+    <categories>Health,Diseases_and_disorders,Health_sciences</categories>
+  </topic>
+
+  <!-- Structural Science -->
+
+  <topic name="mathematics">
+    <iptc mediatopic="20000715"/>
+    <categories>Mathematics</categories>
+  </topic>
+
+
+  <topic name="computer_science">
+    <iptc mediatopic="20000763"/>
+    <categories>Computer_science,Computing‎</categories>
+  </topic>
+
+  <!-- Sport -->
+  <topic name="sport">
+    <iptc mediatopic="15000000"/>
+    <categories>Sports,Sports_by_year</categories>
+  </topic>
+
+  <!-- Mass media -->
+
+  <topic name="mass_media">
+    <iptc mediatopic="20000045"/>
+    <categories>Television,Radio,Mass_media,News,Journalism</categories>
+  </topic>
+
+  <!-- Culture -->
+
+  <topic name="religion_belief">
+    <iptc mediatopic="12000000"/>
+    <categories>Religion,Belief</categories>
+  </topic>
+
+
+  <topic name="transport">
+    <iptc mediatopic="20000337"/>
+    <categories>Transport</categories>
+  </topic>
+
+  <!--topic name="agriculture">
+    <iptc mediatopic="20000210"/>
+    <categories>Agriculture</categories>
+  </topic  DID NOT WORK WELL-->
+
+  <topic name="video_game">
+    <iptc mediatopic="20000548"/>
+    <categories>Video_game_culture,Video_games</categories>
+  </topic>
+
+
+  <topic name="war">
+    <iptc mediatopic="20000056"/>
+    <categories>War,Military</categories>
+  </topic>
+
+</topics>

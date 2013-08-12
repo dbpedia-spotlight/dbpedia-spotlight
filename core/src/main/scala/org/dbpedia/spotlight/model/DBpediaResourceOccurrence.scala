@@ -43,7 +43,7 @@ class DBpediaResourceOccurrence(val id : String,
     }
 
     def this(resource : DBpediaResource, surfaceForm : SurfaceForm, context : Text,  textOffset : Int, similarityScore : Double) = {
-        this("", resource, surfaceForm, context, textOffset, similarityScore=similarityScore)
+        this("", resource, surfaceForm, context, textOffset, Provenance.Undefined, similarityScore)
     }
 
     def this(resource : DBpediaResource, surfaceForm : SurfaceForm, context : Text,  textOffset : Int) = {
@@ -51,10 +51,10 @@ class DBpediaResourceOccurrence(val id : String,
     }
 
     def compareTo(that : DBpediaResourceOccurrence) : Int = {
-        val c = this.similarityScore.compare(that.similarityScore);
-        val str1 : String = this.id+this.resource.uri+this.surfaceForm.name+this.textOffset.toString+this.context.text;
-        val str2 : String = that.id+that.resource.uri+that.surfaceForm.name+that.textOffset.toString+that.context.text;
-        if (c==0) str1.compare(str2) else c;
+        val c = this.similarityScore.compare(that.similarityScore)
+        val str1 : String = this.id+this.resource.uri+this.surfaceForm.name+this.textOffset.toString+this.context.text
+        val str2 : String = that.id+that.resource.uri+that.surfaceForm.name+that.textOffset.toString+that.context.text
+        if (c==0) str1.compare(str2) else c
     }
 
 

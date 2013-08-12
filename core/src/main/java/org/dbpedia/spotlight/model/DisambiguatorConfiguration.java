@@ -90,7 +90,7 @@ public class DisambiguatorConfiguration {
         List<DisambiguationPolicy> policies = new ArrayList<DisambiguationPolicy>();
         String requestedDisambiguators = config.getProperty(CONFIG_DISAMBIGUATORS, "").trim();
         List<String> disambiguatorNames = Arrays.asList(requestedDisambiguators.split(","));
-        if (requestedDisambiguators=="" || disambiguatorNames.size()==0) throw new ConfigurationException(String.format("Could not find '%s'. Please specify a comma-separated list of disambiguators to be loaded.",CONFIG_DISAMBIGUATORS));
+        if (requestedDisambiguators.isEmpty() || disambiguatorNames.size()==0) throw new ConfigurationException(String.format("Could not find '%s'. Please specify a comma-separated list of disambiguators to be loaded.",CONFIG_DISAMBIGUATORS));
         for (String s: disambiguatorNames) {
             try {
                 policies.add(DisambiguationPolicy.valueOf(s.trim()));
