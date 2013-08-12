@@ -32,27 +32,57 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
   val localeCode = properties.getProperty("locale").split("_")
   val locale=new Locale(localeCode(0), localeCode(1))
 
-  def learnFromWiki(wikidump:String, model_folder:String, threadNum:Int, gibbsSteps:Int){
-    LOG.info("Init wiki docs...")
-    val start1 = System.currentTimeMillis()
-    val globalcounters=initializeWikiDocuments(wikidump,model_folder, threadNum)
-    LOG.info("Done (%d ms)".format(System.currentTimeMillis() - start1))
+  def createDir(dir:String){
+    val dirFile = new File(dir)
+    if(!dirFile.exists())
+      dirFile.mkdir()
+  }
 
-    Document.init(globalcounters._1,globalcounters._2,globalcounters._3,candMap,properties)
+  def readGlobalCounters(dir:String):Triple[GlobalCounter,GlobalCounter,GlobalCounter]={
+    val entitymention=GlobalCounter.readFromFile(dir+"/entitymention_count")
+    val entityword=GlobalCounter.readFromFile(dir+"/entityword_count")
+    val topicentity=GlobalCounter.readFromFile(dir+"/topicentity_count")
+    new Triple(entitymention,entityword,topicentity)
+  }
+
+  def saveGlobalCounters(dir:String){
+    createDir(dir)
+    Document.entitymentionCount.writeToFile(dir+"/entitymention_count")
+    Document.entitywordCount.writeToFile(dir+"/entityword_count")
+    Document.topicentityCount.writeToFile(dir+"/topicentity_count")
+  }
+
+  def learnFromWiki(wikidump:String, model_folder:String, threadNum:Int, gibbsSteps:Int, parseWiki:Boolean){
+    if(parseWiki){
+      createDir(model_folder)
+
+      LOG.info("Init wiki docs...")
+      val start = System.currentTimeMillis()
+      val globalcounters=initializeWikiDocuments(wikidump,model_folder, threadNum)
+      LOG.info("Done (%d ms)".format(System.currentTimeMillis() - start))
+
+      Document.init(globalcounters._1,globalcounters._2,globalcounters._3,candMap,properties)
+      saveGlobalCounters(model_folder+"/tmpcounters")
+     }else{
+      LOG.info("load documents...")
+      val tmpcorpus=new File(model_folder+"/tmpcorpus")
+      val corpus=tmpcorpus.listFiles()
+      corpus.foreach((c:File)=>{
+        docCorpusList+=new DocumentCorpus(c.getName)
+      })
+
+      LOG.info("load global counters...")
+      val globalcounters=readGlobalCounters(model_folder+"/tmpcounters")
+      Document.init(globalcounters._1,globalcounters._2,globalcounters._3,candMap,properties)
+    }
 
     LOG.info("Update assignments...")
-    val start2=System.currentTimeMillis()
+    val start=System.currentTimeMillis()
     updateAssignments(gibbsSteps)
-    LOG.info("Done (%d ms)".format(System.currentTimeMillis() - start2))
+    LOG.info("Done (%d ms)".format(System.currentTimeMillis() - start))
 
     //save global knowledge/counters
-    val modelDir = new File(model_folder)
-    if(!modelDir.exists())
-      modelDir.mkdir()
-    Document.entitymentionCount.writeToFile(model_folder+"/entitymention_count")
-    Document.entitywordCount.writeToFile(model_folder+"/entityword_count")
-    Document.topicentityCount.writeToFile(model_folder+"/topicentity_count")
-
+    saveGlobalCounters(model_folder)
     LOG.info("Finish training")
   }
 
@@ -80,9 +110,10 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
    *
    * @param wikidump filename of the wikidump
    */
-  def initializeWikiDocuments(wikidump:String, model_foleder: String, threadNum:Int):Triple[GlobalCounter,GlobalCounter,GlobalCounter]={
+  def initializeWikiDocuments(wikidump:String, model_folder: String, threadNum:Int):Triple[GlobalCounter,GlobalCounter,GlobalCounter]={
+    createDir(model_folder+"/tmpcorpus")
     val initializers=(0 until threadNum+1).map((k:Int)=>{
-      val docTmpStore=model_foleder+"/docCorpus"+k.toString()
+      val docTmpStore=model_folder+"/tmpcorpus/"+k.toString()
       DocumentInitializer(tokenizer,searcher,properties,docTmpStore, true)
     })
     val pool=Executors.newFixedThreadPool(threadNum)
@@ -233,6 +264,7 @@ object EntityTopicModelTrainer{
     var threadNum=2
     var gibbsSteps=10
     var topicNum=100
+    var init=false
 
     var i=0
     while(i<args.length){
@@ -254,12 +286,15 @@ object EntityTopicModelTrainer{
       }else if(args(i)=="-topics"){
         topicNum=args(i+1).toInt
         i+=2
-      }else{
+      }else if(args(i)=="-init"){
+        init=true
         i+=1
+      }else{
+        i+1
       }
     }
 
     val trainer:EntityTopicModelTrainer=EntityTopicModelTrainer.fromFolder(new File(spotlightmodel_path),topicNum)
-    trainer.learnFromWiki(data_path, entitytopicmodel_path, threadNum, gibbsSteps)
+    trainer.learnFromWiki(data_path, entitytopicmodel_path, threadNum, gibbsSteps,init)
   }
 }

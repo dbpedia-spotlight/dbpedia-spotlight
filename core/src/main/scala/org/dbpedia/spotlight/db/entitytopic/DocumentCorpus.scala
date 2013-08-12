@@ -1,9 +1,7 @@
 package org.dbpedia.spotlight.db.entitytopic
 
-import com.esotericsoftware.kryo.io.{Output, Input}
 import java.io._
 import scala.collection.mutable.ListBuffer
-import org.apache.commons.logging.LogFactory
 import scala.util.control.Breaks._
 
 /**
