@@ -1,10 +1,10 @@
 package org.dbpedia.spotlight.db.entitytopic
 
-import org.dbpedia.spotlight.db.entitytopic.Document
 import com.esotericsoftware.kryo.io.{Output, Input}
 import java.io._
-import com.esotericsoftware.kryo.Kryo
 import scala.collection.mutable.ListBuffer
+import org.apache.commons.logging.LogFactory
+import scala.util.control.Breaks._
 
 /**
  * Created with IntelliJ IDEA.
@@ -58,8 +58,17 @@ class DocumentCorpus (val diskPath:String, val capacity:Int){
 
     val retDocs=new ListBuffer[Document]()
     var doc:Document=null
-    while((doc=Document.load(inputStream))!=null)
-      retDocs+=doc
+    var num=0
+    //val LOG = LogFactory.getLog(this.getClass)
+    breakable{
+      while(true){
+        doc=Document.load(inputStream)
+        if(doc==null)
+          break
+        retDocs+=doc
+        num+=1
+      }
+    }
     retDocs.toArray
   }
 
