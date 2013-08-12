@@ -68,7 +68,7 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
       val tmpcorpus=new File(model_folder+"/tmpcorpus")
       val corpus=tmpcorpus.listFiles()
       corpus.foreach((c:File)=>{
-        docCorpusList+=new DocumentCorpus(c.getName)
+        docCorpusList+=new DocumentCorpus(c.getPath)
       })
 
       LOG.info("load global counters...")
@@ -88,7 +88,9 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
 
 
   def updateAssignments(iterations:Int){
-    val total=docCorpusList.foldLeft[Int](0)((num:Int, corpus:DocumentCorpus)=>num+corpus.total)
+    var total=docCorpusList.foldLeft[Int](0)((num:Int, corpus:DocumentCorpus)=>num+corpus.total)
+    if (total==0)
+      total=100
     for(i <- 1 to iterations){
       var j:Int=0
       docCorpusList.foreach((corpus:DocumentCorpus)=>{
@@ -188,7 +190,7 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
       initializers(i).docCorpus.closeOutputStream()
     })
 
-    Triple(ret.topicentityCount,ret.entitymentionCount,ret.entitywordCount)
+    Triple(ret.entitymentionCount,ret.entitywordCount,ret.topicentityCount)
   }
 
   def shutdownAndAwaitTermination(pool:ExecutorService) {

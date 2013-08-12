@@ -272,7 +272,7 @@ object Document{
     candmap=candmapStore.candidates
   }
 
-  def init(topicentity:GlobalCounter, entitymention:GlobalCounter, entityword:GlobalCounter, candmapStore:MemoryCandidateMapStore, properties: Properties){
+  def init( entitymention:GlobalCounter, entityword:GlobalCounter,topicentity:GlobalCounter, candmapStore:MemoryCandidateMapStore, properties: Properties){
     alpha=properties.getProperty("alpha").toFloat
     beta=properties.getProperty("beta").toFloat
     gama=properties.getProperty("gama").toFloat
