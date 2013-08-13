@@ -153,7 +153,7 @@ class Document(val mentions:Array[SurfaceFormOccurrence],
     out.write(sfoccrs.length.toString)
     //out.write(":")
     sfoccrs.foreach((sfoccr:SurfaceFormOccurrence)=>{
-      out.write("["+sfoccr.surfaceForm.name+"]")
+      out.write("[["+sfoccr.surfaceForm.name+"]]")
       out.write(sfoccr.surfaceForm.id.toString)
       out.write(" ")
       out.write(sfoccr.textOffset.toString)
@@ -195,7 +195,7 @@ object Document{
   val RandomGenerator=new Random()
 
   def loadSfoccrArray(str:String):Array[SurfaceFormOccurrence]={
-    val fields=str.split("[\\[\\]]")
+    val fields=str.split("(\\[\\[)|(\\]\\])")
     val num=fields(0).toInt
     //val sfoccrs=new Array[SurfaceFormOccurrence](num)
     var k=0

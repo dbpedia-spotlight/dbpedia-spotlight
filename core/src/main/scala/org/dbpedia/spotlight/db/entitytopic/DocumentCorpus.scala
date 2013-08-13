@@ -21,7 +21,7 @@ class DocumentCorpus (val diskPath:String, val capacity:Int){
   var inputStream:BufferedReader=null
 
   def this(diskPath:String){
-    this(diskPath, 1000)
+    this(diskPath, 10000)
   }
 
   def add(doc:Document){
@@ -35,7 +35,7 @@ class DocumentCorpus (val diskPath:String, val capacity:Int){
 
   def saveDocs() {
     if(outputStream==null)
-      outputStream=new BufferedWriter(new FileWriter(diskPath))
+      outputStream=new BufferedWriter(new FileWriter(diskPath+".out"))
 
     (0 until size).foreach((i:Int)=>{
       docs(i).save(outputStream)
@@ -48,11 +48,18 @@ class DocumentCorpus (val diskPath:String, val capacity:Int){
     outputStream.flush()
     outputStream.close()
     outputStream=null
+
+    val outfile=new File(diskPath+".out")
+    val infile=new File(diskPath+".in")
+    if (infile.exists())
+      infile.delete()
+    outfile.renameTo(infile)
+
   }
 
   def loadDocs():Array[Document]={
     if(inputStream==null)
-      inputStream=new BufferedReader(new FileReader(diskPath))
+      inputStream=new BufferedReader(new FileReader(diskPath+".in"))
 
     val retDocs=new ListBuffer[Document]()
     var doc:Document=null

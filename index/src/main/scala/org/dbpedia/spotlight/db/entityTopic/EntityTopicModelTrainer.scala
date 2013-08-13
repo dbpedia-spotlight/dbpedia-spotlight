@@ -99,7 +99,7 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
           doc.updateAssignment(true)
           corpus.add(doc)
           j+=1
-          if(j%100==0)
+          if(j%1000==0)
             LOG.info("%d %% of %d-th iteration".format(j*100/total, i))
         })
         corpus.closeOutputStream()
@@ -169,7 +169,7 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
           }
         }
         parsedDocs+=1
-        if(parsedDocs%100==0){
+        if(parsedDocs%1000==0){
           val memLoaded = (Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / (1024 * 1024)
           LOG.info("%d docs parsed, parsed res %d unknown sf %d, unknown res %d, empty cands %d, mem %d M".format(
             parsedDocs, parsedRes, unknownSF, unknownRes, emptyCands, memLoaded))
