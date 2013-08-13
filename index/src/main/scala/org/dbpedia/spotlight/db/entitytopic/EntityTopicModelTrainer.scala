@@ -14,6 +14,7 @@ import java.util.concurrent.{ExecutorService, TimeUnit, Executors}
 import org.dbpedia.spotlight.model.Factory.DBpediaResourceOccurrence
 import org.dbpedia.spotlight.exceptions.{NotADBpediaResourceException, SurfaceFormNotFoundException, DBpediaResourceNotFoundException}
 import org.dbpedia.spotlight.db.entitytopic.DocumentCorpus
+import org.apache.commons.io.FileUtils
 
 
 class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosure,
@@ -52,6 +53,12 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
     Document.topicentityCount.writeToFile(dir+"/topicentity_count")
   }
 
+  def copyInitCorpus(model_folder:String){
+    val from_dir=new File(model_folder+"/initcorpus")
+    val to_dir=new File(model_folder+"/tmpcorpus")
+    FileUtils.copyDirectory(from_dir,to_dir)
+  }
+
   def learnFromWiki(wikidump:String, model_folder:String, threadNum:Int, gibbsSteps:Int, parseWiki:Boolean){
     if(parseWiki){
       createDir(model_folder)
@@ -62,19 +69,21 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
       LOG.info("Done (%d ms)".format(System.currentTimeMillis() - start))
 
       Document.init(globalcounters._1,globalcounters._2,globalcounters._3,candMap,properties)
-      saveGlobalCounters(model_folder)
+      saveGlobalCounters(model_folder+"/initcorpus")
+      copyInitCorpus(model_folder)
      }else{
-      LOG.info("load documents...")
-      val tmpcorpus=new File(model_folder+"/tmpcorpus")
-      val corpus=tmpcorpus.listFiles()
-      corpus.foreach((c:File)=>{
-        docCorpusList+=new DocumentCorpus(c.getPath)
-      })
-
       LOG.info("load global counters...")
-      val globalcounters=readGlobalCounters(model_folder)
+      val globalcounters=readGlobalCounters(model_folder+"/initcorpus")
       Document.init(globalcounters._1,globalcounters._2,globalcounters._3,candMap,properties)
     }
+
+    LOG.info("load documents...")
+    val tmpcorpus=new File(model_folder+"/tmpcorpus")
+    val corpus=tmpcorpus.listFiles()
+    docCorpusList.clear()
+    corpus.foreach((c:File)=>{
+      docCorpusList+=new DocumentCorpus(c.getPath)
+    })
 
     LOG.info("Update assignments...")
     val start=System.currentTimeMillis()
@@ -115,9 +124,9 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
    * @param wikidump filename of the wikidump
    */
   def initializeWikiDocuments(wikidump:String, model_folder: String, threadNum:Int):Triple[GlobalCounter,GlobalCounter,GlobalCounter]={
-    createDir(model_folder+"/tmpcorpus")
+    createDir(model_folder+"/initcorpus")
     val initializers=(0 until threadNum+1).map((k:Int)=>{
-      val docTmpStore=model_folder+"/tmpcorpus/"+k.toString()
+      val docTmpStore=model_folder+"/initcorpus/"+k.toString()
       DocumentInitializer(tokenizer,searcher,properties,docTmpStore, true)
     })
     val pool=Executors.newFixedThreadPool(threadNum)
@@ -199,10 +208,10 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
     pool.shutdown(); // Disable new tasks from being submitted
     try {
       // Wait a while for existing tasks to terminate
-      if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
+      if (!pool.awaitTermination(300, TimeUnit.SECONDS)) {
         pool.shutdownNow(); // Cancel currently executing tasks
         // Wait a while for tasks to respond to being cancelled
-        if (!pool.awaitTermination(60, TimeUnit.SECONDS))
+        if (!pool.awaitTermination(300, TimeUnit.SECONDS))
           LOG.info("Pool did not terminate");
       }
     } catch {
