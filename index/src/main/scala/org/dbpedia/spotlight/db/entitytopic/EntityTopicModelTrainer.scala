@@ -68,9 +68,9 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
       val globalcounters=initializeWikiDocuments(wikidump,model_folder, threadNum)
       LOG.info("Done (%d ms)".format(System.currentTimeMillis() - start))
 
+      copyInitCorpus(model_folder)
       Document.init(globalcounters._1,globalcounters._2,globalcounters._3,candMap,properties)
       saveGlobalCounters(model_folder+"/initcorpus")
-      copyInitCorpus(model_folder)
      }else{
       LOG.info("load global counters...")
       val globalcounters=readGlobalCounters(model_folder+"/initcorpus")
@@ -82,7 +82,7 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
     val corpus=tmpcorpus.listFiles()
     docCorpusList.clear()
     corpus.foreach((c:File)=>{
-      docCorpusList+=new DocumentCorpus(c.getPath)
+      docCorpusList+=new DocumentCorpus(c.getPath.substring(0,c.getPath.indexOf('.')))
     })
 
     LOG.info("Update assignments...")
