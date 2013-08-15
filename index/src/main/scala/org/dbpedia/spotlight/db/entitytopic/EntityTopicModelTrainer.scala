@@ -43,6 +43,7 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
     val entitymention=GlobalCounter.readFromFile(dir+"/entitymention_count")
     val entityword=GlobalCounter.readFromFile(dir+"/entityword_count")
     val topicentity=GlobalCounter.readFromFile(dir+"/topicentity_count")
+    Document.init(entitymention,entityword,topicentity,candMap,properties)
     new Triple(entitymention,entityword,topicentity)
   }
 
@@ -65,29 +66,25 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
 
       LOG.info("Init wiki docs...")
       val start = System.currentTimeMillis()
-      val globalcounters=initializeWikiDocuments(wikidump,model_folder, threadNum)
+      initializeWikiDocuments(wikidump,model_folder, threadNum)
       LOG.info("Done (%d ms)".format(System.currentTimeMillis() - start))
 
-      copyInitCorpus(model_folder)
-      Document.init(globalcounters._1,globalcounters._2,globalcounters._3,candMap,properties)
       saveGlobalCounters(model_folder+"/initcorpus")
-     }else{
-      LOG.info("load global counters...")
-      val globalcounters=readGlobalCounters(model_folder+"/initcorpus")
-      Document.init(globalcounters._1,globalcounters._2,globalcounters._3,candMap,properties)
-    }
+      copyInitCorpus(model_folder)
+     }
 
-    LOG.info("load documents...")
+    LOG.info("Init docCorpus list...")
     val tmpcorpus=new File(model_folder+"/tmpcorpus")
     val corpus=tmpcorpus.listFiles()
     docCorpusList.clear()
     corpus.foreach((c:File)=>{
-      docCorpusList+=new DocumentCorpus(c.getPath.substring(0,c.getPath.indexOf('.')))
+      if (c.getName.matches("[0-9]+.*"))
+        docCorpusList+=new DocumentCorpus(c.getPath.substring(0,c.getPath.indexOf('.')))
     })
 
     LOG.info("Update assignments...")
     val start=System.currentTimeMillis()
-    updateAssignments(gibbsSteps)
+    updateAssignments(model_folder,gibbsSteps)
     LOG.info("Done (%d ms)".format(System.currentTimeMillis() - start))
 
     //save global knowledge/counters
@@ -96,12 +93,13 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
   }
 
 
-  def updateAssignments(iterations:Int){
+  def updateAssignments(model_folder:String,iterations:Int){
     var total=docCorpusList.foldLeft[Int](0)((num:Int, corpus:DocumentCorpus)=>num+corpus.total)
     if (total==0)
       total=100
     ( 1 to iterations).foreach((i:Int)=>{
       var j:Int=0
+      readGlobalCounters(model_folder+"/tmpcorpus")
       docCorpusList.foreach((corpus:DocumentCorpus)=>{
         val documents=corpus.loadDocs()
         documents.foreach((doc:Document)=>{
@@ -112,10 +110,10 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
             LOG.info("%d %% of %d-th iteration".format(j*100/total, i))
         })
         corpus.closeOutputStream()
+        saveGlobalCounters(model_folder+"/tmpcorpus")
       })
     })
   }
-
 
   /**
    *init the assignments for each document

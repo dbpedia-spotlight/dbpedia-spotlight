@@ -76,7 +76,8 @@ class GlobalCounter(val name:String, val matrix: Array[HashMap[Int,Int]],val row
     (matrix).zipWithIndex.foreach{case (map:HashMap[Int,Int],id:Int)=>{
       writer.write("\n%d %d".format(id, rowSum(id)))
       map.asScala.foreach{case (k,v)=>{
-        writer.write(" %d %d".format(k,v))
+        if(v>0)
+          writer.write(" %d %d".format(k,v))
       }}
     }}
 
@@ -90,7 +91,7 @@ object GlobalCounter{
   def apply(name:String, rows:Int, cols:Int):GlobalCounter={
     val matrix=new Array[HashMap[Int,Int]](rows)
     (0 until rows).foreach((i:Int)=>{
-      matrix(i)=new HashMap[Int,Int](10)//cols/10000)
+      matrix(i)=new HashMap[Int,Int](100)//cols/10000)
     })
 
     val rowSum=new Array[Int](rows)
