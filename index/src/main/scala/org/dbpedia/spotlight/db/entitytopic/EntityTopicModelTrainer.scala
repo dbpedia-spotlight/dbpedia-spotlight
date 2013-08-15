@@ -57,6 +57,8 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
   def copyInitCorpus(model_folder:String){
     val from_dir=new File(model_folder+"/initcorpus")
     val to_dir=new File(model_folder+"/tmpcorpus")
+    if (to_dir.exists())
+      FileUtils.deleteDirectory(to_dir)
     FileUtils.copyDirectory(from_dir,to_dir)
   }
 
@@ -70,9 +72,9 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
       LOG.info("Done (%d ms)".format(System.currentTimeMillis() - start))
 
       saveGlobalCounters(model_folder+"/initcorpus")
-      copyInitCorpus(model_folder)
-     }
 
+     }
+    copyInitCorpus(model_folder)
     LOG.info("Init docCorpus list...")
     val tmpcorpus=new File(model_folder+"/tmpcorpus")
     val corpus=tmpcorpus.listFiles()
