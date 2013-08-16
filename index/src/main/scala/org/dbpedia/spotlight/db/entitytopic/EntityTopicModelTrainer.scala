@@ -51,9 +51,9 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
     val topicentity=GlobalCounter.readFromFile(dir+"/topicentity_count")
     Document.init(entitymention,entityword,topicentity,candMap,properties)
 
-    val emFile=new File(dir+"entitymention_sum")
-    val ewFile=new File(dir+"entityword_sum")
-    val teFile=new File(dir+"topicentity_sum")
+    val emFile=new File(dir+"/entitymention_sum")
+    val ewFile=new File(dir+"/entityword_sum")
+    val teFile=new File(dir+"/topicentity_sum")
     if(emFile.exists()&&ewFile.exists()&&teFile.exists()){
       entitymentionCounterSum=GlobalCounter.readFromFile(emFile.getAbsolutePath)
       entitywordCounterSum=GlobalCounter.readFromFile(ewFile.getAbsolutePath)
@@ -72,9 +72,9 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
     Document.topicentityCount.writeToFile(dir+"/topicentity_count")
 
     if(entitymentionCounterSum!=null){
-      entitymentionCounterSum.writeToFile(dir+"entitymention_sum")
-      entitywordCounterSum.writeToFile(dir+"entityword_sum")
-      topicentityCounterSum.writeToFile(dir+"topicentity_sum")
+      entitymentionCounterSum.writeToFile(dir+"/entitymention_sum")
+      entitywordCounterSum.writeToFile(dir+"/entityword_sum")
+      topicentityCounterSum.writeToFile(dir+"/topicentity_sum")
     }
   }
 
@@ -104,7 +104,7 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
     val corpus=tmpcorpus.listFiles()
     docCorpusList.clear()
     corpus.foreach((c:File)=>{
-      if (c.getName.matches("[0-9]+.*"))
+      if (c.getName.matches("[0-9]+.+"))
         docCorpusList+=new DocumentCorpus(c.getPath.substring(0,c.getPath.indexOf('.')))
     })
 
