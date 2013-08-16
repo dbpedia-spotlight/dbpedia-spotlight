@@ -16,12 +16,12 @@ import scala.collection.JavaConverters._
  * @param rowSum
  */
 
-class GlobalCounter(val name:String, val matrix: Array[HashMap[Int,Int]],val rowSum: Array[Int]) {
+class GlobalCounter(val name:String, val matrix: Array[HashMap[Int,Float]],val rowSum: Array[Float],var samples:Int) {
 
   def incCount(row: Int, col: Int){
     val rowMap=matrix(row)
     rowMap.get(col) match{
-      case v:Int=>rowMap.put(col,v+1)
+      case v:Float=>rowMap.put(col,v+1)
       case _=>rowMap.put(col,1)
     }
 
@@ -31,7 +31,7 @@ class GlobalCounter(val name:String, val matrix: Array[HashMap[Int,Int]],val row
   def decCount(row: Int, col: Int){
     val rowMap=matrix(row)
     rowMap.get(col) match{
-      case v:Int=>if (v>0) rowMap.put(col, v-1) else throw new IllegalArgumentException("decrease 0 matrix entry %d %d %s".format(row,col,name))
+      case v:Float=>if (v>0) rowMap.put(col, v-1) else throw new IllegalArgumentException("decrease 0 matrix entry %d %d %s".format(row,col,name))
       case _=> throw new IllegalArgumentException("decrease null entry %d %d %s".format(row,col,name))
     }
     if(rowSum(row)>0)
@@ -39,25 +39,25 @@ class GlobalCounter(val name:String, val matrix: Array[HashMap[Int,Int]],val row
     else throw new IllegalArgumentException("decrease 0 rowSum %d %d %s".format(row,col,name))
   }
 
-  def getCount(row: Int, col: Int):Int={
+  def getCount(row: Int, col: Int):Float={
     val rowMap=matrix(row)
     rowMap.get(col) match{
-      case v:Int=>v
+      case v:Float=>v
       case _=>0
     }
   }
 
-  def getCountSum(row: Int):Int={
+  def getCountSum(row: Int):Float={
     rowSum(row)
   }
 
   def add(other:GlobalCounter){
-    (matrix, other.matrix).zipped.foreach((map1:HashMap[Int,Int],map2:HashMap[Int,Int])=>{
+    (matrix, other.matrix).zipped.foreach((map1:HashMap[Int,Float],map2:HashMap[Int,Float])=>{
       map2.keySet().asScala.foreach((col:Int)=>{
         val v2=map2.get(col)
         if (v2>0){
           map1.get(col) match{
-            case v1:Int=>map1.put(col,v1+v2)
+            case v1:Float=>map1.put(col,v1+v2)
             case _=>map1.put(col,v2)
           }
         }
@@ -72,12 +72,28 @@ class GlobalCounter(val name:String, val matrix: Array[HashMap[Int,Int]],val row
   def writeToFile(filePath:String){
     val writer=new BufferedWriter(new FileWriter(filePath))
 
-    writer.write("%d %s".format(matrix.length,name))
-    (matrix).zipWithIndex.foreach{case (map:HashMap[Int,Int],id:Int)=>{
+    writer.write("rows:%d samples:%d name:%s".format(matrix.length,samples,name))
+    (matrix).zipWithIndex.foreach{case (map:HashMap[Int,Float],id:Int)=>{
       writer.write("\n%d %d".format(id, rowSum(id)))
       map.asScala.foreach{case (k,v)=>{
         if(v>0)
-          writer.write(" %d %d".format(k,v))
+          writer.write(" %d %.3f".format(k,v))
+      }}
+    }}
+
+    writer.flush()
+    writer.close()
+  }
+
+  def writeAvgToFile(filePath:String){
+    val writer=new BufferedWriter(new FileWriter(filePath))
+
+    writer.write("rows:%d samples:%d name:%s".format(matrix.length,samples,name))
+    (matrix).zipWithIndex.foreach{case (map:HashMap[Int,Float],id:Int)=>{
+      writer.write("\n%d %d".format(id, rowSum(id)))
+      map.asScala.foreach{case (k,v)=>{
+        if(v>0)
+          writer.write(" %d %.3f".format(k,v/samples))
       }}
     }}
 
@@ -88,14 +104,18 @@ class GlobalCounter(val name:String, val matrix: Array[HashMap[Int,Int]],val row
 
 object GlobalCounter{
   val LOG = LogFactory.getLog(this.getClass)
-  def apply(name:String, rows:Int, cols:Int):GlobalCounter={
-    val matrix=new Array[HashMap[Int,Int]](rows)
+  def apply(name:String, rows:Int, samples:Int=1):GlobalCounter={
+    val matrix=new Array[HashMap[Int,Float]](rows)
     (0 until rows).foreach((i:Int)=>{
-      matrix(i)=new HashMap[Int,Int](100)//cols/10000)
+      matrix(i)=new HashMap[Int,Float](100)//cols/10000)
     })
 
-    val rowSum=new Array[Int](rows)
-    new GlobalCounter(name, matrix, rowSum)
+    val rowSum=new Array[Float](rows)
+    new GlobalCounter(name, matrix, rowSum, samples)
+  }
+
+  def apply(name:String, other:GlobalCounter):GlobalCounter={
+    apply(name,other.matrix.length)
   }
 
   def readFromFile(filePath:String):GlobalCounter={
@@ -104,21 +124,22 @@ object GlobalCounter{
     val file=new File(filePath)
     val reader=new BufferedReader(new FileReader(file))
     val metaString=reader.readLine()
-    val fields=metaString.split(" ")
-    val rows=fields(0).toInt
+    val fields=metaString.split("[: ]")
+    val rows=fields(1).toInt
+    val samples=fields(3).toInt
 
-    val counter=GlobalCounter(file.getName(),rows,0)
+    val counter=GlobalCounter(file.getName(),rows,samples)
 
     (0 until rows).foreach((row:Int)=>{
       val string=reader.readLine()
       val fields=string.split(" ")
       val map=counter.matrix(row)
       assert(row==fields(0).toInt)
-      counter.rowSum(row)+=fields(1).toInt
+      counter.rowSum(row)+=fields(1).toFloat
       var i=2
       while(i<fields.length){
         val col=fields(i).toInt
-        val v=fields(i+1).toInt
+        val v=fields(i+1).toFloat
         map.put(col,v)
         i+=2
       }

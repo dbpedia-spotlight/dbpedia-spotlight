@@ -26,7 +26,13 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
   val LOG = LogFactory.getLog(this.getClass)
   val sfStore: SurfaceFormStore = searcher.sfStore
   val resStore: ResourceStore = searcher.resStore
-  //val gibbsSteps=properties.getProperty("gibbsSteps").toInt
+  val burninSteps=properties.getProperty("burninSteps").toInt
+  val sampleLag=properties.getProperty("sampleLag").toInt
+  val checkpoint=properties.getProperty("checkpoint").toInt
+
+  var entitymentionCounterSum:GlobalCounter=null
+  var entitywordCounterSum:GlobalCounter=null
+  var topicentityCounterSum:GlobalCounter=null
 
   val docCorpusList=new ListBuffer[DocumentCorpus]()
 
@@ -39,12 +45,24 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
       dirFile.mkdir()
   }
 
-  def readGlobalCounters(dir:String):Triple[GlobalCounter,GlobalCounter,GlobalCounter]={
+  def readGlobalCounters(dir:String){
     val entitymention=GlobalCounter.readFromFile(dir+"/entitymention_count")
     val entityword=GlobalCounter.readFromFile(dir+"/entityword_count")
     val topicentity=GlobalCounter.readFromFile(dir+"/topicentity_count")
     Document.init(entitymention,entityword,topicentity,candMap,properties)
-    new Triple(entitymention,entityword,topicentity)
+
+    val emFile=new File(dir+"entitymention_sum")
+    val ewFile=new File(dir+"entityword_sum")
+    val teFile=new File(dir+"topicentity_sum")
+    if(emFile.exists()&&ewFile.exists()&&teFile.exists()){
+      entitymentionCounterSum=GlobalCounter.readFromFile(emFile.getAbsolutePath)
+      entitywordCounterSum=GlobalCounter.readFromFile(ewFile.getAbsolutePath)
+      topicentityCounterSum=GlobalCounter.readFromFile(teFile.getAbsolutePath)
+    }else{
+      entitymentionCounterSum=GlobalCounter("entitymention_sum", entitymention)
+      entitywordCounterSum=GlobalCounter("entityword_sum",entityword)
+      topicentityCounterSum=GlobalCounter("topicentity_sum",topicentity)
+    }
   }
 
   def saveGlobalCounters(dir:String){
@@ -52,11 +70,17 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
     Document.entitymentionCount.writeToFile(dir+"/entitymention_count")
     Document.entitywordCount.writeToFile(dir+"/entityword_count")
     Document.topicentityCount.writeToFile(dir+"/topicentity_count")
+
+    if(entitymentionCounterSum!=null){
+      entitymentionCounterSum.writeToFile(dir+"entitymention_sum")
+      entitywordCounterSum.writeToFile(dir+"entityword_sum")
+      topicentityCounterSum.writeToFile(dir+"topicentity_sum")
+    }
   }
 
-  def copyInitCorpus(model_folder:String){
-    val from_dir=new File(model_folder+"/initcorpus")
-    val to_dir=new File(model_folder+"/tmpcorpus")
+  def copyDir(from:String,to:String){
+    val from_dir=new File(from)
+    val to_dir=new File(to)
     if (to_dir.exists())
       FileUtils.deleteDirectory(to_dir)
     FileUtils.copyDirectory(from_dir,to_dir)
@@ -72,9 +96,9 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
       LOG.info("Done (%d ms)".format(System.currentTimeMillis() - start))
 
       saveGlobalCounters(model_folder+"/initcorpus")
-
      }
-    copyInitCorpus(model_folder)
+
+    copyDir(model_folder+"/initcorpus",model_folder+"/tmpcorpus")
     LOG.info("Init docCorpus list...")
     val tmpcorpus=new File(model_folder+"/tmpcorpus")
     val corpus=tmpcorpus.listFiles()
@@ -90,15 +114,28 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
     LOG.info("Done (%d ms)".format(System.currentTimeMillis() - start))
 
     //save global knowledge/counters
-    saveGlobalCounters(model_folder)
+    //saveGlobalCounters(model_folder)
     LOG.info("Finish training")
   }
 
+  def updateCounterSum(step:Int){
+    entitymentionCounterSum.add(Document.entitymentionCount)
+    entitymentionCounterSum.samples+=1
+    entitywordCounterSum.add(Document.entitywordCount)
+    entitywordCounterSum.samples+=1
+    topicentityCounterSum.add(Document.topicentityCount)
+    topicentityCounterSum.samples+=1
+  }
+
+  def doCheckpoint(step:Int,dir:String){
+    copyDir(dir+"/tmpcorpus",dir+"/ck"+step)
+  }
 
   def updateAssignments(model_folder:String,iterations:Int){
     var total=docCorpusList.foldLeft[Int](0)((num:Int, corpus:DocumentCorpus)=>num+corpus.total)
     if (total==0)
       total=100
+
     ( 1 to iterations).foreach((i:Int)=>{
       var j:Int=0
       readGlobalCounters(model_folder+"/tmpcorpus")
@@ -108,11 +145,17 @@ class EntityTopicModelTrainer( val wikiToDBpediaClosure:WikipediaToDBpediaClosur
           doc.updateAssignment(true)
           corpus.add(doc)
           j+=1
-          if(j%1000==0)
+          if(j%10000==0)
             LOG.info("%d %% of %d-th iteration".format(j*100/total, i))
         })
         corpus.closeOutputStream()
+        if(i>burninSteps&&i%sampleLag==0)
+          updateCounterSum(i)
         saveGlobalCounters(model_folder+"/tmpcorpus")
+
+        if(i>burninSteps&&i%checkpoint==0){
+          doCheckpoint(i,model_folder)
+        }
       })
     })
   }
@@ -275,7 +318,7 @@ object EntityTopicModelTrainer{
     var data_path="data"
     var entitytopicmodel_path="entitytopic"
     var threadNum=2
-    var gibbsSteps=10
+    var gibbsSteps=35
     var topicNum=100
     var init=false
 
