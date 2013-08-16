@@ -74,7 +74,7 @@ class GlobalCounter(val name:String, val matrix: Array[HashMap[Int,Float]],val r
 
     writer.write("rows:%d samples:%d name:%s".format(matrix.length,samples,name))
     (matrix).zipWithIndex.foreach{case (map:HashMap[Int,Float],id:Int)=>{
-      writer.write("\n%d %d".format(id, rowSum(id)))
+      writer.write("\n%d %.3f".format(id, rowSum(id)))
       map.asScala.foreach{case (k,v)=>{
         if(v>0)
           writer.write(" %d %.3f".format(k,v))
@@ -90,7 +90,7 @@ class GlobalCounter(val name:String, val matrix: Array[HashMap[Int,Float]],val r
 
     writer.write("rows:%d samples:%d name:%s".format(matrix.length,samples,name))
     (matrix).zipWithIndex.foreach{case (map:HashMap[Int,Float],id:Int)=>{
-      writer.write("\n%d %d".format(id, rowSum(id)))
+      writer.write("\n%d %.3f".format(id, rowSum(id)))
       map.asScala.foreach{case (k,v)=>{
         if(v>0)
           writer.write(" %d %.3f".format(k,v/samples))
