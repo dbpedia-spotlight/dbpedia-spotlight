@@ -47,7 +47,7 @@
                     <launchers>
                         <launcher>
                             <id>EvalEntityTopicModel</id>
-                            <mainClass>org.dbpedia.spotlight.evaluation.EntityTopicModelTrainer</mainClass>
+                            <mainClass>org.dbpedia.spotlight.evaluation.EvaluateEntityTopicModel</mainClass>
                             <jvmArgs>
                                 <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
                             </jvmArgs>
