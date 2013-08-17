@@ -80,9 +80,9 @@ object EntityTopicModel{
     val tokenizer: TextTokenizer= SpotlightModel.createTokenizer(spotlightFolder,tokenTypeStore,properties,stopwords,cores)
     val searcher:DBCandidateSearcher = new DBCandidateSearcher(resStore, sfStore, candMapStore)
 
-    val topicentity=GlobalCounter.readAvgFromFile(entitytopicFolder+"/topicentity_count")
-    val entitymention=GlobalCounter.readAvgFromFile(entitytopicFolder+"/entitymention_count")
-    val entityword=GlobalCounter.readAvgFromFile(entitytopicFolder+"/entityword_count")
+    val topicentity=GlobalCounter.readAvgFromFile(entitytopicFolder+"/topicentity_sum")
+    val entitymention=GlobalCounter.readAvgFromFile(entitytopicFolder+"/entitymention_sum")
+    val entityword=GlobalCounter.readAvgFromFile(entitytopicFolder+"/entityword_sum")
 
     Document.init(topicentity,entitymention,entityword,candMapStore.asInstanceOf[MemoryCandidateMapStore],properties)
     new EntityTopicModel(tokenizer, searcher, properties,gibbsSteps)
