@@ -17,14 +17,14 @@ object EvaluateEntityTopicModel {
 
 
   def main(args: Array[String]) {
-
-    val model = EntityTopicModel.fromFolder(new File(args(0)))
+    val heldout = new File(args(0), "heldout.txt")
+    val model = EntityTopicModel.fromFolder(new File(args(1)),args(2),args(3).toInt)
     //val (_, sfStore, resStore, candMapStore, _) = SpotlightModel.storesFromFolder(new File(args(0)))
 
     val memLoaded = (Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / (1024 * 1024)
     System.err.println("Memory footprint (model loaded): %s".format( memLoaded ) )
 
-    val heldout = new File(args(1), "heldout.txt")
+
 
     val wikipediaToDBpediaClosure = new WikipediaToDBpediaClosure(
       model.properties.getProperty("namespace"),

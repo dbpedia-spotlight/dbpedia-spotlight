@@ -46,6 +46,13 @@
                 <configuration>
                     <launchers>
                         <launcher>
+                            <id>EvalEntityTopicModel</id>
+                            <mainClass>org.dbpedia.spotlight.evaluation.EntityTopicModelTrainer</mainClass>
+                            <jvmArgs>
+                                <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
+                            </jvmArgs>
+                        </launcher>
+                        <launcher>
                             <id>EvaluateParagraphDisambiguator</id>
                             <mainClass>org.dbpedia.spotlight.evaluation.EvaluateParagraphDisambiguator</mainClass>
                             <jvmArgs>

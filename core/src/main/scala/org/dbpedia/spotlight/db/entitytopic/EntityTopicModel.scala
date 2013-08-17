@@ -13,11 +13,12 @@ import org.dbpedia.spotlight.model.Factory.DBpediaResourceOccurrence
 
 class EntityTopicModel(val tokenizer:TextTokenizer,
                        val searcher: DBCandidateSearcher,
-                       val properties: Properties) extends ParagraphDisambiguator{
+                       val properties: Properties,
+                       val gibbsSteps: Int) extends ParagraphDisambiguator{
 
   val docInitializer=DocumentInitializer(tokenizer,searcher,properties)
 
-  val gibbsSteps=properties.getProperty("gibbsSteps").toInt
+  //val gibbsSteps=properties.getProperty("gibbsSteps").toInt
 
   def name="Entity Topic Model"
 
@@ -68,24 +69,23 @@ class EntityTopicModel(val tokenizer:TextTokenizer,
 
 object EntityTopicModel{
 
-  def fromFolder(modelFolder: File, topicNum:Int=100): EntityTopicModel = {
+  def fromFolder(spotlightFolder: File, entitytopicFolder:String, gibbsSteps:Int=30): EntityTopicModel = {
     val properties = new Properties()
-    properties.load(new FileInputStream(new File(modelFolder, "model.properties")))
+    properties.load(new FileInputStream(new File(spotlightFolder, "model.properties")))
 
-    val stopwords = SpotlightModel.loadStopwords(modelFolder)
+    val stopwords = SpotlightModel.loadStopwords(spotlightFolder)
     val c = properties.getProperty("opennlp_parallel", Runtime.getRuntime.availableProcessors().toString).toInt
     val cores = (1 to c)
-    val (tokenTypeStore, sfStore, resStore, candMapStore, _) = SpotlightModel.storesFromFolder(modelFolder)
-    val tokenizer: TextTokenizer= SpotlightModel.createTokenizer(modelFolder,tokenTypeStore,properties,stopwords,cores)
+    val (tokenTypeStore, sfStore, resStore, candMapStore, _) = SpotlightModel.storesFromFolder(spotlightFolder)
+    val tokenizer: TextTokenizer= SpotlightModel.createTokenizer(spotlightFolder,tokenTypeStore,properties,stopwords,cores)
     val searcher:DBCandidateSearcher = new DBCandidateSearcher(resStore, sfStore, candMapStore)
-    //val spotter=SpotlightModel.createSpotter(modelFolder,sfStore,stopwords,cores)
 
-    val topicentity=GlobalCounter.readFromFile(modelFolder+"/entitytopic/topicentity_count")
-    val entitymention=GlobalCounter.readFromFile(modelFolder+"/entitytopic/entitymention_count")
-    val entityword=GlobalCounter.readFromFile(modelFolder+"/entitytopic/entityword_count")
+    val topicentity=GlobalCounter.readAvgFromFile(entitytopicFolder+"/topicentity_count")
+    val entitymention=GlobalCounter.readAvgFromFile(entitytopicFolder+"/entitymention_count")
+    val entityword=GlobalCounter.readAvgFromFile(entitytopicFolder+"/entityword_count")
 
     Document.init(topicentity,entitymention,entityword,candMapStore.asInstanceOf[MemoryCandidateMapStore],properties)
-    new EntityTopicModel(tokenizer, searcher, properties)
+    new EntityTopicModel(tokenizer, searcher, properties,gibbsSteps)
   }
 
 }

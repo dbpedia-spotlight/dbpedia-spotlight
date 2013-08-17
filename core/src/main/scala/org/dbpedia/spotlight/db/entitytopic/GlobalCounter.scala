@@ -147,4 +147,35 @@ object GlobalCounter{
     reader.close()
     counter
   }
+
+
+  def readAvgFromFile(filePath:String):GlobalCounter={
+    LOG.info("reading global counter...")
+
+    val file=new File(filePath)
+    val reader=new BufferedReader(new FileReader(file))
+    val metaString=reader.readLine()
+    val fields=metaString.split("[: ]")
+    val rows=fields(1).toInt
+    val samples=fields(3).toInt
+
+    val counter=GlobalCounter(file.getName(),rows,samples)
+
+    (0 until rows).foreach((row:Int)=>{
+      val string=reader.readLine()
+      val fields=string.split(" ")
+      val map=counter.matrix(row)
+      assert(row==fields(0).toInt)
+      counter.rowSum(row)+=fields(1).toFloat
+      var i=2
+      while(i<fields.length){
+        val col=fields(i).toInt
+        val v=fields(i+1).toFloat/samples
+        map.put(col,v)
+        i+=2
+      }
+    })
+    reader.close()
+    counter
+  }
 }

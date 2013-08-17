@@ -149,7 +149,8 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
           wordEntities+=prevRes.id
         else wordEntities+=res.id
         incCount(entityForWordCount,wordEntities.last)
-        entitywordCount.incCount(wordEntities.last, words.last)
+        if(isTraning)
+          entitywordCount.incCount(wordEntities.last, words.last)
         i+=1
       }
 
@@ -158,7 +159,8 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
         words+=tokens(i).tokenType.id
         wordEntities+=res.id
         incCount(entityForWordCount,wordEntities.last)
-        entitywordCount.incCount(wordEntities.last, words.last)
+        if(isTraning)
+          entitywordCount.incCount(wordEntities.last, words.last)
         i+=1
       }
 
@@ -170,9 +172,10 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
 
         incCount(topicCount,topics.last)
         incCount(entityForMentionCount,mentionEntities.last)
-        topicentityCount.incCount(topics.last,mentionEntities.last)
-        entitymentionCount.incCount(mentionEntities.last, mentions.last.surfaceForm.id)
-
+        if(isTraning){
+          topicentityCount.incCount(topics.last,mentionEntities.last)
+          entitymentionCount.incCount(mentionEntities.last, mentions.last.surfaceForm.id)
+        }
       }
       prevRes=res
       prevOffset=offset
@@ -183,7 +186,8 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
       words+=tokens(i).tokenType.id
       wordEntities+=resourceOccrs.last.resource.id
       incCount(entityForWordCount,wordEntities.last)
-      entitywordCount.incCount(wordEntities.last, words.last)
+      if(isTraning)
+        entitywordCount.incCount(wordEntities.last, words.last)
       i+=1
     }
 
