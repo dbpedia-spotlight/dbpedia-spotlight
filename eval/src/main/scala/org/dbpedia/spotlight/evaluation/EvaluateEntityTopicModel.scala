@@ -28,8 +28,8 @@ object EvaluateEntityTopicModel {
 
     val wikipediaToDBpediaClosure = new WikipediaToDBpediaClosure(
       model.properties.getProperty("namespace"),
-      new FileInputStream(new File(args(1), "redirects.nt")),
-      new FileInputStream(new File(args(1), "disambiguations.nt"))
+      new FileInputStream(new File(args(2), "redirects.nt")),
+      new FileInputStream(new File(args(2), "disambiguations.nt"))
     )
 
     val disambiguator = model
