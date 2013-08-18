@@ -13,6 +13,7 @@ import scala.io.Source
 import org.dbpedia.spotlight.db.concurrent.SpotterWrapper
 import org.dbpedia.spotlight.db.entitytopic.EntityTopicModel
 
+
 object EvaluateEntityTopicModel {
 
 
@@ -33,8 +34,8 @@ object EvaluateEntityTopicModel {
     )
 
     val disambiguator = model
-
-    val corpusDisambiguate = new WikipediaHeldoutCorpus(Source.fromFile(heldout).getLines().toSeq.take(1000), Option(wikipediaToDBpediaClosure), Option(disambiguator.searcher))
+    val lines=Source.fromInputStream(new FileInputStream(heldout))(io.Codec("UTF-8")).getLines().toSeq.take(1000)
+    val corpusDisambiguate = new WikipediaHeldoutCorpus(lines, Option(wikipediaToDBpediaClosure), Option(disambiguator.searcher))
     val memInit = (Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / (1024 * 1024)
     System.err.println("Memory footprint (corpus): %s".format( memInit ) )
 
