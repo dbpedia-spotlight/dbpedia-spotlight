@@ -167,7 +167,7 @@ object GlobalCounter{
     (0 until rows).foreach((row:Int)=>{
       val string=reader.readLine()
       val fields=string.split(" ")
-      val entrynum:Int=(fields.length*3/4)
+      val entrynum:Int=(fields.length-2)*3/4+1
       val map=new HashMap[Int,Float](entrynum)
       assert(row==fields(0).toInt)
       rowSum(row)+=fields(1).toFloat
