@@ -8,6 +8,7 @@ import opennlp.tools.util.Span
 import java.util.{Properties, HashMap}
 import scala.util.Random
 import org.dbpedia.spotlight.model.Factory.DBpediaResourceOccurrence
+import org.dbpedia.spotlight.exceptions.SurfaceFormNotFoundException
 
 
 class DocumentInitializer(val topicentityCount:GlobalCounter,
@@ -136,8 +137,15 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
       resourceOccrs=restrictedSpot(text,resourceOccrs)
     else
       (resourceOccrs).foreach((resOccr:DBpediaResourceOccurrence)=>
-        if (resOccr.surfaceForm.id==0)
-          resOccr.surfaceForm.id=searcher.sfStore.getSurfaceForm(resOccr.surfaceForm.name).id
+        try{
+          if (resOccr.surfaceForm.id==0)
+            resOccr.surfaceForm.id=searcher.sfStore.getSurfaceForm(resOccr.surfaceForm.name).id
+        }catch{
+          case e:SurfaceFormNotFoundException=>{
+            newestDoc=null
+            return
+          }
+        }
       )
 
     (resourceOccrs).foreach((resOccr:DBpediaResourceOccurrence)=>{

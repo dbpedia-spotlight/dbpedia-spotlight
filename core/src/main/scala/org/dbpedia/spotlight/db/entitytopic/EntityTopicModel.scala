@@ -62,9 +62,11 @@ class EntityTopicModel(val tokenizer:TextTokenizer,
     if(resOccrs.size>0){
       System.out.println(resOccrs.size)
       val doc=docInitializer.initDocument(paragraph.text,resOccrs.toArray)
-      (0 until gibbsSteps).foreach(_=>
-        doc.updateAssignment(false)
-      )
+      if(doc!=null){
+        (0 until gibbsSteps).foreach(_=>
+          doc.updateAssignment(false)
+        )
+      }
       doc
     }else{
       null
