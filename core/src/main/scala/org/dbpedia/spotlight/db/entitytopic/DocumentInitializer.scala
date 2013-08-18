@@ -102,8 +102,10 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
   var text:Text=null
   var resourceOccrs: Array[DBpediaResourceOccurrence]=null
 
-  def initDocument(text:Text, resOccrs:Array[DBpediaResourceOccurrence]):Document={
-    set(text, resourceOccrs)
+  def initDocument(t:Text, resOccrs:Array[DBpediaResourceOccurrence]):Document={
+    //set(text, resourceOccrs)
+    text=t
+    resourceOccrs=resOccrs
     System.out.println("in initDocument: "+resourceOccrs.length)
     run()
     newestDoc
