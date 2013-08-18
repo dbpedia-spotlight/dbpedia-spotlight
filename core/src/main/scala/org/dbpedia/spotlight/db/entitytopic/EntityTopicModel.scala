@@ -91,7 +91,7 @@ object EntityTopicModel{
     val entitymention=GlobalCounter.readAvgFromFile(entitytopicFolder+"/entitymention_sum")
     val entityword=GlobalCounter.readAvgFromFile(entitytopicFolder+"/entityword_sum")
 
-    Document.init(topicentity,entitymention,entityword,candMapStore.asInstanceOf[MemoryCandidateMapStore],properties)
+    Document.init(entitymention,entityword,topicentity,candMapStore.asInstanceOf[MemoryCandidateMapStore],properties)
     new EntityTopicModel(tokenizer, searcher, properties,gibbsSteps)
   }
 
