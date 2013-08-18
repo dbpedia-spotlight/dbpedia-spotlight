@@ -102,6 +102,7 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
   var resourceOccrs: Array[DBpediaResourceOccurrence]=null
 
   def initDocument(text:Text, resOccrs:Array[DBpediaResourceOccurrence]):Document={
+    System.out.println("in initDocument: "+resourceOccrs.length)
     set(text, resourceOccrs)
     run()
     newestDoc
@@ -128,6 +129,7 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
     val tokens:List[Token]=text.featureValue[List[Token]]("tokens").get.filter((token:Token)=>token.tokenType.id>0)
 
     var i=0
+    System.out.println("in run: "+resourceOccrs.length)
     var prevRes=resourceOccrs(0).resource
     var prevOffset=0
     if(isTraning)
