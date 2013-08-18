@@ -17,7 +17,7 @@ object EvaluateEntityTopicModel {
 
 
   def main(args: Array[String]) {
-    val heldout = new File(args(0), "heldout.txt")
+    val heldout = new File(args(0))
     val model = EntityTopicModel.fromFolder(new File(args(1)),args(2),args(3).toInt)
     //val (_, sfStore, resStore, candMapStore, _) = SpotlightModel.storesFromFolder(new File(args(0)))
 
