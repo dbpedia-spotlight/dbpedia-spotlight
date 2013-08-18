@@ -61,7 +61,7 @@ object EvaluateParagraphDisambiguator {
             nOriginalOccurrences = nOriginalOccurrences + a.occurrences.toTraversable.size
 
             var acc = 0.0
-            try {
+
                 val bestK = filter(disambiguator.bestK(paragraph,100))
 
                 val goldOccurrences = occFilters.foldLeft(a.occurrences.toTraversable){ (o,f) => f.filterOccs(o) } // discounting URIs from gold standard that we know are disambiguations, fixing redirects, etc.
@@ -84,9 +84,9 @@ object EvaluateParagraphDisambiguator {
                     acc = acc + invRank
                 });
                 outputs.foreach(_.flush)
-            } catch {
-                case e: Exception => LOG.error(e)
-            }
+            //} catch {
+            //    case e: Exception => LOG.error(e)
+            //}
             val mrr = if (a.occurrences.size==0) 0.0 else acc / a.occurrences.size
             LOG.info("Mean Reciprocal Rank (MRR) = %.5f".format(mrr))
             mrr
