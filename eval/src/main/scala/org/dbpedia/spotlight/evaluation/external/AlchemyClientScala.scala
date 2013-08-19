@@ -11,13 +11,15 @@ import org.xml.sax.SAXException
 import javax.xml.parsers.ParserConfigurationException
 import scala.collection.mutable.MutableList
 import scala.collection.immutable.List
+import scala.io._
+
 
 /**
   * Created with IntelliJ IDEA.
   * User: Leandro Bianchini
   * Date: 24/06/13
   * Time: 22:22
-  * Fixed by Alexandre Cançado Cardoso
+  * Fixed by: Alexandre Cançado Cardoso
   * Date 19/08/13
   * To change this template use File | Settings | File Templates.
   */
@@ -87,19 +89,21 @@ class AlchemyClientScala(apikey: String) extends AnnotationClientScala {
 object AlchemyClientScala {
 
   def main(args: Array[String]) {
-    val apikey: String = "3cca4e7db8168aa4df35a8b4caabcca360d9fa5e"  //args(0)
-    val baseDir: String = null
+    val apikey: String = "874772365fff377eb64e37c98f47392b72383d5a"  //args(0)
 
     val alchemyClient = new AlchemyClientScala(apikey)
 
-    val manualEvalInput   = new File("/Users/leandro/Documents/Projetos/dbpedia-spotlight/files/AnnotationText-Alchemy.txt.list")
-    val manualEvalOutput  = new File("/Users/leandro/Documents/Projetos/dbpeda-spotlight/files/AnnotationText.txt")
+//    val manualEvalInput   = new File("/Users/leandro/Documents/Projetos/dbpedia-spotlight/files/AnnotationText-Alchemy.txt.list")
+//    val manualEvalOutput  = new File("/Users/leandro/Documents/Projetos/dbpeda-spotlight/files/AnnotationText.txt")
+//
+//    val cucerzanEvalInput  = new File("/Users/leandro/Documents/Projetos/dbpedia-spotlight/files/cucerzan.txt")
+//    val cucerzanEvalOutput = new File("/Users/leandro/Documents/Projetos/dbpedia-spotlight/files/cucerzan-Alchemy2.set")
+//
+//    val input  = new File("/Users/leandro/Documents/Projetos/dbpedia-spotlight/files/paragraphs.txt")
+//    val output = new File("/Users/leandro/Documents/Projetos/dbpedia-spotlight/files/Alchemy.list")
 
-    val cucerzanEvalInput  = new File("/Users/leandro/Documents/Projetos/dbpedia-spotlight/files/cucerzan.txt")
-    val cucerzanEvalOutput = new File("/Users/leandro/Documents/Projetos/dbpedia-spotlight/files/cucerzan-Alchemy2.set")
-
-    val input  = new File("/Users/leandro/Documents/Projetos/dbpedia-spotlight/files/aragraphs.txt")
-    val output = new File("/Users/leandro/Documents/Projetos/dbpedia-spotlight/files/Alchemy.list")
+    val input = new File("/home/alexandre/Projects/Test Files/Caminhao_com_ceramica_tomba_na_via_dutra.txt")
+    val output = new File("/home/alexandre/Projects/Test Files/Alchemy-scala_Caminhao_com_ceramica_tomba_na_via_dutra.list")
 
     alchemyClient.evaluate(input, output)
 
