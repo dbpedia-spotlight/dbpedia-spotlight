@@ -66,7 +66,9 @@ object EvaluateParagraphDisambiguator {
                 val bestK = filter(disambiguator.bestK(paragraph,100))
 
                 val goldOccurrences = occFilters.foldLeft(a.occurrences.toTraversable){ (o,f) => f.filterOccs(o) } // discounting URIs from gold standard that we know are disambiguations, fixing redirects, etc.
-                unknownSF+=goldOccurrences.size-bestK.size
+                if (bestK!=null)
+                  unknownSF+=goldOccurrences.size-bestK.size
+                else unknownSF+=goldOccurrences.size
                 goldOccurrences.foreach( correctOccurrence => {
                     nOccurrences = nOccurrences + 1
 
