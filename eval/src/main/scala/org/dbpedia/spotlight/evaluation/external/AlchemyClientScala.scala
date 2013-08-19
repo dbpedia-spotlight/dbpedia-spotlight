@@ -17,6 +17,8 @@ import scala.collection.immutable.List
   * User: Leandro Bianchini
   * Date: 24/06/13
   * Time: 22:22
+  * Fixed by Alexandre Cançado Cardoso
+  * Date 19/08/13
   * To change this template use File | Settings | File Templates.
   */
 class AlchemyClientScala(apikey: String) extends AnnotationClientScala {
@@ -37,7 +39,7 @@ class AlchemyClientScala(apikey: String) extends AnnotationClientScala {
 
   def extract(text: Text): List[DBpediaResource] = {
 
-    var entities: Array[DBpediaResource] = new Array[DBpediaResource]()
+    var entities: List[DBpediaResource] = List[DBpediaResource]()
     val response: String = process(text.text)
     var root: Element = null
 
@@ -70,7 +72,7 @@ class AlchemyClientScala(apikey: String) extends AnnotationClientScala {
         }
 
         if (name.equals("text"))
-          entities += new DBpediaResource(value)
+          entities :+ new DBpediaResource(value)
 
       }
 
@@ -80,6 +82,7 @@ class AlchemyClientScala(apikey: String) extends AnnotationClientScala {
     entities
 
   }
+}
 
 object AlchemyClientScala {
 
@@ -103,6 +106,3 @@ object AlchemyClientScala {
   }
 
 }
-
-
- }
