@@ -10,6 +10,7 @@ import scala.collection.mutable.ListBuffer
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguator
 import org.dbpedia.spotlight.db.memory.MemoryCandidateMapStore
 import org.dbpedia.spotlight.model.Factory.DBpediaResourceOccurrence
+import org.jdom.IllegalTargetException
 
 class EntityTopicModel(val tokenizer:TextTokenizer,
                        val searcher: DBCandidateSearcher,
