@@ -55,31 +55,67 @@ class AlchemyClientScala(apikey: String) extends AnnotationClientScala {
 
     val list: NodeList = XmlParser getNodes("/results/entities/entity", root)
 
-    for (n <- 0 to (list.getLength-1)) {
+//    for (n <- 0 to (list.getLength-1)) {
+//
+//      val node = list.item(n)
+//
+//      val attibutes: NodeList = node.getChildNodes
+//
+//      for (i <- 0 to (attibutes.getLength-1)) {
+//
+//        val att = attibutes.item(i)
+//
+//        val name: String = att.getNodeName
+//        var value: String = ""
+//
+//        if (att.getNodeType != Node.TEXT_NODE) {
+//          value = att.getFirstChild.getNodeValue
+//          LOG.trace("Name:$name%s, Value: $value%s")
+//        }
+//
+//        if (name.equals("text"))
+//          entities :+ new DBpediaResource(value)
+//      }
+//    }
 
-      val node = list.item(n)
-
-      val attibutes: NodeList = node.getChildNodes
-
-      for (i <- 0 to (attibutes.getLength-1)) {
-
-        val att = attibutes.item(i)
-
-        val name: String = att.getNodeName
-        var value: String = ""
-
-        if (att.getNodeType != Node.TEXT_NODE) {
-          value = att.getFirstChild.getNodeValue
-          LOG.trace("Name:$name%s, Value: $value%s")
+    var i : Int = 0
+    for(i <- 0 to list.getLength-1){
+      var attributes = list.item(i).getChildNodes
+      //print(list.item(i).getAttributes)
+      var j : Int = 0
+      for(j <- 0 to attributes.getLength-1){
+        val n = attributes.item(j)
+        val name : String = n.getNodeName
+        var value : String = ""
+        if (n.getNodeType != Node.TEXT_NODE) {
+          value = n.getFirstChild.getNodeValue
+          LOG.trace(String.format("Name:%s, Value: %s", name, value))
         }
-
-        if (name.equals("text"))
-          entities :+ new DBpediaResource(value)
-
+        if (name.equals("text")) {
+          val entity = new DBpediaResource(value)
+          entities = entities :+ entity
+        }
       }
 
     }
 
+/*Java Code
+      for(int i=0; i<list.getLength(); i++) {
+      NodeList attributes = list.item(i).getChildNodes();
+      //System.out.println(list.item(i).getAttributes());
+      for(int j=0; j<attributes.getLength(); j++) {
+        Node n = attributes.item(j);
+        String name = n.getNodeName();
+        String value = "";
+        if (n.getNodeType()!=Node.TEXT_NODE) {
+          value = n.getFirstChild().getNodeValue();
+          LOG.trace(String.format("Name:%s, Value: %s",name,value));
+        }
+        if (name.equals("text")) {
+          entities.add(new DBpediaResource(value)); //TODO could have actually gotten DBpediaResourceOccurrences and set the relevance
+        }
+      }
+    }*/
     LOG.debug("Extracted: $entities%s")
     entities
 
@@ -101,13 +137,10 @@ object AlchemyClientScala {
 //
 //    val input  = new File("/Users/leandro/Documents/Projetos/dbpedia-spotlight/files/paragraphs.txt")
 //    val output = new File("/Users/leandro/Documents/Projetos/dbpedia-spotlight/files/Alchemy.list")
-    println("debug1")
+
     val input = new File("/home/alexandre/Projects/Test_Files/Caminhao_com_ceramica_tomba_na_via_dutra.txt")
-    println("debug2")
     val output = new File("/home/alexandre/Projects/Test_Files/Alchemy-scala_Caminhao_com_ceramica_tomba_na_via_dutra.list")
-    println("debug3")
     alchemyClient.evaluate(input, output)
-    println("debug4")
   }
 
 }
