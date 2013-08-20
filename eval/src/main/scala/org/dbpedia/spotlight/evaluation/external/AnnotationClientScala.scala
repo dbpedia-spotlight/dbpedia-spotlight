@@ -4,7 +4,7 @@ import org.apache.commons.logging.LogFactory
 import org.apache.commons.httpclient.{HttpException, DefaultHttpMethodRetryHandler, HttpMethod, HttpClient}
 import org.apache.commons.httpclient.params.HttpMethodParams
 import org.dbpedia.spotlight.exceptions.AnnotationException
-import java.io.{PrintWriter, FileInputStream, IOException, File}
+import java.io.{PrintWriter, IOException, File}
 import org.apache.http.HttpStatus
 import org.dbpedia.spotlight.model.{Text, DBpediaResource}
 import java.text.ParseException
@@ -17,6 +17,8 @@ import scala.io.Source
  * User: Leandro Bianchini
  * Date: 24/06/13
  * Time: 22:23
+ * Fixed by: Alexandre Cançado Cardoso
+ * Date 20/08/13
  * To change this template use File | Settings | File Templates.
  */
 
@@ -76,7 +78,6 @@ abstract class AnnotationClientScala {
     var error   : Int = 0
     var sum     : Long = 0
 
-    var snippet : String = ""
     for (snippet <- text.split("\n")) {
         val s: String = parser.parse(snippet)
 
@@ -91,7 +92,7 @@ abstract class AnnotationClientScala {
               entities = extract(new Text(snippet.replaceAll("\\s+", " ")))
               val endTime: Long = System.nanoTime()
               sum = endTime - startTime
-              LOG.info("($i%f) Extraction ran in $sum%s ns.")
+              LOG.info("("+i+") Extraction ran in "+sum+" ns.")
               correct += 1
             }
             catch {
@@ -99,7 +100,6 @@ abstract class AnnotationClientScala {
                 error += 1
                 LOG.error(e)
             }
-            var e : DBpediaResource= null
             for (e <- entities) {
               out.println(e.uri)
             }
@@ -111,10 +111,10 @@ abstract class AnnotationClientScala {
     }
 
     out.close()
-    LOG.info("Extracted entities from $i%f text items, with $correct%s successes and $error%s errors.")
+    LOG.info("Extracted entities from "+i+" text items, with "+correct+" successes and "+error+" errors.")
     LOG.info("Results saved to: "+outputFile.getAbsolutePath)
-    val avg: Double = ((sum / i) * 1000000)
-    LOG.info("Average extraction time: $avg%s ms")
+    //val avg: Double = ((sum / i) * 1000000)
+    LOG.info("Average extraction time: "+((sum / i) * 1000000)+" ms.")
 
   }
 
