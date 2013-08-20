@@ -6,7 +6,7 @@ import org.apache.commons.httpclient.NameValuePair
 import org.dbpedia.spotlight.model.{DBpediaResource, Text}
 import org.w3c.dom.{NodeList, Element, Node}
 import org.dbpedia.spotlight.string.XmlParser
-import java.io.{File, IOException}
+import java.io.{FileReader, File, IOException}
 import org.xml.sax.SAXException
 import javax.xml.parsers.ParserConfigurationException
 import scala.collection.mutable.MutableList
@@ -101,12 +101,13 @@ object AlchemyClientScala {
 //
 //    val input  = new File("/Users/leandro/Documents/Projetos/dbpedia-spotlight/files/paragraphs.txt")
 //    val output = new File("/Users/leandro/Documents/Projetos/dbpedia-spotlight/files/Alchemy.list")
-
-    val input = new File("/home/alexandre/Projects/Test Files/Caminhao_com_ceramica_tomba_na_via_dutra.txt")
-    val output = new File("/home/alexandre/Projects/Test Files/Alchemy-scala_Caminhao_com_ceramica_tomba_na_via_dutra.list")
-
+    println("debug1")
+    val input = new File("/home/alexandre/Projects/Test_Files/Caminhao_com_ceramica_tomba_na_via_dutra.txt")
+    println("debug2")
+    val output = new File("/home/alexandre/Projects/Test_Files/Alchemy-scala_Caminhao_com_ceramica_tomba_na_via_dutra.list")
+    println("debug3")
     alchemyClient.evaluate(input, output)
-
+    println("debug4")
   }
 
 }

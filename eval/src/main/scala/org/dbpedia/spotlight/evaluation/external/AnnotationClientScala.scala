@@ -8,6 +8,7 @@ import java.io.{PrintWriter, FileInputStream, IOException, File}
 import org.apache.http.HttpStatus
 import org.dbpedia.spotlight.model.{Text, DBpediaResource}
 import java.text.ParseException
+import scala.io.Source
 
 ;
 
@@ -75,15 +76,15 @@ abstract class AnnotationClientScala {
     var error   : Int = 0
     var sum     : Long = 0
 
-    text.split("\n") foreach {
-      snippet =>
+    var snippet : String = ""
+    for (snippet <- text.split("\n")) {
         val s: String = parser.parse(snippet)
 
         if (!Option(s).getOrElse("").isEmpty) {
           i += 1
 
           if (i >= restartFrom) {
-            var entities: List[DBpediaResource] = Nil
+            var entities: List[DBpediaResource] = null
 
             try {
               val startTime: Long = System.nanoTime()
@@ -98,8 +99,10 @@ abstract class AnnotationClientScala {
                 error += 1
                 LOG.error(e)
             }
-
-            entities foreach {e => out.println(e.uri)}
+            var e : DBpediaResource= null
+            for (e <- entities) {
+              out.println(e.uri)
+            }
             out.println()
             out.flush()
           }
@@ -135,8 +138,10 @@ object AnnotationClientScala {
 
   def readFileAsString(file: File): String = {
 
-    val buffer = Stream.continually(new FileInputStream(file).read).takeWhile(-1 !=).map(_.toByte).toArray
-    buffer.toString
+//    val buffer = Stream.continually(new FileInputStream(file).read).takeWhile(-1 !=).map(_.toByte).toArray
+//    buffer.toString
+    val buffer = Source.fromFile(file.getAbsolutePath)
+    buffer.mkString
 
   }
 
