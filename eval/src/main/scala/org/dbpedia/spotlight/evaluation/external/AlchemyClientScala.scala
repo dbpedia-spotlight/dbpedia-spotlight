@@ -76,7 +76,7 @@ class AlchemyClientScala(apikey: String) extends AnnotationClientScala {
 object AlchemyClientScala {
 
   def main(args: Array[String]) {
-    val apikey: String = "874772365fff377eb64e37c98f47392b72383d5a"  //args(0)
+    val apikey: String = args(0)
 
     val alchemyClient = new AlchemyClientScala(apikey)
 
