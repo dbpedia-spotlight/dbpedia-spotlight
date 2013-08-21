@@ -24,8 +24,13 @@ import scala.collection.immutable.List
 object DBpediaSpotlightClientScala {
   def main(args: Array[String]) {
     val c: DBpediaSpotlightClient = new DBpediaSpotlightClient
-    val input: File = new File("/home/pablo/eval/csaw/gold/paragraphs.txt")
-    val output: File = new File("/home/pablo/eval/csaw/systems/Spotlight.list")
+
+//    val input: File = new File("/home/pablo/eval/csaw/gold/paragraphs.txt")
+//    val output: File = new File("/home/pablo/eval/csaw/systems/Spotlight.list")
+
+    val input: File = new File("/home/alexandre/Projects/Test_Files/Caminhao_com_ceramica_tomba_na_via_dutra.txt")
+    val output: File = new File("/home/alexandre/Projects/Test_Files/Spotlight-scala_Caminhao_com_ceramica_tomba_na_via_dutra.list")
+
     c.evaluate(input, output)
   }
 }
