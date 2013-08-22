@@ -23,7 +23,7 @@ import scala.collection.immutable.List
 
 object DBpediaSpotlightClientScala {
   def main(args: Array[String]) {
-    val c: DBpediaSpotlightClient = new DBpediaSpotlightClient
+    val c: DBpediaSpotlightClientScala = new DBpediaSpotlightClientScala
 
 //    val input: File = new File("/home/pablo/eval/csaw/gold/paragraphs.txt")
 //    val output: File = new File("/home/pablo/eval/csaw/systems/Spotlight.list")
@@ -31,12 +31,16 @@ object DBpediaSpotlightClientScala {
     val input: File = new File("/home/alexandre/Projects/Test_Files/Caminhao_com_ceramica_tomba_na_via_dutra.txt")
     val output: File = new File("/home/alexandre/Projects/Test_Files/Spotlight-scala_Caminhao_com_ceramica_tomba_na_via_dutra.list")
 
+//    val input: File = new File("/home/alexandre/Projects/Test_Files/annotation1.txt")
+//    val output: File = new File("/home/alexandre/Projects/Test_Files/Spotlight-scala_annotation1.list")
+
     c.evaluate(input, output)
   }
 }
 
 class DBpediaSpotlightClientScala extends AnnotationClientScala {
-  private val API_URL: String = "http://spotlight.dbpedia.org/"
+  //private val API_URL: String = "http://spotlight.dbpedia.org/"
+  private val API_URL: String = "http://107.20.250.248:2222/"     //todo: modify output format to exclude the dbpedia link
   private val CONFIDENCE: Double = 0.0
   private val SUPPORT: Int = 0
 
