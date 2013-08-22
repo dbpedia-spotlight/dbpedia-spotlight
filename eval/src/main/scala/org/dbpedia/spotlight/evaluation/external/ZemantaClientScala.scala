@@ -15,24 +15,20 @@
  */
 package org.dbpedia.spotlight.evaluation.external
 
-import scala.Predef.String
+//import scala.Predef.String
 import scala.collection.immutable.List
 import org.apache.commons.httpclient.NameValuePair
 import org.apache.commons.httpclient.methods.PostMethod
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
-import org.dbpedia.spotlight.exceptions.AnnotationException
-import org.dbpedia.spotlight.model.DBpediaResource
-import org.dbpedia.spotlight.model.Text
+import org.dbpedia.spotlight.model.{DBpediaResource, Text}
 import org.dbpedia.spotlight.string.XmlParser
-import org.w3c.dom.Element
-import org.w3c.dom.Node
-import org.w3c.dom.NodeList
+import org.w3c.dom.{NodeList, Element, Node}
 import org.xml.sax.SAXException
 import javax.xml.parsers.ParserConfigurationException
-import java.io._
-import java.util.ArrayList
-import scala._
+import java.io.{File, IOException}
+//import scala._
+
 
 /**
  * @author pablomendes and Alexandre Cançado Cardoso (translation to scala)
@@ -54,12 +50,38 @@ object ZemantaClientScala {
 }
 
 class ZemantaClientScala(api_key: String) extends AnnotationClientScala {
+  override val LOG: Log = LogFactory.getLog(classOf[ZemantaClientScala])
   /**
    * DISCLAIMER these are not really promised by Zemanta to be DBpediaEntities. We extract them from wikipedia links.
    */
   def extract(text: Text): List[DBpediaResource] = {
+    val response: String = process(text.text)
+    var entities: List[DBpediaResource] = List[DBpediaResource]()
 
-                     null
+    try {
+      val root: Element = XmlParser.parse(response)
+      val xpath: String = "//markup/links/link/target[type='wikipedia']/url"
+      val list: NodeList = XmlParser.getNodes(xpath, root)
+      val listLength : Int = list.getLength
+      LOG.info("Entities returned: "+list.getLength)
+
+      for(i <- 0 to list.getLength-1){
+        val n: Node = list.item(i)
+        val name: String = n.getNodeName
+        val value: String = n.getFirstChild.getNodeValue.replaceAll("http://en.wikipedia.org/wiki/", "")
+
+        entities = entities :+ new DBpediaResource(value)
+      }
+
+      print("\n")
+    }catch {
+      case e: IOException => e.printStackTrace
+      case e: SAXException => e.printStackTrace
+      case e: ParserConfigurationException => e.printStackTrace
+    }
+
+    entities
+
   }
 
   protected def process(text: String): String = {
