@@ -81,7 +81,6 @@ class ZemantaClientScala(api_key: String) extends AnnotationClientScala {
     }
 
     entities
-
   }
 
   protected def process(text: String): String = {
