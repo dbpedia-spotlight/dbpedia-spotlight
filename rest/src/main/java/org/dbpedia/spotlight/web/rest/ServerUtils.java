@@ -8,6 +8,8 @@ import org.dbpedia.spotlight.exceptions.InputException;
 
 import javax.ws.rs.core.Response;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 /**
@@ -50,8 +52,10 @@ public class ServerUtils {
         }else if (!inUrl.equals("")) {
             LOG.info("Parsing URL to get main content");
             URL url = null;
+            URI uri = null;
             try {
-                url = new URL(inUrl);
+                uri = new URI(inUrl);
+                url = new URL(uri.toASCIIString());
                 textToProcess = ArticleExtractor.INSTANCE.getText(url);
             } catch (MalformedURLException e) {
                 // e.printStackTrace();
@@ -60,6 +64,10 @@ public class ServerUtils {
             } catch (BoilerpipeProcessingException e) {
                 e.printStackTrace();
                 LOG.error("Boilerpipe Cannot process the web page");
+                textToProcess = "";
+            } catch (URISyntaxException e) {
+                // e.printStackTrace();
+                LOG.error("Input URL is not valid");
                 textToProcess = "";
             }
 
