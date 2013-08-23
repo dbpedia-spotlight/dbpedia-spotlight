@@ -15,7 +15,6 @@
  */
 package org.dbpedia.spotlight.evaluation.external
 
-//import scala.Predef.String
 import scala.collection.immutable.List
 import org.apache.commons.httpclient.NameValuePair
 import org.apache.commons.httpclient.methods.PostMethod
@@ -27,27 +26,14 @@ import org.w3c.dom.{NodeList, Element, Node}
 import org.xml.sax.SAXException
 import javax.xml.parsers.ParserConfigurationException
 import java.io.{File, IOException}
-//import scala._
-
 
 /**
- * @author pablomendes and Alexandre Cançado Cardoso (translation to scala)
+ * Simple web service-based annotation scala client for Zemanta.
+ *
+ * Author: Pablo Mendes (original java version) and Alexandre Cançado Cardoso (scala translation)
+ * Created: 08/13
+ * Last Modified: 23th/08/13
  */
-object ZemantaClientScala {
-  def main(args: Array[String]) {
-
-    val api_key: String = args(0)
-    val c: ZemantaClient = new ZemantaClient(api_key)
-
-//    val input: File = new File("/home/pablo/eval/grounder/gold/g1b_spotlight.txt")
-//    val output: File = new File("/home/pablo/eval/grounder/systems/Zemanta.list")
-
-    val input: File = new File("/home/alexandre/Projects/Test_Files/Caminhao_com_ceramica_tomba_na_via_dutra.txt")
-    val output: File = new File("/home/alexandre/Projects/Test_Files/Zemanta-scala_Caminhao_com_ceramica_tomba_na_via_dutra.list")
-
-    c.evaluate(input, output)
-  }
-}
 
 class ZemantaClientScala(api_key: String) extends AnnotationClientScala {
   override val LOG: Log = LogFactory.getLog(classOf[ZemantaClientScala])
@@ -97,5 +83,22 @@ class ZemantaClientScala(api_key: String) extends AnnotationClientScala {
 
     response
   }
+}
 
+
+object ZemantaClientScala {
+  def main(args: Array[String]) {
+
+    val api_key: String = args(0)
+    val c: ZemantaClient = new ZemantaClient(api_key)
+
+    val input: File = new File("/home/alexandre/Projects/Test_Files/Caminhao.txt")
+    val output: File = new File("/home/alexandre/Projects/Test_Files/Zemanta-scala_Caminhao.list")
+    c.evaluate(input, output)
+
+    val inputEng: File = new File("/home/alexandre/Projects/Test_Files/Germany.txt")
+    val outputEng: File = new File("/home/alexandre/Projects/Test_Files/Zemanta-scala_Germany.list")
+    c.evaluate(inputEng, outputEng)
+
+  }
 }

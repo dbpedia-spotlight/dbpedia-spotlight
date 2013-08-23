@@ -1,3 +1,18 @@
+/**
+ * Copyright 2011 Pablo Mendes, Max Jakob
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.dbpedia.spotlight.evaluation.external
 
 import org.dbpedia.spotlight.exceptions.AnnotationException
@@ -11,16 +26,14 @@ import org.xml.sax.SAXException
 import javax.xml.parsers.ParserConfigurationException
 import scala.collection.immutable.List
 
-
 /**
-  * Created with IntelliJ IDEA.
-  * User: Leandro Bianchini
-  * Date: 24/06/13
-  * Time: 22:22
-  * Fixed by: Alexandre Cançado Cardoso
-  * Date 20/08/13
-  * To change this template use File | Settings | File Templates.
+  * Simple web service-based annotation scala client for Alchemy.
+  *
+  * Author: Pablo Mendes (original java version). Leandro Bianchini (scala translation) and Alexandre Cançado Cardoso (scala bug fixing)
+  * Created: 22th/06/13
+  * Last Modified: 23th/08/13
   */
+
 class AlchemyClientScala(apikey: String) extends AnnotationClientScala {
 
   val url: String = "http://access.alchemyapi.com/calls/text/TextGetRankedNamedEntities"
@@ -73,6 +86,7 @@ class AlchemyClientScala(apikey: String) extends AnnotationClientScala {
   }
 }
 
+
 object AlchemyClientScala {
 
   def main(args: Array[String]) {
@@ -80,21 +94,14 @@ object AlchemyClientScala {
 
     val alchemyClient = new AlchemyClientScala(apikey)
 
-//    val manualEvalInput   = new File("/Users/leandro/Documents/Projetos/dbpedia-spotlight/files/AnnotationText-Alchemy.txt.list")
-//    val manualEvalOutput  = new File("/Users/leandro/Documents/Projetos/dbpeda-spotlight/files/AnnotationText.txt")
-//    alchemyClient.evaluate(manualEvalInput, manualEvalOutput)
-//
-//    val cucerzanEvalInput  = new File("/Users/leandro/Documents/Projetos/dbpedia-spotlight/files/cucerzan.txt")
-//    val cucerzanEvalOutput = new File("/Users/leandro/Documents/Projetos/dbpedia-spotlight/files/cucerzan-Alchemy2.set")
-//    alchemyClient.evaluate(cucerzanEvalInput, cucerzanEvalOutput)
-//
-//    val input  = new File("/Users/leandro/Documents/Projetos/dbpedia-spotlight/files/paragraphs.txt")
-//    val output = new File("/Users/leandro/Documents/Projetos/dbpedia-spotlight/files/Alchemy.list")
-
-    val input = new File("/home/alexandre/Projects/Test_Files/Caminhao_com_ceramica_tomba_na_via_dutra.txt")
-    val output = new File("/home/alexandre/Projects/Test_Files/Alchemy-scala_Caminhao_com_ceramica_tomba_na_via_dutra.list")
-
+    val input = new File("/home/alexandre/Projects/Test_Files/Caminhao.txt")
+    val output = new File("/home/alexandre/Projects/Test_Files/Alchemy-scala_Caminhao.list")
     alchemyClient.evaluate(input, output)
+
+    val inputEng = new File("/home/alexandre/Projects/Test_Files/Germany.txt")
+    val outputEng = new File("/home/alexandre/Projects/Test_Files/Alchemy-scala_Germany.list")
+    alchemyClient.evaluate(inputEng, outputEng)
+
   }
 
 }

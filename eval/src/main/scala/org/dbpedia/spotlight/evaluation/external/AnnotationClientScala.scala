@@ -1,3 +1,18 @@
+/**
+ * Copyright 2011 Pablo Mendes, Max Jakob
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.dbpedia.spotlight.evaluation.external
 
 import org.apache.commons.logging.LogFactory
@@ -13,15 +28,12 @@ import scala.io.Source
 ;
 
 /**
- * Created with IntelliJ IDEA.
- * User: Leandro Bianchini
- * Date: 24/06/13
- * Time: 22:23
- * Fixed by: Alexandre Cançado Cardoso
- * Date 20/08/13
- * To change this template use File | Settings | File Templates.
+ * Abstract class for simple web service-based annotation scala clients.
+ *
+ * Author: Pablo Mendes (original java version). Leandro Bianchini (scala translation) and Alexandre Cançado Cardoso (scala bug fixing)
+ * Created: 24th/06/13
+ * Last Modified: 23th/08/13
  */
-
 
 abstract class AnnotationClientScala {
 
@@ -127,8 +139,8 @@ abstract class AnnotationClientScala {
   def evaluate(inputFile: File, outputFile: File)  {
       evaluateManual(inputFile, outputFile, 0)
   }
-
 }
+
 
 object AnnotationClientScala {
 
@@ -138,8 +150,6 @@ object AnnotationClientScala {
 
   def readFileAsString(file: File): String = {
 
-//    val buffer = Stream.continually(new FileInputStream(file).read).takeWhile(-1 !=).map(_.toByte).toArray
-//    buffer.toString
     val buffer = Source.fromFile(file.getAbsolutePath)
     buffer.mkString
 
@@ -171,12 +181,9 @@ object AnnotationClientScala {
         }
 
         result
-
       }
 
     }
-
   }
-
 
 }
