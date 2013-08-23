@@ -1,4 +1,18 @@
-
+/**
+ * Copyright 2011 Pablo Mendes, Max Jakob
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.dbpedia.spotlight.evaluation.external
 
 import org.apache.commons.httpclient.Header
@@ -15,32 +29,16 @@ import java.io.File
 import scala.collection.immutable.List
 
 /**
- * Simple web service-based annotation client for DBpedia Spotlight.
+ * Simple web service-based annotation scala client for DBpedia Spotlight.
  *
- * @author pablomendes, Joachim Daiber, Alexandre Cançado Cardoso (translation to scala)
- *
+ * Author: Pablo Mendes and Joachim Daiber (original java version) and Alexandre Cançado Cardoso (scala translation)
+ * Created: 08/13
+ * Last Modified: 23th/08/13
  */
 
-object DBpediaSpotlightClientScala {
-  def main(args: Array[String]) {
-    val c: DBpediaSpotlightClientScala = new DBpediaSpotlightClientScala
-
-//    val input: File = new File("/home/pablo/eval/csaw/gold/paragraphs.txt")
-//    val output: File = new File("/home/pablo/eval/csaw/systems/Spotlight.list")
-
-    val input: File = new File("/home/alexandre/Projects/Test_Files/Caminhao_com_ceramica_tomba_na_via_dutra.txt")
-    val output: File = new File("/home/alexandre/Projects/Test_Files/Spotlight-scala_Caminhao_com_ceramica_tomba_na_via_dutra.list")
-
-//    val input: File = new File("/home/alexandre/Projects/Test_Files/annotation1.txt")
-//    val output: File = new File("/home/alexandre/Projects/Test_Files/Spotlight-scala_annotation1.list")
-
-    c.evaluate(input, output)
-  }
-}
-
 class DBpediaSpotlightClientScala extends AnnotationClientScala {
-  //private val API_URL: String = "http://spotlight.dbpedia.org/"
-  private val API_URL: String = "http://107.20.250.248:2222/"     //todo: modify output format to exclude the dbpedia link
+  private val API_URL: String = "http://spotlight.dbpedia.org/"
+  //private val API_URL: String = "http://107.20.250.248:2222/" //for portuguese. Need to modify output format to exclude the dbpedia link pre-appended
   private val CONFIDENCE: Double = 0.0
   private val SUPPORT: Int = 0
 
@@ -73,9 +71,6 @@ class DBpediaSpotlightClientScala extends AnnotationClientScala {
 
     var resources: List[DBpediaResource] = List[DBpediaResource]()
 
-    //for (i <- 0 to entities.length-1) {
-    //var i:Int = 0
-    //for (aux <- entities) {
     for(i <- Range.inclusive(0, entities.length()-1)) {
       try {
         val entity: JSONObject = entities.getJSONObject(i)
@@ -83,10 +78,28 @@ class DBpediaSpotlightClientScala extends AnnotationClientScala {
       } catch {
         case e: JSONException => LOG.error("JSON exception " + e)
       }
-      //i +=1
     }
 
     resources
   }
+
 }
 
+
+object DBpediaSpotlightClientScala {
+
+  def main(args: Array[String]) {
+
+    val c: DBpediaSpotlightClientScala = new DBpediaSpotlightClientScala
+
+    val input: File = new File("/home/alexandre/Projects/Test_Files/Caminhao.txt")
+    val output: File = new File("/home/alexandre/Projects/Test_Files/Spotlight-scala_Caminhao.list")
+    c.evaluate(input, output)
+
+    val inputEng: File = new File("/home/alexandre/Projects/Test_Files/Germany.txt")
+    val outputEng: File = new File("/home/alexandre/Projects/Test_Files/Spotlight-scala_Germany.list")
+    c.evaluate(inputEng, outputEng)
+
+  }
+
+}
