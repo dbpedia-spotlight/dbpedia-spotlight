@@ -54,7 +54,7 @@ import java.util.Set;
  * User complaints:
  * - The Washing Post was picked up 3 times. I don't know why the terms "private" and "broker" were picked up at all. ... tagging is sometimes much better, sometimes it's like this - not very useful http://www.opencalais.com/forums/known-issues/erratic-calais-performance
  *
- * @author pablomendes
+ * @author pablomendes; (the_Calais_bug_workaround_by)_alexandre_cançado_cardoso
  */
 public class OpenCalaisClient extends AnnotationClient {
 
@@ -187,6 +187,9 @@ public class OpenCalaisClient extends AnnotationClient {
     }
     
     protected String process(String text) throws AnnotationException {
+        //Prepend English tag to text. It's a workaround to allow the text to have a word that is the name of an unsuported language. Reference:
+        text = "Prefix to circumvent OpenCalais bug, this is English text" + text;
+        //Original process method
         PostMethod method = new PostMethod(url);
         // Set mandatory parameters
         method.setRequestHeader("x-calais-licenseID", apikey);
@@ -244,14 +247,17 @@ public class OpenCalaisClient extends AnnotationClient {
 //        File inputFile = new File("/home/pablo/eval/wikify/gold/WikifyAllInOne.txt");
 //        File outputFile = new File("/home/pablo/eval/wikify/systems/OpenCalais.list");
 
-        File inputFile = new File("/home/pablo/eval/csaw/gold/paragraphs.txt");
-        File outputFile = new File("/home/pablo/eval/csaw/systems/OpenCalais.list");
+//        File inputFile = new File("/home/pablo/eval/csaw/gold/paragraphs.txt");
+//        File outputFile = new File("/home/pablo/eval/csaw/systems/OpenCalais.list");
+
+        File inputFile = new File("/home/alexandre/Projects/Test_Files/Germany.txt");
+        File outputFile = new File("/home/alexandre/Projects/Test_Files/OpenCalais-java_Germany.list");
 
         try {
             OpenCalaisClient client = new OpenCalaisClient(apikey);
             client.evaluate(inputFile, outputFile);
         } catch (Exception e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
 
     }
