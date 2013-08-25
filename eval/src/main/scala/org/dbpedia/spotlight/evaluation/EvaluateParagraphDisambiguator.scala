@@ -53,7 +53,8 @@ object EvaluateParagraphDisambiguator {
         var nOriginalOccurrences = 0
         val paragraphs = testSource.toList
         var totalParagraphs = paragraphs.size
-        //testSource.view(10000,15000)
+
+        var unknownSF=0
         val mrrResults = paragraphs.map(a => {
             i = i + 1
             LOG.info("Paragraph %d/%d: %s.".format(i, totalParagraphs, a.id))
@@ -65,7 +66,9 @@ object EvaluateParagraphDisambiguator {
                 val bestK = filter(disambiguator.bestK(paragraph,100))
 
                 val goldOccurrences = occFilters.foldLeft(a.occurrences.toTraversable){ (o,f) => f.filterOccs(o) } // discounting URIs from gold standard that we know are disambiguations, fixing redirects, etc.
-
+                if (bestK!=null&&goldOccurrences.size>=bestK.size)
+                  unknownSF+=goldOccurrences.size-bestK.size
+                else unknownSF+=goldOccurrences.size
                 goldOccurrences.foreach( correctOccurrence => {
                     nOccurrences = nOccurrences + 1
 
@@ -101,6 +104,7 @@ object EvaluateParagraphDisambiguator {
         LOG.info("Global MRR: %s".format(mrrResults.sum / mrrResults.size))
         LOG.info("Elapsed time: %s sec".format( (endTime-startTime) / 1000000000))
         LOG.info("********************")
+        LOG.info("unkown sf %d".format(unknownSF))
 
         val disambigSummary = "Corpus: %s".format(testSource.name) +
                     "\nNumber of occs: %d (original), %d (processed)".format(nOriginalOccurrences,nOccurrences) +

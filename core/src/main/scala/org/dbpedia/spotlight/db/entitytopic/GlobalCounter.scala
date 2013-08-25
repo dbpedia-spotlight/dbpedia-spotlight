@@ -128,6 +128,7 @@ object GlobalCounter{
     val rows=fields(1).toInt
     val samples=fields(3).toInt
 
+
     val counter=GlobalCounter(file.getName(),rows,samples)
 
     (0 until rows).foreach((row:Int)=>{
@@ -135,7 +136,7 @@ object GlobalCounter{
       val fields=string.split(" ")
       val map=counter.matrix(row)
       assert(row==fields(0).toInt)
-      counter.rowSum(row)+=fields(1).toFloat
+      counter.rowSum(row)=fields(1).toFloat
       var i=2
       while(i<fields.length){
         val col=fields(i).toInt
@@ -159,14 +160,17 @@ object GlobalCounter{
     val rows=fields(1).toInt
     val samples=fields(3).toInt
 
-    val counter=GlobalCounter(file.getName(),rows,samples)
+    val matrix=new Array[HashMap[Int,Float]](rows)
+    val rowSum=new Array[Float](rows)
+
 
     (0 until rows).foreach((row:Int)=>{
       val string=reader.readLine()
       val fields=string.split(" ")
-      val map=counter.matrix(row)
+      val entrynum:Int=(fields.length-2)*3/4+1
+      val map=new HashMap[Int,Float](entrynum)
       assert(row==fields(0).toInt)
-      counter.rowSum(row)+=fields(1).toFloat
+      rowSum(row)+=fields(1).toFloat
       var i=2
       while(i<fields.length){
         val col=fields(i).toInt
@@ -174,8 +178,9 @@ object GlobalCounter{
         map.put(col,v)
         i+=2
       }
+      matrix(row)=map
     })
     reader.close()
-    counter
+    new GlobalCounter(file.getName(), matrix, rowSum, samples)
   }
 }

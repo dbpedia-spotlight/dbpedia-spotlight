@@ -8,6 +8,7 @@ import opennlp.tools.util.Span
 import java.util.{Properties, HashMap}
 import scala.util.Random
 import org.dbpedia.spotlight.model.Factory.DBpediaResourceOccurrence
+import org.dbpedia.spotlight.exceptions.SurfaceFormNotFoundException
 
 
 class DocumentInitializer(val topicentityCount:GlobalCounter,
@@ -101,8 +102,11 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
   var text:Text=null
   var resourceOccrs: Array[DBpediaResourceOccurrence]=null
 
-  def initDocument(text:Text, resOccrs:Array[DBpediaResourceOccurrence]):Document={
-    set(text, resourceOccrs)
+  def initDocument(t:Text, resOccrs:Array[DBpediaResourceOccurrence]):Document={
+    //set(text, resourceOccrs)
+    text=t
+    resourceOccrs=resOccrs
+    System.out.println("in initDocument: "+resourceOccrs.length)
     run()
     newestDoc
   }
@@ -128,14 +132,22 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
     val tokens:List[Token]=text.featureValue[List[Token]]("tokens").get.filter((token:Token)=>token.tokenType.id>0)
 
     var i=0
+    System.out.println("in run: "+resourceOccrs.length)
     var prevRes=resourceOccrs(0).resource
     var prevOffset=0
     if(isTraning)
       resourceOccrs=restrictedSpot(text,resourceOccrs)
     else
       (resourceOccrs).foreach((resOccr:DBpediaResourceOccurrence)=>
-        if (resOccr.surfaceForm.id==0)
-          resOccr.surfaceForm.id=searcher.sfStore.getSurfaceForm(resOccr.surfaceForm.name).id
+        try{
+          if (resOccr.surfaceForm.id==0)
+            resOccr.surfaceForm.id=searcher.sfStore.getSurfaceForm(resOccr.surfaceForm.name).id
+        }catch{
+          case e:SurfaceFormNotFoundException=>{
+            newestDoc=null
+            return
+          }
+        }
       )
 
     (resourceOccrs).foreach((resOccr:DBpediaResourceOccurrence)=>{

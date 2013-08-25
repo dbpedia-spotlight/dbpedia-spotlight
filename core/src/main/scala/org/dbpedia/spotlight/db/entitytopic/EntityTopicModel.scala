@@ -10,6 +10,7 @@ import scala.collection.mutable.ListBuffer
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguator
 import org.dbpedia.spotlight.db.memory.MemoryCandidateMapStore
 import org.dbpedia.spotlight.model.Factory.DBpediaResourceOccurrence
+import org.jdom.IllegalTargetException
 
 class EntityTopicModel(val tokenizer:TextTokenizer,
                        val searcher: DBCandidateSearcher,
@@ -43,7 +44,8 @@ class EntityTopicModel(val tokenizer:TextTokenizer,
 
   def mapResult(doc:Document):Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]={
     var map=Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]()
-    (doc.mentions,doc.entityOfMention).zipped.foreach((mention,entity)=>map+=(mention->List(Factory.DBpediaResourceOccurrence.from(mention,searcher.resStore.getResource(entity),0.0))))
+    if(doc!=null)
+      (doc.mentions,doc.entityOfMention).zipped.foreach((mention,entity)=>map+=(mention->List(Factory.DBpediaResourceOccurrence.from(mention,searcher.resStore.getResource(entity),0.0))))
     map
   }
 
@@ -58,11 +60,19 @@ class EntityTopicModel(val tokenizer:TextTokenizer,
       }
     })
 
-    val doc=docInitializer.initDocument(paragraph.text,resOccrs.toArray)
-    (0 until gibbsSteps).foreach(_=>
-      doc.updateAssignment(false)
-    )
-    doc
+    if(resOccrs.size>0){
+      System.out.println("in model: "+resOccrs.size)
+      val doc=docInitializer.initDocument(paragraph.text,resOccrs.toArray)
+      if(doc!=null){
+        (0 until gibbsSteps).foreach(_=>
+          doc.updateAssignment(false)
+        )
+      }
+      doc
+    }else{
+      null
+    }
+
   }
 }
 
@@ -84,7 +94,7 @@ object EntityTopicModel{
     val entitymention=GlobalCounter.readAvgFromFile(entitytopicFolder+"/entitymention_sum")
     val entityword=GlobalCounter.readAvgFromFile(entitytopicFolder+"/entityword_sum")
 
-    Document.init(topicentity,entitymention,entityword,candMapStore.asInstanceOf[MemoryCandidateMapStore],properties)
+    Document.init(entitymention,entityword,topicentity,candMapStore.asInstanceOf[MemoryCandidateMapStore],properties)
     new EntityTopicModel(tokenizer, searcher, properties,gibbsSteps)
   }
 
