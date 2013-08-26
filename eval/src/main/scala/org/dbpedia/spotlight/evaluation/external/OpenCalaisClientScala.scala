@@ -45,7 +45,7 @@ class OpenCalaisClientScala(apikey: String)  extends AnnotationClientScala {
 
   private val url: String = "http://api.opencalais.com/tag/rs/enrich"
   //Create an instance of HttpClient.
-  var webclient: HttpClient = new HttpClient
+  var httpclient: HttpClient = new HttpClient
 
   var id: String = "id"
   var submitter: String = "dbpa"
@@ -121,14 +121,15 @@ class OpenCalaisClientScala(apikey: String)  extends AnnotationClientScala {
 
           if (entryType == "entities") {
             val uri: String = key
+/*// Implemented at java original class, but never used there and here
             val entryName: AnyRef = PropertyUtils.getProperty(bean, "name")
             val typeProperty: String = PropertyUtils.getProperty(bean, "_type").asInstanceOf[String]
-            val relevance: Double = PropertyUtils.getProperty(bean, "relevance").asInstanceOf[Double]
+            val relevance: Double = PropertyUtils.getProperty(bean, "relevance").asInstanceOf[Double]*/
 
             val instances: List[_] = PropertyUtils.getProperty(bean, "instances").asInstanceOf[List[_]]
 
             for (i <- instances) {
-              val offset: Int = PropertyUtils.getProperty(i, "offset").asInstanceOf[Int]
+//              val offset: Int = PropertyUtils.getProperty(i, "offset").asInstanceOf[Int]
               val dbpediaUri: String = dereference(uri)
               val resource: DBpediaResource = new DBpediaResource(dbpediaUri)
               entities = entities :+ resource
@@ -176,25 +177,26 @@ class OpenCalaisClientScala(apikey: String)  extends AnnotationClientScala {
    response
   }
 
-//  class OldRest(apikey : String) extends OpenCalaisClientScala(apikey) {
-//    private var url: String = "http://api.opencalais.com/enlighten/rest"
-//
-//    private def createPostMethod: PostMethod = {
-//      val method: PostMethod = new PostMethod(url)
-//      method.setRequestHeader("x-calais-licenseID", apikey)
-//      method.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
-//      method.setRequestHeader("Accept", "application/json")
-//      return method
-//    }
-//
-//    protected override def process(text: String): String = {
-//      val method: PostMethod = createPostMethod
-//      val params: Array[NameValuePair] = Array(new NameValuePair("licenseID", apikey), new NameValuePair("content", text), new NameValuePair("paramsXML", paramsXml))
-//      method.setRequestBody(params)
-//      val response: String = request(method)
-//      return response
-//    }
-//  }
+/*// Implemented at java original class, but never used there and here
+  class OldRest(apikey : String) extends OpenCalaisClientScala(apikey) {
+    private var url: String = "http://api.opencalais.com/enlighten/rest"
+
+    private def createPostMethod: PostMethod = {
+      val method: PostMethod = new PostMethod(url)
+      method.setRequestHeader("x-calais-licenseID", apikey)
+      method.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
+      method.setRequestHeader("Accept", "application/json")
+      return method
+    }
+
+    protected override def process(text: String): String = {
+      val method: PostMethod = createPostMethod
+      val params: Array[NameValuePair] = Array(new NameValuePair("licenseID", apikey), new NameValuePair("content", text), new NameValuePair("paramsXML", paramsXml))
+      method.setRequestBody(params)
+      val response: String = request(method)
+      return response
+    }
+  }*/
 
 }
 
@@ -208,8 +210,8 @@ object OpenCalaisClientScala{
     val outputFile: File = new File("/home/alexandre/Projects/Test_Files/OpenCalais-scala_Germany.list")
 
     try {
-      val occlient: OpenCalaisClient = new OpenCalaisClient(apikey)
-      occlient.evaluate(inputFile, outputFile)
+      val c: OpenCalaisClient = new OpenCalaisClient(apikey)
+      c.evaluate(inputFile, outputFile)
     } catch {
       case e: Exception => e.printStackTrace()
     }
