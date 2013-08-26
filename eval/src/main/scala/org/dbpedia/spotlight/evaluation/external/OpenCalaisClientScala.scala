@@ -21,7 +21,7 @@ import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.exceptions.AnnotationException
 import org.dbpedia.spotlight.model._
 import java.io.File
-import org.apache.commons.httpclient.methods.GetMethod
+import org.apache.commons.httpclient.methods.{PostMethod, GetMethod}
 import net.sf.json.JSONObject
 import org.apache.commons.beanutils.PropertyUtils
 import java.util
@@ -39,13 +39,13 @@ import scala.collection.JavaConversions._
  */
 
 
-class OpenCalaisClientScala(api_key: String)  extends AnnotationClientScala {
+class OpenCalaisClientScala(apikey: String)  extends AnnotationClientScala {
 
   override val LOG: Log = LogFactory.getLog(this.getClass)
 
   private val url: String = "http://api.opencalais.com/tag/rs/enrich"
   //Create an instance of HttpClient.
-  var client: HttpClient = new HttpClient
+  var webclient: HttpClient = new HttpClient
 
   var id: String = "id"
   var submitter: String = "dbpa"
@@ -135,7 +135,7 @@ class OpenCalaisClientScala(api_key: String)  extends AnnotationClientScala {
             }
           }
 
-        } catch{
+        } catch {
           case e: IllegalArgumentException => e.printStackTrace()
           case e: InvocationTargetException => e.printStackTrace()
           case e: NoSuchMethodException => {
@@ -147,10 +147,8 @@ class OpenCalaisClientScala(api_key: String)  extends AnnotationClientScala {
 
     }
 
-
     entities
   }
-
 
   @throws(classOf[AnnotationException])
   def extract(text: Text): List[DBpediaResource] = {
@@ -159,9 +157,44 @@ class OpenCalaisClientScala(api_key: String)  extends AnnotationClientScala {
     entities
   }
 
-  protected def process(text: String): String = {
-    null
+  protected def process(originalText: String): String = {
+    //Prepend English tag to text. It's a workaround to allow the text to have a word that is the name of an unsuported language. Reference:
+    val text = "Prefix to circumvent OpenCalais bug, this is English text" + originalText
+    //Original process method
+    val method: PostMethod = new PostMethod(url)
+    // Set mandatory parameters
+    method.setRequestHeader("x-calais-licenseID", apikey)
+    // Set input content type
+    method.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
+    // Set response/output format
+    method.setRequestHeader("Accept", "application/json")
+    // Define params for the body
+    val params: Array[NameValuePair] = Array(new NameValuePair("licenseID", apikey), new NameValuePair("content", text), new NameValuePair("paramsXML", paramsXml))
+    method.setRequestBody(params)
+    val response: String = request(method)
+
+   response
   }
+
+//  class OldRest(apikey : String) extends OpenCalaisClientScala(apikey) {
+//    private var url: String = "http://api.opencalais.com/enlighten/rest"
+//
+//    private def createPostMethod: PostMethod = {
+//      val method: PostMethod = new PostMethod(url)
+//      method.setRequestHeader("x-calais-licenseID", apikey)
+//      method.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
+//      method.setRequestHeader("Accept", "application/json")
+//      return method
+//    }
+//
+//    protected override def process(text: String): String = {
+//      val method: PostMethod = createPostMethod
+//      val params: Array[NameValuePair] = Array(new NameValuePair("licenseID", apikey), new NameValuePair("content", text), new NameValuePair("paramsXML", paramsXml))
+//      method.setRequestBody(params)
+//      val response: String = request(method)
+//      return response
+//    }
+//  }
 
 }
 
@@ -172,13 +205,13 @@ object OpenCalaisClientScala{
     val apikey: String = args(0)
 
     val inputFile: File = new File("/home/alexandre/Projects/Test_Files/Germany.txt")
-    val outputFile: File = new File("/home/alexandre/Projects/Test_Files/OpenCalais-java_Germany.list")
+    val outputFile: File = new File("/home/alexandre/Projects/Test_Files/OpenCalais-scala_Germany.list")
 
     try {
-      val client: OpenCalaisClient = new OpenCalaisClient(apikey)
-      client.evaluate(inputFile, outputFile)
+      val occlient: OpenCalaisClient = new OpenCalaisClient(apikey)
+      occlient.evaluate(inputFile, outputFile)
     } catch {
-      case e: Exception => e.printStackTrace
+      case e: Exception => e.printStackTrace()
     }
   }
 
