@@ -90,7 +90,7 @@ object ZemantaClientScala {
   def main(args: Array[String]) {
 
     val api_key: String = args(0)
-    val c: ZemantaClient = new ZemantaClient(api_key)
+    val c = new ZemantaClientScala(api_key)
 
     val input: File = new File("/home/alexandre/Projects/Test_Files/Caminhao.txt")
     val output: File = new File("/home/alexandre/Projects/Test_Files/Zemanta-scala_Caminhao.list")
