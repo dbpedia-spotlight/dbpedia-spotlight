@@ -162,8 +162,6 @@ public class ExtractivClient extends AnnotationClient {
 		}
 
 
-
-
 		return extractedResources;
 
 	}

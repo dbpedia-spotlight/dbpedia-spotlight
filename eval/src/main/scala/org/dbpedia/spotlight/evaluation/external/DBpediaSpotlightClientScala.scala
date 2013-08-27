@@ -30,10 +30,14 @@ import scala.collection.immutable.List
 
 /**
  * Simple web service-based annotation scala client for DBpedia Spotlight.
+ * Translate from DBpediaSpotlightClient.java (the java clients were discontinued)
  *
  * Author: Pablo Mendes and Joachim Daiber (original java version) and Alexandre Cançado Cardoso (scala translation)
  * Created: 08/13
  * Last Modified: 23th/08/13
+ *
+ * Tested for English and Portuguese, ok for English only. To use for any other language, changes in url and
+ * modifications at services output manipulations is needed, for correct outputs.
  */
 
 class DBpediaSpotlightClientScala extends AnnotationClientScala {

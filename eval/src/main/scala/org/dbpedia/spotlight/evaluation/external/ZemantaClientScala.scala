@@ -29,10 +29,14 @@ import java.io.{File, IOException}
 
 /**
  * Simple web service-based annotation scala client for Zemanta.
+ * Translate from DBpediaSpotlightClient.java (the java clients were discontinued)
  *
  * Author: Pablo Mendes (original java version) and Alexandre Cançado Cardoso (scala translation)
  * Created: 08/13
- * Last Modified: 23th/08/13
+ * Last Modified: 27th/08/13
+ *
+ * Tested for English and Portuguese, ok for English only.
+ * (Zemanta service support only English language.)
  */
 
 class ZemantaClientScala(api_key: String) extends AnnotationClientScala {

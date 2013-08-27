@@ -28,10 +28,13 @@ import scala.collection.immutable.List
 
 /**
   * Simple web service-based annotation scala client for Alchemy.
+  * Translate from AlchemyClient.java (the java clients were discontinued)
   *
   * Author: Pablo Mendes (original java version). Leandro Bianchini (scala translation) and Alexandre Cançado Cardoso (scala bug fixing)
   * Created: 22th/06/13
   * Last Modified: 23th/08/13
+  *
+  * Tested for English and Portuguese, ok for both.
   */
 
 class AlchemyClientScala(apikey: String) extends AnnotationClientScala {

@@ -29,6 +29,7 @@ import scala.io.Source
 
 /**
  * Abstract class for simple web service-based annotation scala clients.
+ * Translate from AnnotationClient.java (the java clients were discontinued)
  *
  * Author: Pablo Mendes (original java version). Leandro Bianchini (scala translation) and Alexandre Cançado Cardoso (scala bug fixing)
  * Created: 24th/06/13
