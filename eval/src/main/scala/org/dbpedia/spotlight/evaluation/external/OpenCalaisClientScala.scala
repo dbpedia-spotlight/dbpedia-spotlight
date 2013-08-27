@@ -27,6 +27,7 @@ import org.apache.commons.beanutils.PropertyUtils
 import java.util
 import java.lang.reflect.InvocationTargetException
 import scala.collection.JavaConversions._
+import scala.util.parsing.json.JSON
 
 /**
  * Simple client to the Open Calais REST API to extract DBpediaResourceOccurrences.
@@ -106,15 +107,22 @@ class OpenCalaisClientScala(apikey: String)  extends AnnotationClientScala {
     val entriesAux: util.Set[_] = jsonObj.entrySet
     val entries = entriesAux.toSet
 
-    print("debug")
+/* Original java code of this problematic part
+    Set entries = jsonObj.entrySet();
+    for (Object o: entries) {
+      Map.Entry m = (Map.Entry) o;
+      String key = (String) m.getKey();
+      if (key.equals("doc")) continue;
+*/
     for (o <- entries){
-      //val m: Map = o
-      val (entryKey, value) = o     //todo bugfix
-      val key : String = entryKey.toString
+      val m: Map[String, Any] = o.asInstanceOf[Map[String, Any]]   //todo bugfix
+      //val (entryKey, value) = o     //todo bugfix
+      val key : String = m.keys.toString() //entryKey.toString
 
       if (key != "doc") {
         //val bean: AnyRef = net.sf.json.JSONObject.toBean(m.getValue.asInstanceOf[JSONObject])
-        val bean: AnyRef = net.sf.json.JSONObject.toBean(value.asInstanceOf[JSONObject])
+        val bean: AnyRef = net.sf.json.JSONObject.toBean(m.values.asInstanceOf[JSONObject])
+        //val bean: AnyRef = net.sf.json.JSONObject.toBean(m.values.asInstanceOf[JSONObject])
 
         try{
           val entryType: AnyRef = PropertyUtils.getProperty(bean, "_typeGroup")
