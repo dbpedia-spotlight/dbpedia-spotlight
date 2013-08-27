@@ -35,7 +35,7 @@ import scala.collection.JavaConversions._
  *
  * Author: Pablo Mendes (original java version) and Alexandre Cançado Cardoso (scala translation)
  * Created: 08/13
- * Last Modified: 26th/08/13
+ * Last Modified: 27th/08/13
  */
 
 
@@ -109,7 +109,7 @@ class OpenCalaisClientScala(apikey: String)  extends AnnotationClientScala {
     print("debug")
     for (o <- entries){
       //val m: Map = o
-      val (entryKey, value) = o
+      val (entryKey, value) = o     //todo bugfix
       val key : String = entryKey.toString
 
       if (key != "doc") {
@@ -121,15 +121,15 @@ class OpenCalaisClientScala(apikey: String)  extends AnnotationClientScala {
 
           if (entryType == "entities") {
             val uri: String = key
-/*// Implemented at java original class, but never used there and here
+            // Implemented at java original class, but never used there and here
             val entryName: AnyRef = PropertyUtils.getProperty(bean, "name")
             val typeProperty: String = PropertyUtils.getProperty(bean, "_type").asInstanceOf[String]
-            val relevance: Double = PropertyUtils.getProperty(bean, "relevance").asInstanceOf[Double]*/
+            val relevance: Double = PropertyUtils.getProperty(bean, "relevance").asInstanceOf[Double]
 
             val instances: List[_] = PropertyUtils.getProperty(bean, "instances").asInstanceOf[List[_]]
 
             for (i <- instances) {
-//              val offset: Int = PropertyUtils.getProperty(i, "offset").asInstanceOf[Int]
+              //val offset: Int = PropertyUtils.getProperty(i, "offset").asInstanceOf[Int]
               val dbpediaUri: String = dereference(uri)
               val resource: DBpediaResource = new DBpediaResource(dbpediaUri)
               entities = entities :+ resource
@@ -177,7 +177,7 @@ class OpenCalaisClientScala(apikey: String)  extends AnnotationClientScala {
    response
   }
 
-/*// Implemented at java original class, but never used there and here
+// Nested class implemented at java original class, but never used there and here
   class OldRest(apikey : String) extends OpenCalaisClientScala(apikey) {
     private var url: String = "http://api.opencalais.com/enlighten/rest"
 
@@ -196,7 +196,7 @@ class OpenCalaisClientScala(apikey: String)  extends AnnotationClientScala {
       val response: String = request(method)
       return response
     }
-  }*/
+  }
 
 }
 
@@ -210,7 +210,8 @@ object OpenCalaisClientScala{
     val outputFile: File = new File("/home/alexandre/Projects/Test_Files/OpenCalais-scala_Germany.list")
 
     try {
-      val c: OpenCalaisClient = new OpenCalaisClient(apikey)
+      //val c: OpenCalaisClientScala = new OpenCalaisClientScala(apikey) //must use this line, but has a bug at parseJson(..)
+      val c: OpenCalaisClient = new OpenCalaisClient(apikey) //using fixed java equivalent class
       c.evaluate(inputFile, outputFile)
     } catch {
       case e: Exception => e.printStackTrace()
