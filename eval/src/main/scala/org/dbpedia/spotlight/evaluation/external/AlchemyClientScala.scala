@@ -82,9 +82,9 @@ class AlchemyClientScala(apikey: String) extends AnnotationClientScala {
           entities = entities :+ new DBpediaResource(value)
         }
       }
-
     }
     LOG.debug(String.format("Extracted: %s", entities))
+
     entities
   }
 }
@@ -104,7 +104,6 @@ object AlchemyClientScala {
     val inputEng = new File("/home/alexandre/Projects/Test_Files/Germany.txt")
     val outputEng = new File("/home/alexandre/Projects/Test_Files/Alchemy-scala_Germany.list")
     alchemyClient.evaluate(inputEng, outputEng)
-
   }
 
 }

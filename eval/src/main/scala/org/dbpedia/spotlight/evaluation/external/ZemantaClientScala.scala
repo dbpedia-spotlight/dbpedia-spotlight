@@ -40,7 +40,9 @@ import java.io.{File, IOException}
  */
 
 class ZemantaClientScala(api_key: String) extends AnnotationClientScala {
+
   override val LOG: Log = LogFactory.getLog(classOf[ZemantaClientScala])
+
   /**
    * DISCLAIMER these are not really promised by Zemanta to be DBpediaEntities. We extract them from wikipedia links.
    */
@@ -87,10 +89,12 @@ class ZemantaClientScala(api_key: String) extends AnnotationClientScala {
 
     response
   }
+
 }
 
 
 object ZemantaClientScala {
+
   def main(args: Array[String]) {
 
     val api_key: String = args(0)
@@ -105,4 +109,5 @@ object ZemantaClientScala {
     c.evaluate(inputEng, outputEng)
 
   }
+
 }

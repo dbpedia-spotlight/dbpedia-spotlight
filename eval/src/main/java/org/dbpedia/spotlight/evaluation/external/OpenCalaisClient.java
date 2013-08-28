@@ -69,6 +69,7 @@ import java.util.Set;
  * @author Alexandre Cançado Cardoso (workaround to the OpanCalais service language identification bug)
  * Last Modified: 23th/08/13
  */
+
 public class OpenCalaisClient extends AnnotationClient {
 
     Log LOG = LogFactory.getLog(this.getClass());
@@ -318,8 +319,6 @@ public class OpenCalaisClient extends AnnotationClient {
             return method;
         }
 
-        /*
-        */
         protected String process(String text) throws AnnotationException {
             PostMethod method = createPostMethod();
             NameValuePair[] params = {new NameValuePair("licenseID",apikey), new NameValuePair("content",text), new NameValuePair("paramsXML",paramsXml)};

@@ -36,6 +36,7 @@ import java.util.List;
  *
  * @author pablomendes
  */
+
 public abstract class AnnotationClient {
 
     public Logger LOG = Logger.getLogger(this.getClass());

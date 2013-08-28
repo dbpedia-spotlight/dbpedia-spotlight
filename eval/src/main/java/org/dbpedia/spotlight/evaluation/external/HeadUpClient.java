@@ -137,6 +137,4 @@ public class HeadUpClient extends AnnotationClient {
          client.evaluate(input, output);
      }
 
-
-
 }

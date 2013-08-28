@@ -44,6 +44,7 @@ import java.util.ArrayList;
  * @author pablomendes (first incomplete version, final touches to Andres' code.)
  * @author Andres Garcia-Silva (main implementation)
  */
+
 public class WikiMachineClient extends AnnotationClient {
 
     String wikiPrefix = "http://en.wikipedia.org/wiki/";
@@ -128,7 +129,5 @@ public class WikiMachineClient extends AnnotationClient {
         client.evaluate(csawEvalInput, csawEvalOutput);
 
     }
-
-
 
 }

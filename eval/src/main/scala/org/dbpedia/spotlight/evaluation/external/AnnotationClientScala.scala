@@ -59,22 +59,17 @@ abstract class AnnotationClientScala {
       val responseBody = method.getResponseBody
 
       response = new String(responseBody)
-    }
-   catch {
-
+    } catch {
       case e: HttpException =>
         LOG.error("Fatal protocol violation: " + e.getMessage)
         throw new AnnotationException("Protocol error executing HTTP request.", e)
-
       case e: IOException =>
         LOG.error("Fatal transport error: " + e.getMessage)
         LOG.error(method.getQueryString)
         throw new AnnotationException("Transport error executing HTTP request.", e)
-
     }
 
     response
-
   }
 
   @throws(classOf[Exception])

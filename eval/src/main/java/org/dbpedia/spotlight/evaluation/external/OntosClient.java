@@ -59,6 +59,7 @@ import java.util.Vector;
  * Some parts (indicated) are adapted from example code provided by 
  * @author Alex Klebeck, Ontos AG, (C)2010
  */
+
 public class OntosClient extends AnnotationClient {
 
     //public static final String dbpediaPrefix = "http://dbpedia.org/resource/";

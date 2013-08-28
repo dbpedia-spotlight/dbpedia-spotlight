@@ -41,11 +41,11 @@ import scala.collection.immutable.List
  */
 
 class DBpediaSpotlightClientScala extends AnnotationClientScala {
+
   private val API_URL: String = "http://spotlight.dbpedia.org/"
   //private val API_URL: String = "http://107.20.250.248:2222/" //for portuguese. Need to modify output format to exclude the dbpedia link pre-appended
   private val CONFIDENCE: Double = 0.0
   private val SUPPORT: Int = 0
-
 
   def extract(text: Text): List[DBpediaResource] = {
     LOG.info("Querying API.")

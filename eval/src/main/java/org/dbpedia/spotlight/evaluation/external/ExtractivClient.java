@@ -60,7 +60,6 @@ import java.util.Properties;
  * An extensive Java interface is available at
  * - https://github.com/extractiv/ExtractivPublicCode/
  *
- *
  */
 
 public class ExtractivClient extends AnnotationClient {
