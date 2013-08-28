@@ -34,6 +34,17 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * This External Clients was partly tranlated to scala, wich has a bug to be fixed.
+ * The buged scala code can be found at: https://github.com/accardoso/dbpedia-spotlight/tree/dev/conv/external_clients/eval/src/main/scala/org/dbpedia/spotlight/evaluation/external
+ * As result of that, this java class still be the unique client for OpenCalais
+ *
+ * Last Tested: 08/28th/2013 by Alexandre Cançado Cardoso
+
+ * Tested for English and Portuguese, ok for English only. To use for any other supported language (Franch and Spanish),
+ * changes at the text pre-appended tag for language set is needed. (in function process(..) )
+ */
+
+/**
  * Client to the Open Calais REST API to extract DBpediaResourceOccurrences.
  * This is by no means a complete client for OpenCalais. If that's what you're looking for, try http://code.google.com/p/j-calais/
  * Our client aims at simply returning DBpediaResourceOccurrences for evaluation.
@@ -54,7 +65,9 @@ import java.util.Set;
  * User complaints:
  * - The Washing Post was picked up 3 times. I don't know why the terms "private" and "broker" were picked up at all. ... tagging is sometimes much better, sometimes it's like this - not very useful http://www.opencalais.com/forums/known-issues/erratic-calais-performance
  *
- * @author pablomendes; (the_Calais_bug_workaround_by)_alexandre_cançado_cardoso
+ * @author pablomendes (main implementation)
+ * @author Alexandre Cançado Cardoso (workaround to the OpanCalais service language identification bug)
+ * Last Modified: 23th/08/13
  */
 public class OpenCalaisClient extends AnnotationClient {
 
@@ -187,7 +200,7 @@ public class OpenCalaisClient extends AnnotationClient {
     }
     
     protected String process(String text) throws AnnotationException {
-        //Prepend English tag to text. It's a workaround to allow the text to have a word that is the name of an unsuported language. Reference:
+        //Pre-append English tag to text. It's a workaround to allow the text to have a word that is the name of an unsuported language. Reference:
         text = "Prefix to circumvent OpenCalais bug, this is English text" + text;
         //Original process method
         PostMethod method = new PostMethod(url);
