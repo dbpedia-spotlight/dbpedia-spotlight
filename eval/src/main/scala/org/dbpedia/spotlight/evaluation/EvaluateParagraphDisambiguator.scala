@@ -63,8 +63,7 @@ object EvaluateParagraphDisambiguator {
 
             var acc = 0.0
 
-                val bestK = filter(disambiguator.bestK(paragraph,100))
-
+                val bestK = filter(disambiguator.bestK(paragraph,1))
                 val goldOccurrences = occFilters.foldLeft(a.occurrences.toTraversable){ (o,f) => f.filterOccs(o) } // discounting URIs from gold standard that we know are disambiguations, fixing redirects, etc.
                 if (bestK!=null&&goldOccurrences.size>=bestK.size)
                   unknownSF+=goldOccurrences.size-bestK.size
@@ -77,6 +76,9 @@ object EvaluateParagraphDisambiguator {
                                                                                 List[DBpediaResourceOccurrence]()))
 
                     outputs.foreach(_.write(disambResult))
+                    if (disambResult.rank>1)
+                      LOG.info("more than one results")
+
 
                     val invRank = if (disambResult.rank>0) (1.0/disambResult.rank) else  0.0
                     if (disambResult.rank==0)  {
