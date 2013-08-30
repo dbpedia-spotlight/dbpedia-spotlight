@@ -42,7 +42,15 @@ object DBpediaResourceSource {
 
     //The list of concepts may contain non-unique elements, hence convert it to a Set first to make sure
     //we do not count elements more than once.
-    val resourceMap: Map[String, DBpediaResource] = (Source.fromInputStream(conceptList).getLines().toSet map {
+
+    var linesIterator : Iterator[String] = Iterator.empty
+    try {
+      linesIterator = Source.fromInputStream(conceptList, "UTF-8").getLines
+    } catch {
+      case e: java.nio.charset.MalformedInputException => linesIterator = Source.fromInputStream(conceptList).getLines
+      }
+
+    val resourceMap: Map[String, DBpediaResource] = (linesIterator.toSet map {
       line: String => {
         val res = new DBpediaResource(line.trim)
         res.id = id
@@ -52,17 +60,30 @@ object DBpediaResourceSource {
     }).toMap
 
     //Read counts:
-    Source.fromInputStream(counts).getLines() foreach {
-      line: String => {
+
+    linesIterator = Iterator.empty
+    try {
+      linesIterator = Source.fromInputStream(counts, "UTF-8").getLines
+    } catch {
+      case e: java.nio.charset.MalformedInputException => linesIterator = Source.fromInputStream(counts).getLines
+      }
+
+    for (line <- linesIterator) {
         val Array(uri: String, count: String) = line.trim().split('\t')
         resourceMap(new DBpediaResource(uri).uri).setSupport(count.toInt)
-      }
     }
 
     //Read types:
     val uriNotFound = HashSet[String]()
-    Source.fromInputStream(instanceTypes).getLines() foreach {
-      line: String => {
+
+    linesIterator = Iterator.empty
+    try {
+      linesIterator = Source.fromInputStream(instanceTypes, "UTF-8").getLines
+    } catch {
+      case e: java.nio.charset.MalformedInputException => linesIterator = Source.fromInputStream(instanceTypes).getLines
+      }
+
+    for (line <- linesIterator) {
         val Array(id: String, typeURI: String) = line.trim().split('\t')
 
         try {
@@ -72,7 +93,6 @@ object DBpediaResourceSource {
             //System.err.println("WARNING: DBpedia resource not in concept list %s (%s)".format(id, typeURI) )
             uriNotFound += id
         }
-      }
     }
     LOG.warn("URI for %d type definitions not found!".format(uriNotFound.size) )
 
@@ -95,8 +115,14 @@ object DBpediaResourceSource {
 
     LOG.info("Reading resources+counts...")
 
-    Source.fromInputStream(resourceCounts).getLines() foreach {
-      line: String => {
+    var linesIterator : Iterator[String] = Iterator.empty
+    try {
+      linesIterator = Source.fromInputStream(resourceCounts, "UTF-8").getLines
+    } catch {
+      case e: java.nio.charset.MalformedInputException => linesIterator = Source.fromInputStream(resourceCounts).getLines
+      }
+
+    for (line <- linesIterator) {
         try {
           val Array(wikiurl, count) = line.trim().split('\t')
           val res = new DBpediaResource(wikipediaToDBpediaClosure.wikipediaToDBpediaURI(wikiurl))
@@ -116,16 +142,21 @@ object DBpediaResourceSource {
         } catch {
           case e: NotADBpediaResourceException => //Ignore Disambiguation pages
         }
-
-      }
     }
 
     //Read types:
     if (instanceTypes != null && instanceTypes._1.equals("tsv")) {
       LOG.info("Reading types (tsv format)...")
       val uriNotFound = HashSet[String]()
-      Source.fromInputStream(instanceTypes._2).getLines() foreach {
-        line: String => {
+
+      var linesIterator : Iterator[String] = Iterator.empty
+      try {
+        linesIterator = Source.fromInputStream(instanceTypes._2, "UTF-8").getLines
+      } catch {
+        case e: java.nio.charset.MalformedInputException => linesIterator = Source.fromInputStream(instanceTypes._2).getLines
+      }
+
+      for (line <- linesIterator) {
           val Array(uri: String, typeURI: String) = line.trim().split('\t')
 
           try {
@@ -134,7 +165,6 @@ object DBpediaResourceSource {
             case e: java.util.NoSuchElementException =>
               uriNotFound += uri
           }
-        }
       }
       LOG.warn("URI for %d type definitions not found!".format(uriNotFound.size) )
       LOG.info("Done.")

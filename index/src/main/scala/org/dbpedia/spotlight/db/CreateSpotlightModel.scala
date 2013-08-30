@@ -6,6 +6,7 @@ import memory.MemoryStore
 import model.{TextTokenizer, StringTokenizer, Stemmer}
 import scala.io.Source
 import org.tartarus.snowball.SnowballProgram
+import org.apache.lucene.analysis.sk.SlovakStemmer
 import java.util.{Locale, Properties}
 import org.dbpedia.spotlight.io.WikipediaHeldoutCorpus
 import org.apache.commons.io.FileUtils
@@ -14,6 +15,7 @@ import opennlp.tools.sentdetect.{SentenceModel, SentenceDetectorME}
 import opennlp.tools.postag.{POSModel, POSTaggerME}
 import opennlp.tools.chunker.ChunkerModel
 import stem.SnowballStemmer
+import stem.LuceneAnalysisSlovakStemmer
 import tokenize._
 import scala.Some
 
@@ -39,7 +41,7 @@ object CreateSpotlightModel {
         new File(args(2)),
         if (args(3) equals "None") None else Some(new File(args(3))),
         new File(args(4)),
-        if (args(5) equals "None") new Stemmer() else new SnowballStemmer(args(5))
+        if (args(5) equals "None") new Stemmer() else Stemmer.getStemmer(args(5))
         )
     } catch {
       case e: Exception => {

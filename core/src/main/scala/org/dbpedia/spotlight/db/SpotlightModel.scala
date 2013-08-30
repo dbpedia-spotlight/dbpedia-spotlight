@@ -18,6 +18,7 @@ import java.util.{Locale, Properties}
 import opennlp.tools.chunker.ChunkerModel
 import opennlp.tools.namefind.TokenNameFinderModel
 import stem.SnowballStemmer
+import stem.LuceneAnalysisSlovakStemmer
 import tokenize.{OpenNLPTokenizer, LanguageIndependentTokenizer}
 
 
@@ -28,8 +29,8 @@ class SpotlightModel(val tokenizer: TextTokenizer,
 
 object SpotlightModel {
 
-  def loadStopwords(modelFolder: File): Set[String] = scala.io.Source.fromFile(new File(modelFolder, "stopwords.list")).getLines().map(_.trim()).toSet
-  def loadSpotterThresholds(file: File): Seq[Double] = scala.io.Source.fromFile(file).getLines().next().split(" ").map(_.toDouble)
+  def loadStopwords(modelFolder: File): Set[String] = scala.io.Source.fromFile(new File(modelFolder, "stopwords.list"), "UTF-8").getLines().map(_.trim()).toSet
+  def loadSpotterThresholds(file: File): Seq[Double] = scala.io.Source.fromFile(file, "UTF-8").getLines().next().split(" ").map(_.toDouble)
 
   def storesFromFolder(modelFolder: File): (TokenTypeStore, SurfaceFormStore, ResourceStore, CandidateMapStore, ContextStore) = {
     val modelDataFolder = new File(modelFolder, "model")
@@ -69,7 +70,7 @@ object SpotlightModel {
     //Load the stemmer from the model file:
     def stemmer(): Stemmer = properties.getProperty("stemmer") match {
       case s: String if s equals "None" => null
-      case s: String => new SnowballStemmer(s)
+      case s: String => Stemmer.getStemmer(s)
     }
 
     val c = properties.getProperty("opennlp_parallel", Runtime.getRuntime.availableProcessors().toString).toInt
