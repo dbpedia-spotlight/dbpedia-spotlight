@@ -247,7 +247,9 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
     val pool=Executors.newFixedThreadPool(threadNum)
     var parsedDocs=0
 
+    System.out.println("before xmlsource.fromfile")
     val wikisource=XMLSource.fromFile(new File(wikidump), Language("nl"))
+    System.out.println("after xmlsource.fromfile")
     wikisource.foreach((wikiPage:WikiPage)=>{
       // clean the wiki markup from everything but links
       val cleanSource = WikiMarkupStripper.stripEverything(wikiPage.source)
