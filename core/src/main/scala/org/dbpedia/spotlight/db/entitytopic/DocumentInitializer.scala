@@ -14,11 +14,8 @@ import org.dbpedia.spotlight.exceptions.SurfaceFormNotFoundException
 class DocumentInitializer(val topicentityCount:GlobalCounter,
                           val entitymentionCount:GlobalCounter,
                           val entitywordCount:GlobalCounter,
-                          val tokenizer:TextTokenizer,
-                          val searcher: DBCandidateSearcher,
                           val topicNum:Int,
-                          val MaxSurfaceformLength:Int,
-                          val docCorpusFile:String="",
+                          val docCorpusFile:String,
                           val isTraning:Boolean=false
 ) extends Runnable{
 
@@ -33,84 +30,30 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
     }
   }
 
-  def spot(text:String, tokens:List[Token], start:Int, end:Int, map:collection.mutable.HashMap[String, DBpediaResourceOccurrence]):ListBuffer[DBpediaResourceOccurrence]={
-    val resOccrs=new ListBuffer[DBpediaResourceOccurrence]()
-    (start until end).foreach(k=>{
-      val maxLen=if (end-k>MaxSurfaceformLength) MaxSurfaceformLength else end-k
-      (k until k+maxLen ).foreach(e=>{
-        val gram=text.substring(tokens(k).offset, tokens(e).offset+tokens(e).token.length).trim
-        map.get(gram) match{
-          case Some(resOccr)=> resOccrs+=DBpediaResourceOccurrence.from(new SurfaceFormOccurrence(resOccr.surfaceForm, resOccr.context, tokens(k).offset),resOccr.resource,0.0)
-          case None=>{}
-        }
-      })
-    })
-    resOccrs
-  }
-
-  def restrictedSpot(text:Text, resOccrs:Array[DBpediaResourceOccurrence]):Array[DBpediaResourceOccurrence]={
-    val sfMap=new collection.mutable.HashMap[String, DBpediaResourceOccurrence]()
-    resOccrs.foreach((resOccr)=>{
-       sfMap.put(resOccr.surfaceForm.name, resOccr)
-    })
-
-    val tokens:List[Token]=text.featureValue[List[Token]]("tokens").get
-    val retResOccrs=new ListBuffer[DBpediaResourceOccurrence]()
-
-    var k=0
-    resOccrs.foreach((resOccr)=>{
-      val start=k
-      while(k<tokens.size&&tokens(k).offset<resOccr.textOffset)
-        k+=1
-      if(k<tokens.size&&k>start)
-        retResOccrs++=spot(text.text, tokens, start, k, sfMap)
-      retResOccrs+=resOccr
-      while(k<tokens.size&&tokens(k).offset<resOccr.textOffset+resOccr.surfaceForm.name.length)
-        k+=1
-    })
-
-    if(k<tokens.size)
-      retResOccrs++=spot(text.text, tokens, k, tokens.size, sfMap)
-
-    retResOccrs.toArray
-  }
-
-  def spotterDebug(text:Text,surfaceOccr:Array[SurfaceFormOccurrence], spans:Array[Span])={
-    var pos=0
-    val docStr=text.text
-    var k=0
-    while(k<surfaceOccr.length){
-      val sf:SurfaceFormOccurrence=surfaceOccr(k)
-      val curPos=sf.textOffset
-      System.out.print(docStr.substring(pos,curPos)+"<")
-      pos=curPos+sf.surfaceForm.name.length
-      System.out.print(docStr.substring(curPos,pos)+">")
-      k+=1
-    }
-
-    System.out.println("\n wiki annotation")
-    pos=0
-    spans.map((span:Span)=>{
-      val curPos=span.getStart
-      System.out.print(docStr.substring(pos,curPos)+"[")
-      pos=span.getEnd
-      System.out.print(docStr.substring(curPos,pos)+"]")
-    })
-  }
-
-
   var text:Text=null
   var resourceOccrs: Array[DBpediaResourceOccurrence]=null
 
+  /**
+   *
+   * @param t the text should be already tokenized
+   * @param resOccrs
+   * @return
+   */
   def initDocument(t:Text, resOccrs:Array[DBpediaResourceOccurrence]):Document={
     //set(text, resourceOccrs)
     text=t
     resourceOccrs=resOccrs
-    System.out.println("in initDocument: "+resourceOccrs.length)
     run()
     newestDoc
   }
 
+  /**
+   * set text content and dbpedia resource occr
+   * the document will be initialized later by calling run
+   *
+   * @param t the text should be already tokenized
+   * @param resOccrs
+   */
   def set(t:Text, resOccrs:Array[DBpediaResourceOccurrence]){
     text=t
     resourceOccrs=resOccrs
@@ -128,27 +71,12 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
     val entityForMentionCount:HashMap[Int,Int]=new HashMap[Int,Int]()
     val entityForWordCount:HashMap[Int,Int]=new HashMap[Int,Int]()
 
-    tokenizer.tokenizeMaybe(text)
+    //tokenizer.tokenizeMaybe(text)
     val tokens:List[Token]=text.featureValue[List[Token]]("tokens").get.filter((token:Token)=>token.tokenType.id>0)
 
     var i=0
-    System.out.println("in run: "+resourceOccrs.length)
     var prevRes=resourceOccrs(0).resource
     var prevOffset=0
-    if(isTraning)
-      resourceOccrs=restrictedSpot(text,resourceOccrs)
-    else
-      (resourceOccrs).foreach((resOccr:DBpediaResourceOccurrence)=>
-        try{
-          if (resOccr.surfaceForm.id==0)
-            resOccr.surfaceForm.id=searcher.sfStore.getSurfaceForm(resOccr.surfaceForm.name).id
-        }catch{
-          case e:SurfaceFormNotFoundException=>{
-            newestDoc=null
-            return
-          }
-        }
-      )
 
     (resourceOccrs).foreach((resOccr:DBpediaResourceOccurrence)=>{
       val offset=resOccr.textOffset
@@ -177,18 +105,18 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
       }
 
       //mention of the link anchor are assigned with the link's target entity
-      if(searcher.getCandidates(resOccr.surfaceForm).size>0){
-        mentions+=new SurfaceFormOccurrence(resOccr.surfaceForm, resOccr.context, offset)
-        mentionEntities+=res.id
-        topics+=DocumentInitializer.RandomGenerator.nextInt(topicNum)
+      //if(searcher.getCandidates(resOccr.surfaceForm).size>0){
+      mentions+=new SurfaceFormOccurrence(resOccr.surfaceForm, resOccr.context, offset)
+      mentionEntities+=res.id
+      topics+=DocumentInitializer.RandomGenerator.nextInt(topicNum)
 
-        incCount(topicCount,topics.last)
-        incCount(entityForMentionCount,mentionEntities.last)
-        if(isTraning){
-          topicentityCount.incCount(topics.last,mentionEntities.last)
-          entitymentionCount.incCount(mentionEntities.last, mentions.last.surfaceForm.id)
-        }
+      incCount(topicCount,topics.last)
+      incCount(entityForMentionCount,mentionEntities.last)
+      if(isTraning){
+        topicentityCount.incCount(topics.last,mentionEntities.last)
+        entitymentionCount.incCount(mentionEntities.last, mentions.last.surfaceForm.id)
       }
+      //}
       prevRes=res
       prevOffset=offset
     })
@@ -214,23 +142,22 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
 
 object DocumentInitializer{
   val RandomGenerator=new Random();
-  def apply(tokenizer:TextTokenizer, searcher: DBCandidateSearcher, properties:Properties, docTmpStore:String="docCorpus", isTraining:Boolean=false):DocumentInitializer={
+  def apply(properties:Properties, docCorpusPath:String="", isTraining:Boolean=false):DocumentInitializer={
     val topicNum=properties.getProperty("topicNum").toInt
-    val maxSurfaceformLen=properties.getProperty("maxSurfaceformLen").toInt
 
     if(isTraining){
       val T=properties.getProperty("topicNum").toFloat
       val E=properties.getProperty("resourceNum").toFloat
-      val K=properties.getProperty("surfaceNum").toFloat
-      val V=properties.getProperty("tokenNum").toFloat
+      //val K=properties.getProperty("surfaceNum").toFloat
+      //val V=properties.getProperty("tokenNum").toFloat
 
       val topicentityCount=GlobalCounter("topicentity_count",T.toInt)
       val entitymentionCount=GlobalCounter("entitymention_count",E.toInt)
       val entitywordCount=GlobalCounter("entityword_count",E.toInt)
 
-      new DocumentInitializer(topicentityCount,entitymentionCount,entitywordCount,tokenizer,searcher,topicNum,maxSurfaceformLen,docTmpStore,true)
+      new DocumentInitializer(topicentityCount,entitymentionCount,entitywordCount,topicNum,docCorpusPath,true)
      }else{
-       new DocumentInitializer(null,null,null,tokenizer,searcher,topicNum,maxSurfaceformLen,docTmpStore,isTraining)
+       new DocumentInitializer(null,null,null,topicNum,docCorpusPath,isTraining)
     }
   }
 

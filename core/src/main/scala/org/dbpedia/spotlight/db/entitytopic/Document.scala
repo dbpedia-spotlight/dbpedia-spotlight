@@ -14,10 +14,10 @@ import org.dbpedia.spotlight.model.Factory.SurfaceFormOccurrence
 /**
  *
  * @param mentions
- * @param words
- * @param entityOfMention
- * @param topicOfMention
- * @param entityOfWord
+ * @param words token ids
+ * @param entityOfMention resource ids
+ * @param topicOfMention topic ids
+ * @param entityOfWord resource ids
  * @param topicCount
  * @param entityForMentionCount count of entity e being assigned to mention in this document
  * @param entityForWordCount count of entity e being assigned to word in this document
@@ -36,6 +36,7 @@ class Document(val mentions:Array[SurfaceFormOccurrence],
    * update document's assignments: topic for each mention, entity for each mention, entity for each word
    * each assignment is updated: dec count, sample new assignment, inc count
    *
+   * @param training for training, the counters should be updated; for inference, do not change the counters
    */
   def updateAssignment(training:Boolean){
 

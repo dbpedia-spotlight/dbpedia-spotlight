@@ -3,16 +3,21 @@ package org.dbpedia.spotlight.evaluation
 
 import java.io.{FileInputStream, File}
 import org.dbpedia.spotlight.db.DBTwoStepDisambiguator
-import org.dbpedia.spotlight.io.WikipediaHeldoutCorpus
+import org.dbpedia.spotlight.io.{WikiPageUtil, WikiOccurrenceSource, WikiPageContextSource, WikipediaHeldoutCorpus}
 import org.dbpedia.spotlight.db._
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy
 import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy
 import scala.collection.JavaConversions._
-import org.dbpedia.spotlight.model.Paragraph
+import org.dbpedia.spotlight.model.{DBpediaResourceOccurrence, Paragraph}
 import scala.io.Source
 import scala.io.Codec
 import org.dbpedia.spotlight.db.concurrent.SpotterWrapper
-import org.dbpedia.spotlight.db.entitytopic.EntityTopicModel
+import org.dbpedia.spotlight.db.entitytopic.EntityTopicDisambiguator
+import org.dbpedia.extraction.util.Language
+import org.dbpedia.extraction.sources.{WikiPage, XMLSource}
+import org.dbpedia.spotlight.string.WikiMarkupStripper
+import org.dbpedia.extraction.wikiparser.{WikiParser, NodeUtil}
+import scala.collection.mutable.ListBuffer
 
 
 object EvaluateEntityTopicModel {
@@ -20,13 +25,10 @@ object EvaluateEntityTopicModel {
 
   def main(args: Array[String]) {
     val heldout = new File(args(0))
-    val model = EntityTopicModel.fromFolder(new File(args(1)),args(2),args(3).toInt)
-    //val (_, sfStore, resStore, candMapStore, _) = SpotlightModel.storesFromFolder(new File(args(0)))
+    val model = EntityTopicDisambiguator.fromFolder(new File(args(1)),args(2).toInt)
 
     val memLoaded = (Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / (1024 * 1024)
     System.err.println("Memory footprint (model loaded): %s".format( memLoaded ) )
-
-
 
     val wikipediaToDBpediaClosure = new WikipediaToDBpediaClosure(
       model.properties.getProperty("namespace"),
@@ -41,13 +43,10 @@ object EvaluateEntityTopicModel {
     System.err.println("Memory footprint (corpus): %s".format( memInit ) )
 
 
-    //disambiguator.disambiguator.asInstanceOf[DBTwoStepDisambiguator].tokenizer = model.tokenizer
-
-    //val baseline: DBBaselineDisambiguator = new DBBaselineDisambiguator(model.searcher.sfStore, model.searcher.resStore, model)
-
-    //Evaluate full:
+    //Evaluate entitytopic disambiguator:
     EvaluateParagraphDisambiguator.evaluate(corpusDisambiguate, disambiguator, List(), List())
 
+    //val baseline: DBBaselineDisambiguator = new DBBaselineDisambiguator(sfStore, resStore, candMapStore)
     //Evaluate baseline:
     //EvaluateParagraphDisambiguator.evaluate(corpusDisambiguate, baseline, List(), List())
 

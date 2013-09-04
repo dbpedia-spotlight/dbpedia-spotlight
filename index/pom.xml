@@ -56,7 +56,7 @@
                         </launcher>
                         <launcher>
                             <id>TrainEntityTopicModel</id>
-                            <mainClass>org.dbpedia.spotlight.db.entitytopic.EntityTopicModelTrainer</mainClass>
+                            <mainClass>org.dbpedia.spotlight.db.entitytopic.TrainEntityTopicDisambiguator</mainClass>
                             <jvmArgs>
                                 <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
                             </jvmArgs>

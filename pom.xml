@@ -25,7 +25,7 @@
     <properties>
         <dbpedia.spotlight.version>0.6</dbpedia.spotlight.version>
 
-        <java.compiler.version>1.6</java.compiler.version>
+        <java.compiler.version>1.7</java.compiler.version>
         <scala.compiler.version>2.9.2</scala.compiler.version>
         <lucene.version>3.6.0</lucene.version>
         <jersey.version>1.10</jersey.version>

@@ -5,11 +5,10 @@ import scala.collection.mutable.ListBuffer
 import scala.util.control.Breaks._
 
 /**
- * Created with IntelliJ IDEA.
- * User: admin
- * Date: 9/8/13
- * Time: 3:26 PM
- * To change this template use File | Settings | File Templates.
+ * DocumentCorpus is to store intermedia documents during training
+ * each doc corpus hold a buffer of docs, save it to disk automatically when full
+ * @param diskPath
+ * @param capacity
  */
 class DocumentCorpus (val diskPath:String, val capacity:Int){
 
@@ -21,7 +20,7 @@ class DocumentCorpus (val diskPath:String, val capacity:Int){
   var inputStream:BufferedReader=null
 
   def this(diskPath:String){
-    this(diskPath, 10000)
+    this(diskPath, 10)
   }
 
   def add(doc:Document){
@@ -35,7 +34,7 @@ class DocumentCorpus (val diskPath:String, val capacity:Int){
 
   def saveDocs() {
     if(outputStream==null)
-      outputStream=new BufferedWriter(new FileWriter(diskPath+".out"))
+      outputStream=new BufferedWriter(new FileWriter(diskPath))
 
     (0 until size).foreach((i:Int)=>{
       docs(i).save(outputStream)
@@ -48,18 +47,17 @@ class DocumentCorpus (val diskPath:String, val capacity:Int){
     outputStream.flush()
     outputStream.close()
     outputStream=null
-
-    val outfile=new File(diskPath+".out")
-    val infile=new File(diskPath+".in")
-    if (infile.exists())
-      infile.delete()
-    outfile.renameTo(infile)
-
   }
 
+  /**
+   * docs are loaded during assignments update, where only one thread is running,
+   * so all docs in the corpus are loaded.
+   *
+   * @return
+   */
   def loadDocs():Array[Document]={
     if(inputStream==null)
-      inputStream=new BufferedReader(new FileReader(diskPath+".in"))
+      inputStream=new BufferedReader(new FileReader(diskPath))
 
     val retDocs=new ListBuffer[Document]()
     var doc:Document=null
