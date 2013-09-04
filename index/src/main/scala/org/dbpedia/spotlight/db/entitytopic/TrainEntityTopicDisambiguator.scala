@@ -6,7 +6,7 @@ import java.util.{Locale, Properties}
 import org.dbpedia.spotlight.db.model.TextTokenizer
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.model._
-import org.dbpedia.spotlight.db.{DBTwoStepDisambiguator, SpotlightModel, DBCandidateSearcher, WikipediaToDBpediaClosure}
+import org.dbpedia.spotlight.db._
 import scala.collection.mutable.ListBuffer
 import org.apache.commons.logging.LogFactory
 import java.util.concurrent.{ExecutorService, TimeUnit, Executors}
@@ -16,12 +16,10 @@ import org.dbpedia.extraction.sources.{WikiPage, XMLSource}
 import org.dbpedia.extraction.util.Language
 import org.dbpedia.spotlight.string.WikiMarkupStripper
 import org.dbpedia.spotlight.io.{WikiOccurrenceSource, WikiPageUtil}
-import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ
-import org.dbpedia.spotlight.disambiguate.mixtures.UnweightedMixture
-import org.dbpedia.spotlight.db.similarity.GenerativeContextSimilarity
 import org.dbpedia.spotlight.spot.Spotter
 import org.dbpedia.spotlight.model.Paragraph
 import org.dbpedia.spotlight.exceptions.{SurfaceFormNotFoundException, DBpediaResourceNotFoundException}
+import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguator
 
 
 /**
@@ -42,7 +40,7 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
                         val tokenizer: TextTokenizer,
                         val searcher: DBCandidateSearcher,
                         val candMap: MemoryCandidateMapStore,
-                        val disambiguator:ParagraphDisambiguatorJ,
+                        val disambiguator:ParagraphDisambiguator,
                         val spotter: Spotter,
                         val properties: Properties
                         )  {
@@ -220,7 +218,7 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
           bestK.put(Factory.SurfaceFormOccurrence.from(resoccr), l)
         })
       }
-      bestK.values().filter(a=>a.size()>0).flatten.toList.sortWith((a,b)=>a.textOffset<b.textOffset)
+      bestK.values.filter(a=>a.size>0).flatten.toList.sortWith((a,b)=>a.textOffset<b.textOffset)
     }
     else
       List[DBpediaResourceOccurrence]()
@@ -247,9 +245,9 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
     val pool=Executors.newFixedThreadPool(threadNum)
     var parsedDocs=0
 
-    System.out.println("before xmlsource.fromfile")
+
     val wikisource=XMLSource.fromFile(new File(wikidump), Language("nl"))
-    System.out.println("after xmlsource.fromfile")
+
     wikisource.foreach((wikiPage:WikiPage)=>{
       // clean the wiki markup from everything but links
       val cleanSource = WikiMarkupStripper.stripEverything(wikiPage.source)
@@ -389,7 +387,8 @@ object TrainEntityTopicDisambiguator{
     val tokenizer: TextTokenizer= SpotlightModel.createTokenizer(modelFolder,tokenTypeStore,properties,stopwords,cores)
     val searcher:DBCandidateSearcher = new DBCandidateSearcher(resStore, sfStore, candMapStore)
 
-    val disambiguator = new ParagraphDisambiguatorJ(new DBTwoStepDisambiguator(
+    val disambiguator = new DBBaselineDisambiguator(sfStore, resStore, candMapStore)
+    /*new ParagraphDisambiguatorJ(new DBTwoStepDisambiguator(
       tokenTypeStore,
       sfStore,
       resStore,
@@ -397,7 +396,7 @@ object TrainEntityTopicDisambiguator{
       contextStore,
       new UnweightedMixture(Set("P(e)", "P(c|e)", "P(s|e)")),
       new GenerativeContextSimilarity(tokenTypeStore)
-    ))
+    ))*/
 
     val spotter=SpotlightModel.createSpotter(modelFolder,sfStore,stopwords,cores)
     new TrainEntityTopicDisambiguator(wikipediaToDBpediaClosure,tokenizer, searcher, candMapStore.asInstanceOf[MemoryCandidateMapStore],
