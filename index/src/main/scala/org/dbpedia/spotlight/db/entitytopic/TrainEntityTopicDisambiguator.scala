@@ -20,6 +20,8 @@ import org.dbpedia.spotlight.spot.Spotter
 import org.dbpedia.spotlight.model.Paragraph
 import org.dbpedia.spotlight.exceptions.{SurfaceFormNotFoundException, DBpediaResourceNotFoundException}
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguator
+import org.dbpedia.spotlight.disambiguate.mixtures.UnweightedMixture
+import org.dbpedia.spotlight.db.similarity.GenerativeContextSimilarity
 
 
 /**
@@ -387,16 +389,19 @@ object TrainEntityTopicDisambiguator{
     val tokenizer: TextTokenizer= SpotlightModel.createTokenizer(modelFolder,tokenTypeStore,properties,stopwords,cores)
     val searcher:DBCandidateSearcher = new DBCandidateSearcher(resStore, sfStore, candMapStore)
 
-    val disambiguator = new DBBaselineDisambiguator(sfStore, resStore, candMapStore)
-    /*new ParagraphDisambiguatorJ(new DBTwoStepDisambiguator(
-      tokenTypeStore,
-      sfStore,
-      resStore,
-      searcher,
-      contextStore,
-      new UnweightedMixture(Set("P(e)", "P(c|e)", "P(s|e)")),
-      new GenerativeContextSimilarity(tokenTypeStore)
-    ))*/
+    val disambigName= properties.getProperty("predisambiguator")
+    val disambiguator = if (disambigName.indexOf("baseline")>=0)
+      new DBBaselineDisambiguator(sfStore, resStore, candMapStore)
+    else
+      new DBTwoStepDisambiguator(
+        tokenTypeStore,
+        sfStore,
+        resStore,
+        searcher,
+        contextStore,
+        new UnweightedMixture(Set("P(e)", "P(c|e)", "P(s|e)")),
+        new GenerativeContextSimilarity(tokenTypeStore)
+      )
 
     val spotter=SpotlightModel.createSpotter(modelFolder,sfStore,stopwords,cores)
     new TrainEntityTopicDisambiguator(wikipediaToDBpediaClosure,tokenizer, searcher, candMapStore.asInstanceOf[MemoryCandidateMapStore],
