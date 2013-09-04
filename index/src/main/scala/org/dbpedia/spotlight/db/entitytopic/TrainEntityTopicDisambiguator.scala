@@ -21,6 +21,7 @@ import org.dbpedia.spotlight.disambiguate.mixtures.UnweightedMixture
 import org.dbpedia.spotlight.db.similarity.GenerativeContextSimilarity
 import org.dbpedia.spotlight.spot.Spotter
 import org.dbpedia.spotlight.model.Paragraph
+import org.dbpedia.spotlight.exceptions.{SurfaceFormNotFoundException, DBpediaResourceNotFoundException}
 
 
 /**
@@ -186,38 +187,40 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
     })
   }
 
-  var parsedRes=0
-  var unknownSF=0
-  var unknownRes=0
-  var emptyCands=0
-
   /**
-   * 1. parse wiki page, extract dbpedia resource occrs from links
-   * 2. use spotlight model to extract dbpedia resource occrs from plain text
-   * 3. correct miss-recognized links
+   *
+   * 1. use spotlight model to extract dbpedia resource occrs from plain text
+   * 2. correct miss-recognized resource occrs according wiki links if doCorrection=true
    *
    * @param pageNode
    * @param text
    * @return dbpedia resource occrs sorted based on textoffset
    */
 
-  def extractDbpeidaResourceOccurrenceFromWikiPage(pageNode:PageNode, text:Text):List[DBpediaResourceOccurrence]={
+  def extractDbpeidaResourceOccurrenceFromWikiPage(pageNode:PageNode, text:Text, doCorrection:Boolean=false):List[DBpediaResourceOccurrence]={
     // exclude redirect and disambiguation pages
     if (!pageNode.isRedirect && !pageNode.isDisambiguation) {
-      val idBase = pageNode.title.encoded+"-p"
-      val groundResOccrs=WikiOccurrenceSource.getOccurrences(pageNode.children, idBase).map(occr=>{
-        occr.resource.uri = wikiToDBpediaClosure.wikipediaToDBpediaURI(occr.resource.uri)
-        occr.resource.id=searcher.resStore.getResourceByName(occr.resource.uri).id
-        occr
-      }).toList
-
       val sfOccrs=spotter.extract(text)
       val bestK=disambiguator.bestK(new Paragraph(text,sfOccrs.toList), 1)
-      groundResOccrs.foreach(resoccr=>{
-        val l=List[DBpediaResourceOccurrence](resoccr)
-        bestK.put(Factory.SurfaceFormOccurrence.from(resoccr), l)
-      })
-      bestK.values().toList(0).sortWith((a,b)=>a.textOffset<b.textOffset).toList
+      if(doCorrection){
+        val idBase = pageNode.title.encoded+"-p"
+        val groundResOccrs=WikiOccurrenceSource.getOccurrences(pageNode.children, idBase).map(occr=>{
+          occr.resource.uri = wikiToDBpediaClosure.wikipediaToDBpediaURI(occr.resource.uri)
+          try{
+            occr.resource.id=searcher.resStore.getResourceByName(occr.resource.uri).id
+            occr.surfaceForm.id=searcher.sfStore.getSurfaceForm(occr.surfaceForm.name).id
+            Option(occr)
+          }catch {
+            case e:DBpediaResourceNotFoundException=>None
+            case e:SurfaceFormNotFoundException=>None
+          }
+        }).filter(a=>a.nonEmpty).flatten.toList
+        groundResOccrs.foreach(resoccr=>{
+          val l=List[DBpediaResourceOccurrence](resoccr)
+          bestK.put(Factory.SurfaceFormOccurrence.from(resoccr), l)
+        })
+      }
+      bestK.values().filter(a=>a.size()>0).flatten.toList.sortWith((a,b)=>a.textOffset<b.textOffset)
     }
     else
       List[DBpediaResourceOccurrence]()
@@ -264,8 +267,7 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
         parsedDocs+=1
         if(parsedDocs%1000==0){
           val memLoaded = (Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / (1024 * 1024)
-          LOG.info("%d docs parsed, parsed res %d unknown sf %d, unknown res %d, empty cands %d, mem %d M".format(
-            parsedDocs, parsedRes, unknownSF, unknownRes, emptyCands, memLoaded))
+          LOG.info("%d docs parsed, mem %d M".format(parsedDocs,  memLoaded))
         }
       }
     })

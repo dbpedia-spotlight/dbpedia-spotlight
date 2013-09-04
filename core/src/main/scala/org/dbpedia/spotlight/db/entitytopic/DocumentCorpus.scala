@@ -20,7 +20,7 @@ class DocumentCorpus (val diskPath:String, val capacity:Int){
   var inputStream:BufferedReader=null
 
   def this(diskPath:String){
-    this(diskPath, 10)
+    this(diskPath, 10000)
   }
 
   def add(doc:Document){
