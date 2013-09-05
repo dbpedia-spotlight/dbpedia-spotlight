@@ -12,9 +12,9 @@ import org.dbpedia.spotlight.model.Factory.DBpediaResourceOccurrence
 
 
 class EntityTopicDisambiguator(val searcher: DBCandidateSearcher,
-                                val properties: Properties,
+                               val properties: Properties,
                                val gibbsSteps: Int
-                       ) extends ParagraphDisambiguator{
+                              ) extends ParagraphDisambiguator{
 
   val docInitializer=DocumentInitializer(properties)
 
@@ -46,9 +46,11 @@ class EntityTopicDisambiguator(val searcher: DBCandidateSearcher,
 
     val surfaceOccrs=paragraph.getOccurrences().asScala
     val resOccrs=new ListBuffer[DBpediaResourceOccurrence]()
+    //extract DbpediaResourceOccurrences
     surfaceOccrs.foreach((sfOccr:SurfaceFormOccurrence)=>{
       val cands=searcher.getCandidates(sfOccr.surfaceForm)
       if(cands.size>0){
+        //random sample a resource to a mention
         val resId=Document.multinomialSample(cands.map((cand:Candidate)=>cand.support.asInstanceOf[Float]).toArray, cands.map((cand:Candidate)=>cand.resource.id).toArray)
         resOccrs+=DBpediaResourceOccurrence.from(sfOccr, searcher.resStore.getResource(resId), 0.0)
       }
@@ -66,6 +68,7 @@ class EntityTopicDisambiguator(val searcher: DBCandidateSearcher,
             if (oldResOccr==None)
               map.updated(mention,newResOccr::resOccrList)
             else
+              //similarity score is set as the # of times this resource is assigned to the mention over all gibbsSteps
               oldResOccr.get.setSimilarityScore(oldResOccr.get.similarityScore+1)
         })}
         )
@@ -82,18 +85,13 @@ object EntityTopicDisambiguator{
     val properties = new Properties()
     properties.load(new FileInputStream(new File(spotlightFolder, "model.properties")))
 
-    //val stopwords = SpotlightModel.loadStopwords(spotlightFolder)
-    //val c = properties.getProperty("opennlp_parallel", Runtime.getRuntime.availableProcessors().toString).toInt
-    //val cores = (1 to c)
-    val (tokenTypeStore, sfStore, resStore, candMapStore, _) = SpotlightModel.storesFromFolder(spotlightFolder)
-    //val tokenizer: TextTokenizer= SpotlightModel.createTokenizer(spotlightFolder,tokenTypeStore,properties,stopwords,cores)
+
+    val (_, sfStore, resStore, candMapStore, _) = SpotlightModel.storesFromFolder(spotlightFolder)
     val searcher:DBCandidateSearcher = new DBCandidateSearcher(resStore, sfStore, candMapStore)
     val entitytopicFolder=spotlightFolder+"/entitytopic"
     val topicentity=GlobalCounter.readFromFile(entitytopicFolder+"/topicentity_sum")
     val entitymention=GlobalCounter.readFromFile(entitytopicFolder+"/entitymention_sum")
     val entityword=GlobalCounter.readFromFile(entitytopicFolder+"/entityword_sum")
-//    if (gibbsSteps==0)
-//      gibbsSteps=properties.getProperty("gibbsSteps").toInt
 
     Document.init(entitymention,entityword,topicentity,candMapStore.asInstanceOf[MemoryCandidateMapStore],properties)
     new EntityTopicDisambiguator(searcher, properties, gibbsSteps)

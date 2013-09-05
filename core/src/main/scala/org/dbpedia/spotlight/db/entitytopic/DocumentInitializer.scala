@@ -1,16 +1,25 @@
 package org.dbpedia.spotlight.db.entitytopic
 
 import scala.collection.mutable.ListBuffer
-import org.dbpedia.spotlight.db.DBCandidateSearcher
-import org.dbpedia.spotlight.db.model.TextTokenizer
 import org.dbpedia.spotlight.model._
-import opennlp.tools.util.Span
 import java.util.{Properties, HashMap}
 import scala.util.Random
-import org.dbpedia.spotlight.model.Factory.DBpediaResourceOccurrence
-import org.dbpedia.spotlight.exceptions.SurfaceFormNotFoundException
 
-
+/**
+ * initialize a wiki page to construct a Document.
+ * each mention(surface form) is assigned with an entity
+ * each word is assigned with an entity
+ * each entity(of the mention) is assigned with a topic
+ *
+ *
+ * multiple DocumentInitialzers work parrallelly to speed up the process
+ * @param topicentityCount
+ * @param entitymentionCount
+ * @param entitywordCount
+ * @param topicNum
+ * @param docCorpusFile
+ * @param isTraning
+ */
 class DocumentInitializer(val topicentityCount:GlobalCounter,
                           val entitymentionCount:GlobalCounter,
                           val entitywordCount:GlobalCounter,
@@ -19,6 +28,7 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
                           val isTraning:Boolean=false
 ) extends Runnable{
 
+  //for saving initialized document onto disk
   val docCorpus=new DocumentCorpus(docCorpusFile)
   var newestDoc:Document=null
   var isRunning:Boolean=false
@@ -82,7 +92,7 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
       val offset=resOccr.textOffset
       val res=resOccr.resource
 
-      //tokens and mentions within two succinct link anchors are processed by associating a token with the nearest anchor's entity
+      //token within two succinct Dbpedia Resource Occrs is associated with the nearest resource(entity)
       while(i<tokens.length && tokens(i).offset<offset){
         words+=tokens(i).tokenType.id
         if(offset-tokens(i).offset>tokens(i).offset-prevOffset)
@@ -94,7 +104,7 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
         i+=1
       }
 
-      //tokens of the link anchor are assigned with the link's target entity
+      //tokens of the resOccr are assigned with the corresponding resource
       while(i<tokens.length && tokens(i).offset<offset+resOccr.surfaceForm.name.length){
         words+=tokens(i).tokenType.id
         wordEntities+=res.id
@@ -104,8 +114,7 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
         i+=1
       }
 
-      //mention of the link anchor are assigned with the link's target entity
-      //if(searcher.getCandidates(resOccr.surfaceForm).size>0){
+      //mentions of the resOccr are assigned with the their corresponding entity
       mentions+=new SurfaceFormOccurrence(resOccr.surfaceForm, resOccr.context, offset)
       mentionEntities+=res.id
       topics+=DocumentInitializer.RandomGenerator.nextInt(topicNum)
@@ -121,7 +130,7 @@ class DocumentInitializer(val topicentityCount:GlobalCounter,
       prevOffset=offset
     })
 
-    //for the tokens after the last link anchor
+    //for the tokens after the last resOccr
     while(i<tokens.length){
       words+=tokens(i).tokenType.id
       wordEntities+=resourceOccrs.last.resource.id

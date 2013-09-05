@@ -25,9 +25,12 @@ import org.dbpedia.spotlight.db.similarity.GenerativeContextSimilarity
 
 
 /**
- * Learn global knowledge/counters from wikipeida dump accroding to entity topic model
- * ref: Xianpei Han, Le Sun: An Entity-Topic Model for Entity Linking. EMNLP-CoNLL 2012: 105-115
+ * Learn global knowledge from wikipeida dump accroding to entity topic model
+ * We construct a Document instance for each wiki page by assigning every mention(surface form)/token in with an
+ * entity(DBpediaResource), and assigning every entity with a topic. The learning process is to update each document's
+ * entity-mention, entity-word, topic-entity assignments. The global knowledge is reflected by these three assignments.
  *
+ * ref: Xianpei Han, Le Sun: An Entity-Topic Model for Entity Linking. EMNLP-CoNLL 2012: 105-115
  *
  * @param wikiToDBpediaClosure
  * @param tokenizer
@@ -48,6 +51,7 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
                         )  {
   val LOG = LogFactory.getLog(this.getClass)
 
+  //*CounterSum is to aggregate samples during gibbs sampling.
   var entitymentionCounterSum:GlobalCounter=null
   var entitywordCounterSum:GlobalCounter=null
   var topicentityCounterSum:GlobalCounter=null
@@ -81,9 +85,9 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
   }
 
   /**
-   * load gloal counters into memory
+   * load global counters into memory
    * if aggregate counter(ending with _sum) files exist, load them
-   * otherwise, create them with empty content
+   * otherwise, create them with 0s
    *
    * @param dir directory where global counters are located
    */
@@ -108,9 +112,9 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
   }
 
   /**
-   * save counters into disk
+   * save counters omto disk
    *
-   * @param dir
+   * @param dir directory to save counters
    * @param counters
    * @param avg if true, average the value of each entry by diving sample numbers.
    *            it should only be applied for aggregate counters
@@ -126,7 +130,7 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
   }
 
   /**
-   * add counter values to aggregate counter
+   * add counter values to aggregate counters
    * @param epoch
    */
   def updateCounterSum(epoch:Int){
@@ -141,18 +145,19 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
 
   /**
    * update document assignment and global counters through gibbs sampling
+   * do sampling after burninEpoch; for every sampleLag epochs, do a sample (i.e., aggregate the counters)
    *
    * @param entityTopicFolder
    */
   def updateAssignments(entityTopicFolder:String, properties:Properties){
     val burninEpoch=properties.getProperty("burninEpoch").toInt
-    // sample/aggregate every samplelag epoch
     val sampleLag=properties.getProperty("sampleLag").toInt
     val checkpointFreq=properties.getProperty("checkpointFreq").toInt
     val maxEpoch=properties.getProperty("maxEpoch").toInt
 
     val trainingDir=entityTopicFolder+"/traincorpus"
     val docCorpusList=new ListBuffer[DocumentCorpus]()
+    //init document corpus list (all documents were split into a set of corpus, in initializeWikiDocuments())
     new File(trainingDir).listFiles().foreach((c:File)=>{
       if (c.getName.matches("[0-9]+.+"))
         docCorpusList+=new DocumentCorpus(c.getPath.substring(0,c.getPath.indexOf('.')))
@@ -229,7 +234,7 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
   /**
    * parse raw wiki dump, init a doc instance for each wiki page
    * multiple DocmentInitializers works parallelly
-   * each DocumentInitializer has a docStore file to save itermediate results
+   * each DocumentInitializer has a DocumentCorpus to save itermediate results
    *
    * @param wikidump
    * @param entityTopicFolder
@@ -250,6 +255,7 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
 
     val wikisource=XMLSource.fromFile(new File(wikidump), Language("nl"))
 
+    //iterate each wiki page
     wikisource.foreach((wikiPage:WikiPage)=>{
       // clean the wiki markup from everything but links
       val cleanSource = WikiMarkupStripper.stripEverything(wikiPage.source)
@@ -257,6 +263,7 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
       val pageNode = wikiParser( WikiPageUtil.copyWikiPage(wikiPage, cleanSource) )
       val text=new Text(pageNode.toPlainText)
       tokenizer.tokenizeMaybe(text)
+
       val resOccrs=extractDbpeidaResourceOccurrenceFromWikiPage(pageNode,text)
       if(resOccrs.size>0){
         var idleInitializer=None.asInstanceOf[Option[DocumentInitializer]]
@@ -281,6 +288,12 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
     doCheckpoint(0,entityTopicFolder)
   }
 
+  /**
+   * merge counters from all initializers
+   *
+   * @param initializers
+   * @return
+   */
   def mergeCounters(initializers:Array[DocumentInitializer]):List[GlobalCounter]={
     val ret=initializers(0)
     ret.docCorpus.closeOutputStream()
@@ -325,7 +338,7 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
    */
   def learnFromWiki(wikidump:String, entityTopicFolder:String, parseWiki:Boolean){
     if(parseWiki){
-      //wikidump has not been parsed
+      //wikidump has not been parsed yet
       LOG.info("Init wiki docs...")
       val start = System.currentTimeMillis()
       initializeWikiDocuments(wikidump, entityTopicFolder)
@@ -414,8 +427,9 @@ object TrainEntityTopicDisambiguator{
     var init=false
 
     var i=0
-    System.out.println(args.length)
+    System.out.println("total arg num "+args.length)
     while(i<args.length){
+      System.out.println(args(i))
       if(args(i)=="-spotlight"){
         spotlightmodel_path=args(i+1)
         i+=2

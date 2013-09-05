@@ -13,14 +13,14 @@ import org.dbpedia.spotlight.model.Factory.SurfaceFormOccurrence
 
 /**
  *
- * @param mentions
- * @param words token ids
- * @param entityOfMention resource ids
- * @param topicOfMention topic ids
- * @param entityOfWord resource ids
- * @param topicCount
- * @param entityForMentionCount count of entity e being assigned to mention in this document
- * @param entityForWordCount count of entity e being assigned to word in this document
+ * @param mentions an array of SurfaceFormOccurrence for all surface forms
+ * @param words an array of ids of all tokens
+ * @param entityOfMention an array of ids for resources of the mentions
+ * @param topicOfMention topic id of mention
+ * @param entityOfWord resource id of token
+ * @param topicCount topic occr count
+ * @param entityForMentionCount e->count: count of entity e being assigned to mentions in this document
+ * @param entityForWordCount e->count: count of entity e being assigned to words in this document
  */
 class Document(val mentions:Array[SurfaceFormOccurrence],
                val words:Array[Int],

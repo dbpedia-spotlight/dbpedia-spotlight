@@ -8,8 +8,9 @@ import scala.collection.JavaConverters._
 
 
 /**
- * Global Counter implemented by sparse matrix from breeze
- * matrix is the matrix
+ * Global counter is to store the counts of entity-token, entity-mention, topic-entity pairs
+ * Since the # of entities and mentions are large, e.g., >1M, we cannot use matrix.
+ * Here we use one HashMap for each row of the 'matrix' *
  * rowSum is the sum of entries in one row
  *
  * @param matrix
@@ -85,6 +86,10 @@ class GlobalCounter(val name:String, val matrix: Array[HashMap[Int,Float]],val r
     writer.close()
   }
 
+  /**
+   * this is for aggregation counters. the final global knowledge is the average of all samples
+   * @param filePath
+   */
   def writeAvgToFile(filePath:String){
     val writer=new BufferedWriter(new FileWriter(filePath))
 
@@ -104,6 +109,7 @@ class GlobalCounter(val name:String, val matrix: Array[HashMap[Int,Float]],val r
 
 object GlobalCounter{
   val LOG = LogFactory.getLog(this.getClass)
+
   def apply(name:String, rows:Int, cols:Int=50):GlobalCounter={
     val matrix=new Array[HashMap[Int,Float]](rows)
     (0 until rows).foreach((i:Int)=>{
