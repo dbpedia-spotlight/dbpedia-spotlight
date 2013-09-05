@@ -414,6 +414,7 @@ object TrainEntityTopicDisambiguator{
     var init=false
 
     var i=0
+    System.out.println(args.length)
     while(i<args.length){
       if(args(i)=="-spotlight"){
         spotlightmodel_path=args(i+1)

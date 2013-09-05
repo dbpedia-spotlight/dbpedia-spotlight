@@ -16,7 +16,7 @@ import scala.collection.JavaConverters._
  * @param rowSum
  */
 
-class GlobalCounter(val name:String, val matrix: Array[HashMap[Int,Float]],val rowSum: Array[Float],var samples:Int) {
+class GlobalCounter(val name:String, val matrix: Array[HashMap[Int,Float]],val rowSum: Array[Float],var samples:Int=1) {
 
   def incCount(row: Int, col: Int){
     val rowMap=matrix(row)
@@ -88,7 +88,7 @@ class GlobalCounter(val name:String, val matrix: Array[HashMap[Int,Float]],val r
   def writeAvgToFile(filePath:String){
     val writer=new BufferedWriter(new FileWriter(filePath))
 
-    writer.write("rows:%d samples:%d name:%s".format(matrix.length,samples,name))
+    writer.write("rows:%d samples:%d name:%s".format(matrix.length,1,name))
     (matrix).zipWithIndex.foreach{case (map:HashMap[Int,Float],id:Int)=>{
       writer.write("\n%d %.3f".format(id, rowSum(id)))
       map.asScala.foreach{case (k,v)=>{
@@ -104,14 +104,14 @@ class GlobalCounter(val name:String, val matrix: Array[HashMap[Int,Float]],val r
 
 object GlobalCounter{
   val LOG = LogFactory.getLog(this.getClass)
-  def apply(name:String, rows:Int, samples:Int=1):GlobalCounter={
+  def apply(name:String, rows:Int, cols:Int=50):GlobalCounter={
     val matrix=new Array[HashMap[Int,Float]](rows)
     (0 until rows).foreach((i:Int)=>{
-      matrix(i)=new HashMap[Int,Float](50)//cols/10000)
+      matrix(i)=new HashMap[Int,Float](cols)
     })
 
     val rowSum=new Array[Float](rows)
-    new GlobalCounter(name, matrix, rowSum, samples)
+    new GlobalCounter(name, matrix, rowSum)
   }
 
   def apply(name:String, other:GlobalCounter):GlobalCounter={
@@ -119,38 +119,6 @@ object GlobalCounter{
   }
 
   def readFromFile(filePath:String):GlobalCounter={
-    LOG.info("reading global counter...")
-
-    val file=new File(filePath)
-    val reader=new BufferedReader(new FileReader(file))
-    val metaString=reader.readLine()
-    val fields=metaString.split("[: ]")
-    val rows=fields(1).toInt
-    val samples=fields(3).toInt
-
-
-    val counter=GlobalCounter(file.getName(),rows,samples)
-
-    (0 until rows).foreach((row:Int)=>{
-      val string=reader.readLine()
-      val fields=string.split(" ")
-      val map=counter.matrix(row)
-      assert(row==fields(0).toInt)
-      counter.rowSum(row)=fields(1).toFloat
-      var i=2
-      while(i<fields.length){
-        val col=fields(i).toInt
-        val v=fields(i+1).toFloat
-        map.put(col,v)
-        i+=2
-      }
-    })
-    reader.close()
-    counter
-  }
-
-
-  def readAvgFromFile(filePath:String):GlobalCounter={
     LOG.info("reading global counter...")
 
     val file=new File(filePath)
@@ -174,7 +142,7 @@ object GlobalCounter{
       var i=2
       while(i<fields.length){
         val col=fields(i).toInt
-        val v=fields(i+1).toFloat/samples
+        val v=fields(i+1).toFloat
         map.put(col,v)
         i+=2
       }

@@ -148,10 +148,10 @@ object DocumentInitializer{
     if(isTraining){
       val T=properties.getProperty("topicNum").toFloat
       val E=properties.getProperty("resourceNum").toFloat
-      //val K=properties.getProperty("surfaceNum").toFloat
-      //val V=properties.getProperty("tokenNum").toFloat
+      val K=properties.getProperty("surfaceNum").toFloat
+      val V=properties.getProperty("tokenNum").toFloat
 
-      val topicentityCount=GlobalCounter("topicentity_count",T.toInt)
+      val topicentityCount=GlobalCounter("topicentity_count",T.toInt,1000)
       val entitymentionCount=GlobalCounter("entitymention_count",E.toInt)
       val entitywordCount=GlobalCounter("entityword_count",E.toInt)
 
