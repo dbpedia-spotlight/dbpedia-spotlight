@@ -263,7 +263,7 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
       val pageNode = wikiParser( WikiPageUtil.copyWikiPage(wikiPage, cleanSource) )
       val text=new Text(pageNode.toPlainText)
       tokenizer.tokenizeMaybe(text)
-
+      System.out.println(wikiPage.id+" "+wikiPage.title)
       val resOccrs=extractDbpeidaResourceOccurrenceFromWikiPage(pageNode,text)
       if(resOccrs.size>0){
         var idleInitializer=None.asInstanceOf[Option[DocumentInitializer]]

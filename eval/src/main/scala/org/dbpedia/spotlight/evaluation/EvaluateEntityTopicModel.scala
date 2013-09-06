@@ -27,9 +27,6 @@ object EvaluateEntityTopicModel {
     val heldout = new File(args(0))
     val model = EntityTopicDisambiguator.fromFolder(new File(args(1)),args(2).toInt)
 
-    val memLoaded = (Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / (1024 * 1024)
-    System.err.println("Memory footprint (model loaded): %s".format( memLoaded ) )
-
     val wikipediaToDBpediaClosure = new WikipediaToDBpediaClosure(
       model.properties.getProperty("namespace"),
       new FileInputStream(new File(args(2), "redirects.nt")),
