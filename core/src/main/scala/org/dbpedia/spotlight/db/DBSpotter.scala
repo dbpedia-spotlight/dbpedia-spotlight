@@ -26,7 +26,7 @@ abstract class DBSpotter(
     )
   )
 
-  def findUppercaseSequences(tokens: Array[String]) = uppercaseFinder.find(tokens).map{ s: Span => new Span(s.getStart, s.getEnd, "Capital_Sequences") }.toArray
+  def findUppercaseSequences(tokens: Array[String]) =uppercaseFinder.find(tokens).map{ s: Span => new Span(s.getStart, s.getEnd, "Capital_Sequences") }.toArray
 
   val spotFeatureWeightVector: Option[DenseVector[Double]] = spotFeatureWeights match {
     case Some(w) => Some(DenseVector(w.toArray:_*))

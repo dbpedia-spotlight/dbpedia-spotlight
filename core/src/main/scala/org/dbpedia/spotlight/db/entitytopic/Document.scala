@@ -253,7 +253,7 @@ object Document{
       null
     }
   }
-
+/*
   def init(candmapStore:MemoryCandidateMapStore, properties: Properties){
     alpha=properties.getProperty("alpha").toFloat
     beta=properties.getProperty("beta").toFloat
@@ -265,14 +265,14 @@ object Document{
     K=properties.getProperty("surfaceNum").toFloat
     V=properties.getProperty("tokenNum").toFloat
 
-    topicentityCount=GlobalCounter("topicentity_count",T.toInt+1,E.toInt+1)
-    entitymentionCount=GlobalCounter("entitymention_count",E.toInt+1,K.toInt+1)
-    entitywordCount=GlobalCounter("entityword_count",E.toInt+1,V.toInt+1)
+    topicentityCount=GlobalCounter("topicentity_count",T.toInt+1,1000)//E.toInt+1)
+    entitymentionCount=GlobalCounter("entitymention_count",50)//E.toInt+1,K.toInt+1)
+    entitywordCount=GlobalCounter("entityword_count",50)//E.toInt+1,V.toInt+1)
 
     topics=(0 until T.toInt).toArray
     candmap=candmapStore.candidates
   }
-
+*/
   def init( entitymention:GlobalCounter, entityword:GlobalCounter,topicentity:GlobalCounter, candmapStore:MemoryCandidateMapStore, properties: Properties){
     alpha=properties.getProperty("alpha").toFloat
     beta=properties.getProperty("beta").toFloat

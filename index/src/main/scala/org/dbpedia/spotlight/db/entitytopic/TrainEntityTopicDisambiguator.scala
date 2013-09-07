@@ -257,28 +257,30 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
 
     //iterate each wiki page
     wikisource.foreach((wikiPage:WikiPage)=>{
-      // clean the wiki markup from everything but links
-      val cleanSource = WikiMarkupStripper.stripEverything(wikiPage.source)
-      // parse the (clean) wiki page
-      val pageNode = wikiParser( WikiPageUtil.copyWikiPage(wikiPage, cleanSource) )
-      val text=new Text(pageNode.toPlainText)
-      tokenizer.tokenizeMaybe(text)
-      System.out.println(wikiPage.id+" "+wikiPage.title)
-      val resOccrs=extractDbpeidaResourceOccurrenceFromWikiPage(pageNode,text)
-      if(resOccrs.size>0){
-        var idleInitializer=None.asInstanceOf[Option[DocumentInitializer]]
-        while(idleInitializer==None)
-          idleInitializer=initializers.find((initializer:DocumentInitializer)=>initializer.isRunning==false)
-        val runner=idleInitializer.get
-        runner.set(text, resOccrs.toArray)
-        pool.execute(runner)
+      if (wikiPage.title.decoded.startsWith("Lijst van")==false){
+        // clean the wiki markup from everything but links
+        val cleanSource = WikiMarkupStripper.stripEverything(wikiPage.source)
+        // parse the (clean) wiki page
+        val pageNode = wikiParser( WikiPageUtil.copyWikiPage(wikiPage, cleanSource) )
+        val text=new Text(pageNode.toPlainText)
+        tokenizer.tokenizeMaybe(text)
+        val resOccrs=extractDbpeidaResourceOccurrenceFromWikiPage(pageNode,text)
+        if(resOccrs.size>0){
+          var idleInitializer=None.asInstanceOf[Option[DocumentInitializer]]
+          while(idleInitializer==None)
+            idleInitializer=initializers.find((initializer:DocumentInitializer)=>initializer.isRunning==false)
+          val runner=idleInitializer.get
+          runner.set(text, resOccrs.toArray)
+          pool.execute(runner)
 
-        parsedDocs+=1
-        if(parsedDocs%1000==0){
-          val memLoaded = (Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / (1024 * 1024)
-          LOG.info("%d docs parsed, mem %d M".format(parsedDocs,  memLoaded))
+          parsedDocs+=1
+          if(parsedDocs%1000==0){
+            val memLoaded = (Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / (1024 * 1024)
+            LOG.info("%d docs parsed, mem %d M".format(parsedDocs,  memLoaded))
+          }
         }
-      }
+      }else
+        System.out.println("id: "+wikiPage.id+" title: "+wikiPage.title.toString())
     })
 
     shutdownAndAwaitTermination(pool)
