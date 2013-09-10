@@ -23,6 +23,7 @@ import org.dbpedia.spotlight.string.WikiMarkupStripper
 import org.dbpedia.extraction.wikiparser._
 import org.dbpedia.spotlight.model.{DBpediaResource, Text, WikiPageContext}
 import org.dbpedia.extraction.util.Language
+import java.util.Locale
 
 /**
  * Created by IntelliJ IDEA.
@@ -90,6 +91,6 @@ object WikiPageContextSource
             }
         }.mkString(" ").replaceAll("""\n""", " ").replaceAll("""\s""", " ")
     }
-        
+
 
 }

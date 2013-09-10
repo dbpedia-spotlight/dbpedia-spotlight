@@ -242,8 +242,6 @@ class DBTwoStepDisambiguator(
 
       acc + (aSfOcc -> candOccs)
     })
-
-
   }
 
 

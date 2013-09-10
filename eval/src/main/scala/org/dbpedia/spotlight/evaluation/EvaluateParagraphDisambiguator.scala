@@ -53,7 +53,8 @@ object EvaluateParagraphDisambiguator {
         var nOriginalOccurrences = 0
         val paragraphs = testSource.toList
         var totalParagraphs = paragraphs.size
-        //testSource.view(10000,15000)
+
+        var unknownSF=0
         val mrrResults = paragraphs.map(a => {
             i = i + 1
             LOG.info("Paragraph %d/%d: %s.".format(i, totalParagraphs, a.id))
@@ -61,11 +62,12 @@ object EvaluateParagraphDisambiguator {
             nOriginalOccurrences = nOriginalOccurrences + a.occurrences.toTraversable.size
 
             var acc = 0.0
-            try {
-                val bestK = filter(disambiguator.bestK(paragraph,100))
 
+                val bestK = filter(disambiguator.bestK(paragraph,10))
                 val goldOccurrences = occFilters.foldLeft(a.occurrences.toTraversable){ (o,f) => f.filterOccs(o) } // discounting URIs from gold standard that we know are disambiguations, fixing redirects, etc.
-
+                if (bestK!=null&&goldOccurrences.size>=bestK.size)
+                  unknownSF+=goldOccurrences.size-bestK.size
+                else unknownSF+=goldOccurrences.size
                 goldOccurrences.foreach( correctOccurrence => {
                     nOccurrences = nOccurrences + 1
 
@@ -74,6 +76,9 @@ object EvaluateParagraphDisambiguator {
                                                                                 List[DBpediaResourceOccurrence]()))
 
                     outputs.foreach(_.write(disambResult))
+                    if (disambResult.rank>1)
+                      LOG.info("more than one results")
+
 
                     val invRank = if (disambResult.rank>0) (1.0/disambResult.rank) else  0.0
                     if (disambResult.rank==0)  {
@@ -84,9 +89,9 @@ object EvaluateParagraphDisambiguator {
                     acc = acc + invRank
                 });
                 outputs.foreach(_.flush)
-            } catch {
-                case e: Exception => LOG.error(e)
-            }
+            //} catch {
+            //    case e: Exception => LOG.error(e)
+            //}
             val mrr = if (a.occurrences.size==0) 0.0 else acc / a.occurrences.size
             LOG.info("Mean Reciprocal Rank (MRR) = %.5f".format(mrr))
             mrr
@@ -101,6 +106,7 @@ object EvaluateParagraphDisambiguator {
         LOG.info("Global MRR: %s".format(mrrResults.sum / mrrResults.size))
         LOG.info("Elapsed time: %s sec".format( (endTime-startTime) / 1000000000))
         LOG.info("********************")
+        LOG.info("unkown sf %d".format(unknownSF))
 
         val disambigSummary = "Corpus: %s".format(testSource.name) +
                     "\nNumber of occs: %d (original), %d (processed)".format(nOriginalOccurrences,nOccurrences) +

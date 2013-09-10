@@ -1,4 +1,4 @@
-package org.dbpedia.spotlight.evaluation
+package org.dbpedia.spotlight.db
 
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguator
