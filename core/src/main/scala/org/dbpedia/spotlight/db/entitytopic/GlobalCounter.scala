@@ -110,7 +110,7 @@ class GlobalCounter(val name:String, val matrix: Array[HashMap[Int,Float]],val r
 object GlobalCounter{
   val LOG = LogFactory.getLog(this.getClass)
 
-  def apply(name:String, rows:Int, cols:Int=50):GlobalCounter={
+  def apply(name:String, rows:Int, cols:Int=30):GlobalCounter={
     val matrix=new Array[HashMap[Int,Float]](rows)
     (0 until rows).foreach((i:Int)=>{
       matrix(i)=new HashMap[Int,Float](cols)
