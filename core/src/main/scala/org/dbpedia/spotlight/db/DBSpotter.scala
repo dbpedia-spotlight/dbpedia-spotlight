@@ -6,7 +6,7 @@ import breeze.linalg.DenseVector
 import org.dbpedia.spotlight.model._
 import util.control.Breaks._
 import scala.{None, Some}
-import org.dbpedia.spotlight.exceptions.SurfaceFormNotFoundException
+import org.dbpedia.spotlight.exceptions.{SpottingException, SurfaceFormNotFoundException}
 import collection.mutable.ListBuffer
 import opennlp.tools.util.Span
 import opennlp.tools.namefind.RegexNameFinder
@@ -17,7 +17,7 @@ abstract class DBSpotter(
  spotFeatureWeights: Option[Seq[Double]],
  stopwords: Set[String]
 ) extends Spotter {
-
+  val MaxSentenceLen=300
   var tokenizer: TextTokenizer = null
 
   val uppercaseFinder = new RegexNameFinder(
@@ -35,6 +35,7 @@ abstract class DBSpotter(
 
   def generateCandidates(sentence: List[Token]): Seq[Span]
 
+  @throws(classOf[SpottingException])
   def extract(text: Text): java.util.List[SurfaceFormOccurrence] = {
 
     if (tokenizer != null)
@@ -42,7 +43,8 @@ abstract class DBSpotter(
 
     var spots = ListBuffer[SurfaceFormOccurrence]()
     val sentences: List[List[Token]] = DBSpotter.tokensToSentences(text.featureValue[List[Token]]("tokens").get)
-
+    if (sentences.size>MaxSentenceLen)
+      throw new SpottingException("The sentence is too long")
     //Go through all sentences
     sentences.foreach{ sentence: List[Token] =>
       val spans = generateCandidates(sentence)

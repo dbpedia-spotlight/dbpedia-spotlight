@@ -18,7 +18,7 @@ import org.dbpedia.spotlight.string.WikiMarkupStripper
 import org.dbpedia.spotlight.io.{WikiOccurrenceSource, WikiPageUtil}
 import org.dbpedia.spotlight.spot.Spotter
 import org.dbpedia.spotlight.model.Paragraph
-import org.dbpedia.spotlight.exceptions.{SurfaceFormNotFoundException, DBpediaResourceNotFoundException}
+import org.dbpedia.spotlight.exceptions.{SpottingException, SurfaceFormNotFoundException, DBpediaResourceNotFoundException}
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguator
 import org.dbpedia.spotlight.disambiguate.mixtures.UnweightedMixture
 import org.dbpedia.spotlight.db.similarity.GenerativeContextSimilarity
@@ -205,27 +205,31 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
   def extractDbpeidaResourceOccurrenceFromWikiPage(pageNode:PageNode, text:Text, doCorrection:Boolean=false):List[DBpediaResourceOccurrence]={
     // exclude redirect and disambiguation pages
     if (!pageNode.isRedirect && !pageNode.isDisambiguation) {
-      val sfOccrs=spotter.extract(text)
-      val bestK=disambiguator.bestK(new Paragraph(text,sfOccrs.toList), 1)
-      if(doCorrection){
-        val idBase = pageNode.title.encoded+"-p"
-        val groundResOccrs=WikiOccurrenceSource.getOccurrences(pageNode.children, idBase).map(occr=>{
-          occr.resource.uri = wikiToDBpediaClosure.wikipediaToDBpediaURI(occr.resource.uri)
-          try{
-            occr.resource.id=searcher.resStore.getResourceByName(occr.resource.uri).id
-            occr.surfaceForm.id=searcher.sfStore.getSurfaceForm(occr.surfaceForm.name).id
-            Option(occr)
-          }catch {
-            case e:DBpediaResourceNotFoundException=>None
-            case e:SurfaceFormNotFoundException=>None
-          }
-        }).filter(a=>a.nonEmpty).flatten.toList
-        groundResOccrs.foreach(resoccr=>{
-          val l=List[DBpediaResourceOccurrence](resoccr)
-          bestK.put(Factory.SurfaceFormOccurrence.from(resoccr), l)
-        })
+      try{
+        val sfOccrs=spotter.extract(text)
+        val bestK=disambiguator.bestK(new Paragraph(text,sfOccrs.toList), 1)
+        if(doCorrection){
+          val idBase = pageNode.title.encoded+"-p"
+          val groundResOccrs=WikiOccurrenceSource.getOccurrences(pageNode.children, idBase).map(occr=>{
+            occr.resource.uri = wikiToDBpediaClosure.wikipediaToDBpediaURI(occr.resource.uri)
+            try{
+              occr.resource.id=searcher.resStore.getResourceByName(occr.resource.uri).id
+              occr.surfaceForm.id=searcher.sfStore.getSurfaceForm(occr.surfaceForm.name).id
+              Option(occr)
+            }catch {
+              case e:DBpediaResourceNotFoundException=>None
+              case e:SurfaceFormNotFoundException=>None
+            }
+          }).filter(a=>a.nonEmpty).flatten.toList
+          groundResOccrs.foreach(resoccr=>{
+            val l=List[DBpediaResourceOccurrence](resoccr)
+            bestK.put(Factory.SurfaceFormOccurrence.from(resoccr), l)
+          })
+        }
+        bestK.values.filter(a=>a.size>0).flatten.toList.sortWith((a,b)=>a.textOffset<b.textOffset)
+      }catch {
+        case e:SpottingException=>List[DBpediaResourceOccurrence]()
       }
-      bestK.values.filter(a=>a.size>0).flatten.toList.sortWith((a,b)=>a.textOffset<b.textOffset)
     }
     else
       List[DBpediaResourceOccurrence]()
@@ -257,30 +261,27 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
 
     //iterate each wiki page
     wikisource.foreach((wikiPage:WikiPage)=>{
-      if (wikiPage.title.decoded.startsWith("Lijst van")==false){
-        // clean the wiki markup from everything but links
-        val cleanSource = WikiMarkupStripper.stripEverything(wikiPage.source)
-        // parse the (clean) wiki page
-        val pageNode = wikiParser( WikiPageUtil.copyWikiPage(wikiPage, cleanSource) )
-        val text=new Text(pageNode.toPlainText)
-        tokenizer.tokenizeMaybe(text)
-        val resOccrs=extractDbpeidaResourceOccurrenceFromWikiPage(pageNode,text)
-        if(resOccrs.size>0){
-          var idleInitializer=None.asInstanceOf[Option[DocumentInitializer]]
-          while(idleInitializer==None)
-            idleInitializer=initializers.find((initializer:DocumentInitializer)=>initializer.isRunning==false)
-          val runner=idleInitializer.get
-          runner.set(text, resOccrs.toArray)
-          pool.execute(runner)
+      // clean the wiki markup from everything but links
+      val cleanSource = WikiMarkupStripper.stripEverything(wikiPage.source)
+      // parse the (clean) wiki page
+      val pageNode = wikiParser( WikiPageUtil.copyWikiPage(wikiPage, cleanSource) )
+      val text=new Text(pageNode.toPlainText)
+      tokenizer.tokenizeMaybe(text)
+      val resOccrs=extractDbpeidaResourceOccurrenceFromWikiPage(pageNode,text)
+      if(resOccrs.size>0){
+        var idleInitializer=None.asInstanceOf[Option[DocumentInitializer]]
+        while(idleInitializer==None)
+          idleInitializer=initializers.find((initializer:DocumentInitializer)=>initializer.isRunning==false)
+        val runner=idleInitializer.get
+        runner.set(text, resOccrs.toArray)
+        pool.execute(runner)
 
-          parsedDocs+=1
-          if(parsedDocs%1000==0){
-            val memLoaded = (Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / (1024 * 1024)
-            LOG.info("%d docs parsed, mem %d M".format(parsedDocs,  memLoaded))
-          }
+        parsedDocs+=1
+        if(parsedDocs%1000==0){
+          val memLoaded = (Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / (1024 * 1024)
+          LOG.info("%d docs parsed, mem %d M".format(parsedDocs,  memLoaded))
         }
-      }else
-        System.out.println("id: "+wikiPage.id+" title: "+wikiPage.title.toString())
+      }
     })
 
     shutdownAndAwaitTermination(pool)
