@@ -57,7 +57,7 @@ object WikiPageContextSource
      */
     private class WikipediaPageContextSource(wikiPages : Source) extends WikiPageSource
     {
-        val wikiParser = WikiParser()
+        val wikiParser = WikiParser.getInstance("")
 
         override def foreach[U](f : WikiPageContext => U) : Unit =
         {

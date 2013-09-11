@@ -67,7 +67,7 @@ object DisambiguationContextSource
     }
 
     def wikiPageCopy(wikiPage: WikiPage, newSource: String) = {
-        new WikiPage(wikiPage.title, wikiPage.redirect, wikiPage.id, wikiPage.revision, wikiPage.timestamp, newSource)
+        new WikiPage(wikiPage.title, wikiPage.redirect, wikiPage.id, wikiPage.revision, wikiPage.timestamp, wikiPage.contributorID, wikiPage.contributorName,newSource, wikiPage.format)
     }
 
     /**
@@ -77,7 +77,7 @@ object DisambiguationContextSource
     {
         val splitDisambiguations = """\n"""
         
-        val wikiParser = WikiParser()
+        val wikiParser = WikiParser.getInstance("")
 
         override def foreach[U](f : DBpediaResourceOccurrence => U) : Unit =
         {
