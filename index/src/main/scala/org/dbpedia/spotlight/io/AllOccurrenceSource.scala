@@ -70,7 +70,7 @@ object AllOccurrenceSource
      */
     private class AllOccurrenceSource(wikiPages : Source, multiplyDisambigs : Int=MULTIPLY_DISAMBIGUATION_CONTEXT) extends OccurrenceSource
     {
-        val wikiParser = WikiParser()
+        val wikiParser = WikiParser.getInstance("")
 
         override def foreach[U](f : DBpediaResourceOccurrence => U) : Unit =
         {

@@ -85,7 +85,7 @@ object WikiOccurrenceSource
      */
     private class WikiOccurrenceSource(wikiPages : Source) extends OccurrenceSource
     {
-        val wikiParser = WikiParser()
+        val wikiParser = WikiParser.getInstance("")
 
         override def foreach[U](f : DBpediaResourceOccurrence => U) : Unit =
         {

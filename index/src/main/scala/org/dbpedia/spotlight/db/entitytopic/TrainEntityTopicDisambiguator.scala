@@ -56,7 +56,7 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
   var entitywordCounterSum:GlobalCounter=null
   var topicentityCounterSum:GlobalCounter=null
 
-  val wikiParser = WikiParser()
+  val wikiParser = WikiParser.getInstance("entitytopic")
 
   def createDir(dir:String){
     val dirFile = new File(dir)
