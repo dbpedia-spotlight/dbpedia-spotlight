@@ -6,7 +6,7 @@ import org.dbpedia.spotlight.util.IndexingConfiguration
 import org.dbpedia.spotlight.topical.{TopicalClassifier, TopicalClassifierTrainer}
 import org.dbpedia.spotlight.topical.util.TopicUtil
 import org.dbpedia.spotlight.io.FileOccurrenceSource
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import collection.mutable._
 import com.sun.grizzly.util.FileUtil
 import org.apache.commons.io.FileUtils
@@ -34,8 +34,6 @@ import io.Source
 
 //TODO just allow concept uris
 object SplitOccsSemiSupervised {
-    private val LOG = LogFactory.getLog(getClass)
-
     /**
      *
      * @param args 1st: indexing.properties 2nd: path to occs file, 3rd: temporary path (same partition as output)
@@ -56,7 +54,7 @@ object SplitOccsSemiSupervised {
                 new File(args(5)))
         }
         else
-            LOG.error("Insufficient arguments!")
+            SpotlightLog.error(this.getClass, "Insufficient arguments!")
     }
 
     def splitOccs(occsFile: File,
@@ -76,12 +74,12 @@ object SplitOccsSemiSupervised {
         trainingDir.mkdirs()
 
         if (outputDir.listFiles().size > 0) {
-            LOG.info("Output directory was not empty. Taking split in this directory as initial split.")
+            SpotlightLog.info(this.getClass, "Output directory was not empty. Taking split in this directory as initial split.")
             new File(outputDir, TopicUtil.CATCH_TOPIC.getName + ".tsv").renameTo(toSplit)
             outputDir.renameTo(trainingDir)
         }
         else {
-            LOG.info("Creating initial split for training an initial model for splitting!")
+            SpotlightLog.info(this.getClass, "Creating initial split for training an initial model for splitting!")
             initialSplit(topicDescriptionFile, articleCatsFile, occsFile, trainingDir)
         }
 
@@ -103,7 +101,7 @@ object SplitOccsSemiSupervised {
             })  */
 
             if (trainer.needsShuffled) {
-                LOG.info("Shuffling corpus!")
+                SpotlightLog.info(this.getClass, "Shuffling corpus!")
                 FileUtils.moveFile(tmpCorpus, new File(tmpCorpus.getAbsolutePath+ ".tmp"))
                 new ProcessBuilder("sort", "-R", "-o", tmpCorpus.getAbsolutePath, tmpCorpus.getAbsolutePath + ".tmp").start().waitFor()
                 new File(tmpCorpus.getAbsolutePath + ".tmp").delete()
@@ -124,7 +122,7 @@ object SplitOccsSemiSupervised {
 
             val f = if(i<2) occsFile else toSplit
 
-            LOG.info("Start splitting occs into topics, iteration: "+i)
+            SpotlightLog.info(this.getClass, "Start splitting occs into topics, iteration: %d", i)
             if (i < iterations-1) {
                 trainingDir.mkdirs()
                 AssignTopicsToOccs.assignTopics(f, classifier, threshold, trainingDir, false)
@@ -212,14 +210,14 @@ object SplitOccsSemiSupervised {
                 })
                 assignedResourcesCtr += 1
                 if (assignedResourcesCtr % 10000 == 0) {
-                    LOG.info("Assigned " + assignedResourcesCtr + " occs to topics")
-                    LOG.info("Latest assignment: " + lastResource.uri + " -> " + selectedTopics.foldLeft("")(_ + " " + _.getName))
+                    SpotlightLog.info(this.getClass, "Assigned %d occs to topics", assignedResourcesCtr)
+                    SpotlightLog.info(this.getClass, "Latest assignment: %s -> %s", lastResource.uri, selectedTopics.foldLeft("")(_ + " " + _.getName))
                 }
             }
 
             ctr += 1
             if (ctr % 10000 == 0)
-                LOG.info(ctr + " occs processed!")
+                SpotlightLog.info(this.getClass, "%d occs processed!", ctr)
         })
 
         writers.foreach(_._2.close())

@@ -6,7 +6,7 @@ import collection.mutable.HashMap
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 import java.io.{InputStream, FileInputStream, File}
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import org.dbpedia.spotlight.model._
 
 
@@ -21,7 +21,6 @@ import org.dbpedia.spotlight.model._
 
 object TokenSource {
 
-  private val LOG = LogFactory.getLog(this.getClass)
   private val ADDITIONAL_TOKEN_COUNT = 1
 
   def fromSFStore(sfStore: SurfaceFormStore, tokenizer: StringTokenizer): Seq[String] = {
@@ -42,7 +41,7 @@ object TokenSource {
       p: Triple[String, Array[String], Array[Int]] => {
         i += 1
         if (i % 10000 == 0)
-          LOG.info("Read context for %d resources...".format(i))
+          SpotlightLog.info(this.getClass, "Read context for %d resources...", i)
 
         (0 to p._2.size -1).foreach {
           i: Int => tokenMap.put(p._2(i), tokenMap.getOrElse(p._2(i), 0) + p._3(i))
@@ -52,7 +51,7 @@ object TokenSource {
 
     additionalTokens match {
       case Some(tokens) => {
-        LOG.info("Read %d additional tokens...".format(tokens.size))
+        SpotlightLog.info(this.getClass, "Read %d additional tokens...", tokens.size)
         tokens.foreach { token: String =>
           tokenMap.put(token, tokenMap.getOrElse(token, 0) + ADDITIONAL_TOKEN_COUNT)
         }

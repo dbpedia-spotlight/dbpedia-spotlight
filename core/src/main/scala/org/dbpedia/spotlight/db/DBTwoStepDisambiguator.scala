@@ -3,7 +3,7 @@ package org.dbpedia.spotlight.db
 import model._
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.disambiguate.mixtures.Mixture
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import scala.collection.JavaConverters._
 import similarity.{ContextSimilarity, TFICFSimilarity}
 import org.dbpedia.spotlight.disambiguate.{ParagraphDisambiguator, Disambiguator}
@@ -37,8 +37,6 @@ class DBTwoStepDisambiguator(
   mixture: Mixture,
   contextSimilarity: ContextSimilarity
 ) extends ParagraphDisambiguator {
-
-  private val LOG = LogFactory.getLog(this.getClass)
 
   /* Tokenizer that may be used for tokenization if the text is not already tokenized. */
   var tokenizer: TextTokenizer = null
@@ -77,14 +75,14 @@ class DBTwoStepDisambiguator(
 
   def bestK(paragraph: Paragraph, k: Int): Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]] = {
 
-    LOG.debug("Running bestK for paragraph %s.".format(paragraph.id))
+    SpotlightLog.debug(this.getClass, "Running bestK for paragraph %s.",paragraph.id)
 
     if (paragraph.occurrences.size == 0)
       return Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]()
 
     //Tokenize the text if it wasn't tokenized before:
     if (tokenizer != null) {
-      LOG.info("Tokenizing input text...")
+      SpotlightLog.info(this.getClass, "Tokenizing input text...")
       val tokens = tokenizer.tokenize(paragraph.text)
       paragraph.text.setFeature(new Feature("tokens", tokens))
     }
@@ -133,7 +131,7 @@ class DBTwoStepDisambiguator(
       Map[SurfaceFormOccurrence, List[Candidate]]())(
       (acc, sfOcc) => {
 
-        LOG.debug("Searching...")
+        SpotlightLog.debug(this.getClass, "Searching...")
 
         val candidateRes = {
           val sf = try {
@@ -143,10 +141,10 @@ class DBTwoStepDisambiguator(
           }
 
           val cands = candidateSearcher.getCandidates(sf)
-          LOG.debug("# candidates for: %s = %s.".format(sf, cands.size))
+          SpotlightLog.debug(this.getClass, "# candidates for: %s = %s.", sf, cands.size)
 
           if (cands.size > MAX_CANDIDATES) {
-            LOG.debug("Reducing number of candidates to %d.".format(MAX_CANDIDATES))
+            SpotlightLog.debug(this.getClass, "Reducing number of candidates to %d.", MAX_CANDIDATES)
             cands.toList.sortBy( _.prior ).reverse.take(MAX_CANDIDATES).toSet
           } else {
             cands

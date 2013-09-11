@@ -1,6 +1,6 @@
 package org.dbpedia.spotlight.evaluation
 
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import org.dbpedia.spotlight.lucene.LuceneManager
 import org.apache.lucene.analysis.{StopAnalyzer, Analyzer}
 import org.apache.lucene.util.Version
@@ -21,8 +21,6 @@ import org.dbpedia.spotlight.disambiguate.{RandomDisambiguator, Disambiguator}
  */
 
 object DisambiguatorFactory {
-
- val LOG = LogFactory.getLog(this.getClass)
 
     def createMergedDisambiguator(outputFileName: String, analyzer: Analyzer, similarity: Similarity) : Disambiguator = {
         val directory = FSDirectory.open(new File(outputFileName));//+"."+analyzer.getClass.getSimpleName+"."+similarity.getClass.getSimpleName));
@@ -57,7 +55,7 @@ object DisambiguatorFactory {
         //  contextSearcher.warmUp(10000);
         //}
 
-        LOG.info("Number of entries in merged resource index ("+contextSearcher.getClass()+"): "+ contextSearcher.getNumberOfEntries());
+        SpotlightLog.info(this.getClass, "Number of entries in merged resource index (%s): %d", contextSearcher.getClass, contextSearcher.getNumberOfEntries)
         // The Disambiguator chooses the best URI for a surface form
         dis(contextSearcher)
     }
@@ -156,7 +154,7 @@ object DisambiguatorFactory {
 //        luceneManager.setContextSimilarity(similarity);
 //        //------------ ICF DISAMBIGUATOR
 //        val contextSearcher = new MergedOccurrencesContextSearcher(luceneManager);
-//        LOG.info("Number of entries in merged resource index ("+contextSearcher.getClass()+"): "+ contextSearcher.getNumberOfEntries());
+//        SpotlightLog.info(this.getClass, "Number of entries in merged resource index (%s): %d", contextSearcher.getClass, contextSearcher.getNumberOfEntries)
 //        // The Disambiguator chooses the best URI for a surface form
 //        new MergedPlusPriorDisambiguator(contextSearcher)
 //    }
@@ -188,7 +186,7 @@ object DisambiguatorFactory {
         luceneManager.setDefaultAnalyzer(analyzer);
         luceneManager.setContextSimilarity(similarity);
         val contextSearcher = new MergedOccurrencesContextSearcher(luceneManager);
-        LOG.info("Number of entries in merged resource index ("+contextSearcher.getClass()+"): "+ contextSearcher.getNumberOfEntries());
+        SpotlightLog.info(this.getClass, "Number of entries in merged resource index (%s): %d", contextSearcher.getClass, contextSearcher.getNumberOfEntries)
         new LucenePriorDisambiguator(contextSearcher)
     }
 
@@ -201,7 +199,7 @@ object DisambiguatorFactory {
         luceneManager.setDefaultAnalyzer(analyzer);
         luceneManager.setContextSimilarity(similarity);
         val contextSearcher = new LuceneCandidateSearcher(luceneManager, false);
-        LOG.info("Number of entries in merged resource index ("+contextSearcher.getClass()+"): "+ contextSearcher.getNumberOfEntries());
+        SpotlightLog.info(this.getClass, "Number of entries in merged resource index (%s): %d", contextSearcher.getClass, contextSearcher.getNumberOfEntries)
         new RandomDisambiguator(contextSearcher)
     }
 

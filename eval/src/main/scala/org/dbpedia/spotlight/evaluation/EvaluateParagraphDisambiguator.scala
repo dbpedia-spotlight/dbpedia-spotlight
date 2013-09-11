@@ -18,7 +18,7 @@
 package org.dbpedia.spotlight.evaluation
 
 import org.dbpedia.spotlight.io._
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import org.dbpedia.spotlight.disambiguate._
 import java.io.{PrintWriter, File}
 import org.dbpedia.spotlight.corpus.{PredoseCorpus, MilneWittenCorpus, AidaCorpus}
@@ -37,8 +37,6 @@ import scala.Some
  */
 object EvaluateParagraphDisambiguator {
 
-    private val LOG = LogFactory.getLog(this.getClass)
-
     def filter(bestK: Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]) :  Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]] = {
         bestK;
     }
@@ -56,7 +54,7 @@ object EvaluateParagraphDisambiguator {
         //testSource.view(10000,15000)
         val mrrResults = paragraphs.map(a => {
             i = i + 1
-            LOG.info("Paragraph %d/%d: %s.".format(i, totalParagraphs, a.id))
+            SpotlightLog.info(this.getClass, "Paragraph %d/%d: %s.", i, totalParagraphs, a.id)
             val paragraph = Factory.Paragraph.from(a)
             nOriginalOccurrences = nOriginalOccurrences + a.occurrences.toTraversable.size
 
@@ -85,22 +83,22 @@ object EvaluateParagraphDisambiguator {
                 });
                 outputs.foreach(_.flush)
             } catch {
-                case e: Exception => LOG.error(e)
+                case e: Exception => SpotlightLog.error(this.getClass, "%s\n%s", e.getMessage, e.getStackTraceString)
             }
             val mrr = if (a.occurrences.size==0) 0.0 else acc / a.occurrences.size
-            LOG.info("Mean Reciprocal Rank (MRR) = %.5f".format(mrr))
+            SpotlightLog.info(this.getClass, "Mean Reciprocal Rank (MRR) = %.5f", mrr)
             mrr
         })
         val endTime = System.nanoTime()
-        LOG.info("********************")
-        LOG.info("Corpus: %s".format(testSource.name))
-        LOG.info("Number of occs: %d (original), %d (processed)".format(nOriginalOccurrences,nOccurrences))
-        LOG.info("Disambiguator: %s".format(disambiguator.name))
-        LOG.info("Correct URI not found = %d / %d = %.3f".format(nZeros,nOccurrences,nZeros.toDouble/nOccurrences))
-        LOG.info("Accuracy = %d / %d = %.3f".format(nCorrects,nOccurrences,nCorrects.toDouble/nOccurrences))
-        LOG.info("Global MRR: %s".format(mrrResults.sum / mrrResults.size))
-        LOG.info("Elapsed time: %s sec".format( (endTime-startTime) / 1000000000))
-        LOG.info("********************")
+        SpotlightLog.info(this.getClass, "********************")
+        SpotlightLog.info(this.getClass, "Corpus: %s", testSource.name)
+        SpotlightLog.info(this.getClass, "Number of occs: %d (original), %d (processed)", nOriginalOccurrences,nOccurrences)
+        SpotlightLog.info(this.getClass, "Disambiguator: %s", disambiguator.name)
+        SpotlightLog.info(this.getClass, "Correct URI not found = %d / %d = %.3f", nZeros,nOccurrences,nZeros.toDouble/nOccurrences)
+        SpotlightLog.info(this.getClass, "Accuracy = %d / %d = %.3f", nCorrects,nOccurrences,nCorrects.toDouble/nOccurrences)
+        SpotlightLog.info(this.getClass, "Global MRR: %s", mrrResults.sum / mrrResults.size)
+        SpotlightLog.info(this.getClass, "Elapsed time: %s sec", (endTime-startTime) / 1000000000)
+        SpotlightLog.info(this.getClass, "********************")
 
         val disambigSummary = "Corpus: %s".format(testSource.name) +
                     "\nNumber of occs: %d (original), %d (processed)".format(nOriginalOccurrences,nOccurrences) +

@@ -1,7 +1,7 @@
 package org.dbpedia.spotlight.topical
 
 import org.dbpedia.spotlight.model.{Text, Topic}
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import java.io.File
 
 
@@ -86,10 +86,8 @@ object TopicalClassifierTrainer {
 }
 
 object TopicalClassifierFactory {
-    private val LOG = LogFactory.getLog(getClass)
-
     def fromFile(file:File, classifierType: String): Option[TopicalClassifier] = {
-        LOG.info("Loading topical classifier...")
+        SpotlightLog.info(this.getClass, "Loading topical classifier...")
 
         if (classifierType.endsWith("NaiveBayesTopicalClassifier")) {
             return Some(NaiveBayesTopicalClassifier.deSerialize(file))

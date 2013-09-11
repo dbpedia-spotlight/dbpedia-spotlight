@@ -21,7 +21,7 @@ import org.dbpedia.spotlight.lucene.LuceneManager
 import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
 import java.io.File
 import org.dbpedia.spotlight.lucene.similarity._
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import org.apache.lucene.search.Explanation
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.lucene.disambiguate.{MixedWeightsDisambiguator, MergedOccurrencesDisambiguator}
@@ -40,13 +40,11 @@ import scala.collection.JavaConversions._
  */
 class DefaultDisambiguator(val contextSearcher: ContextSearcher) extends Disambiguator with ParagraphDisambiguator  {
 
-    private val LOG = LogFactory.getLog(this.getClass)
-
-    LOG.info("Initializing disambiguator object ...")
+    SpotlightLog.info(this.getClass, "Initializing disambiguator object ...")
 
     val disambiguator : Disambiguator = new MergedOccurrencesDisambiguator(contextSearcher)
 
-    LOG.info("Done.")
+    SpotlightLog.info(this.getClass, "Done.")
 
     def disambiguate(sfOccurrence: SurfaceFormOccurrence): DBpediaResourceOccurrence = {
         disambiguator.disambiguate(sfOccurrence)

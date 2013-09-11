@@ -21,7 +21,7 @@ package org.dbpedia.spotlight.util
 import org.dbpedia.spotlight.model.DBpediaResource
 import java.net.{Socket, URLEncoder}
 import java.io.{BufferedReader, InputStreamReader, PrintStream}
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 
 
 /**
@@ -31,8 +31,6 @@ import org.apache.commons.logging.LogFactory
  * @author pablomendes (adapted from maxjakob)
  */
 class YahooBossSearcher(val webSearchConfig: WebSearchConfiguration) {
-
-    private val LOG = LogFactory.getLog(this.getClass)
 
     // load configured properties
     val language = webSearchConfig.get("org.dbpedia.spotlight.yahoo.language", "en")
@@ -52,7 +50,7 @@ class YahooBossSearcher(val webSearchConfig: WebSearchConfiguration) {
 
     def get(resource: DBpediaResource, extractor: KeywordExtractor) = {
         val keywords = extractor.getKeywordsWithMust(resource);
-        LOG.info("Searching for :"+keywords)
+        SpotlightLog.info(this.getClass, "Searching for :%s", keywords)
         val results = getYahooAnswer(keywords)
         results
     }
@@ -88,7 +86,7 @@ class YahooBossSearcher(val webSearchConfig: WebSearchConfiguration) {
                         line = null
                         answer = (totalhits.toLong, deephits.toLong)
                         //println(answer)
-                        LOG.info(String.format("Counts: totalhits=%s deephits=%s\n", totalhits, deephits))
+                        SpotlightLog.info(this.getClass, "Counts: totalhits=%s deephits=%s\n", totalhits, deephits)
                         return answer
                     }
                     case _ => {

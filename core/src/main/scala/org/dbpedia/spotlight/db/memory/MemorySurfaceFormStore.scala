@@ -1,5 +1,6 @@
 package org.dbpedia.spotlight.db.memory
 
+import org.dbpedia.spotlight.log.SpotlightLog
 import org.dbpedia.spotlight.model.SurfaceForm
 import org.dbpedia.spotlight.db.model.SurfaceFormStore
 import org.dbpedia.spotlight.exceptions.SurfaceFormNotFoundException
@@ -59,13 +60,13 @@ class MemorySurfaceFormStore
 
   def createReverseLookup() {
 
-    LOG.info("Summing total SF counts.")
+    SpotlightLog.info(this.getClass, "Summing total SF counts.")
     totalAnnotatedCount = annotatedCountForID.sum
     totalOccurrenceCount = totalCountForID.sum
 
 
     if (stringForID != null) {
-      LOG.info("Creating reverse-lookup for surface forms, adding normalized surface forms.")
+      SpotlightLog.info(this.getClass, "Creating reverse-lookup for surface forms, adding normalized surface forms.")
       idForString = StringToIDMapFactory.createDefault(stringForID.size * 2)
 
       var i = 0

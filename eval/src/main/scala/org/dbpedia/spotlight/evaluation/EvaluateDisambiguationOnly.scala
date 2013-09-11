@@ -21,7 +21,7 @@ package org.dbpedia.spotlight.evaluation
 import org.apache.lucene.analysis.{StopAnalyzer, Analyzer}
 import org.apache.lucene.util.Version
 import org.dbpedia.spotlight.io.{FileOccurrenceSource}
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import java.io.{PrintStream, File}
 import org.apache.lucene.misc.SweetSpotSimilarity
 import org.apache.lucene.search.{Similarity, DefaultSimilarity}
@@ -58,11 +58,6 @@ import org.dbpedia.spotlight.corpus.{MilneWittenCorpus, AidaCorpus}
 object EvaluateDisambiguationOnly
 {
 
-    private val LOG = LogFactory.getLog(this.getClass)
-
-
-
-
     def exists(fileName: String) {
         if (!new File(fileName).exists) {
             System.err.println("Important file/dir does not exist. "+fileName);
@@ -90,7 +85,7 @@ object EvaluateDisambiguationOnly
         //exists(resultsFileName);
 
         val osName : String = System.getProperty("os.name");
-        LOG.info("Your operating system is: "+osName);
+        SpotlightLog.info(this.getClass, "Your operating system is: %s", osName)
 
         //            val trainingFile = new File(baseDir+"wikipediaTraining.50.amb.tsv")
         //            if (!trainingFile.exists) {

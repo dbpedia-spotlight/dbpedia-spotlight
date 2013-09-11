@@ -19,12 +19,10 @@ package org.dbpedia.spotlight.filter.occurrences
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
 import org.dbpedia.spotlight.string.ContextExtractor
 import org.dbpedia.spotlight.exceptions.InputException
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 
 
 class ContextNarrowFilter(val contextExtractor : ContextExtractor) extends OccurrenceFilter {
-
-    private val LOG = LogFactory.getLog(this.getClass)
 
     def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
         try {
@@ -32,7 +30,7 @@ class ContextNarrowFilter(val contextExtractor : ContextExtractor) extends Occur
         }
         catch {
             case e : InputException => {
-                LOG.warn("filtered out occurrence "+occ.id+". too little context")
+                SpotlightLog.warn(this.getClass, "filtered out occurrence %s. too little context", occ.id)
                 None
             }
         }

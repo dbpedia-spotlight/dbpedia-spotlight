@@ -16,7 +16,7 @@
 
 package org.dbpedia.spotlight.filter.annotations
 
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import org.dbpedia.spotlight.model.{OntologyType, DBpediaResource, DBpediaType, DBpediaResourceOccurrence}
 import org.dbpedia.spotlight.filter.visitor.{FilterElement, FilterOccsVisitor}
 import scala.collection.JavaConversions._
@@ -24,14 +24,12 @@ import java.util
 
 class TypeFilter(var ontologyTypes : List[OntologyType], val blacklistOrWhitelist : FilterPolicy.ListColor) extends AnnotationFilter  with FilterElement {
 
-    private val LOG = LogFactory.getLog(this.getClass)
-
     if (ontologyTypes==null)
         ontologyTypes = List[OntologyType]()
     else
         ontologyTypes = ontologyTypes.filter(_.typeID.trim.nonEmpty)
 
-    if(ontologyTypes.isEmpty) LOG.info("types are empty: showing all types")  // see comment below
+    if(ontologyTypes.isEmpty) SpotlightLog.info(this.getClass, "types are empty: showing all types")  // see comment below
 
 
     private val acceptable = blacklistOrWhitelist match {
@@ -51,11 +49,11 @@ class TypeFilter(var ontologyTypes : List[OntologyType], val blacklistOrWhitelis
             Some(occ)
         }
         else if(acceptable(occ.resource)) {
-            LOG.debug("Acceptable! "+occ.resource)
+            SpotlightLog.debug(this.getClass, "Acceptable! %s", occ.resource)
             Some(occ)
         }
         else {
-            LOG.info("filtered out by type "+blacklistOrWhitelist+": "+occ.resource+" list="+ontologyTypes.map(_.typeID).mkString("List(", ",", ")"))
+            SpotlightLog.info(this.getClass, "filtered out by type %s: %s list=%s", blacklistOrWhitelist, occ.resource, ontologyTypes.map(_.typeID).mkString("List(", ",", ")"))
             None
         }
     }

@@ -5,7 +5,7 @@ import org.dbpedia.spotlight.model.SurfaceForm
 import scala.Array
 import java.util.zip.GZIPInputStream
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import java.io.{File, InputStream, FileInputStream}
 import scala.Predef._
 import java.util.{Map, HashMap}
@@ -22,18 +22,16 @@ import org.dbpedia.extraction.util.WikiUtil
 
 object SurfaceFormSource {
 
-  private val LOG = LogFactory.getLog(this.getClass)
-
   def fromPigInputStreams(
     sfAndTotalCounts: InputStream,
     wikiClosure: WikipediaToDBpediaClosure = null
   ): Map[SurfaceForm, (Int, Int)] = {
 
-    LOG.info("Creating SurfaceFormSource...")
+    SpotlightLog.info(this.getClass, "Creating SurfaceFormSource...")
 
     val sfMap = new HashMap[SurfaceForm, (Int, Int)]()
 
-    LOG.info("Reading annotated and total counts...")
+    SpotlightLog.info(this.getClass, "Reading annotated and total counts...")
     Source.fromInputStream(sfAndTotalCounts).getLines() foreach {
       lineS: String => {
         val line = lineS.trim().split('\t')
@@ -58,7 +56,7 @@ object SurfaceFormSource {
       }
     }
 
-    LOG.info("Done.")
+    SpotlightLog.info(this.getClass, "Done.")
 
     sfMap
   }

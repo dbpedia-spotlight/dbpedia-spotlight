@@ -16,7 +16,7 @@
 
 package org.dbpedia.spotlight.evaluation
 
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import org.dbpedia.spotlight.model._
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.spot.Spotter
@@ -28,8 +28,6 @@ import org.dbpedia.spotlight.exceptions.SearchException
  */
 class BatchEvaluator(val testSource : Traversable[DBpediaResourceOccurrence], val spotter : Spotter, val disambiguatorSet : Set[Disambiguator])
 {
-    private val LOG = LogFactory.getLog(this.getClass)
-
     def listToJavaList[T](l: List[T]) = l.foldLeft(new java.util.ArrayList[T](l.size)){(al, e) => al.add(e); al}
 
     def spot(current: Text, goldList: List[DBpediaResourceOccurrence]) : List[SurfaceFormOccurrence] = {
@@ -55,13 +53,13 @@ class BatchEvaluator(val testSource : Traversable[DBpediaResourceOccurrence], va
                 {
                     found.find(f => f equals g) match {
                         case Some(correctOcc) => {
-                            LOG.debug("  Correct: "+correctOcc.surfaceForm + " -> " + correctOcc.resource)
+                            SpotlightLog.debug(this.getClass, "  Correct: %s -> %s", correctOcc.surfaceForm, correctOcc.resource)
                             correct += 1
                             //print to file
                         }
                         case None => {
-                            LOG.debug("  WRONG: _REAL_:"+g.surfaceForm+" -> "+g.resource);
-                            LOG.debug("          _GOT_: "+g.surfaceForm+" -> "+found.map(_.resource).mkString(", "));
+                            SpotlightLog.debug(this.getClass, "  WRONG: _REAL_:%s -> %s", g.surfaceForm, g.resource)
+                            SpotlightLog.debug(this.getClass, "          _GOT_: %s -> %s", g.surfaceForm, found.map(_.resource).mkString(", "))
                         }
                     }
                 }
@@ -87,22 +85,22 @@ class BatchEvaluator(val testSource : Traversable[DBpediaResourceOccurrence], va
 
             for (testOcc <- testSource)
             {
-                LOG.info("=="+totalOccurrenceCount)
+                SpotlightLog.info(this.getClass, "==%d", totalOccurrenceCount)
                 if (!testOcc.context.text.equals(current) && current != "")
                 {
-                    LOG.trace("Processed "+totalOccurrenceCount+" occurrences. Current text: ["+current.substring(0,scala.math.min(current.length, 100))+"...]")
+                    SpotlightLog.trace(this.getClass, "Processed %d occurrences. Current text: [%s...]", totalOccurrenceCount, current.substring(0,scala.math.min(current.length, 100)))
 
                     val correctlySpottedOccs = spot(new Text(current), goldList)
                     totalCorrectSfMatches += correctlySpottedOccs.size
 
-                    LOG.info("Spotter accuracy: "+totalCorrectSfMatches+"/"+totalOccurrenceCount+" = "+totalCorrectSfMatches.toDouble/totalOccurrenceCount.toDouble)
+                    SpotlightLog.info(this.getClass, "Spotter accuracy: %d/%d = %f", totalCorrectSfMatches, totalOccurrenceCount, totalCorrectSfMatches.toDouble/totalOccurrenceCount.toDouble)
 
                     //Remove Unambiguous (ambiguity==1)
                     //TODO FIXME Note that we just use the first disambiguator to measure ambiguity. This doesn't guarantee that all disambiguators will find this ambiguous
                     val correctlySpottedAmbOccs = correctlySpottedOccs.filter(occ => disambiguatorSet.head.ambiguity(occ.surfaceForm) > 1)
                     var unamb = correctlySpottedOccs.size - correctlySpottedAmbOccs.size
                     totalUnambiguousCount += unamb;
-                    LOG.info("Unambiguous: "+totalUnambiguousCount+"/"+totalCorrectSfMatches+" = "+totalUnambiguousCount.toDouble/totalCorrectSfMatches.toDouble)
+                    SpotlightLog.info(this.getClass, "Unambiguous: %d/%d = %f", totalUnambiguousCount, totalCorrectSfMatches, totalUnambiguousCount.toDouble/totalCorrectSfMatches.toDouble)
 
                     if (correctlySpottedAmbOccs.size > 0) {
                         for (disambiguator <- disambiguatorSet)
@@ -112,14 +110,14 @@ class BatchEvaluator(val testSource : Traversable[DBpediaResourceOccurrence], va
 
                                 disambiguationCounters = disambiguationCounters.updated(disambiguator.name, disambiguationCounters.get(disambiguator.name).getOrElse(0) + resMatch)
 
-                                LOG.info("Disambiguation accuracy "+disambiguator.name+": "+disambiguationCounters(disambiguator.name)+"/"+totalCorrectSfMatches+"-"+totalUnambiguousCount+" = "+disambiguationCounters(disambiguator.name).toDouble/(totalCorrectSfMatches.toDouble-totalUnambiguousCount))
+                                SpotlightLog.info(this.getClass, "Disambiguation accuracy %s: %s/%d-%d = %f", disambiguator.name, disambiguationCounters(disambiguator.name), totalCorrectSfMatches, totalUnambiguousCount, disambiguationCounters(disambiguator.name).toDouble/(totalCorrectSfMatches.toDouble-totalUnambiguousCount))
                             }
                             catch {
-                                case err : SearchException => LOG.error("Disambiguation error in "+disambiguator.name+ "; " + err.getMessage)
+                                case err : SearchException => SpotlightLog.error(this.getClass, "Disambiguation error in %s; %s", disambiguator.name, err.getMessage)
                             }
                         }
                     } else {
-                        LOG.info("Nothing to disambiguate. Skipping.");
+                        SpotlightLog.info(this.getClass, "Nothing to disambiguate. Skipping.")
                     }
                     goldList = List[DBpediaResourceOccurrence]()
                 }

@@ -2,7 +2,7 @@ package org.dbpedia.spotlight.extract
 
 import org.dbpedia.spotlight.lucene.LuceneManager.DBpediaResourceField
 import org.apache.lucene.search.similar.MoreLikeThis
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import org.dbpedia.spotlight.lucene.similarity.{CachedInvCandFreqSimilarity, JCSTermCache}
 import org.dbpedia.spotlight.lucene.LuceneManager
 import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
@@ -20,8 +20,6 @@ import java.util
  */
 class LuceneTagExtractor(val contextLuceneManager: LuceneManager, val contextSearcher: MergedOccurrencesContextSearcher) extends TagExtractor {
 
-    private val LOG = LogFactory.getLog(this.getClass)
-
     def extract(text: Text, nTags: Int) : Seq[(DBpediaResource,Double)] = {
         extract(text, nTags, List[OntologyType]())
     }
@@ -38,7 +36,7 @@ class LuceneTagExtractor(val contextLuceneManager: LuceneManager, val contextSea
     //WARNING: this is repetition of BaseSearcher.getHits
     //TODO move to subclass of BaseSearcher
     def getRelatedResources(text: Text, nHits: Int = 100, ontologyTypes: java.util.List[OntologyType]) = {
-        LOG.debug("Setting up query.")
+        SpotlightLog.debug(this.getClass, "Setting up query.")
 
         var context = if (text.text.size<250) text.text.concat(" "+text.text) else text.text //HACK for text that is too short
         context = context.replaceAll("_"," ") //HACK for Andreas' class names
@@ -50,11 +48,11 @@ class LuceneTagExtractor(val contextLuceneManager: LuceneManager, val contextSea
         val mlt = new MoreLikeThis(contextSearcher.mReader);
         mlt.setFieldNames(Array(DBpediaResourceField.CONTEXT.toString))
         mlt.setAnalyzer(contextLuceneManager.defaultAnalyzer)
-        //LOG.debug("Analyzer %s".format(contextLuceneManager.defaultAnalyzer))
+        //SpotlightLog.debug(this.getClass, "Analyzer %s", contextLuceneManager.defaultAnalyzer)
         //val inputStream = new ByteArrayInputStream(context.getBytes("UTF-8"));
         val query = mlt.like(new StringReader(context), DBpediaResourceField.CONTEXT.toString);
         //val filteredQuery: FilteredQuery = new FilteredQuery(query, new CachingWrapperFilter(new QueryWrapperFilter(typesQuery)))
-        LOG.debug("Running query.")
+        SpotlightLog.debug(this.getClass, "Running query.")
         contextSearcher.getHits(query, nHits, 50000, filter)
     }
 

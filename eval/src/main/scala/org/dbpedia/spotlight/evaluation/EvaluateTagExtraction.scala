@@ -18,7 +18,7 @@
 
 package org.dbpedia.spotlight.evaluation
 
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import io.Source
 import org.dbpedia.spotlight.util.AnnotationFilter
 import org.dbpedia.spotlight.string.WikiLinkParser
@@ -38,8 +38,6 @@ import org.dbpedia.spotlight.extract.TagExtractorFromAnnotator
  */
 object EvaluateTagExtraction
 {
-    private val LOG = LogFactory.getLog(this.getClass)
-
     val configuration = new SpotlightConfiguration("conf/eval.properties");
 //    val confidence = 0.0;
 //    val support = 0;
@@ -135,12 +133,12 @@ object EvaluateTagExtraction
             i = i + 1
             var occs = List[DBpediaResourceOccurrence]()
             try {
-                LOG.info("Doc "+i)
-                LOG.info("Doc length: %s tokens".format(cleanText.split(" ").size))
+                SpotlightLog.info(this.getClass, "Doc %d", i)
+                SpotlightLog.info(this.getClass, "Doc length: %s tokens", cleanText.split(" ").size)
                 occs = annotator.annotate(cleanText).toList;
             } catch {
                 case e: Exception =>
-                    LOG.error("Exception: "+e);
+                    SpotlightLog.error(this.getClass, "Exception: %s", e)
             }
 
             val allEntities = TagExtractorFromAnnotator.bySimilarity(annotator).rank(occs)

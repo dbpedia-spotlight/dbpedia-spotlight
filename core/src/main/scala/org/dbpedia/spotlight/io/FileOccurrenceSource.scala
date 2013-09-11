@@ -18,7 +18,7 @@ package org.dbpedia.spotlight.io
 
 import org.dbpedia.spotlight.model._
 import io.Source
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import java.io._
 import java.util.zip.{GZIPOutputStream, GZIPInputStream}
 import java.text.ParseException
@@ -29,8 +29,6 @@ import java.text.ParseException
 
 object FileOccurrenceSource
 {
-    private val LOG = LogFactory.getLog(this.getClass)
-
     /**
      * Creates an DBpediaResourceOccurrence Source from a TSV file.
      */
@@ -46,7 +44,7 @@ object FileOccurrenceSource
      */
     def writeToFile(occSource : Traversable[DBpediaResourceOccurrence], tsvFile : File) {
         var indexDisplay = 0
-        LOG.info("Writing occurrences to file "+tsvFile+" ...")
+        SpotlightLog.info(this.getClass, "Writing occurrences to file %s ...", tsvFile)
 
         var o : OutputStream = new FileOutputStream(tsvFile)
         if (tsvFile.getName.endsWith(".gz")) {
@@ -59,12 +57,12 @@ object FileOccurrenceSource
 
             indexDisplay += 1
             if (indexDisplay % 100000 == 0) {
-                LOG.info("  saved " + indexDisplay + " occurrences")
+                SpotlightLog.info(this.getClass, "  saved %d occurrences", indexDisplay)
             }
         }
         outStream.close
 
-        LOG.info("Finished: saved " + indexDisplay + " occurrences to file")
+        SpotlightLog.info(this.getClass, "Finished: saved %d occurrences to file", indexDisplay)
     }
 
 
@@ -73,7 +71,7 @@ object FileOccurrenceSource
      */
     def addToFile(defSource : WikiPageSource, tsvFile : File) {
         var indexDisplay = 0
-        LOG.info("Writing wiki page text to file "+tsvFile+" ...")
+        SpotlightLog.info(this.getClass, "Writing wiki page text to file %s ...", tsvFile)
 
         var o : OutputStream = new FileOutputStream(tsvFile)
         if (tsvFile.getName.endsWith(".gz")) {
@@ -86,12 +84,12 @@ object FileOccurrenceSource
 
             indexDisplay += 1
             if (indexDisplay % 100000 == 0) {
-                LOG.info("  saved " + indexDisplay + " wiki page texts")
+                SpotlightLog.info(this.getClass, "  saved %d wiki page texts", indexDisplay)
             }
         }
         outStream.close
 
-        LOG.info("Finished: saved " + indexDisplay + " wiki page texts to file")
+        SpotlightLog.info(this.getClass, "Finished: saved %d wiki page texts to file", indexDisplay)
     }
 
     /**
@@ -133,7 +131,7 @@ object FileOccurrenceSource
                 }
                 else {
                     //throw new ParseException("line must have 4 tab separators; got "+(elements.length-1)+" in line: "+line, elements.length-1)
-                    LOG.error("line must have 4 tab separators; got "+(elements.length-1)+" in line: "+line)
+                    SpotlightLog.error(this.getClass, "line must have 4 tab separators; got %d in line: %d", elements.length-1, line)
                 }
 
             }

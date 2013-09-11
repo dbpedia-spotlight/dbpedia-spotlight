@@ -2,7 +2,6 @@ package org.dbpedia.spotlight.extract
 
 import org.dbpedia.spotlight.lucene.LuceneManager.DBpediaResourceField
 import org.apache.lucene.search.similar.MoreLikeThis
-import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.lucene.similarity.{CachedInvCandFreqSimilarity, JCSTermCache}
 import org.dbpedia.spotlight.lucene.LuceneManager
 import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher

@@ -19,15 +19,13 @@
 package org.dbpedia.spotlight.filter.annotations
 
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 
 class ContextualScoreFilter(val simThreshold : Double) extends AnnotationFilter  {
 
-    private val LOG = LogFactory.getLog(this.getClass)
-
     override def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
         if(occ.contextualScore < simThreshold) {
-            LOG.info("filtered out by similarity score threshold (%.3f<%.3f): %s".format(occ.similarityScore, simThreshold, occ))
+            SpotlightLog.info(this.getClass, "filtered out by similarity score threshold (%.3f<%.3f): %s", occ.similarityScore, simThreshold, occ)
             None
         }
         else {

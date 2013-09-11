@@ -9,7 +9,7 @@ import java.lang.String
 import collection.mutable.HashSet
 import org.dbpedia.spotlight.db.WikipediaToDBpediaClosure
 import scala.Int
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import org.dbpedia.spotlight.exceptions._
 import org.dbpedia.spotlight.db.memory.MemoryResourceStore
 import org.dbpedia.extraction.util.WikiUtil
@@ -24,8 +24,6 @@ import org.dbpedia.extraction.util.WikiUtil
 
 object CandidateMapSource {
 
-  private val LOG = LogFactory.getLog(this.getClass)
-
   def fromPigInputStreams(
     pairCounts: InputStream,
     wikipediaToDBpediaClosure: WikipediaToDBpediaClosure,
@@ -39,7 +37,7 @@ object CandidateMapSource {
     var sfNotFound  = 0
     var uriIgnored  = 0
 
-    LOG.info("Reading Candidate Map.")
+    SpotlightLog.info(this.getClass, "Reading Candidate Map.")
     Source.fromInputStream(pairCounts).getLines() foreach {
       line: String => {
         try {
@@ -55,17 +53,17 @@ object CandidateMapSource {
           candidateMap.put(c, initialCount + count.toInt)
         } catch {
           case e: NotADBpediaResourceException     => uriIgnored += 1
-          case e: ArrayIndexOutOfBoundsException   => LOG.warn("WARNING: Could not read line.")
+          case e: ArrayIndexOutOfBoundsException   => SpotlightLog.warn(this.getClass, "WARNING: Could not read line.")
           case e: DBpediaResourceNotFoundException => {uriNotFound += 1; println(line)}
           case e: SurfaceFormNotFoundException     => sfNotFound += 1
         }
       }
     }
-    LOG.info("Done.")
+    SpotlightLog.info(this.getClass, "Done.")
 
-    LOG.warn("DBpedia resource not found: %d".format(uriNotFound) )
-    LOG.warn("Invalid DBpedia resources (e.g. disambiguation page): %d".format(uriIgnored) )
-    LOG.warn("SF not found: %d".format(sfNotFound) )
+    SpotlightLog.warn(this.getClass, "DBpedia resource not found: %d", uriNotFound)
+    SpotlightLog.warn(this.getClass, "Invalid DBpedia resources (e.g. disambiguation page): %d", uriIgnored)
+    SpotlightLog.warn(this.getClass, "SF not found: %d", sfNotFound)
 
     candidateMap
   }
@@ -103,15 +101,15 @@ object CandidateMapSource {
             count.toInt
           )
         } catch {
-          case e: ArrayIndexOutOfBoundsException => LOG.warn("Could not read line.")
+          case e: ArrayIndexOutOfBoundsException => SpotlightLog.warn(this.getClass, "Could not read line.")
           case e: DBpediaResourceNotFoundException => println(line)
           case e: SurfaceFormNotFoundException => sfNotFound += line
         }
       }
     }
 
-    LOG.warn("URI for %d candidate definitions not found!".format(uriNotFound.size) )
-    LOG.warn("SF for %d candidate definitions not found!".format(sfNotFound.size) )
+    SpotlightLog.warn(this.getClass, "URI for %d candidate definitions not found!", uriNotFound.size)
+    SpotlightLog.warn(this.getClass, "SF for %d candidate definitions not found!", sfNotFound.size)
 
     candidateMap
   }

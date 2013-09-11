@@ -18,7 +18,7 @@
 
 package org.dbpedia.spotlight.spot.lingpipe
 
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import com.aliasi.util.AbstractExternalizable
 import java.io.{FileInputStream, File}
 import org.semanticweb.yars.nx.parser.NxParser
@@ -44,11 +44,8 @@ import org.dbpedia.spotlight.io.{OccurrenceSource, IndexedOccurrencesSource}
  */
 object IndexLingPipeSpotter
 {
-    private val LOG = LogFactory.getLog(this.getClass)
-
-
     def getDictionary(occs : Traversable[DBpediaResourceOccurrence], lowerCased: Boolean, uriCountThreshold: Int = 0) : MapDictionary[String] = {
-        if (lowerCased) LOG.warn("Lowercasing all surface forms in this dictionary!")
+        if (lowerCased) SpotlightLog.warn(this.getClass, "Lowercasing all surface forms in this dictionary!")
         val dictionary = new MapDictionary[String]()
         occs.foreach( occ => {
             val sf = if (lowerCased) occ.surfaceForm.name.toLowerCase else occ.surfaceForm.name
@@ -59,7 +56,7 @@ object IndexLingPipeSpotter
     }
 
     def getDictionary(surrogatesFile : File, uriCountThreshold: Int) : MapDictionary[String] = {
-        LOG.info("Reading surface forms from "+surrogatesFile+"...")
+        SpotlightLog.info(this.getClass, "Reading surface forms from %s...", surrogatesFile)
         if (surrogatesFile.getName.toLowerCase.endsWith(".tsv")) getDictionaryFromTSV(surrogatesFile)
         else if (surrogatesFile.getName.toLowerCase.endsWith(".count")) getDictionaryFromTSVSurrogates(surrogatesFile, uriCountThreshold)
         else if (surrogatesFile.getName.toLowerCase.endsWith(".nt")) getDictionaryFromNTSurrogates(surrogatesFile)
@@ -67,9 +64,9 @@ object IndexLingPipeSpotter
     }
 
     def writeDictionaryFile(dictionary : MapDictionary[String], targetFile : File) {
-        LOG.info("Saving compiled dictionary to "+targetFile.getName+"...")
+        SpotlightLog.info(this.getClass, "Saving compiled dictionary to %s...", targetFile.getName)
         AbstractExternalizable.compileTo(dictionary, targetFile)
-        LOG.info(dictionary.size+" entries saved.")
+        SpotlightLog.info(this.getClass, "%d entries saved.", dictionary.size)
     }
 
     //TODO enable filtering by count
@@ -92,7 +89,7 @@ object IndexLingPipeSpotter
             try {
                 uriCount = fields(2).toInt
             } catch {
-                case e: Exception => LOG.error("Expected input is a TSV file with <surfaceForm, uri, count>")
+                case e: Exception => SpotlightLog.error(this.getClass, "Expected input is a TSV file with <surfaceForm, uri, count>")
             }
             val surfaceForm = fields(0)
             dictionary.addEntry(new DictionaryEntry[String](surfaceForm, ""))  // chunk type undefined
@@ -131,7 +128,7 @@ object IndexLingPipeSpotter
         val indexDir = new File(config.get("org.dbpedia.spotlight.index.dir"))
 
         if (indexDir.getName.contains("compact"))
-            LOG.warn("Beware, this class cannot operate on compact indexes. Based on the file name, we believe that your index has been run through CompactIndex, therefore removing surface forms from the stored fields.")
+            SpotlightLog.warn(this.getClass, "Beware, this class cannot operate on compact indexes. Based on the file name, we believe that your index has been run through CompactIndex, therefore removing surface forms from the stored fields.")
 
         val dictFile = new File(candidateMapFile.getAbsoluteFile+".spotterDictionary")
 

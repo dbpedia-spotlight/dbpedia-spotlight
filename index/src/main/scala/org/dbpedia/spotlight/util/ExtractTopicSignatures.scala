@@ -22,15 +22,13 @@ package org.dbpedia.spotlight.util
 import java.io.PrintWriter
 import io.Source
 import org.dbpedia.spotlight.model.{SpotlightConfiguration, DBpediaResource}
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 
 /**
  * Extract topic signatures for DBpedia Resources according to DBpedia Spotlight's index.
  * @author pablomendes
  */
 object ExtractTopicSignatures {
-    private val LOG = LogFactory.getLog(this.getClass)
-
     def main(args: Array[String]) {
 
         if (args.size!=4)
@@ -49,7 +47,7 @@ object ExtractTopicSignatures {
         var i = 0;
         uriSet.foreach( uri => {
             i = i + 1
-            LOG.info(String.format("URI %s : %s", i.toString, uri));
+            SpotlightLog.info(this.getClass, "URI %s : %s", i.toString, uri)
             try {
                 val keywords = extractor.getKeywords(new DBpediaResource(uri))
                 val filteredKeywords = keywords.filterNot(stopwords.contains(_)).mkString(" ");
@@ -59,7 +57,7 @@ object ExtractTopicSignatures {
                     signatures.flush
                 }
             } catch {
-                case any: Exception => LOG.error("Unknown Error: "+any)
+                case any: Exception => SpotlightLog.error(this.getClass, "Unknown Error: %s", any)
             }
         });
 
