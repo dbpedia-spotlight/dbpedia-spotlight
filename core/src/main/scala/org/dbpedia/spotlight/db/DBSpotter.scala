@@ -17,7 +17,7 @@ abstract class DBSpotter(
  spotFeatureWeights: Option[Seq[Double]],
  stopwords: Set[String]
 ) extends Spotter {
-  val MaxSentenceLen=300
+  val MaxSentenceLen=200
   var tokenizer: TextTokenizer = null
 
   val uppercaseFinder = new RegexNameFinder(

@@ -261,6 +261,7 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
 
     //iterate each wiki page
     wikisource.foreach((wikiPage:WikiPage)=>{
+      System.out.println(wikiPage.title)
       // clean the wiki markup from everything but links
       val cleanSource = WikiMarkupStripper.stripEverything(wikiPage.source)
       // parse the (clean) wiki page
@@ -284,6 +285,7 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
       }
     })
 
+    LOG.info("%d docs parsed, mem %d M".format(parsedDocs,  memLoaded))
     shutdownAndAwaitTermination(pool)
     val counters=mergeCounters(initializers.toArray)
     saveGlobalCounters(trainingDir,counters)
