@@ -121,7 +121,7 @@ public class Server {
             String example2 = "annotate?text=Brazilian%20oil%20giant%20Petrobras%20and%20U.S.%20oilfield%20service%20company%20Halliburton%20have%20signed%20a%20technological%20cooperation%20agreement,%20Petrobras%20announced%20Monday.%20%20%20%20The%20two%20companies%20agreed%20on%20three%20projects:%20studies%20on%20contamination%20of%20fluids%20in%20oil%20wells,%20laboratory%20simulation%20of%20well%20production,%20and%20research%20on%20solidification%20of%20salt%20and%20carbon%20dioxide%20formations,%20said%20Petrobras.%20Twelve%20other%20projects%20are%20still%20under%20negotiation.&confidence=0.0&support=0";
             URI example = new URI(serverURI.toString() + example2);
 
-            java.awt.Desktop.getDesktop().browse(example);
+            //java.awt.Desktop.getDesktop().browse(example);
         }
         catch (Exception e) {
             System.err.println("Could not open browser. " + e);
