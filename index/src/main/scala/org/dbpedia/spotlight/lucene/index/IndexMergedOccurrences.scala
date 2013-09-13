@@ -20,7 +20,7 @@ package org.dbpedia.spotlight.lucene.index
 
 import java.io.File
 import org.dbpedia.spotlight.io.{FileOccurrenceSource}
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import org.apache.lucene.store.FSDirectory
 import org.dbpedia.spotlight.lucene.LuceneManager
 import org.dbpedia.spotlight.util.IndexingConfiguration
@@ -33,12 +33,10 @@ import org.dbpedia.spotlight.model.Factory
  */
 object IndexMergedOccurrences
 {
-    private val LOG = LogFactory.getLog(this.getClass)
-
     def index(trainingInputFile : String, indexer: OccurrenceContextIndexer ) {
         val wpOccurrences = FileOccurrenceSource.fromFile(new File(trainingInputFile))
         var indexDisplay = 0
-        LOG.info("Indexing with " + indexer.getClass + " in Lucene ...")
+        SpotlightLog.info(this.getClass, "Indexing with %s in Lucene ...", indexer.getClass)
 
         wpOccurrences.foreach( occurrence => {
             try {
@@ -47,18 +45,18 @@ object IndexMergedOccurrences
 
             indexDisplay += 1
             if (indexDisplay % 10000 == 0) {
-                LOG.debug("  indexed " + indexDisplay + " occurrences")
+                SpotlightLog.debug(this.getClass, "  indexed %d occurrences", indexDisplay)
             }
             } catch {
                 case e: Exception => {
-                    LOG.error("Error parsing %s. ".format(indexDisplay))
+                    SpotlightLog.error(this.getClass, "Error parsing %d. ", indexDisplay)
                     e.printStackTrace()
                 }
             }
         })
         indexer.close  // important
 
-        LOG.info("Finished: indexed " + indexDisplay + " occurrences")
+        SpotlightLog.info(this.getClass, "Finished: indexed %d occurrences", indexDisplay)
     }
 
     def getBaseDir(baseDirName : String) : String = {
@@ -91,11 +89,11 @@ object IndexMergedOccurrences
         val similarity = Factory.Similarity.fromName("InvCandFreqSimilarity")  //config.getSimilarity(args(2))
         val analyzer = config.getAnalyzer  //config.getAnalyzer(args(3))
 
-        LOG.info("Using dataset under: "+baseDir);
-        LOG.info("Similarity class: "+similarity.getClass);
-        LOG.info("Analyzer class: "+analyzer.getClass);
+        SpotlightLog.info(this.getClass, "Using dataset under: %s", baseDir)
+        SpotlightLog.info(this.getClass, "Similarity class: %s", similarity.getClass)
+        SpotlightLog.info(this.getClass, "Analyzer class: %s", analyzer.getClass)
 
-        LOG.warn("WARNING: this process will run a lot faster if the occurrences are sorted by URI!");
+        SpotlightLog.warn(this.getClass, "WARNING: this process will run a lot faster if the occurrences are sorted by URI!")
 
         val minNumDocsBeforeFlush : Int = config.get("org.dbpedia.spotlight.index.minDocsBeforeFlush", "200000").toInt
         val lastOptimize = false;
@@ -121,16 +119,16 @@ object IndexMergedOccurrences
         val vectorBuilder = new MergedOccurrencesContextIndexer(lucene)
 
         val freeMemGB : Double = Runtime.getRuntime.freeMemory / 1073741824.0
-        if (Runtime.getRuntime.freeMemory < minNumDocsBeforeFlush) LOG.error("Your available memory "+freeMemGB+"GB is less than minNumDocsBeforeFlush. This setting is known to give OutOfMemoryError.");
-        LOG.info("Available memory: "+freeMemGB+"GB")
-        LOG.info("Max memory: "+Runtime.getRuntime.maxMemory / 1073741824.0 +"GB")
+        if (Runtime.getRuntime.freeMemory < minNumDocsBeforeFlush) SpotlightLog.error(this.getClass, "Your available memory %fGB is less than minNumDocsBeforeFlush. This setting is known to give OutOfMemoryError.", freeMemGB)
+        SpotlightLog.info(this.getClass, "Available memory: %fGB", freeMemGB)
+        SpotlightLog.info(this.getClass, "Max memory: %fGB", Runtime.getRuntime.maxMemory / 1073741824.0)
         /* Total memory currently in use by the JVM */
-        LOG.info("Total memory (bytes): " + Runtime.getRuntime.totalMemory / 1073741824.0 + "GB")
-        //LOG.info("MinNumDocsBeforeFlush: "+minNumDocsBeforeFlush)
+        SpotlightLog.info(this.getClass, "Total memory (bytes): %fGB", Runtime.getRuntime.totalMemory / 1073741824.0)
+        //SpotlightLog.info("MinNumDocsBeforeFlush: "+minNumDocsBeforeFlush, this.getClass)
         
         index(trainingInputFileName, vectorBuilder);
 
-        LOG.info("Index saved to: "+indexOutputDir );
+        SpotlightLog.info(this.getClass, "Index saved to: %s", indexOutputDir)
         
     }
 

@@ -1,5 +1,6 @@
 package org.dbpedia.spotlight.db.memory
 
+import org.dbpedia.spotlight.log.SpotlightLog
 import org.dbpedia.spotlight.db.model.TokenTypeStore
 import java.lang.String
 import org.dbpedia.spotlight.model.TokenType
@@ -41,7 +42,7 @@ class MemoryTokenTypeStore
 
   def createReverseLookup() {
     if (tokenForId != null) {
-      LOG.info("Creating reverse-lookup for Tokens.")
+      SpotlightLog.info(this.getClass, "Creating reverse-lookup for Tokens.")
       idFromToken = StringToIDMapFactory.createDefault(tokenForId.size)
 
       var id = 0

@@ -17,7 +17,7 @@
 
 package org.dbpedia.spotlight.spot
 
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import org.dbpedia.spotlight.model._
 import scala.collection.JavaConversions._
 
@@ -26,9 +26,7 @@ import scala.collection.JavaConversions._
  */
 class ChainedSelector(selectors : List[SpotSelector]) extends UntaggedSpotSelector {
 
-    private val LOG = LogFactory.getLog(this.getClass)
-
-    LOG.info("Creating a chained surface form selector with %s.".format(selectors))
+    SpotlightLog.info(this.getClass, "Creating a chained surface form selector with %s.", selectors)
 
     def select(occurrences: java.util.List[SurfaceFormOccurrence]) : java.util.List[SurfaceFormOccurrence] = {
         var occs = occurrences

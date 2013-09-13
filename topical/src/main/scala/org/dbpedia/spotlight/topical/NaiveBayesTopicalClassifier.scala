@@ -6,7 +6,7 @@ import java.io.{StringReader, File}
 import io.Source
 import la.DenseTensor1
 import org.dbpedia.spotlight.model.{Topic, Text}
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import org.apache.lucene.analysis.{Analyzer}
 import org.apache.lucene.analysis.en.EnglishAnalyzer
 import org.apache.lucene.util.Version
@@ -201,8 +201,6 @@ protected class NaiveBayesTopicalClassifier extends TopicalClassifier {
 }
 
 object NaiveBayesTopicalClassifier extends TopicalClassifierTrainer{
-    private val LOG = LogFactory.getLog(getClass())
-
     var batchSize = 600000
 
     /**
@@ -215,7 +213,7 @@ object NaiveBayesTopicalClassifier extends TopicalClassifierTrainer{
     }
 
     def trainModelIncremental(corpus: File, iterations: Int, classifier: TopicalClassifier) {
-        LOG.info("Training model on dataset " + corpus.getAbsolutePath)
+        SpotlightLog.info(this.getClass, "Training model on dataset %s", corpus.getAbsolutePath)
 
         if (! corpus.exists) throw new IllegalArgumentException("Directory "+corpus+" does not exist.")
 
@@ -241,7 +239,7 @@ object NaiveBayesTopicalClassifier extends TopicalClassifierTrainer{
         var count = 0
 
         def doTrain {
-            LOG.info("Training on batch "+count+" with "+documents.size+" documents")
+            SpotlightLog.info(this.getClass, "Training on batch %d with %d documents", count, documents.size)
             count += 1
             val ll = new LabelList[cl.Label, cl.Document](documents.map(_.label), _.document)
             cl.trainIncremental(ll)

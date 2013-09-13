@@ -18,7 +18,7 @@
 
 package org.dbpedia.spotlight.model
 
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import org.dbpedia.spotlight.lucene.LuceneManager
 import org.dbpedia.spotlight.lucene.similarity.{JCSTermCache, CachedInvCandFreqSimilarity}
 import com.aliasi.sentences.IndoEuropeanSentenceModel
@@ -47,9 +47,6 @@ import io.Source
  * @author pablomendes
  */
 class SpotlightFactory(val configuration: SpotlightConfiguration) {
-
-    private val LOG = LogFactory.getLog(this.getClass)
-
     val analyzer = configuration.analyzer
     assert(analyzer!=null)
 
@@ -86,12 +83,12 @@ class SpotlightFactory(val configuration: SpotlightConfiguration) {
     val disambiguators = new java.util.LinkedHashMap[SpotlightConfiguration.DisambiguationPolicy,ParagraphDisambiguatorJ]()
 
     //populate
-    LOG.info("Initiating spotters...")
+    SpotlightLog.info(this.getClass, "Initiating spotters...")
     lazy val spotDict : Dictionary[String] = AbstractExternalizable.readObject(new File(configuration.getSpotterConfiguration.getSpotterFile)).asInstanceOf[Dictionary[String]] //TODO temp until new configuration is in place
     spotter()
-    LOG.info("Initiating disambiguators...")
+    SpotlightLog.info(this.getClass, "Initiating disambiguators...")
     disambiguator()
-    LOG.info("Done.")
+    SpotlightLog.info(this.getClass, "Done.")
 
     def spotter(policy: SpotterConfiguration.SpotterPolicy) : Spotter = {
         if (policy == SpotterConfiguration.SpotterPolicy.Default) {

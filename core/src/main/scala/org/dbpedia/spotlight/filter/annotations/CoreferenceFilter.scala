@@ -17,7 +17,7 @@
 package org.dbpedia.spotlight.filter.annotations
 
 import org.dbpedia.spotlight.model.{SurfaceForm, DBpediaResourceOccurrence}
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 
 /**
  * this is a heuristic and has nothing to do with proper coreference resolution!!!
@@ -26,8 +26,6 @@ import org.apache.commons.logging.LogFactory
  */
 
 class CoreferenceFilter extends AnnotationFilter {
-
-    private val LOG = LogFactory.getLog(this.getClass)
 
     override def filterOccs(occs : Traversable[DBpediaResourceOccurrence]) : Traversable[DBpediaResourceOccurrence] = {
         // this is a heuristic and has nothing to do with proper coreference resolution!!!
@@ -38,7 +36,7 @@ class CoreferenceFilter extends AnnotationFilter {
             val coreferentOcc = occs.slice(0, backwardIdx).find(prevOcc => {
                 val coreferring = isCoreferent(prevOcc.surfaceForm, laterOcc.surfaceForm)
                 if (coreferring)
-                    LOG.info("found coreferent: "+laterOcc.surfaceForm+" at position "+laterOcc.textOffset+" probably coreferring to "+prevOcc.surfaceForm+" at position "+prevOcc.textOffset+"; copying "+prevOcc.resource)
+                    SpotlightLog.info(this.getClass, "found coreferent: %s at position %d probably coreferring to %s at position %d; copying %s", laterOcc.surfaceForm, laterOcc.textOffset, prevOcc.surfaceForm, prevOcc.textOffset, prevOcc.resource)
                 coreferring
             })
             if (coreferentOcc != None) {
@@ -64,7 +62,7 @@ class CoreferenceFilter extends AnnotationFilter {
         //                val isCoreferent = ( (laterSFWords.length == 1 && prevSFWords.contains(laterSFWords.head)) ||
         //                                     (prevSFWords.last equals laterSFWords.last) )
         //                if (isCoreferent)
-        //                    LOG.info("filtered out as coreferent: "+laterOcc.surfaceForm+" at position "+laterOcc.textOffset+" probably coreferring to "+prevOcc.surfaceForm+" at position "+prevOcc.textOffset)
+        //                    SpotlightLog.info(this.getClass, "filtered out as coreferent: %s at position %d probably coreferring to %s at position %d", laterOcc.surfaceForm, laterOcc.textOffset, prevOcc.surfaceForm, prevOcc.textOffset)
         //                isCoreferent
         //            }) != None
         //        }).reverse
@@ -78,11 +76,11 @@ class CoreferenceFilter extends AnnotationFilter {
                 prevSFWords.contains(laterSFWords.head))
                 //|| (prevSFWords.last equals laterSFWords.last)
                 )
-    }
+      }
 
-    def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
-        // this filter has to operate on a complete set of occurrences in order to find coreferents
-        throw new NoSuchMethodError("don't use touchOcc method for this filter; only use filterOccs method")
-    }
+      def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
+          // this filter has to operate on a complete set of occurrences in order to find coreferents
+          throw new NoSuchMethodError("don't use touchOcc method for this filter; only use filterOccs method")
+      }
 
-}
+  }

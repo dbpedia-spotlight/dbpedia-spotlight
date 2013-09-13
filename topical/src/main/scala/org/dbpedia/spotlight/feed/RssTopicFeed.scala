@@ -7,7 +7,7 @@ import java.util
 import org.dbpedia.spotlight.model.{Text,RssItem, Topic}
 import util.Date
 import xml.{Node,XML}
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import org.apache.commons.lang.time.DateUtils
 
 /**
@@ -18,7 +18,6 @@ import org.apache.commons.lang.time.DateUtils
  */
 class RssTopicFeed(val topic: Topic, val feedUrls: Array[URL], protected var interval: Long) extends Feed[(Topic, RssItem)](false) {
 
-    private val LOG = LogFactory.getLog(this.getClass)
     protected var lastUpdate = new Date(Long.MinValue)
 
     def changeInterval(refreshInterval: Long) {
@@ -38,7 +37,7 @@ class RssTopicFeed(val topic: Topic, val feedUrls: Array[URL], protected var int
                             })
                     }
                     lastUpdate = new util.Date(System.currentTimeMillis())
-                    LOG.info("Received: " + ctr + " items, Topic: " + topic.getName)
+                    SpotlightLog.info(this.getClass, "Received: %d items, Topic: %s", ctr, topic.getName)
                 }
             }
         }

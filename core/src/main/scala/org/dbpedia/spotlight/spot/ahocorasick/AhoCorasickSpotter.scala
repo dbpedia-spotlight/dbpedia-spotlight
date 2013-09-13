@@ -21,7 +21,7 @@ import com.corruptmemory.aho_corasick.AhoCorasickBuilder.Data
 import com.corruptmemory.aho_corasick.{Match, AhoCorasickBuilder}
 import util.Sorting
 import org.dbpedia.spotlight.spot.Spotter
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import org.dbpedia.spotlight.model.{SurfaceForm, Text, SurfaceFormOccurrence}
 import scala.collection.JavaConversions._
 
@@ -34,11 +34,10 @@ import scala.collection.JavaConversions._
  */
 class AhoCorasickSpotter(val builder: AhoCorasickBuilder[String], val overlap: Boolean, pattern: String = "\\s|\\n|\\t|[,.:;¿?¡!()\\-'\"]") extends Spotter {
 
-  private val LOG = LogFactory.getLog(this.getClass)
   private val finder = builder.build()
   private var name = ""
 
-  LOG.debug("Allow overlap: " + overlap)
+  SpotlightLog.debug(this.getClass, "Allow overlap: %s" + overlap)
 
   /**
    * Find a specific text

@@ -1,6 +1,6 @@
 package org.dbpedia.spotlight.lucene.index
 
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import java.io.File
 import org.dbpedia.spotlight.util.IndexingConfiguration
 import org.dbpedia.spotlight.model.Factory
@@ -13,8 +13,6 @@ import org.apache.lucene.store.FSDirectory
  * @author dirk
  */
 object IndexSplittedOccurences {
-  private val LOG = LogFactory.getLog(this.getClass)
-
   /**
    *
    * Usage: mvn scala:run -DmainClass=org.dbpedia.spotlight.lucene.index.IndexSplittedOccurences "-DaddArgs=$INDEX_CONFIG_FILE|output/to/splitted/occs[|overwrite]"
@@ -37,11 +35,11 @@ object IndexSplittedOccurences {
     val similarity = Factory.Similarity.fromName("InvCandFreqSimilarity")  //config.getSimilarity(args(2))
     val analyzer = config.getAnalyzer  //config.getAnalyzer(args(3))
 
-    LOG.info("Output index to: "+baseDir)
-    LOG.info("Similarity class: "+similarity.getClass)
-    LOG.info("Analyzer class: "+analyzer.getClass)
+    SpotlightLog.info(this.getClass, "Output index to: %s", baseDir)
+    SpotlightLog.info(this.getClass, "Similarity class: %s", similarity.getClass)
+    SpotlightLog.info(this.getClass, "Analyzer class: %s", analyzer.getClass)
 
-    LOG.warn("WARNING: this process will run a lot faster if the occurrences are sorted by URI!")
+    SpotlightLog.warn(this.getClass, "WARNING: this process will run a lot faster if the occurrences are sorted by URI!")
 
     val minNumDocsBeforeFlush : Int = config.get("org.dbpedia.spotlight.index.minDocsBeforeFlush", "200000").toInt
     val lastOptimize = false
@@ -68,16 +66,16 @@ object IndexSplittedOccurences {
       val vectorBuilder = new MergedOccurrencesContextIndexer(lucene)
 
       val freeMemGB : Double = Runtime.getRuntime.freeMemory / 1073741824.0
-      if (Runtime.getRuntime.freeMemory < minNumDocsBeforeFlush) LOG.error("Your available memory "+freeMemGB+"GB is less than minNumDocsBeforeFlush. This setting is known to give OutOfMemoryError.")
-      LOG.info("Available memory: "+freeMemGB+"GB")
-      LOG.info("Max memory: "+Runtime.getRuntime.maxMemory / 1073741824.0 +"GB")
+      if (Runtime.getRuntime.freeMemory < minNumDocsBeforeFlush) SpotlightLog.error(this.getClass, "Your available memory %fGB is less than minNumDocsBeforeFlush. This setting is known to give OutOfMemoryError.", freeMemGB)
+      SpotlightLog.info(this.getClass, "Available memory: %fGB", freeMemGB)
+      SpotlightLog.info(this.getClass, "Max memory: %fGB", +Runtime.getRuntime.maxMemory / 1073741824.0)
       /* Total memory currently in use by the JVM */
-      LOG.info("Total memory (bytes): " + Runtime.getRuntime.totalMemory / 1073741824.0 + "GB")
-      //LOG.info("MinNumDocsBeforeFlush: "+minNumDocsBeforeFlush)
+      SpotlightLog.info(this.getClass, "Total memory (bytes): %fGB", Runtime.getRuntime.totalMemory / 1073741824.0)
+      //SpotlightLog.info(this.getClass, "MinNumDocsBeforeFlush: %d", minNumDocsBeforeFlush)
 
       IndexMergedOccurrences.index(occsFile.getAbsolutePath, vectorBuilder)
     } )
 
-    LOG.info("Indexes saved to: "+baseDir )
+    SpotlightLog.info(this.getClass, "Indexes saved to: %s", baseDir)
   }
 }

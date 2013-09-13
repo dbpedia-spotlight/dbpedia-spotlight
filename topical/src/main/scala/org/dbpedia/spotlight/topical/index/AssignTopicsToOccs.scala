@@ -6,7 +6,7 @@ import org.dbpedia.spotlight.model.{Topic, TopicalClassificationConfiguration}
 import org.dbpedia.spotlight.topical.{TopicalClassifierFactory, TopicalClassifier}
 import org.dbpedia.spotlight.topical.util.TopicUtil
 import org.dbpedia.spotlight.io.FileOccurrenceSource
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import collection.mutable._
 
 /**
@@ -18,8 +18,6 @@ import collection.mutable._
  * @author Dirk Weißenborn
  */
 object AssignTopicsToOccs {
-
-    private val LOG = LogFactory.getLog(getClass)
 
     /**
      *
@@ -51,7 +49,7 @@ object AssignTopicsToOccs {
                         written = true
                         assignments += 1
                         if (assignments % 10000 == 0)
-                            LOG.info(assignments + "-th assignment: " + occ.id + ", " + occ.resource.uri + "->" + topic.getName)
+                            SpotlightLog.info(this.getClass, "%d-th assignment: %s, %s->%s", assignments, occ.id, occ.resource.uri, topic.getName)
                     }
                 }
             }
@@ -60,7 +58,7 @@ object AssignTopicsToOccs {
 
             ctr += 1
             if (ctr % 100000 == 0)
-                LOG.info(ctr + " occs processed")
+                SpotlightLog.info(this.getClass, "%d occs processed", ctr)
         })
 
         writers.foreach(_._2.close())

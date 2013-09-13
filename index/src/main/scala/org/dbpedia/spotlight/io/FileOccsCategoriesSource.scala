@@ -1,6 +1,5 @@
 package org.dbpedia.spotlight.io
 
-import org.apache.commons.logging.LogFactory
 import java.io._
 import java.util.zip.{GZIPInputStream}
 import io.Source
@@ -17,8 +16,6 @@ import org.dbpedia.spotlight.model._
 
 object FileOccsCategoriesSource
 {
-  private val LOG = LogFactory.getLog(this.getClass)
-
   /**
    * Creates an occ text to categories iterator from the occs  and articles_categories files
    */

@@ -17,7 +17,6 @@ package org.dbpedia.spotlight.io
 
 import org.dbpedia.spotlight.model._
 import io.Source
-import org.apache.commons.logging.LogFactory
 import java.io._
 import java.util.zip.{GZIPOutputStream, GZIPInputStream}
 import tools.nsc.doc.model.comment.Paragraph
@@ -40,8 +39,6 @@ trait AnnotatedTextSource extends Traversable[AnnotatedParagraph] {
 }
 
 object AnnotatedTextSource {
-
-    private val LOG = LogFactory.getLog(this.getClass)
 
     def fromOccurrencesString(text: String) : AnnotatedTextSource = {
         new TSVOccurrencesSortedByText(text.split("\n").iterator)

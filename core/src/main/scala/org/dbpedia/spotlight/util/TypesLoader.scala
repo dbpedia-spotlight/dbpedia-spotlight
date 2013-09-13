@@ -18,7 +18,7 @@ package org.dbpedia.spotlight.util
 
 import io.Source
 import scala.collection.JavaConversions._
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import java.util.{LinkedHashSet, LinkedList}
 import java.io.{InputStream, File}
 import org.semanticweb.yars.nx.parser.NxParser
@@ -35,10 +35,8 @@ import org.dbpedia.spotlight.model._
 
 object TypesLoader
 {
-    private val LOG = LogFactory.getLog(this.getClass)
-
     def getTypesMap(typeDictFile : File) : Map[String, List[OntologyType]] = {
-        LOG.info("Loading types map...")
+        SpotlightLog.info(this.getClass, "Loading types map...")
         if (!(typeDictFile.getName.toLowerCase endsWith ".tsv"))
             throw new IllegalArgumentException("types mapping only accepted in tsv format so far! can't parse "+typeDictFile)
         // CAUTION: this assumes that the most specific type is listed last
@@ -50,12 +48,12 @@ object TypesLoader
             val typesList : List[OntologyType] = typesMap.get(uri).getOrElse(List[OntologyType]()) ::: List(t)
             typesMap = typesMap.updated(uri, typesList)
         }
-        LOG.info("Done.")
+        SpotlightLog.info(this.getClass, "Done.")
         typesMap
     }
 
     def getTypesMapFromTSV_java(input: InputStream) : java.util.Map[String,java.util.LinkedHashSet[OntologyType]] = {
-        LOG.info("Loading types map...")
+        SpotlightLog.info(this.getClass, "Loading types map...")
         var typesMap = Map[String,java.util.LinkedHashSet[OntologyType]]()
         var i = 0;
         for (line <- Source.fromInputStream(input, "UTF-8").getLines) {
@@ -74,13 +72,13 @@ object TypesLoader
                 typesMap = typesMap.updated(uri, typesList)
             }
         }
-        LOG.info("Done. Loaded %d types for %d resources.".format(i,typesMap.size))
+        SpotlightLog.info(this.getClass, "Done. Loaded %d types for %d resources.", i,typesMap.size)
         typesMap
     }
 
 
     def getTypesMap_java(instanceTypesStream : InputStream) : java.util.Map[String,java.util.LinkedHashSet[OntologyType]] = {
-        LOG.info("Loading types map...")
+        SpotlightLog.info(this.getClass, "Loading types map...")
         var typesMap = Map[String,java.util.LinkedHashSet[OntologyType]]()
         var i = 0;
         // CAUTION: this assumes that the most specific type is listed last
@@ -96,7 +94,7 @@ object TypesLoader
                 typesMap = typesMap.updated(resource.uri, typesList)
             }
         }
-        LOG.info("Done. Loaded %d types.".format(i))
+        SpotlightLog.info(this.getClass, "Done. Loaded %d types.", i)
         typesMap
     }
     

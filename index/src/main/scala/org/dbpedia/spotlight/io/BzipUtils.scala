@@ -18,7 +18,7 @@ package org.dbpedia.spotlight
 
 import java.io.{IOException, BufferedInputStream, FileInputStream, FileOutputStream}
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
-import org.apache.commons.logging.{LogFactory, Log}
+import org.dbpedia.spotlight.log.SpotlightLog
 
 
 
@@ -28,8 +28,6 @@ import org.apache.commons.logging.{LogFactory, Log}
 @Deprecated
 object BzipUtils {
 
-  val LOG: Log = LogFactory.getLog(this.getClass)
-
   def extract(filename: String):String = {
     var buffersize: Int = 1024
     var out: FileOutputStream = null
@@ -37,7 +35,7 @@ object BzipUtils {
     var tempFileName = filename.split("/")
 
     var newFilename = "/tmp/" + tempFileName.last.replace(".bz2","")
-    LOG.info("Extracting compressed file into %s...".format(newFilename))
+    SpotlightLog.info(this.getClass, "Extracting compressed file into %s...", newFilename)
     try {
       val fin: FileInputStream = new FileInputStream(filename)
       val in: BufferedInputStream = new BufferedInputStream(fin)
@@ -51,7 +49,7 @@ object BzipUtils {
     }
     catch {
       case e: IOException => {
-        LOG.error(e.getMessage)
+        SpotlightLog.error(this.getClass, e.getMessage)
         e.printStackTrace()
       }
     }
@@ -62,7 +60,7 @@ object BzipUtils {
         }
         catch {
           case e: IOException => {
-               LOG.error("Trying close FileOutputStream... ")
+               SpotlightLog.error(this.getClass, "Trying close FileOutputStream... ")
                e.printStackTrace();
           }
         }
@@ -73,7 +71,7 @@ object BzipUtils {
         }
         catch {
           case e: IOException => {
-               LOG.error("Trying close BZip2CompressorInputStream... ")
+               SpotlightLog.error(this.getClass, "Trying close BZip2CompressorInputStream... ")
                e.printStackTrace();
           }
         }

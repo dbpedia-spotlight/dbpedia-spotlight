@@ -16,7 +16,7 @@
 
 package org.dbpedia.spotlight.lucene.index
 
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
 import java.io.{PrintStream, File}
 import util.Random
@@ -31,18 +31,16 @@ import org.dbpedia.spotlight.io.{OccurrenceSource, FileOccurrenceSource}
 
 object SplitTrainTest
 {
-    private val LOG = LogFactory.getLog(this.getClass)
-
     def main(args : Array[String]) {
         //val trainingPercentage = 0.95
         //val baseDir = "e:/data/split.train-"+(trainingPercentage*100).toInt+".amb/"
         val baseDir = args(0)
         val trainingPercentage = args(1).toDouble
 
-        LOG.info("Splitting ambiguous and unambiguous occurrences. Training samples in percent: "+trainingPercentage)
-        LOG.warn("**********************************************************************")
-        LOG.warn("WARNING: this assumes that the occurrences are sorted by surface form!")
-        LOG.warn("**********************************************************************")
+        SpotlightLog.info(this.getClass, "Splitting ambiguous and unambiguous occurrences. Training samples in percent: %f", trainingPercentage)
+        SpotlightLog.warn(this.getClass, "**********************************************************************")
+        SpotlightLog.warn(this.getClass, "WARNING: this assumes that the occurrences are sorted by surface form!")
+        SpotlightLog.warn(this.getClass, "**********************************************************************")
 
         // tsv file already has types and was filtered
         val sfSortedOccurrencesFileName = "data/WikipediaOccurrences-IDs-clean_enwiki-20100312.sfSorted.tsv"
@@ -77,11 +75,11 @@ object SplitTrainTest
 
             counter += 1
             if (counter % 100000 == 0)
-                LOG.info("processed "+counter+" occurrences")
+                SpotlightLog.info(this.getClass, "processed %d occurrences", counter)
         }
         write(occsForCurrentSurfaceForm, trainingPercentage, trainingStream, testingStream)
 
-        LOG.info("Done. Processed "+counter+" occurrences")
+        SpotlightLog.info(this.getClass, "Done. Processed %d occurrences", counter)
         trainingStream.close
         testingStream.close
     }

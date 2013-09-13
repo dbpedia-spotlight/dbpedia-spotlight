@@ -20,7 +20,7 @@ import org.dbpedia.spotlight.string.WikiMarkupStripper
 import org.dbpedia.spotlight.model._
 import org.dbpedia.extraction.wikiparser._
 import org.dbpedia.extraction.sources.{MemorySource, WikiPage, Source, XMLSource}
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import java.io.{PrintStream, FileOutputStream, File}
 import xml.{XML, Elem}
 import org.dbpedia.extraction.util.Language
@@ -31,9 +31,7 @@ import org.dbpedia.extraction.util.Language
 
 object WikiOccurrenceSource
 {
-    private val LOG = LogFactory.getLog(this.getClass)
-
-    // split at paragraphs 
+    // split at paragraphs
     val splitDocumentRegex = """(\n|(<br\s?/?>))(</?\w+?\s?/?>)?(\n|(<br\s?/?>))+"""
 
     /**
@@ -116,10 +114,10 @@ object WikiOccurrenceSource
 
                     pageCount += 1
                     if (pageCount %5000 == 0) {
-                        LOG.debug("Processed %d Wikipedia definition pages (avarage %.2f links per page)".format(pageCount, occCount/pageCount.toDouble))
+                        SpotlightLog.debug(this.getClass, "Processed %d Wikipedia definition pages (avarage %.2f links per page)", pageCount, occCount/pageCount.toDouble)
                     }
                     if (pageCount %100000 == 0) {
-                        LOG.info("Processed %d Wikipedia definition pages (avarage %.2f links per page)".format(pageCount, occCount/pageCount.toDouble))
+                        SpotlightLog.info(this.getClass, "Processed %d Wikipedia definition pages (avarage %.2f links per page)", pageCount, occCount/pageCount.toDouble)
                     }
 
                 }
