@@ -10,7 +10,6 @@ import org.dbpedia.spotlight.disambiguate.{ParagraphDisambiguator, Disambiguator
 import org.dbpedia.spotlight.exceptions.{SurfaceFormNotFoundException, InputException}
 import collection.mutable
 import scala.Predef._
-import org.dbpedia.spotlight.util.MathUtil
 import breeze.{numerics, linalg}
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ArrayBuffer
@@ -186,7 +185,7 @@ class DBTwoStepDisambiguator(
         0.0
 
       eNIL.setFeature(new Score("P(c|e)", nilContextScore))
-      eNIL.setFeature(new Score("P(e)",   MathUtil.ln( 1 / surfaceFormStore.getTotalAnnotatedCount.toDouble ) )) //surfaceFormStore.getTotalAnnotatedCount = total number of entity mentions
+      eNIL.setFeature(new Score("P(e)",   breeze.numerics.log( 1 / surfaceFormStore.getTotalAnnotatedCount.toDouble ) )) //surfaceFormStore.getTotalAnnotatedCount = total number of entity mentions
       val nilEntityScore = mixture.getScore(eNIL)
 
       //Get all other entities:
@@ -207,10 +206,10 @@ class DBTwoStepDisambiguator(
         //Set the scores as features for the resource occurrence:
 
         //Note that this is not mathematically correct, since the candidate prior is P(e|s),
-        //the correct P(s|e) should be MathUtil.ln( cand.support / cand.resource.support.toDouble )
-        resOcc.setFeature(new Score("P(s|e)", MathUtil.ln( cand.prior )))
+        //the correct P(s|e) should be breeze.numerics.log( cand.support / cand.resource.support.toDouble )
+        resOcc.setFeature(new Score("P(s|e)", breeze.numerics.log( cand.prior )))
         resOcc.setFeature(new Score("P(c|e)", resOcc.contextualScore))
-        resOcc.setFeature(new Score("P(e)",   MathUtil.ln( cand.resource.prior )))
+        resOcc.setFeature(new Score("P(e)",   breeze.numerics.log( cand.resource.prior )))
 
         //Use the mixture to combine the scores
         resOcc.setSimilarityScore(mixture.getScore(resOcc))
@@ -226,7 +225,7 @@ class DBTwoStepDisambiguator(
       (1 to candOccs.size-1).foreach{ i: Int =>
         val top = candOccs(i-1)
         val bottom = candOccs(i)
-        top.setPercentageOfSecondRank(MathUtil.exp(bottom.similarityScore - top.similarityScore))
+        top.setPercentageOfSecondRank(breeze.numerics.exp(bottom.similarityScore - top.similarityScore))
       }
 
       //Compute the final score as a softmax function, get the total score first:
@@ -234,8 +233,8 @@ class DBTwoStepDisambiguator(
       val contextSoftMaxTotal    = linalg.softmax(candOccs.map(_.contextualScore) :+ nilContextScore )
 
       candOccs.foreach{ o: DBpediaResourceOccurrence =>
-        o.setSimilarityScore( MathUtil.exp(o.similarityScore - similaritySoftMaxTotal) ) // e^xi / \sum e^xi
-        o.setContextualScore( MathUtil.exp(o.contextualScore - contextSoftMaxTotal) )    // e^xi / \sum e^xi
+        o.setSimilarityScore( breeze.numerics.exp(o.similarityScore - similaritySoftMaxTotal) ) // e^xi / \sum e^xi
+        o.setContextualScore( breeze.numerics.exp(o.contextualScore - contextSoftMaxTotal) )    // e^xi / \sum e^xi
       }
 
       acc + (aSfOcc -> candOccs)
