@@ -115,18 +115,6 @@ public class Server {
 
         System.err.println("Server started in " + System.getProperty("user.dir") + " listening on " + serverURI);
 
-        //Open browser
-        try {
-            String example1 = "annotate?text=At%20a%20private%20dinner%20on%20Friday%20at%20the%20Canadian%20Embassy,%20finance%20officials%20from%20seven%20world%20economic%20powers%20focused%20on%20the%20most%20vexing%20international%20economic%20problem%20facing%20the%20Obama%20administration.%20Over%20seared%20scallops%20and%20beef%20tenderloin,%20Treasury%20Secretary%20Timothy%20F.%20Geithner%20urged%20his%20counterparts%20from%20Europe,%20Canada%20and%20Japan%20to%20help%20persuade%20China%20to%20let%20its%20currency,%20the%20renminbi,%20rise%20in%20value%20a%20crucial%20element%20in%20redressing%20the%20trade%20imbalances%20that%20are%20threatening%20recovery%20around%20the%20world.%20But%20the%20next%20afternoon,%20the%20annual%20meetings%20of%20the%20International%20Monetary%20Fund%20ended%20with%20a%20tepid%20statement%20that%20made%20only%20fleeting%20and%20indirect%20references%20to%20the%20simmering%20currency%20tensions&confidence=0.2&support=20";
-            String example2 = "annotate?text=Brazilian%20oil%20giant%20Petrobras%20and%20U.S.%20oilfield%20service%20company%20Halliburton%20have%20signed%20a%20technological%20cooperation%20agreement,%20Petrobras%20announced%20Monday.%20%20%20%20The%20two%20companies%20agreed%20on%20three%20projects:%20studies%20on%20contamination%20of%20fluids%20in%20oil%20wells,%20laboratory%20simulation%20of%20well%20production,%20and%20research%20on%20solidification%20of%20salt%20and%20carbon%20dioxide%20formations,%20said%20Petrobras.%20Twelve%20other%20projects%20are%20still%20under%20negotiation.&confidence=0.0&support=0";
-            URI example = new URI(serverURI.toString() + example2);
-
-            java.awt.Desktop.getDesktop().browse(example);
-        }
-        catch (Exception e) {
-            System.err.println("Could not open browser. " + e);
-        }
-
         Thread warmUp = new Thread() {
             public void run() {
                 //factory.searcher().warmUp((int) (configuration.getMaxCacheSize() * 0.7));
