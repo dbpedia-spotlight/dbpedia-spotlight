@@ -4,7 +4,7 @@ import org.dbpedia.spotlight.model.{Text, Topic}
 import java.io._
 import scala.collection.mutable._
 import scala.Array
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import io.Source
 import collection.mutable
 
@@ -15,8 +15,6 @@ import collection.mutable
  */
 object TopicalMultiLabelClassifier {
 
-    private val LOG = LogFactory.getLog(getClass)
-
     /**
      *
      * @param args path to training corpus in arff (class labels have to be last attribute), path to output directory
@@ -26,7 +24,7 @@ object TopicalMultiLabelClassifier {
     }
 
     def trainModel(corpus: File, modelOut: File, classifierType:String = "") {
-        LOG.info("Training multilabel classifier on corpus: %s, saving model to: %s".format(corpus.getAbsolutePath, modelOut.getAbsolutePath))
+        SpotlightLog.info(this.getClass, "Training multilabel classifier on corpus: %s, saving model to: %s", corpus.getAbsolutePath, modelOut.getAbsolutePath)
         val trainer = TopicalClassifierTrainer.byType(classifierType)
         modelOut.mkdirs()
         val topics = mutable.Map[Topic,(File,PrintWriter)]()
@@ -70,8 +68,6 @@ object TopicalMultiLabelClassifier {
  * @throws IOException
  */
 class TopicalMultiLabelClassifier(modelsDir: File, classifierType:String) extends MultiLabelClassifier {
-    private val LOG = LogFactory.getLog(getClass)
-
     var models = Map[Topic, TopicalClassifier]()
 
     {
@@ -114,7 +110,7 @@ class TopicalMultiLabelClassifier(modelsDir: File, classifierType:String) extend
         if (models.contains(topic))
             models(topic).update(text,new Topic(MultiLabelClassifier.NEGATIVE_TOPIC_PREFIX+topic.getName))
         else
-            LOG.error("Tried to update on not existing topic!")
+            SpotlightLog.error(this.getClass, "Tried to update on not existing topic!")
     }
 
 }

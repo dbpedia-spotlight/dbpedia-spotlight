@@ -1,7 +1,7 @@
 package org.dbpedia.spotlight.topical.opennlp
 
 import io.Source
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import opennlp.tools.util.PlainTextByLineStream
 import java.io._
 import weka.classifiers.evaluation.{NominalPrediction, ConfusionMatrix}
@@ -13,8 +13,6 @@ import opennlp.tools.doccat._
  * @author dirk
  */
 object OpenNLPCategorizer {
-
-    private val LOG = LogFactory.getLog(getClass())
 
     def main(args: Array[String]) {
         //trainModel("/media/Data/Wikipedia/model/training.corpus100k","/home/dirk/GSOC2012/20NewsGroup/en-doccat100k.bin")
@@ -74,10 +72,7 @@ object OpenNLPCategorizer {
                 outcomes))
         })
 
-        LOG.info("\nError rate: " + matrix.errorRate() +
-            "\nCorrect: " + matrix.correct() +
-            "\nIncorrect: " + matrix.incorrect() + "\n\n" +
-            matrix.toString("Confusion Matrix"))
+        SpotlightLog.info(this.getClass, "\nError rate: %s\nCorrect: %s\nIncorrect: %s\n\n%s", matrix.errorRate(), matrix.correct, matrix.incorrect, matrix.toString("Confusion Matrix"))
 
     }
 

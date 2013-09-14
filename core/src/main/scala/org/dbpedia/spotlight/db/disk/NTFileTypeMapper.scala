@@ -5,7 +5,7 @@ import org.dbpedia.spotlight.model.{OntologyType, DBpediaResource}
 import org.dbpedia.spotlight.io.NTripleSource
 import org.dbpedia.spotlight.model.Factory.OntologyType
 import org.dbpedia.spotlight.model.OntologyType
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import org.dbpedia.spotlight.db.disk.JDBMStore
 
 /**
@@ -14,8 +14,6 @@ import org.dbpedia.spotlight.db.disk.JDBMStore
  * @author pablomendes
  */
 class NTFileTypeMapper(dbFile:File) extends OntologyTypeMapper {
-
-    private val LOG = LogFactory.getLog(this.getClass)
 
     private val typeMap: JDBMStore[String,String] = new JDBMStore[String,String](dbFile.getAbsolutePath)
 
@@ -28,17 +26,17 @@ class NTFileTypeMapper(dbFile:File) extends OntologyTypeMapper {
                 dirOrFile.listFiles(new FilenameFilter {
                     def accept(p1: File, p2: String) = p2.endsWith(".nt") ||  p2.endsWith(".nq")
                 }).foreach(file => {
-                    LOG.info("Loading file: " + file.getName)
+                    SpotlightLog.info(this.getClass, "Loading file: %s", file.getName)
                     loadFromFile(file)
                 })
             }
             else {
-                LOG.info("Loading file: " + dirOrFile.getName)
+                SpotlightLog.info(this.getClass, "Loading file: %s", dirOrFile.getName)
                 loadFromFile(dirOrFile)
             }
 
         typeMap.commit()
-        LOG.info("Files completely stored into the db file.")
+        SpotlightLog.info(this.getClass, "Files completely stored into the db file.")
     }
 
     private def loadFromFile(file: File) = {

@@ -1,5 +1,6 @@
 package org.dbpedia.spotlight.db.memory
 
+import org.dbpedia.spotlight.log.SpotlightLog
 import org.dbpedia.spotlight.model.DBpediaResource
 import java.lang.{Short, String}
 import scala.collection.JavaConversions._
@@ -32,16 +33,16 @@ class MemoryResourceStore
 
   override def loaded() {
     createReverseLookup()
-    LOG.info("Counting total support...")
+    SpotlightLog.info(this.getClass, "Counting total support...")
     totalSupport = supportForID.sum.toDouble
-    LOG.info("Done.")
+    SpotlightLog.info(this.getClass, "Done.")
   }
 
   def size = uriForID.size
 
   def createReverseLookup() {
     if (uriForID != null) {
-      LOG.info("Creating reverse-lookup for DBpedia resources.")
+      SpotlightLog.info(this.getClass, "Creating reverse-lookup for DBpedia resources.")
       idFromURI = StringToIDMapFactory.createDefault(uriForID.size)
 
       var i = 0

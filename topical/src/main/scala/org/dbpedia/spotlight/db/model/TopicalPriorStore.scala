@@ -4,7 +4,7 @@ import org.dbpedia.spotlight.model.{Topic, DBpediaResource}
 import io.Source
 import java.io.{IOException, File}
 import com.officedepot.cdap2.collection.CompactHashMap
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 
 /**
  *
@@ -24,8 +24,6 @@ trait TopicalPriorStore {
 }
 
 object HashMapTopicalPriorStore extends TopicalPriorStore {
-  private val LOG = LogFactory.getLog(this.getClass)
-
   val totalCounts = new CompactHashMap[Topic,Int]()                          // topic -> total
   val topicalPriors = new CompactHashMap[Topic,CompactHashMap[DBpediaResource,Int]]() // topic -> (resource -> count)
 
@@ -57,7 +55,7 @@ object HashMapTopicalPriorStore extends TopicalPriorStore {
   }
 
   def fromDir(dir: File) : TopicalPriorStore = {
-    LOG.info("Loading topical priors.")
+    SpotlightLog.info(this.getClass, "Loading topical priors.")
     if (dir.exists() && dir.isDirectory) {
       dir.listFiles().foreach( file => {
         if (file.getName.endsWith(".count")) {
@@ -83,7 +81,7 @@ object HashMapTopicalPriorStore extends TopicalPriorStore {
     } else {
       throw new IOException("Could not load directory with topics.")
     }
-    LOG.info("Done.")
+    SpotlightLog.info(this.getClass, "Done.")
     this
   }
 

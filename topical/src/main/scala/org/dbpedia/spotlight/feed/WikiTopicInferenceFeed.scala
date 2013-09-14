@@ -4,7 +4,7 @@ import org.dbpedia.spotlight.model._
 import scala.Double
 import org.dbpedia.spotlight.db.model.TopicalPriorStore
 import org.dbpedia.spotlight.topical.util.TopicInferrer
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import collection.mutable._
 
 /**
@@ -17,14 +17,13 @@ class WikiTopicInferenceFeed(topicalPriors: TopicalPriorStore, wikipediaFeed: Fe
     extends DecoratorFeed[(DBpediaResource, Set[DBpediaResourceOccurrence], Set[DBpediaCategory], Text), (Map[Topic, Double], Text)](wikipediaFeed, true) {
 
     private val topicInferrer = new TopicInferrer(topicalPriors)
-    private val LOG = LogFactory.getLog(getClass)
 
     def processFeedItem(item: (DBpediaResource, Set[DBpediaResourceOccurrence], Set[DBpediaCategory], Text)) {
-        LOG.debug("Annotating DBpediaResources+Text with Topic...")
+        SpotlightLog.debug(this.getClass, "Annotating DBpediaResources+Text with Topic...")
 
         val (target, annotations, categories, text) = item
-        LOG.debug("Main resource: " + target.uri)
-        LOG.debug("Resources:" + annotations.foldLeft("")((string, annotation) => string + " " + annotation.resource.uri))
+        SpotlightLog.debug(this.getClass, "Main resource: %s", target.uri)
+        SpotlightLog.debug(this.getClass, "Resources: %s", annotations.foldLeft("")((string, annotation) => string + " " + annotation.resource.uri))
 
         val probabilities = topicInferrer.inferTopics(
             annotations.foldLeft(Map[DBpediaResource, Double]())((map, occ) => {
@@ -36,7 +35,7 @@ class WikiTopicInferenceFeed(topicalPriors: TopicalPriorStore, wikipediaFeed: Fe
 
         probabilities.foreach {
             case (topic, probability) =>
-                LOG.debug("Assigned topic: " + topic.getName + " -> " + probability)
+                SpotlightLog.debug(this.getClass, "Assigned topic: %s -> %f", topic.getName, probability)
         }
         if (probabilities.size > 0)
             notifyListeners((probabilities, text))

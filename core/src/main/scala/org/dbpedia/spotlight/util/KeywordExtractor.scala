@@ -18,7 +18,7 @@
 
 package org.dbpedia.spotlight.util
 
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.model.{SpotlightFactory, SpotlightConfiguration, DBpediaResource}
 
@@ -36,8 +36,6 @@ import org.dbpedia.extraction.config.mappings.DisambiguationExtractorConfig
  */
 
 class KeywordExtractor(val configuration: SpotlightConfiguration, val nKeywords : Int = 3) {
-
-    private val LOG = LogFactory.getLog(this.getClass)
 
     val factory = new SpotlightFactory(configuration)
     val searcher = factory.contextSearcher
@@ -69,7 +67,7 @@ class KeywordExtractor(val configuration: SpotlightConfiguration, val nKeywords 
      */
     def getKeywords(resource: DBpediaResource) = {
         val extraWords = searcher.getContextWords(resource).toList
-        LOG.debug(String.format("Ranked keywords: %s", extraWords.mkString(",")))
+        SpotlightLog.debug(this.getClass, "Ranked keywords: %s", extraWords.mkString(","))
         extraWords.map( entry => entry.getKey() ).take(nKeywords*2) // get a few extra just in case they overlap with the keywords from the URI
     }
 

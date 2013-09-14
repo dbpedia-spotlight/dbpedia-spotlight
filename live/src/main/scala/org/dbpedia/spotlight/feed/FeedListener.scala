@@ -1,7 +1,7 @@
 package org.dbpedia.spotlight.feed
 
 import actors.Actor
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import scala.Product
 import ClassManifest.fromClass
 
@@ -16,8 +16,6 @@ import ClassManifest.fromClass
  * @tparam T Type of feed item that will be consumed
  */
 abstract class FeedListener[T <: Product](implicit m: Manifest[T]) extends Actor {
-    private val LOG = LogFactory.getLog(getClass)
-
     protected def update(item: T)
 
     def subscribeTo(feed: Feed[_]) {
@@ -33,7 +31,7 @@ abstract class FeedListener[T <: Product](implicit m: Manifest[T]) extends Actor
         loop {
             receive {
                 case item: (Product, Manifest[_]) => notify(item._1, item._2)
-                case _ => LOG.error("Received wrong feed item!")
+                case _ => SpotlightLog.error(this.getClass, "Received wrong feed item!")
             }
         }
     }

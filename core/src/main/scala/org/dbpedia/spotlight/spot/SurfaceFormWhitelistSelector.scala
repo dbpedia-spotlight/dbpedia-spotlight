@@ -18,7 +18,6 @@
 package org.dbpedia.spotlight.spot
 
 import scala.collection.JavaConverters._
-import org.apache.commons.logging.LogFactory
 import org.dbpedia.spotlight.model._
 import scala.io.Source._
 import scala.collection.mutable.HashSet
@@ -33,8 +32,6 @@ import scala.collection.mutable.HashSet
  */
 
 class SurfaceFormWhitelistSelector(filename : String) extends SpotSelector {
-
-    private val LOG = LogFactory.getLog(this.getClass)
     val lines = fromFile(filename).getLines
     private val mentionDictionary = new HashSet[String]
     lines.foreach(line => mentionDictionary += line)

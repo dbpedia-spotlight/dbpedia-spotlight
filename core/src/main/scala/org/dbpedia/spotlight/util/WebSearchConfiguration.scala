@@ -1,7 +1,7 @@
 package org.dbpedia.spotlight.util
 
 import org.dbpedia.spotlight.exceptions.ConfigurationException
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import java.util.Properties
 import java.io.{FileInputStream, File}
 
@@ -15,15 +15,13 @@ import java.io.{FileInputStream, File}
 
 class WebSearchConfiguration (val configFile: File) {
 
-    private val LOG = LogFactory.getLog(this.getClass)
-
     def this(fileName: String) {
         this(new File(fileName))
     }
 
     private val properties : Properties = new Properties()
 
-    LOG.info("Loading configuration file "+configFile)
+    SpotlightLog.info(this.getClass, "Loading configuration file %s", configFile)
     properties.load(new FileInputStream(configFile))
     validate
 

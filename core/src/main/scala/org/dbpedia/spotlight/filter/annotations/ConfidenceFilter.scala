@@ -17,7 +17,7 @@
 package org.dbpedia.spotlight.filter.annotations
 
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import org.dbpedia.spotlight.filter.visitor.{FilterOccsVisitor, FilterElement}
 import java.util
 import scala.collection.JavaConversions._
@@ -25,13 +25,11 @@ import scala.collection.JavaConversions._
 
 class PercentageOfSecondFilter(val confidence : Double) extends AnnotationFilter with FilterElement {
 
-    private val LOG = LogFactory.getLog(this.getClass)
-
     val squaredConfidence = confidence*confidence
 
     override def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
         if(occ.percentageOfSecondRank > (1-squaredConfidence)) {
-            LOG.info("(c=%s) filtered out by threshold of second ranked percentage (%.3f>%.3f): %s".format(confidence,occ.percentageOfSecondRank, 1-squaredConfidence, occ))
+            SpotlightLog.info(this.getClass, "(c=%s) filtered out by threshold of second ranked percentage (%.3f>%.3f): %s", confidence,occ.percentageOfSecondRank, 1-squaredConfidence, occ)
             None
         }
         else {
@@ -48,12 +46,10 @@ class PercentageOfSecondFilter(val confidence : Double) extends AnnotationFilter
 
 class ConfidenceFilter(val simThresholds : List[Double], val confidence : Double) extends AnnotationFilter with FilterElement {
 
-    private val LOG = LogFactory.getLog(this.getClass)
-
     val simThreshold = if (simThresholds.length==0) 0 else simThresholds(math.max(((simThresholds.length-1)*confidence).round.toInt, 0))
     override def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
         if(occ.similarityScore < simThreshold) {
-            LOG.info("(c=%s) filtered out by similarity score threshold (%.3f<%.3f): %s".format(confidence,occ.similarityScore, simThreshold, occ))
+            SpotlightLog.info(this.getClass, "(c=%s) filtered out by similarity score threshold (%.3f<%.3f): %s", confidence,occ.similarityScore, simThreshold, occ)
             None
         }
         else {

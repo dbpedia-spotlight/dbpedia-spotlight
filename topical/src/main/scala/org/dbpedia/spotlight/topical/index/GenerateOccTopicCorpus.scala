@@ -5,7 +5,7 @@ import scala._
 import org.dbpedia.spotlight.model.{DBpediaCategory, Topic}
 import org.dbpedia.spotlight.topical.util.TopicUtil
 import org.dbpedia.spotlight.io.{FileOccurrenceSource, FileOccsCategoriesSource}
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import scala.collection.mutable._
 import scala.util.control.Breaks._
 
@@ -17,8 +17,6 @@ import scala.util.control.Breaks._
  * @author dirk
  */
 object GenerateOccTopicCorpus {
-
-    private val LOG = LogFactory.getLog(getClass)
 
     /**
      *
@@ -44,7 +42,7 @@ object GenerateOccTopicCorpus {
         splittedOccsDir.listFiles().foreach(topicFile => {
             val topic = new Topic(topicFile.getName.substring(0, topicFile.getName.length - 4))
 
-            LOG.info("======================= Processing " + topicFile.getName + " =======================")
+            SpotlightLog.info(this.getClass, "======================= Processing %s =======================", topicFile.getName)
 
             if (!topic.getName.equals(TopicUtil.CATCH_TOPIC)) {
                 var counter = 0
@@ -52,7 +50,7 @@ object GenerateOccTopicCorpus {
                     outputWriter.println(topic.getName + "\t" + occ.context.text)
                     counter += 1
                     if (counter % 10000 == 0)
-                        LOG.info(counter + " examples written")
+                        SpotlightLog.info(this.getClass, "%d examples written", counter)
                     nrOfExamples <= 0 || counter < nrOfExamples
                 })
 
@@ -61,7 +59,7 @@ object GenerateOccTopicCorpus {
         })
 
         outputWriter.close()
-        LOG.info("Done")
+        SpotlightLog.info(this.getClass, "Done")
     }
 
     /**
@@ -79,7 +77,7 @@ object GenerateOccTopicCorpus {
         var corpusSize = 0
         var sizes = Map[Topic, Int]()
 
-        LOG.info("======================= Counting occurrences in each split =======================")
+        SpotlightLog.info(this.getClass, "======================= Counting occurrences in each split =======================")
         corpusSize = Int.MaxValue
         splittedOccsDir.listFiles().foreach(topicFile => {
             val topic = new Topic(topicFile.getName.substring(0, topicFile.getName.length - 4))
@@ -92,15 +90,15 @@ object GenerateOccTopicCorpus {
         if (nrOfExamples > 1 && nrOfExamples < corpusSize)
             corpusSize = nrOfExamples
 
-        LOG.info("Writing corpus with size " + corpusSize + " for each topic")
+        SpotlightLog.info(this.getClass, "Writing corpus with size %d for each topic", corpusSize)
 
         splittedOccsDir.listFiles().foreach(topicFile => {
             val topic = new Topic(topicFile.getName.substring(0, topicFile.getName.length - 4))
 
-            LOG.info("======================= Processing " + topicFile.getName + " =======================")
+            SpotlightLog.info(this.getClass, "======================= Processing %s =======================", topicFile.getName)
 
             if (!topic.getName.equals(TopicUtil.CATCH_TOPIC)) {
-                LOG.info("======================= Extract " + corpusSize + " occs to corpus =======================")
+                SpotlightLog.info(this.getClass, "======================= Extract %d occs to corpus =======================", corpusSize)
                 val threshold = corpusSize.toDouble / sizes(topic)
                 var counter = 0
 
@@ -111,7 +109,7 @@ object GenerateOccTopicCorpus {
                                 outputWriter.println(topic.getName + "\t" + occ.context.text)
                                 counter += 1
                                 if (counter % 10000 == 0)
-                                    LOG.info(counter + " examples written")
+                                    SpotlightLog.info(this.getClass, "%d examples written", counter)
                             }
                         }
                         else

@@ -19,7 +19,7 @@ package org.dbpedia.spotlight.spot.lingpipe
 import org.dbpedia.spotlight.model.{SpotlightConfiguration, SurfaceForm, Text, SurfaceFormOccurrence}
 import scala.collection.JavaConversions._
 import com.aliasi.util.AbstractExternalizable
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import com.aliasi.dict.{Dictionary, ExactDictionaryChunker}
 import java.io.File
 import org.dbpedia.spotlight.spot.{JAnnotationTokenizerFactory, Spotter}
@@ -45,40 +45,39 @@ import com.aliasi.tokenizer.IndoEuropeanTokenizerFactory
 class LingPipeSpotter(val dictionary : Dictionary[String], analyzer:Analyzer, val overlap : Boolean=false, val caseSensitive : Boolean=false)
         extends Spotter
 {
-    private val LOG = LogFactory.getLog(this.getClass)
     var fileName = "Dictionary[String]";
 
     var name = ""
 
-    LOG.debug("Allow overlap: "+overlap)
-    LOG.debug("Case sensitive: "+caseSensitive)
+    SpotlightLog.debug(this.getClass, "Allow overlap: %s", overlap)
+    SpotlightLog.debug(this.getClass, "Case sensitive: %s", caseSensitive)
 
     def this(dictionaryFile : File, analyzer:Analyzer, overlap : Boolean, caseSensitive : Boolean) = {
         this(AbstractExternalizable.readObject(dictionaryFile).asInstanceOf[Dictionary[String]],analyzer, overlap, caseSensitive)
         fileName = dictionaryFile.getAbsolutePath
-        LOG.debug("Dictionary: "+dictionaryFile)
+        SpotlightLog.debug(this.getClass, "Dictionary: %s", dictionaryFile)
     }
 
     def this(dictionaryFile : File, analyzer:Analyzer) = {
         this(AbstractExternalizable.readObject(dictionaryFile).asInstanceOf[Dictionary[String]],analyzer)
         fileName = dictionaryFile.getAbsolutePath
-        LOG.debug("Dictionary: "+dictionaryFile)
+        SpotlightLog.debug(this.getClass, "Dictionary: %s", dictionaryFile)
     }
 
-    LOG.info("Initiating LingPipeSpotter ... ("+fileName+")")
+    SpotlightLog.info(this.getClass, "Initiating LingPipeSpotter ... (%s)", fileName)
     val dictionaryChunker = new ExactDictionaryChunker(dictionary,
                                                        IndoEuropeanTokenizerFactory.INSTANCE,  // splits "don't" into "don", "'" and "t"
                                                        // AnnotationTokenizerFactory, //English only
                                                        //new JAnnotationTokenizerFactory(analyzer),
                                                        overlap,        // find all matches, including overlapping ones?
                                                        caseSensitive)  // case-sensitive matching?
-    LOG.info("Done.")
+    SpotlightLog.info(this.getClass, "Done.")
 
     /**
      * Extracts a set of surface form occurrences from text.
      */
     def extract(text : Text) : java.util.List[SurfaceFormOccurrence] = {
-        LOG.debug("Spotting with dictionary: %s.".format(fileName))
+        SpotlightLog.debug(this.getClass, "Spotting with dictionary: %s.", fileName)
         val chunkSet = dictionaryChunker.chunk(text.text).chunkSet
         chunkSet.toList.map{ chunk =>
             val textOffsetStart = chunk.start

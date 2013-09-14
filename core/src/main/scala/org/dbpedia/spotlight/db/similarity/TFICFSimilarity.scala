@@ -2,7 +2,6 @@ package org.dbpedia.spotlight.db.similarity
 
 import scala.collection.JavaConversions._
 
-import org.apache.commons.logging.LogFactory
 import scala.Int
 import collection.immutable
 import collection.mutable

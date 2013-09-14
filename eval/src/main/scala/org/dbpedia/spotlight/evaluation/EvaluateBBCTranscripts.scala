@@ -18,7 +18,7 @@
 
 package org.dbpedia.spotlight.evaluation
 
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import scala.io.Source
 import org.dbpedia.spotlight.util.AnnotationFilter
 import org.dbpedia.spotlight.string.WikiLinkParser
@@ -41,8 +41,6 @@ import scala._
  * @author pablomendes
  */
 object EvaluateBBCTranscripts {
-
-    private val LOG = LogFactory.getLog(this.getClass)
 
     val configuration = new SpotlightConfiguration("conf/bbc.properties");
     //    val confidence = 0.0;
@@ -84,8 +82,8 @@ object EvaluateBBCTranscripts {
             val cleanText = Source.fromFile(f).mkString // Either get from file
 
             try {
-                LOG.info("Doc " + i)
-                LOG.info("Doc length: %s tokens".format(cleanText.split(" ").size))
+                SpotlightLog.info(this.getClass, "Doc %d", i)
+                SpotlightLog.info(this.getClass, "Doc length: %s tokens", cleanText.split(" ").size)
                 //val allEntities = tagExtractor.extract(new Text(cleanText), 5000, List(OntologyType.fromQName("TopicalConcept"))).toList
                 val allEntities = tagExtractor.extract(new Text(cleanText), 5000, List()).toList
 
@@ -115,12 +113,12 @@ object EvaluateBBCTranscripts {
                 val setOutputFile: File = new File(outputDir + "/" + f.getName.replaceAll(".txt","") + ".json");
                 val allOut = new PrintStream(setOutputFile)
                 append(allOut, finalEntities)
-                LOG.info("NTags: %d".format(finalEntities.size))
+                SpotlightLog.info(this.getClass, "NTags: %d", finalEntities.size)
                 allOut.close()
 
             } catch {
                 case e: Exception =>
-                    LOG.error("Exception: " + e);
+                    SpotlightLog.error(this.getClass, "Exception: %s")
             }
 
         })

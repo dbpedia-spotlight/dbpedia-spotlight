@@ -23,7 +23,7 @@ import io.Source
 import org.dbpedia.spotlight.model.DBpediaResource
 import org.apache.lucene.store.FSDirectory
 import org.dbpedia.spotlight.exceptions.ConfigurationException
-import org.apache.commons.logging.{LogFactory, Log}
+import org.dbpedia.spotlight.log.SpotlightLog
 import java.io.File
 import org.dbpedia.spotlight.util.IndexingConfiguration
 
@@ -34,8 +34,6 @@ import org.dbpedia.spotlight.util.IndexingConfiguration
  */
 
 object PatchIndex {
-
-    val LOG: Log = LogFactory.getLog(this.getClass)
 
     def uri2count(line : String) = {
         if (line.trim != null) {
@@ -69,13 +67,13 @@ object PatchIndex {
         val countsMap: java.util.Map[String, java.lang.Integer] = AddCountsToIndex.loadCounts(countsFileName).asInstanceOf[java.util.Map[String, java.lang.Integer]]
         val sfMap = AddSurfaceFormsToIndex.loadSurfaceForms(surfaceFormsFileName, AddSurfaceFormsToIndex.fromTitlesToAlternatives)
 
-        LOG.info("Expunge deletes.")
+        SpotlightLog.info(this.getClass, "Expunge deletes.")
         sfIndexer.expunge();
-        LOG.info("Done.")
+        SpotlightLog.info(this.getClass, "Done.")
 
-        LOG.info("Patching up index.")
+        SpotlightLog.info(this.getClass, "Patching up index.")
         sfIndexer.patchAll(typesMap, countsMap, sfMap)
-        LOG.info("Done.")
+        SpotlightLog.info(this.getClass, "Done.")
         sfIndexer.close
     }
 

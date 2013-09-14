@@ -39,7 +39,7 @@ package org.dbpedia.spotlight.util
 import java.io.PrintWriter
 import io.Source
 import org.dbpedia.spotlight.model.{SpotlightConfiguration, DBpediaResource}
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 
 /**
  * Queries the Web to obtain prior probability counts for each resource
@@ -51,8 +51,6 @@ import org.apache.commons.logging.LogFactory
  * @author pablomendes
  */
 object GetWebPriors {
-    private val LOG = LogFactory.getLog(this.getClass)
-
     /**
      * This class obtains DBpediaResource Web occurrence counts.
      * It uses a configuration file with parameters for the Yahoo!Boss search API, and takes as input a file with one URI per line.
@@ -75,8 +73,8 @@ object GetWebPriors {
                 val fields = line.split("\t")
                 val uri = fields(0)
                 val keywords = fields(1)
-                LOG.info(String.format("URI %s : %s", i.toString, uri));
-                LOG.info("Searching for :"+keywords)
+                SpotlightLog.info(this.getClass, "URI %s : %s", i.toString, uri)
+                SpotlightLog.info(this.getClass, "Searching for :%s", keywords)
                 val results = prior.getYahooAnswer(keywords)
                 counts.print(String.format("%s\t%s\t%s\n", uri, results._1.toString, results._2.toString))
 
@@ -87,11 +85,11 @@ object GetWebPriors {
                 }
             } catch {
                 case e: java.net.ConnectException => {
-                    LOG.error("ConnectException: ")
+                    SpotlightLog.error(this.getClass, "ConnectException: ")
                     e.printStackTrace
                     Thread.sleep(5000)
                 }
-                case any: Exception => LOG.error("Unknown Error: "+any)
+                case any: Exception => SpotlightLog.error(this.getClass, "Unknown Error: %s", any)
             }
         });
 

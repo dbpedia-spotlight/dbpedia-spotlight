@@ -10,7 +10,7 @@ import scala.collection.mutable.HashSet
 import org.dbpedia.spotlight.lucene.index.ExtractOccsFromWikipedia._
 import org.dbpedia.spotlight.filter.occurrences.RedirectResolveFilter
 import org.dbpedia.spotlight.db.WikipediaToDBpediaClosure
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import scala.Predef._
 import scala.Array
 import org.dbpedia.spotlight.model._
@@ -29,8 +29,6 @@ import org.semanticweb.yars.nx.parser.NxParser
  */
 
 object DBpediaResourceSource {
-
-  private val LOG = LogFactory.getLog(this.getClass)
 
   def fromTSVInputStream(
     conceptList: InputStream,
@@ -74,7 +72,7 @@ object DBpediaResourceSource {
         }
       }
     }
-    LOG.warn("URI for %d type definitions not found!".format(uriNotFound.size) )
+    SpotlightLog.warn(this.getClass, "URI for %d type definitions not found!", uriNotFound.size)
 
     resourceMap.iterator.map( f => Pair(f._2, f._2.support) ).toMap.asJava
   }
@@ -86,14 +84,14 @@ object DBpediaResourceSource {
     namespace: String
   ): java.util.Map[DBpediaResource, Int] = {
 
-    LOG.info("Creating DBepdiaResourceSource.")
+    SpotlightLog.info(this.getClass, "Creating DBepdiaResourceSource.")
 
     var id = 1
 
     val resourceMap = new java.util.HashMap[DBpediaResource, Int]()
     val resourceByURI = scala.collection.mutable.HashMap[String, DBpediaResource]()
 
-    LOG.info("Reading resources+counts...")
+    SpotlightLog.info(this.getClass, "Reading resources+counts...")
 
     Source.fromInputStream(resourceCounts).getLines() foreach {
       line: String => {
@@ -122,7 +120,7 @@ object DBpediaResourceSource {
 
     //Read types:
     if (instanceTypes != null && instanceTypes._1.equals("tsv")) {
-      LOG.info("Reading types (tsv format)...")
+      SpotlightLog.info(this.getClass, "Reading types (tsv format)...")
       val uriNotFound = HashSet[String]()
       Source.fromInputStream(instanceTypes._2).getLines() foreach {
         line: String => {
@@ -136,10 +134,10 @@ object DBpediaResourceSource {
           }
         }
       }
-      LOG.warn("URI for %d type definitions not found!".format(uriNotFound.size) )
-      LOG.info("Done.")
+      SpotlightLog.warn(this.getClass, "URI for %d type definitions not found!", uriNotFound.size)
+      SpotlightLog.info(this.getClass, "Done.")
     } else if (instanceTypes != null && instanceTypes._1.equals("nt")) {
-      LOG.info("Reading types (nt format)...")
+      SpotlightLog.info(this.getClass, "Reading types (nt format)...")
 
       val uriNotFound = HashSet[String]()
 
@@ -161,8 +159,8 @@ object DBpediaResourceSource {
         }
 
       }
-      LOG.warn("URI for %d type definitions not found!".format(uriNotFound.size) )
-      LOG.info("Done.")
+      SpotlightLog.warn(this.getClass, "URI for %d type definitions not found!", uriNotFound.size)
+      SpotlightLog.info(this.getClass, "Done.")
     }
 
     resourceByURI foreach {

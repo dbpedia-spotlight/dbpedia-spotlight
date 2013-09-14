@@ -7,7 +7,7 @@ import org.apache.uima.WikiCategoryAnnotation
 import org.apache.uima.WikiLinkAnnotation
 import org.apache.uima.cas.text.AnnotationIndex
 import org.apache.uima.jcas.tcas.Annotation
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import java.io.File
 import hu.sztaki.pedia.uima.reader.util.{WikiIRCBot, WikiArticleFilter}
 import hu.sztaki.pedia.uima.RunCPE
@@ -21,7 +21,6 @@ import org.dbpedia.spotlight.model._
  */
 class WikipediaUpdateFeed extends Feed[(DBpediaResource, Set[DBpediaResourceOccurrence], Set[DBpediaCategory], Text)](false) with IExternalProcessor {
     protected var interval = Long.MaxValue
-    private val LOG = LogFactory.getLog(getClass)
 
     override def initialize(argv: Array[String]) {
         System.out.println("Init params:")
@@ -108,8 +107,6 @@ class WikipediaUpdateFeed extends Feed[(DBpediaResource, Set[DBpediaResourceOccu
  */
 object WikipediaUpdateFeed {
 
-    private val LOG = LogFactory.getLog(getClass)
-
     /**
      * example params: en.wikipedia localhost 8080 enwikipediaorgtest en resources/articlefilter/redirects.list resources/articlefilter/nonarticle_titles_prefixes.list descriptors/CPE/HTTPCR_parser_wst_category_externalConsumer_CPE.xml YourWikiUser YourWikiPassword
      * <br/><br/>
@@ -148,14 +145,14 @@ object WikipediaUpdateFeed {
                         catch {
                             case e => {
                                 articleFilter = null
-                                LOG.error("Error creating WikiArticleFilter", e)
+                                SpotlightLog.error(this.getClass, "Error creating WikiArticleFilter %s", e)
                             }
                         }
                         ircBot = new WikiIRCBot(ircChannel, domainUrl, destinationHostname, destinationPort, articleFilter, applicationName, language, apiUser, apiPassword)
                         ircBot.start
                     }
                     else {
-                        LOG.error("Files " + redirectsPath + " , and/or " + nonArticleTitlesPath + " does not exist! Exiting!")
+                        SpotlightLog.error(this.getClass, "Files %s , and/or %s does not exist! Exiting!", redirectsPath, nonArticleTitlesPath)
                     }
                 }
                 catch {
