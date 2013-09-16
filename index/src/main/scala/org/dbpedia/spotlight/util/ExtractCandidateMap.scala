@@ -20,7 +20,7 @@ package org.dbpedia.spotlight.util
 
 
 import io.Source
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import java.io._
 import org.dbpedia.spotlight.model.{Factory, SpotlightConfiguration, SurfaceForm}
 import java.util.Scanner
@@ -32,7 +32,7 @@ import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 import org.dbpedia.extraction.util.WikiUtil
 
 /**
- * Functions to create Concept URIs (possible targets of disambiguations)
+ * Functions to create Concept URIs (possible mainResources of disambiguations)
  *                     transitive closure of redirects that end at Concept URIs
  *                     surface forms for Concept URIs
  * from DBpedia data sets and Wikipedia.
@@ -45,8 +45,6 @@ import org.dbpedia.extraction.util.WikiUtil
  */
 object ExtractCandidateMap
 {
-    private val LOG = LogFactory.getLog(this.getClass)
-
     var maximumSurfaceFormLength = 50
 
     // DBpedia input
@@ -67,13 +65,13 @@ object ExtractCandidateMap
         }
         
         val badURIsFile = conceptURIsFileName+".NOT"
-        LOG.info("Creating concept URIs file "+conceptURIsFileName+" ...")
+        SpotlightLog.info(this.getClass, "Creating concept URIs file %s ...", conceptURIsFileName)
 
         val conceptURIStream = new PrintStream(conceptURIsFileName, "UTF-8")
         val badURIStream = new PrintStream(badURIsFile, "UTF-8")
         var badURIs = Set[String]()
 
-        LOG.info("  collecting bad URIs from redirects in "+redirectsFileName+" and disambiguations in "+disambiguationsFileName+" ...")
+        SpotlightLog.info(this.getClass, "  collecting bad URIs from redirects in %s and disambiguations in %s ...", redirectsFileName, disambiguationsFileName)
         // redirects and disambiguations are bad URIs
         for (fileName <- List(redirectsFileName, disambiguationsFileName)) {
             val input = new BZip2CompressorInputStream(new FileInputStream(fileName),true)
@@ -86,7 +84,7 @@ object ExtractCandidateMap
         }
         badURIStream.close
 
-        LOG.info("  collecting concept URIs from titles in "+titlesFileName+", without redirects and disambiguations...")
+        SpotlightLog.info(this.getClass, "  collecting concept URIs from titles in %s, without redirects and disambiguations...", titlesFileName)
         val titlesInputStream = new BZip2CompressorInputStream(new FileInputStream(titlesFileName), true)
         // get titles without bad URIs
         val parser = new NxParser(titlesInputStream)
@@ -99,7 +97,7 @@ object ExtractCandidateMap
         conceptURIStream.close
         titlesInputStream.close
 
-        LOG.info("Done.")
+        SpotlightLog.info(this.getClass, "Done.")
 //        conceptURIsFileName = conceptURIsFile.getAbsolutePath
 //        IndexConfiguration.set("conceptURIs", conceptURIsFileName)
     }
@@ -128,12 +126,12 @@ object ExtractCandidateMap
         if (!new File(conceptURIsFileName).isFile) {
             throw new IllegalStateException("concept URIs not created yet; call saveConceptURIs first or set concept URIs file")
         }
-        LOG.info("Creating redirects transitive closure file "+redirectTCFileName+" ...")
+        SpotlightLog.info(this.getClass, "Creating redirects transitive closure file %s ...", redirectsFileName)
 
-        LOG.info("  loading concept URIs from "+conceptURIsFileName+"...")
+        SpotlightLog.info(this.getClass, "  loading concept URIs from %s...", conceptURIsFileName)
         val conceptURIs = Source.fromFile(conceptURIsFileName, "UTF-8").getLines.toSet
 
-        LOG.info("  loading redirects from "+redirectsFileName+"...")
+        SpotlightLog.info(this.getClass, "  loading redirects from %s...", redirectsFileName)
         var linkMap = Map[String,String]()
         val redirectsInput = new BZip2CompressorInputStream(new FileInputStream(redirectsFileName), true)
 
@@ -148,7 +146,7 @@ object ExtractCandidateMap
 
         val redURIstream = new PrintStream(redirectTCFileName, "UTF-8")
 
-        LOG.info("  collecting redirects transitive closure...")
+        SpotlightLog.info(this.getClass, "  collecting redirects transitive closure...")
         for (redirectUri <- linkMap.keys) {
             val endUri = getEndOfChainUri(linkMap, redirectUri)
             if (conceptURIs contains endUri) {
@@ -157,7 +155,7 @@ object ExtractCandidateMap
         }
 
         redURIstream.close
-        LOG.info("Done.")
+        SpotlightLog.info(this.getClass, "Done.")
 //        redirectTCFileName = redirectTCFileName.getAbsolutePath
 //        IndexConfiguration.set("preferredURIs", redirectTCFileName)
     }
@@ -205,21 +203,21 @@ object ExtractCandidateMap
             throw new IllegalStateException("concept URIs not created yet; call saveConceptURIs first or set concept URIs file")
         }
 
-        LOG.info("Creating surface forms file "+surfaceFormsFileName+" ...")
+        SpotlightLog.info(this.getClass, "Creating surface forms file %s ...", surfaceFormsFileName)
 
-        LOG.info("  storing titles of concept URIs...")
+        SpotlightLog.info(this.getClass, "  storing titles of concept URIs...")
         var conceptURIs = Set[String]()
         val surfaceFormsStream = new PrintStream(surfaceFormsFileName, "UTF-8")
         // all titles of concept URIs are surface forms
         for (conceptUri <- Source.fromFile(conceptURIsFileName, "UTF-8").getLines) {
             getCleanSurfaceForm(conceptUri, stopWords, lowerCased) match {
                 case Some(sf : String) => surfaceFormsStream.println(sf+"\t"+conceptUri)
-                case None => LOG.debug("    concept URI "+conceptUri+"' does not decode to a good surface form")
+                case None => SpotlightLog.debug(this.getClass, "    concept URI %s' does not decode to a good surface form", conceptUri)
             }
             conceptURIs += conceptUri
         }
 
-        LOG.info("  storing titles of redirect and disambiguation URIs...")
+        SpotlightLog.info(this.getClass, "  storing titles of redirect and disambiguation URIs...")
         for (fileName <- List(redirectsFileName, disambiguationsFileName)) {
             val input = new BZip2CompressorInputStream(new FileInputStream(fileName), true)
             val parser = new NxParser(input)
@@ -239,7 +237,7 @@ object ExtractCandidateMap
         }
 
         surfaceFormsStream.close
-        LOG.info("Done.")
+        SpotlightLog.info(this.getClass, "Done.")
 //        surfaceFormsFileName = surfaceFormsFile.getAbsolutePath
 //        IndexConfiguration.set("surfaceForms", surfaceFormsFileName)
     }
@@ -253,11 +251,11 @@ object ExtractCandidateMap
             throw new IllegalStateException("concept URIs not created yet; call saveConceptURIs first or set concept URIs file")
         }
 
-        LOG.info("Creating surface forms file "+surfaceFormsFileName+" ...")
-        LOG.info("  loading concept URIs from "+conceptURIsFileName+"...")
+        SpotlightLog.info(this.getClass, "Creating surface forms file %s ...", surfaceFormsFileName)
+        SpotlightLog.info(this.getClass, "  loading concept URIs from %s...", conceptURIsFileName)
         val conceptURIs = Source.fromFile(conceptURIsFileName, "UTF-8").getLines.toSet
 
-        LOG.info("  storing titles of concept URIs...")
+        SpotlightLog.info(this.getClass, "  storing titles of concept URIs...")
         val surfaceFormsStream = new PrintStream(surfaceFormsFileName, "UTF-8")
         // all titles of concept URIs are surface forms
         for (conceptUri <- conceptURIs) {
@@ -267,7 +265,7 @@ object ExtractCandidateMap
             }
         }
 
-        LOG.info("  making map from "+redirectsFileName+" and "+disambiguationsFileName+"...")
+        SpotlightLog.info(this.getClass, "  making map from %s and %s...", redirectsFileName, disambiguationsFileName)
         // make reverse map of redirects and disambiguations
         var linkMap = Map[String,List[String]]()
         for (fileName <- List(redirectsFileName, disambiguationsFileName)) {
@@ -282,7 +280,7 @@ object ExtractCandidateMap
             input.close()
         }
 
-        LOG.info("  collecting surface forms from map...")
+        SpotlightLog.info(this.getClass, "  collecting surface forms from map...")
         for (currentURI <- linkMap.keys.filter(conceptURIs contains _)) {
             var linkedUris = List(currentURI)
             var cyclePrevention = List[String]()
@@ -307,7 +305,7 @@ object ExtractCandidateMap
         }
 
         surfaceFormsStream.close
-        LOG.info("Done.")
+        SpotlightLog.info(this.getClass, "Done.")
 //        surfaceFormsFileName = surfaceFormsFile.getAbsolutePath
 //        IndexConfiguration.set("surfaceForms", surfaceFormsFileName)
     }
@@ -321,7 +319,7 @@ object ExtractCandidateMap
     // map from URI to list of surface forms
     // used by IndexEnricher
     def getSurfaceFormsMap(surrogatesFile : File, lowerCased : Boolean=false) : Map[String, List[SurfaceForm]] = {
-        LOG.info("Getting reverse surrogate mapping...")
+        SpotlightLog.info(this.getClass, "Getting reverse surrogate mapping...")
         var reverseMap = Map[String, List[SurfaceForm]]()
         val separator = "\t"
 
@@ -333,7 +331,7 @@ object ExtractCandidateMap
             val sfList : List[SurfaceForm] = sf :: reverseMap.get(uri).getOrElse(List[SurfaceForm]())
             reverseMap = reverseMap.updated(uri, sfList)
         }
-        LOG.info("Done.")
+        SpotlightLog.info(this.getClass, "Done.")
         reverseMap
     }
 
@@ -345,7 +343,7 @@ object ExtractCandidateMap
         val surfaceFormPredicate = "http://dbpedia.org/ontology/hasSurfaceForm"
         val predicate = new Resource(surfaceFormPredicate)
 
-        LOG.info("Exporting surface forms TSV file "+surfaceFormsFileName+" to dbpedia.org NT-file "+ntFile+" ...")
+        SpotlightLog.info(this.getClass, "Exporting surface forms TSV file %s to dbpedia.org NT-file %s ...", surfaceFormsFileName, ntFile)
         val ntStream = new PrintStream(ntFile, "UTF-8")
 
         for (line <- Source.fromFile(surfaceFormsFileName, "UTF-8").getLines) {
@@ -356,19 +354,19 @@ object ExtractCandidateMap
             ntStream.println(triple.toN3)
         }
         ntStream.close
-        LOG.info("Done.")
+        SpotlightLog.info(this.getClass, "Done.")
     }
 
     def exportSurfaceFormsTsvToLexvoNt(ntFile : File) {
         if (!new File(surfaceFormsFileName).isFile) {
-            LOG.warn("surface forms not created yet; call saveSurfaceForms first or set surface forms file")
+            SpotlightLog.warn(this.getClass, "surface forms not created yet; call saveSurfaceForms first or set surface forms file")
             return
         }
         val langString = "eng"
         val surfaceFormPredicate = "http://lexvo.org/id/lexicalization"
         val predicate = new Resource(surfaceFormPredicate)
 
-        LOG.info("Exporting surface forms TSV file "+surfaceFormsFileName+" to lexvo.org NT-file "+ntFile+" ...")
+        SpotlightLog.info(this.getClass, "Exporting surface forms TSV file %s to lexvo.org NT-file %s ...", surfaceFormsFileName, ntFile)
         val ntStream = new PrintStream(ntFile, "UTF-8")
 
         for (line <- Source.fromFile(surfaceFormsFileName, "UTF-8").getLines) {
@@ -379,7 +377,7 @@ object ExtractCandidateMap
             ntStream.println(triple.toN3)
         }
         ntStream.close
-        LOG.info("Done.")
+        SpotlightLog.info(this.getClass, "Done.")
     }
 
     def main(args : Array[String]) {

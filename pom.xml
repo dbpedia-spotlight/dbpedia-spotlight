@@ -49,6 +49,10 @@
         <module>index</module>
         <module>eval</module>
 	    <module>uima</module>
+	    <!--
+        <module>topical</module>
+        <module>live</module>
+        -->
         <module>dist</module>
         <module>rest-tomcat</module>
     </modules>
@@ -545,15 +549,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-math</artifactId>
-                <version>2.2</version>
-                <!--
-                    License: Apache Software License, Version 2.0
-                -->
-            </dependency>
-
-            <dependency>
                 <groupId>org.codehaus.jackson</groupId>
                 <artifactId>jackson-core-asl</artifactId>
                 <version>1.9.8</version>
@@ -778,6 +773,116 @@
                 <!--
                      License: CDDL v.1.1 andd GPL v.2
                  -->
+            </dependency>
+
+            <dependency>
+                <groupId>cc.factorie</groupId>
+                <artifactId>factorie</artifactId>
+                <version>1.0.0-M4</version>
+                <!--
+                  License: Apache Software License, Version 2.0
+                -->
+            </dependency>
+
+            <!-- module live -->
+
+            <dependency>
+                <groupId>com.google.collections</groupId>
+                <artifactId>google-collections</artifactId>
+                <version>0.9</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wiki.harvester.dependency</groupId>
+                <artifactId>hunposchain0.6_mod</artifactId>
+                <version>1.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.jetty.aggregate</groupId>
+                <artifactId>jetty-all</artifactId>
+                <version>7.6.4.v20120524</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wiki.harvester.dependency</groupId>
+                <artifactId>morphadorner</artifactId>
+                <version>1.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wiki.harvester.dependency</groupId>
+                <artifactId>pedia.uima.harvester</artifactId>
+                <version>1.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>pircbot</groupId>
+                <artifactId>pircbot</artifactId>
+                <version>1.5.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.mortbay.jetty</groupId>
+                <artifactId>servlet-api</artifactId>
+                <version>2.5.20110712</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wiki.harvester.dependency</groupId>
+                <artifactId>sztakipedia-parser-0.1.1b</artifactId>
+                <version>1.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.knallgrau.utils</groupId>
+                <artifactId>textcat</artifactId>
+                <version>1.0.1</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.uima</groupId>
+                <artifactId>uimaj-core</artifactId>
+                <version>2.4.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.uima</groupId>
+                <artifactId>uimaj-cpe</artifactId>
+                <version>2.4.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.uima</groupId>
+                <artifactId>uimaj-tools</artifactId>
+                <version>2.4.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.uima</groupId>
+                <artifactId>uimaj-document-annotation</artifactId>
+                <version>2.4.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.uima</groupId>
+                <artifactId>uimaj-bootstrap</artifactId>
+                <version>2.4.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.xmlbeans</groupId>
+                <artifactId>xmlbeans</artifactId>
+                <version>2.4.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.aksw</groupId>
+                <artifactId>nif</artifactId>
+                <version>0.1</version>
+                <!--
+                  License: Apache Software License, Version 2.0
+                -->
             </dependency>
 
         </dependencies>

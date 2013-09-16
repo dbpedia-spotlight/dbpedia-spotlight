@@ -19,7 +19,7 @@
 package org.dbpedia.spotlight.lucene.index
 
 import java.io.File
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import org.dbpedia.spotlight.string.ContextExtractor
 import org.dbpedia.spotlight.util.IndexingConfiguration
 import org.dbpedia.spotlight.filter.occurrences.{RedirectResolveFilter, UriWhitelistFilter, ContextNarrowFilter}
@@ -43,8 +43,6 @@ import org.dbpedia.extraction.util.Language
  */
 object ExtractOccsFromWikipedia {
 
-    private val LOG = LogFactory.getLog(this.getClass)
-
     def main(args : Array[String]) {
         val indexingConfigFileName = args(0)
         val targetFileName = args(1)
@@ -59,8 +57,8 @@ object ExtractOccsFromWikipedia {
 
 
         if (wikiDumpFileName.endsWith(".bz2")) {
-            LOG.warn("The DBpedia Extraction Framework does not support parsing from bz2 files. You can stop here, decompress and restart the process with an uncompressed XML.")
-            LOG.warn("If you do not stop the process, we will decompress the file into the /tmp/ directory for you.")
+            SpotlightLog.warn(this.getClass, "The DBpedia Extraction Framework does not support parsing from bz2 files. You can stop here, decompress and restart the process with an uncompressed XML.")
+            SpotlightLog.warn(this.getClass, "If you do not stop the process, we will decompress the file into the /tmp/ directory for you.")
             wikiDumpFileName = BzipUtils.extract(wikiDumpFileName)
         }
 
@@ -81,7 +79,7 @@ object ExtractOccsFromWikipedia {
 
         FileOccurrenceSource.writeToFile(occs, new File(targetFileName))
 
-        LOG.info("Occurrences saved to: "+targetFileName)
+        SpotlightLog.info(this.getClass, "Occurrences saved to: %s", targetFileName)
 
     }
 }

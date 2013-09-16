@@ -20,7 +20,7 @@ import org.cyberneko.html.parsers.DOMParser
 import org.dbpedia.spotlight.model._
 import java.io._
 import io.Source
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import java.util.zip.GZIPInputStream
 import java.net.{Socket, URL}
 import org.xml.sax.InputSource
@@ -32,8 +32,6 @@ import org.dbpedia.spotlight.util.{IndexingConfiguration}
  */
 object WebOccurrenceSource
 {
-    private val LOG = LogFactory.getLog(this.getClass)
-
     val blacklist = Set("wikipedia.org",
                         "spacecoast-trading.ipower.com",
                         "photography-now.net",
@@ -94,7 +92,7 @@ object WebOccurrenceSource
                 val x = 1
                 while (occCount < n && iterationCount < yahooBossIterations && !(yahooOutLinks.isEmpty))
                 {
-                    LOG.info("retrieved " + (iterationCount+1)*yahooBossResults + " search results for " + resource + " ...")
+                    SpotlightLog.info(this.getClass, "retrieved %d search results for %s ...", (iterationCount+1)*yahooBossResults, resource)
 
                     // get URLs that contain links to Wikipedia pages
                     yahooOutLinks = yahooBossOutLinkUrlRegex.findAllIn(bossAnswerXml).matchData.map{m => new URL(m.subgroups(0))}
@@ -117,7 +115,7 @@ object WebOccurrenceSource
          */
         private def getOccurrenceFromUrl(url : URL, resource : DBpediaResource) : Option[DBpediaResourceOccurrence] =
         {
-            LOG.info("Connecting to " + url.toString)
+            SpotlightLog.info(this.getClass, "Connecting to %s", url.toString)
 
             val urlConnection = url.openConnection
             urlConnection.setReadTimeout(timeOut)
@@ -127,7 +125,7 @@ object WebOccurrenceSource
                 parser.parse(new InputSource(urlConnection.getInputStream))
             }
             catch {
-                case ioe : IOException => LOG.info("  ERROR retrieving page"); return None
+                case ioe : IOException => SpotlightLog.info(this.getClass, "  ERROR retrieving page"); return None
             }
 
             val targetUrl = wikipediaPrefixEn + resource.uri
@@ -141,7 +139,7 @@ object WebOccurrenceSource
                 href != null && href.getTextContent == targetUrl
             }
             if (targetLinks.isEmpty)
-                LOG.debug("    no link found to '" + targetUrl + "'")
+                SpotlightLog.debug(this.getClass, "    no link found to '%s'", targetUrl)
 
             for (link <- targetLinks)
             {
@@ -166,15 +164,15 @@ object WebOccurrenceSource
                     // return only if it is certain that the offset is set to the correct occurrence
                     if (context.text.indexOf(surfaceForm.name, offset+1) == -1 && occFilter.isGoodOccurrence(occ)) 
                     {
-                        LOG.info("  OK, occurrence created: " + occ)
+                        SpotlightLog.info(this.getClass, "  OK, occurrence created: %s", occ)
                         // returns the only the first occurrence of a specific resource in a web page
                         return Some(occ)
                     }
-                    else { LOG.debug("    not a good occurrence: " + occ) }
+                    else { SpotlightLog.debug(this.getClass, "    not a good occurrence: %s", occ) }
                 }
-                else { LOG.debug("    not a good paragraph: " + context) }
+                else { SpotlightLog.debug(this.getClass, "    not a good paragraph: %s", context) }
             }
-            LOG.info("  FAIL, no occurrence created")
+            SpotlightLog.info(this.getClass, "  FAIL, no occurrence created")
             None
         }
 
@@ -234,8 +232,8 @@ object WebOccurrenceSource
         val sampleNumber = args(4).toInt    // for each resource
         val startURI = if (args.length == 6) args(5) else ""   // specify last seen resource befor dying
 
-        LOG.info("Building occurrences for "+resourceCountLimit+" resources ("+sampleNumber+" samples each)")
-        LOG.info("  Getting resources from "+resourcesFileName+" ...")
+        SpotlightLog.info(this.getClass, "Building occurrences for %d resources (%d samples each)", resourceCountLimit, sampleNumber)
+        SpotlightLog.info(this.getClass, "  Getting resources from %s ...", resourcesFileName)
 
         var input : InputStream = new FileInputStream(new File(resourcesFileName))
         if (resourcesFileName.toLowerCase.endsWith(".gz")) input = new GZIPInputStream(input)
@@ -249,13 +247,13 @@ object WebOccurrenceSource
             val targetResource = new DBpediaResource(line)
 
             if (collect) {
-                LOG.info("** Resource: "+targetResource)
+                SpotlightLog.info(this.getClass, "** Resource: %s", targetResource)
                 try {
                     val occSource = forResources(config, List(targetResource), sampleNumber)
                     FileOccurrenceSource.writeToFile(occSource, new File(outputFileName))
                 }
                 catch {
-                    case e : Exception => LOG.warn("AN EXCEPTION OCCURRED!!! Ignoring: "+e)
+                    case e : Exception => SpotlightLog.warn(this.getClass, "AN EXCEPTION OCCURRED!!! Ignoring: %s", e)
                 }
                 resourceCount += 1
             }
@@ -264,7 +262,7 @@ object WebOccurrenceSource
                 collect = true
         }
 
-        LOG.info("  Done.")
+        SpotlightLog.info(this.getClass, "  Done.")
     }
 
 }

@@ -41,7 +41,7 @@ import org.dbpedia.spotlight.util.IndexingConfiguration
 import java.io.File
 import io.Source
 import org.dbpedia.spotlight.model.DBpediaResource
-import org.apache.commons.logging.{LogFactory, Log}
+import org.dbpedia.spotlight.log.SpotlightLog
 import org.dbpedia.spotlight.exceptions.ConfigurationException
 
 /**
@@ -52,8 +52,6 @@ import org.dbpedia.spotlight.exceptions.ConfigurationException
  */
 
 object AddCountsToIndex {
-
-    val LOG: Log = LogFactory.getLog(this.getClass)
 
     def uri2count(line : String) = {
         if (line.trim != null) {
@@ -67,16 +65,16 @@ object AddCountsToIndex {
     def loadCounts(countsFileName: String) = {
         var uriCountMap = Map[String,Int]()
         var total = 0
-        LOG.info("Loading counts into memory.")
+        SpotlightLog.info(this.getClass, "Loading counts into memory.")
         Source.fromFile(countsFileName).getLines.foreach(line => {
             val entry  = uri2count(line);
             uriCountMap += entry; // append entry to map
             total = total + entry._2
         });
-        LOG.info("Total count of %d loaded.".format(total))
-        LOG.info("Reformatting...")
+        SpotlightLog.info(this.getClass, "Total count of %d loaded.", total)
+        SpotlightLog.info(this.getClass, "Reformatting...")
         val counts = uriCountMap.map( e => new DBpediaResource(e._1).uri -> e._2 ).asJava
-        LOG.info("Done.")
+        SpotlightLog.info(this.getClass, "Done.")
         counts
     }
 
@@ -94,9 +92,9 @@ object AddCountsToIndex {
         val sfIndexer = new IndexEnricher(sourceIndexFileName,targetIndexFileName,config)
 
         val counts : java.util.Map[String, java.lang.Integer]= loadCounts(countsFileName).asInstanceOf[java.util.Map[String, java.lang.Integer]]
-        LOG.info("Adding to index.")
+        SpotlightLog.info(this.getClass, "Adding to index.")
         sfIndexer.enrichWithCounts(counts)
-        LOG.info("Done.")
+        SpotlightLog.info(this.getClass, "Done.")
         sfIndexer.close
     }
 

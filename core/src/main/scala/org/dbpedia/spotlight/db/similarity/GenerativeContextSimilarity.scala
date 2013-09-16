@@ -4,8 +4,7 @@ import org.dbpedia.spotlight.model.{DBpediaResource, TokenType}
 import collection.mutable
 import org.dbpedia.spotlight.db.model.TokenTypeStore
 import scala.collection.JavaConversions._
-import org.dbpedia.spotlight.util.MathUtil
-import org.apache.commons.logging.LogFactory
+import breeze.numerics._
 
 /**
  * Generative context similarity based on Han et. al
@@ -37,7 +36,7 @@ class GenerativeContextSimilarity(tokenTypeStore: TokenTypeStore) extends Contex
      but a more advanced smoothing method may be used here. */
 
     //(token.count + 1.0) / (tokenTypeStore.getTotalTokenCount + tokenTypeStore.getVocabularySize)
-    MathUtil.ln(token.count + 1.0) - MathUtil.ln(tokenTypeStore.getTotalTokenCount + tokenTypeStore.getVocabularySize)
+    breeze.numerics.log(token.count + 1.0) - breeze.numerics.log(tokenTypeStore.getTotalTokenCount + tokenTypeStore.getVocabularySize)
   }
 
   /**
@@ -57,7 +56,7 @@ class GenerativeContextSimilarity(tokenTypeStore: TokenTypeStore) extends Contex
       case e: ArithmeticException => 0.0
     }
 
-    MathUtil.lnsum(MathUtil.lnproduct(MathUtil.ln(lambda), MathUtil.ln(pML)), MathUtil.lnproduct(MathUtil.ln(1-lambda), pLM(token)))
+    breeze.numerics.logSum(breeze.numerics.log(lambda) + breeze.numerics.log(pML), breeze.numerics.log(1-lambda) + pLM(token))
   }
 
   def score(query: java.util.Map[TokenType, Int], contextCounts: Map[DBpediaResource, java.util.Map[TokenType, Int]], totalContextCounts: Map[DBpediaResource, Int]): mutable.Map[DBpediaResource, Double] = {
@@ -65,21 +64,17 @@ class GenerativeContextSimilarity(tokenTypeStore: TokenTypeStore) extends Contex
     contextCounts.keys.map( res => {
       contextScores.put(
         res,
-        MathUtil.lnproduct(
-          query.map({ case(t: TokenType, c: Int) => MathUtil.lnproduct(MathUtil.ln(c.toDouble), p(t, res, contextCounts.get(res).get, totalContextCounts.get(res).get)) })
-            .filter({ s: Double => !MathUtil.isLogZero(s)})
-        )
+        query.map({ case(t: TokenType, c: Int) => (breeze.numerics.log(c.toDouble) + p(t, res, contextCounts.get(res).get, totalContextCounts.get(res).get)) })
+          .filter({ s: Double => s != -inf}).foldLeft(0.0)(_+_)
       )
     })
     contextScores
   }
 
   def nilScore(query: java.util.Map[TokenType, Int]): Double = {
-    MathUtil.lnproduct(
       query.map{ case(t: TokenType, c: Int) =>
-        MathUtil.lnproduct(MathUtil.ln(c.toDouble), MathUtil.lnproduct(MathUtil.ln(1-lambda), pLM(t)))
-      }
-    )
+        (breeze.numerics.log(c.toDouble) + breeze.numerics.log(1-lambda) + pLM(t))
+      }.foldLeft(0.0)(_+_)
   }
 
 }

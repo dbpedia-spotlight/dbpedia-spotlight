@@ -21,7 +21,7 @@ package org.dbpedia.spotlight.web.rest
 import org.dbpedia.spotlight.lucene.LuceneManager.DBpediaResourceField
 import org.apache.lucene.search.similar.MoreLikeThis
 
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import org.dbpedia.spotlight.lucene.LuceneManager
 import org.dbpedia.spotlight.model.DBpediaResource
 import org.dbpedia.spotlight.exceptions.{SearchException, TimeoutException}
@@ -51,9 +51,7 @@ import net.liftweb.json.JsonDSL._
  */
 class RelatedResources {
 
-    private val LOG = LogFactory.getLog(this.getClass)
-
-    LOG.info("Initializing objects ...")
+    SpotlightLog.info(this.getClass, "Initializing objects ...")
     val directory = LuceneManager.pickDirectory(new File("/data/spotlight/release-0.6/index-0.6-withTypes-withSF/"))
     val reader = IndexReader.open(directory, true)
     val searcher = new IndexSearcher(reader)
@@ -74,7 +72,7 @@ class RelatedResources {
             searcher.search(query, filter, collector)
             hits = collector.topDocs.scoreDocs
             var end: Long = System.nanoTime
-            LOG.debug("Done search in %f ms. hits.length=%d".format((end - start) / 1000000.0, hits.length))
+            SpotlightLog.debug(this.getClass, "Done search in %f ms. hits.length=%d", (end - start) / 1000000.0, hits.length)
         }
         catch {
             case timedOutException: TimeLimitingCollector.TimeExceededException => {
@@ -84,7 +82,7 @@ class RelatedResources {
                 throw new SearchException("Error searching for surface form " + query.toString, e)
             }
         }
-        LOG.debug("Doc ids: %s".format(hits.map(d => d.doc.intValue() )))
+        SpotlightLog.debug(this.getClass, "Doc ids: %s", hits.map(d => d.doc.intValue() ))
         return hits
     }
 
@@ -102,7 +100,7 @@ class RelatedResources {
                 throw new SearchException("Error reading document " + docNo, e)
             }
         }
-       // LOG.debug("Document: %s".format(document))
+       // SpotlightLog.debug(this.getClass, "Document: %s", document)
         return document
     }
 
@@ -117,12 +115,12 @@ class RelatedResources {
             val uri = doc.getValues(field.toString).head //there should be only one URI
             scoredUris.put(uri,score)
         })
-        LOG.debug("Values: %s".format(scoredUris))
+        SpotlightLog.debug(this.getClass, "Values: %s", scoredUris)
         scoredUris
     }
 
     def search(resourceUri: String, nHits: Int) : scala.collection.mutable.Map[String,Float] = {
-        LOG.debug("Setting up lucene search query.")
+        SpotlightLog.debug(this.getClass, "Setting up lucene search query.")
 
         val mlt = new MoreLikeThis(reader)
         mlt.setFieldNames(Array(DBpediaResourceField.CONTEXT.toString))
@@ -149,7 +147,7 @@ class RelatedResources {
     }
 
     def sparql(resources: Set[String]) : scala.collection.immutable.Map[String,Float] = {
-        LOG.debug("Setting up sparql query.")
+        SpotlightLog.debug(this.getClass, "Setting up sparql query.")
 
         val header = "select * where { "
         val unionClause = "{ <http://dbpedia.org/resource/%s> <http://dbpedia.org/ontology/wikiPageWikiLink> ?entity . } ";
@@ -163,7 +161,7 @@ class RelatedResources {
     }
 
     def query(resources: Set[String], nHits: Int) : List[(String,Float)] = {
-        LOG.info("Searched: %s".format(resources))
+        SpotlightLog.info(this.getClass, "Searched: %s", resources)
         /* get resources whose context in DBpedia is similar to these */
         val similar = search(resources, nHits) //println(similar)
         /* get resources linked to these via DBpedia wikilinks */
@@ -173,7 +171,7 @@ class RelatedResources {
         val merged=similar
         // sort by value
         val sorted = merged.toList.sortWith{_._2 < _._2}.reverse.take(nHits)
-        LOG.info("Retrieved: %s".format(sorted))
+        SpotlightLog.info(this.getClass, "Retrieved: %s", sorted)
         sorted
     }
 

@@ -216,11 +216,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-math</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>scala.ahocorasick</groupId>
             <artifactId>spotter-aho</artifactId>
         </dependency>

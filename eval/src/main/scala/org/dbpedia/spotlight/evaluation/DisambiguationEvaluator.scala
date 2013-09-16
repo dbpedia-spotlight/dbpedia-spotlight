@@ -16,7 +16,7 @@
 
 package org.dbpedia.spotlight.evaluation
 
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import org.dbpedia.spotlight.model._
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.util.Profiling._
@@ -30,7 +30,6 @@ import java.io.{File, PrintStream}
 class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurrence], val disambiguatorSet : Set[Disambiguator], val outputFileName : String)
 {
 
-    private val LOG = LogFactory.getLog(this.getClass)
     var totalOccurrenceCount = 0
     var totalCorrectResourceMatches = 0
 
@@ -72,13 +71,13 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
             {
                 found.find(f => f equals g) match {
                     case Some(correctOcc) => {
-                        LOG.info("  Correct: "+correctOcc.surfaceForm + " -> " + correctOcc.resource)
+                        SpotlightLog.info(this.getClass, "  Correct: %s -> %s", correctOcc.surfaceForm, correctOcc.resource)
                         correct += 1
                         //print to file
                     }
                     case None => {
-                        LOG.info("  WRONG: correct: "+g.surfaceForm+" -> "+g.resource);
-                        LOG.info("       spotlight: "+g.surfaceForm+" -> "+found.map(_.resource).mkString(", "));
+                        SpotlightLog.info(this.getClass, "  WRONG: correct: %s -> %s", g.surfaceForm, g.resource)
+                        SpotlightLog.info(this.getClass, "       spotlight: %s -> %s", g.surfaceForm, found.map(_.resource).mkString(", "))
                     }
                 }
             }
@@ -87,31 +86,31 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
 
     def stats()
     {
-        LOG.info("Results:"+outputFileName)
+        SpotlightLog.info(this.getClass, "Results: %s", outputFileName)
         for (disambiguator <- disambiguatorSet) {
             val total = if (ambiguousOnly) (totalOccurrenceCount.toDouble-unambiguityCounters(disambiguator.name)) else totalOccurrenceCount.toDouble
             val totalText =  if (ambiguousOnly) disambiguationCounters(disambiguator.name)+"/"+totalOccurrenceCount+"-"+unambiguityCounters(disambiguator.name) else disambiguationCounters(disambiguator.name)+"/"+totalOccurrenceCount
             val accuracy = disambiguationCounters(disambiguator.name).toDouble / total
             val msg = "Disambiguation accuracy: "+String.format("%3.2f",double2Double(accuracy*100.0))+"% ("+disambiguator.name+") : "+totalText+" = "+accuracy
-            LOG.info(msg)
+            SpotlightLog.info(this.getClass, msg)
             texOutput.print(msg)
         }
         for (disambiguator <- disambiguatorSet) {
             val unambiguity = unambiguityCounters(disambiguator.name).toDouble/(totalOccurrenceCount.toDouble);
             val msg = "Unambiguity: "+String.format("%3.2f",double2Double(unambiguity*100.0))+"% ("+disambiguator.name+ ") : "+unambiguityCounters(disambiguator.name).toDouble +"/"+ totalOccurrenceCount.toDouble
-            LOG.info(msg)
+            SpotlightLog.info(this.getClass, msg)
             texOutput.print(msg)
         }
         for (disambiguator <- disambiguatorSet) {
             val notFound = sfNotFoundCounters(disambiguator.name).toDouble/(totalOccurrenceCount.toDouble);
             val msg = "Surface not found: "+String.format("%3.2f",double2Double(notFound*100.0))+"% ("+disambiguator.name+ ") : "+sfNotFoundCounters(disambiguator.name).toDouble +"/"+ totalOccurrenceCount.toDouble
-            LOG.info(msg)
+            SpotlightLog.info(this.getClass, msg)
             texOutput.print(msg)
         }
         for (disambiguator <- disambiguatorSet) {
             val avgTime = timeCounters(disambiguator.name).toDouble/(totalOccurrenceCount.toDouble);
             val msg = "Avg Disamb. Time: "+ formatTime(avgTime.toLong)+" ("+disambiguator.name+ ") : "+timeCounters(disambiguator.name).toDouble +"/"+ totalOccurrenceCount.toDouble
-            LOG.info(msg)
+            SpotlightLog.info(this.getClass, msg)
             texOutput.print(msg)
         }
     }
@@ -155,9 +154,9 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
         {
             totalOccurrenceCount += 1
             if(totalOccurrenceCount%10 == 0) {
-                LOG.info("=="+totalOccurrenceCount)
+                SpotlightLog.info(this.getClass, "==%d", totalOccurrenceCount)
             }
-            //LOG.trace("Processed "+totalOccurrenceCount+" occurrences. Current text: ["+correctOccurrence.context.text.substring(0,scala.math.min(current.length, 100))+"...]")
+            //SpotlightLog.trace(this.getClass, "Processed %d occurrences. Current text: [%s...]", totalOccurrenceCount, correctOccurrence.context.text.substring(0,scala.math.min(current.length, 100)))
 
             for (disambiguator <- disambiguatorSet)
             {
@@ -176,7 +175,7 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
                     //case d: MergedOccurrencesDisambiguator => d.spotProbability(correctOccurrence.surfaceForm);
                     case _ => 1.0; //TODO implement for other disambiguators
                 }
-                //LOG.info("Spot probability for "+correctOccurrence.surfaceForm+"="+spotProb)
+                //SpotlightLog.info(this.getClass, "Spot probability for "%s=%s", correctOccurence.surfaceForm, spotProb)
 
                 var unambiguous = 0
                 var sfNotFound = 0
@@ -184,8 +183,8 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
                 if (ambiguity>=1) {
                     try
                     {
-                        LOG.debug(disambiguator.name);
-                        LOG.debug("Ambiguity for "+testOcc.surfaceForm+"="+ambiguity)
+                        SpotlightLog.debug(this.getClass, disambiguator.name)
+                        SpotlightLog.debug(this.getClass, "Ambiguity for %s=%d", testOcc.surfaceForm, ambiguity)
 
                         //val sfOccWrapped = List(new SurfaceFormOccurrence(correctOccurrence.surfaceForm, correctOccurrence.context, correctOccurrence.textOffset, correctOccurrence.provenance))
                         //val resList = disambiguate(disambiguator, sfOccWrapped)
@@ -203,7 +202,7 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
                         if (ambiguity==1) {
                             unambiguous = 1
                             if (ambiguousOnly)
-                                LOG.debug("Nothing to disambiguate. Unambiguous occurrence. Skipping.");
+                                SpotlightLog.debug(this.getClass, "Nothing to disambiguate. Unambiguous occurrence. Skipping.")
                         }
 
 
@@ -212,7 +211,7 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
                         if(testOcc.resource equals spotlightDecision) {
                             if ( (ambiguity>1) || !ambiguousOnly ) { // count only if ambiguity is higher than one or it's not ambiguous only
                                 disambiguationCounters = disambiguationCounters.updated(disambiguator.name, disambiguationCounters.get(disambiguator.name).getOrElse(0) + 1)
-                                LOG.debug("  **     correct: %.5f \t %.5f \t %.5f \t %s".format(bestK.head.resource.prior, bestK.head.contextualScore, bestK.head.similarityScore, spotlightDecision.uri+" / "+bestK.head.resource.uri))
+                                SpotlightLog.debug(this.getClass, "  **     correct: %.5f \t %.5f \t %.5f \t %s", bestK.head.resource.prior, bestK.head.contextualScore, bestK.head.similarityScore, spotlightDecision.uri+" / "+bestK.head.resource.uri)
                                 disambAccuracy = 1
                             }
                         }
@@ -222,12 +221,12 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
                         for(sptlResultOcc <- bestK) {
                             val filtered = filter(sptlResultOcc.resource)
                             if(i>0 && testOcc.resource.equals(sptlResultOcc.resource)) {
-                                LOG.debug("  **     correct: %.5f \t %.5f \t %.5f \t %s".format(sptlResultOcc.resource.prior, sptlResultOcc.contextualScore, sptlResultOcc.similarityScore, sptlResultOcc.resource))
+                                SpotlightLog.debug(this.getClass, "  **     correct: %.5f \t %.5f \t %.5f \t %s", sptlResultOcc.resource.prior, sptlResultOcc.contextualScore, sptlResultOcc.similarityScore, sptlResultOcc.resource)
                             }
                             else {
                                 //incorrectScores ::= score.toDouble
-                                //LOG.debug("  WRONG: correct: " + correctOccurrence.surfaceForm + " -> " + correctOccurrence.resource);
-                                LOG.debug("       spotlight: %.5f \t %.5f \t %.5f \t %s".format(sptlResultOcc.resource.prior, sptlResultOcc.contextualScore, sptlResultOcc.similarityScore, filtered.uri+" / "+sptlResultOcc.resource))
+                                //SpotlightLog.debug(this.getClass, "  WRONG: correct: %s -> %s", correctOccurrence.surfaceForm, correctOccurrence.resource)
+                                SpotlightLog.debug(this.getClass, "       spotlight: %.5f \t %.5f \t %.5f \t %s", sptlResultOcc.resource.prior, sptlResultOcc.contextualScore, sptlResultOcc.similarityScore, filtered.uri+" / "+sptlResultOcc.resource)
                                 //println(disambiguator.explain(correctOccurrence, 100))
                             }
 
@@ -256,20 +255,20 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
                         }
                         if (disambAccuracy==0)
                             if ( !ambiguousOnly || (ambiguity>1))
-                                LOG.debug("  **   not found: %.5s \t %.5s \t %.5s \t %s".format("NA", "NA", "NA", testOcc.resource))
+                                SpotlightLog.debug(this.getClass, "  **   not found: %.5s \t %.5s \t %.5s \t %s", "NA", "NA", "NA", testOcc.resource)
 
                     }
                     catch
                     {
-                        case err : SearchException => LOG.error("Disambiguation error in "+disambiguator.name+ "; " + err.getMessage)
-                        case err : InputException => LOG.error("Disambiguation error in "+disambiguator.name+ "; " + err.getMessage)
+                        case err : SearchException => SpotlightLog.error(this.getClass, "Disambiguation error in %s; %s", disambiguator.name, err.getMessage)
+                        case err : InputException => SpotlightLog.error(this.getClass, "Disambiguation error in %s; %s", disambiguator.name, err.getMessage)
                         case e: ItemNotFoundException =>  {
                             if (!ambiguousOnly && testOcc.resource.uri=="NIL") {
                                 disambAccuracy = 1
                                 disambiguationCounters = disambiguationCounters.updated(disambiguator.name, disambiguationCounters.get(disambiguator.name).getOrElse(0) + 1)
-                                LOG.debug("  **     correct: predicted NIL by 'surface form + context not found'.");
+                                SpotlightLog.debug(this.getClass, "  **     correct: predicted NIL by 'surface form + context not found'.")
                             } else {
-                                LOG.debug("  **   not found: Surface Form is in index but context does not match. ("+testOcc.surfaceForm+"). ");
+                                SpotlightLog.debug(this.getClass, "  **   not found: Surface Form is in index but context does not match. (%s). ", testOcc.surfaceForm)
                             }
                         }
                     }
@@ -280,9 +279,9 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
                         if (!ambiguousOnly && testOcc.resource.uri=="NIL") {
                             disambAccuracy = 1
                             disambiguationCounters = disambiguationCounters.updated(disambiguator.name, disambiguationCounters.get(disambiguator.name).getOrElse(0) + 1)
-                            LOG.debug("  **     correct: predicted NIL by 'surface form not found'.");
+                            SpotlightLog.debug(this.getClass, "  **     correct: predicted NIL by 'surface form not found'.")
                         } else {
-                            LOG.debug("  **   not found: Surface Form not in index ("+testOcc.surfaceForm+"). ");
+                            SpotlightLog.debug(this.getClass, "  **   not found: Surface Form not in index (%s). ", testOcc.surfaceForm)
                         }
                     }
                     // write stats for this disambiguator
@@ -315,7 +314,7 @@ class DisambiguationEvaluator(val testSource : Traversable[DBpediaResourceOccurr
 
         } // foreach occurrence
 
-        LOG.info("===== TOTAL RESULTS:");
+        SpotlightLog.info(this.getClass, "===== TOTAL RESULTS:")
         stats()
 
         output.close();

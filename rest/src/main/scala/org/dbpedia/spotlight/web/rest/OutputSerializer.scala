@@ -1,7 +1,8 @@
 package org.dbpedia.spotlight.web.rest
 
-import org.dbpedia.spotlight.model.{DBpediaResource, Text}
+import org.dbpedia.spotlight.model._
 import net.liftweb.json._
+import java.io.File
 
 /**
  * Object to serialize our objects and lists of objects

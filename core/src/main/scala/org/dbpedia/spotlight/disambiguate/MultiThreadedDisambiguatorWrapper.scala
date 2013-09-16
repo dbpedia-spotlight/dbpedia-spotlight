@@ -35,7 +35,7 @@ package org.dbpedia.spotlight.disambiguate
  */
 
 import scala.collection.JavaConverters._
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import org.apache.lucene.search.Explanation
 import org.dbpedia.spotlight.model._
 import scala.actors._
@@ -52,8 +52,6 @@ import org.dbpedia.spotlight.exceptions.{DisambiguationException, SearchExceptio
  * @author pablomendes
  */
 class MultiThreadedDisambiguatorWrapper(val disambiguator: Disambiguator) extends Disambiguator  {
-
-    private val LOG = LogFactory.getLog(this.getClass)
 
     def disambiguate(sfOccurrence: SurfaceFormOccurrence): DBpediaResourceOccurrence = {
         disambiguator.disambiguate(sfOccurrence)
@@ -72,17 +70,17 @@ class MultiThreadedDisambiguatorWrapper(val disambiguator: Disambiguator) extend
             loopWhile( i < nOccurrences) {
                 reactWithin(3000) {  //TODO configurable
                     case sfOccurrence: SurfaceFormOccurrence => {
-                        //LOG.info("Disambiguate: "+sfOccurrence.surfaceForm)
+                        //SpotlightLog.info(this.getClass, "Disambiguate: %s", sfOccurrence.surfaceForm)
                         i = i+1
                         // Send the disambiguated occurrence back to the caller
                         try {
                             val disambiguation = disambiguator.disambiguate(sfOccurrence)
-                            LOG.debug("Sent [%d of %d] %s.".format(i-1, nOccurrences-1, disambiguation.surfaceForm))
+                            SpotlightLog.debug(this.getClass, "Sent [%d of %d] %s.", i-1, nOccurrences-1, disambiguation.surfaceForm)
                             caller ! disambiguation
                         } catch {
-                            case ex:Throwable => 
-                                LOG.error("Caught exception trying to disambiguate ["+sfOccurrence.surfaceForm+"]: "+ex)
-                                LOG.debug("Stack trace: \n"+ex.getStackTrace.mkString("\n"))
+                            case ex:Throwable =>
+                                SpotlightLog.error(this.getClass, "Caught exception trying to disambiguate [%s]: %s", sfOccurrence.surfaceForm, ex)
+                                SpotlightLog.debug(this.getClass, "Stack trace: \n%s", ex.getStackTrace.mkString("\n"))
                                 caller ! ex
                         }
                     }
@@ -101,16 +99,16 @@ class MultiThreadedDisambiguatorWrapper(val disambiguator: Disambiguator) extend
         for ( i <- 0 to nOccurrences-1) {
             receiveWithin(9000) {  // time to wait before each occurrence arrives //TODO configurable
                 case disambiguation:DBpediaResourceOccurrence => {
-                    LOG.debug("Received [%d of %d] ".format(i, nOccurrences - 1, sfOccurrences.get(i).surfaceForm , disambiguation.surfaceForm))
+                    SpotlightLog.debug(this.getClass, "Received [%d of %d] ", i, nOccurrences - 1, sfOccurrences.get(i).surfaceForm , disambiguation.surfaceForm)
                     if(disambiguation.context.text.equals(sfOccurrences.get(0).context.text)) { //PATCH by Jo Daiber (temp)
-                        //LOG.trace("Occurrence came from the same context.");
+                        //SpotlightLog.trace(this.getClass, "Occurrence came from the same context.")
                         list.add(disambiguation)
                     }
                 }
                 case e: Throwable =>
-                    LOG.error("Received Exception %s in result collector. i=%d of %d".format(e.toString,i.toInt,(nOccurrences-1).toInt))
+                    SpotlightLog.error(this.getClass, "Received Exception %s in result collector. i=%d of %d", e.toString,i.toInt,(nOccurrences-1).toInt)
                 case TIMEOUT => {
-                    LOG.error("Timed out trying to aggregate disambiguations! i=%d of %d".format(i.toInt,(nOccurrences-1).toInt))
+                    SpotlightLog.error(this.getClass, "Timed out trying to aggregate disambiguations! i=%d of %d", i.toInt,(nOccurrences-1).toInt)
                     //exit()
                 }
             }

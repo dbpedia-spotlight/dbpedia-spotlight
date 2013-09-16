@@ -24,7 +24,7 @@ import org.dbpedia.spotlight.model.SurfaceForm
 import org.dbpedia.spotlight.util.IndexingConfiguration
 import java.util.Scanner
 import java.io.FileInputStream
-import org.apache.commons.logging.{LogFactory, Log}
+import org.dbpedia.spotlight.log.SpotlightLog
 import scala.collection.JavaConverters._
 
 /**
@@ -39,8 +39,6 @@ import scala.collection.JavaConverters._
 
 object AddSurfaceFormsToIndex
 {
-    val LOG: Log = LogFactory.getLog(this.getClass)
-
     def toLowercase(sf: String, lowerCased: Boolean) : List[String] = {
         if (lowerCased) (sf.toLowerCase :: List(sf)) else List(sf)
     }
@@ -78,7 +76,7 @@ object AddSurfaceFormsToIndex
     // uri -> list(sf1, sf2)
     def loadSurfaceForms(surfaceFormsFileName: String, transform : String => List[String]) = {
         var nWrongLines = 0
-        LOG.info("Getting surface form map...")
+        SpotlightLog.info(this.getClass, "Getting surface form map...")
         val reverseMap : java.util.Map[String, java.util.LinkedHashSet[SurfaceForm]] = new java.util.HashMap[String, java.util.LinkedHashSet[SurfaceForm]]()
         val separator = "\t"
         val tsvScanner = new Scanner(new FileInputStream(surfaceFormsFileName), "UTF-8")
@@ -97,8 +95,8 @@ object AddSurfaceFormsToIndex
                 case e: ArrayIndexOutOfBoundsException => nWrongLines = nWrongLines + 1;
             }
         }
-        LOG.info("Done.")
-        if (nWrongLines>0) LOG.error("There were %s errors parsing the input lines. Please double check that everything went fine by inspecting the input file given to this class.")
+        SpotlightLog.info(this.getClass, "Done.")
+        if (nWrongLines>0) SpotlightLog.error(this.getClass, "There were %d errors parsing the input lines. Please double check that everything went fine by inspecting the input file given to this class.", nWrongLines)
         reverseMap
 
     }

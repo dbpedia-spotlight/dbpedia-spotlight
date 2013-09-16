@@ -3,14 +3,13 @@ package org.dbpedia.spotlight.db
 import model._
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.disambiguate.mixtures.Mixture
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import scala.collection.JavaConverters._
 import similarity.{ContextSimilarity, TFICFSimilarity}
 import org.dbpedia.spotlight.disambiguate.{ParagraphDisambiguator, Disambiguator}
 import org.dbpedia.spotlight.exceptions.{SurfaceFormNotFoundException, InputException}
 import collection.mutable
 import scala.Predef._
-import org.dbpedia.spotlight.util.MathUtil
 import breeze.{numerics, linalg}
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ArrayBuffer
@@ -37,8 +36,6 @@ class DBTwoStepDisambiguator(
   mixture: Mixture,
   contextSimilarity: ContextSimilarity
 ) extends ParagraphDisambiguator {
-
-  private val LOG = LogFactory.getLog(this.getClass)
 
   /* Tokenizer that may be used for tokenization if the text is not already tokenized. */
   var tokenizer: TextTokenizer = null
@@ -77,14 +74,14 @@ class DBTwoStepDisambiguator(
 
   def bestK(paragraph: Paragraph, k: Int): Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]] = {
 
-    LOG.debug("Running bestK for paragraph %s.".format(paragraph.id))
+    SpotlightLog.debug(this.getClass, "Running bestK for paragraph %s.",paragraph.id)
 
     if (paragraph.occurrences.size == 0)
       return Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]()
 
     //Tokenize the text if it wasn't tokenized before:
     if (tokenizer != null) {
-      LOG.info("Tokenizing input text...")
+      SpotlightLog.info(this.getClass, "Tokenizing input text...")
       val tokens = tokenizer.tokenize(paragraph.text)
       paragraph.text.setFeature(new Feature("tokens", tokens))
     }
@@ -133,7 +130,7 @@ class DBTwoStepDisambiguator(
       Map[SurfaceFormOccurrence, List[Candidate]]())(
       (acc, sfOcc) => {
 
-        LOG.debug("Searching...")
+        SpotlightLog.debug(this.getClass, "Searching...")
 
         val candidateRes = {
           val sf = try {
@@ -143,10 +140,10 @@ class DBTwoStepDisambiguator(
           }
 
           val cands = candidateSearcher.getCandidates(sf)
-          LOG.debug("# candidates for: %s = %s.".format(sf, cands.size))
+          SpotlightLog.debug(this.getClass, "# candidates for: %s = %s.", sf, cands.size)
 
           if (cands.size > MAX_CANDIDATES) {
-            LOG.debug("Reducing number of candidates to %d.".format(MAX_CANDIDATES))
+            SpotlightLog.debug(this.getClass, "Reducing number of candidates to %d.", MAX_CANDIDATES)
             cands.toList.sortBy( _.prior ).reverse.take(MAX_CANDIDATES).toSet
           } else {
             cands
@@ -188,7 +185,7 @@ class DBTwoStepDisambiguator(
         0.0
 
       eNIL.setFeature(new Score("P(c|e)", nilContextScore))
-      eNIL.setFeature(new Score("P(e)",   MathUtil.ln( 1 / surfaceFormStore.getTotalAnnotatedCount.toDouble ) )) //surfaceFormStore.getTotalAnnotatedCount = total number of entity mentions
+      eNIL.setFeature(new Score("P(e)",   breeze.numerics.log( 1 / surfaceFormStore.getTotalAnnotatedCount.toDouble ) )) //surfaceFormStore.getTotalAnnotatedCount = total number of entity mentions
       val nilEntityScore = mixture.getScore(eNIL)
 
       //Get all other entities:
@@ -209,10 +206,10 @@ class DBTwoStepDisambiguator(
         //Set the scores as features for the resource occurrence:
 
         //Note that this is not mathematically correct, since the candidate prior is P(e|s),
-        //the correct P(s|e) should be MathUtil.ln( cand.support / cand.resource.support.toDouble )
-        resOcc.setFeature(new Score("P(s|e)", MathUtil.ln( cand.prior )))
+        //the correct P(s|e) should be breeze.numerics.log( cand.support / cand.resource.support.toDouble )
+        resOcc.setFeature(new Score("P(s|e)", breeze.numerics.log( cand.prior )))
         resOcc.setFeature(new Score("P(c|e)", resOcc.contextualScore))
-        resOcc.setFeature(new Score("P(e)",   MathUtil.ln( cand.resource.prior )))
+        resOcc.setFeature(new Score("P(e)",   breeze.numerics.log( cand.resource.prior )))
 
         //Use the mixture to combine the scores
         resOcc.setSimilarityScore(mixture.getScore(resOcc))
@@ -228,7 +225,7 @@ class DBTwoStepDisambiguator(
       (1 to candOccs.size-1).foreach{ i: Int =>
         val top = candOccs(i-1)
         val bottom = candOccs(i)
-        top.setPercentageOfSecondRank(MathUtil.exp(bottom.similarityScore - top.similarityScore))
+        top.setPercentageOfSecondRank(breeze.numerics.exp(bottom.similarityScore - top.similarityScore))
       }
 
       //Compute the final score as a softmax function, get the total score first:
@@ -236,8 +233,8 @@ class DBTwoStepDisambiguator(
       val contextSoftMaxTotal    = linalg.softmax(candOccs.map(_.contextualScore) :+ nilContextScore )
 
       candOccs.foreach{ o: DBpediaResourceOccurrence =>
-        o.setSimilarityScore( MathUtil.exp(o.similarityScore - similaritySoftMaxTotal) ) // e^xi / \sum e^xi
-        o.setContextualScore( MathUtil.exp(o.contextualScore - contextSoftMaxTotal) )    // e^xi / \sum e^xi
+        o.setSimilarityScore( breeze.numerics.exp(o.similarityScore - similaritySoftMaxTotal) ) // e^xi / \sum e^xi
+        o.setContextualScore( breeze.numerics.exp(o.contextualScore - contextSoftMaxTotal) )    // e^xi / \sum e^xi
       }
 
       acc + (aSfOcc -> candOccs)

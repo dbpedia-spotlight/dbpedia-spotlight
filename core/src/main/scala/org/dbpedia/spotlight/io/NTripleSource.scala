@@ -3,15 +3,13 @@ package org.dbpedia.spotlight.io
 import scala.io.Source
 import java.io._
 import java.util.zip.GZIPInputStream
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 
 /**
  * Iterates over nt files. Can also iterate over nq files not caring about the fourth element.
  * @author dirk
  */
 object NTripleSource {
-    private val LOG = LogFactory.getLog(this.getClass)
-
     def fromFile(ntFile : File) : NTripleSource = new NTripleSource(ntFile)
 
     class NTripleSource(ntFile: File) extends Traversable[(String,String,String)] {
@@ -46,7 +44,7 @@ object NTripleSource {
                         f((subj,pred,obj))
                     }
                     else {
-                        LOG.error("line must have at least 4 whitespaces; got "+(elements.length-1)+" in line: "+line)
+                        SpotlightLog.error(this.getClass, "line must have at least 4 whitespaces; got %d in line: %d", elements.length-1,line)
                     }
                 }
             }

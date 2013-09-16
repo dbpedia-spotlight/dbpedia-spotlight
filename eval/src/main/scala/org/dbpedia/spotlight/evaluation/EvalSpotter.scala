@@ -11,7 +11,7 @@ import org.apache.lucene.util.Version
 import org.dbpedia.spotlight.model.{SurfaceForm, Factory, SurfaceFormOccurrence}
 import collection.JavaConversions
 import org.apache.lucene.analysis._
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import org.apache.lucene.analysis.standard.{StandardAnalyzer, ClassicAnalyzer}
 import org.dbpedia.spotlight.spot.ahocorasick.AhoCorasickSpotter
 
@@ -23,8 +23,6 @@ import org.dbpedia.spotlight.spot.ahocorasick.AhoCorasickSpotter
  * Set the spotters in spotterMethods.
  */
 object EvalSpotter {
-
-  private val LOG = LogFactory.getLog(this.getClass)
 
   def evalCorpus = {
     MilneWittenCorpus.fromDirectory(new File("/home/max/spotlight-data/milne-witten"))
@@ -120,7 +118,7 @@ object EvalSpotter {
         truePositive += 1
       } else {
         falseNegative += 1
-        LOG.debug("false negative: " + e)
+        SpotlightLog.debug(this.getClass, "false negative: %s", e)
       }
     }
     val falsePositive = actual.size - truePositive
@@ -128,12 +126,12 @@ object EvalSpotter {
     val precision = truePositive.toDouble / (truePositive + falsePositive )
     val recall = truePositive.toDouble / (truePositive + falseNegative)
 
-    LOG.info(description)
-    LOG.info("           | actual Y  | actual N")
-    LOG.info("expected Y |   %3d     |    %3d".format(truePositive, falseNegative))
-    LOG.info("expected N |   %3d     |    N/A".format(falsePositive))
-    LOG.info("precision: %f  recall: %f".format(precision, recall))
-    LOG.info("--------------------------------")
+    SpotlightLog.info(this.getClass, description)
+    SpotlightLog.info(this.getClass, "           | actual Y  | actual N")
+    SpotlightLog.info(this.getClass, "expected Y |   %3d     |    %3d", truePositive, falseNegative)
+    SpotlightLog.info(this.getClass, "expected N |   %3d     |    N/A", falsePositive)
+    SpotlightLog.info(this.getClass, "precision: %f  recall: %f", precision, recall)
+    SpotlightLog.info(this.getClass, "--------------------------------")
   }
 
 }

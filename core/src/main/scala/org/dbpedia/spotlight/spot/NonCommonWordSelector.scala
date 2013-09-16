@@ -6,7 +6,6 @@ import java.io._
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence
 import collection.JavaConversions._
 import org.apache.commons.logging.Log
-import org.apache.commons.logging.LogFactory
 import org.apache.log4j.Logger
 import org.dbpedia.spotlight.io.WortschatzParser
 

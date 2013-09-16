@@ -18,7 +18,7 @@
 
 package org.dbpedia.spotlight.disambiguate
 
-import org.apache.commons.logging.LogFactory
+import org.dbpedia.spotlight.log.SpotlightLog
 import org.dbpedia.spotlight.lucene.disambiguate.MergedOccurrencesDisambiguator
 import java.lang.UnsupportedOperationException
 import scala.collection.JavaConverters._
@@ -45,13 +45,11 @@ class TwoStepDisambiguator(val candidateSearcher: CandidateSearcher,
                            val contextSearcher: MergedOccurrencesContextSearcher) //TODO should be ContextSearcher. Need a generic disambiguator to enable this.
     extends ParagraphDisambiguator  {
 
-    private val LOG = LogFactory.getLog(this.getClass)
-
-    LOG.info("Initializing disambiguator object ...")
+    SpotlightLog.info(this.getClass, "Initializing disambiguator object ...")
 
     val disambiguator : Disambiguator = new MergedOccurrencesDisambiguator(contextSearcher)
 
-    LOG.info("Done.")
+    SpotlightLog.info(this.getClass, "Done.")
 
     @throws(classOf[InputException])
     def disambiguate(paragraph: Paragraph): List[DBpediaResourceOccurrence] = {
@@ -67,21 +65,21 @@ class TwoStepDisambiguator(val candidateSearcher: CandidateSearcher,
     //WARNING: this is repetition of BaseSearcher.getHits
     //TODO move to subclass of BaseSearcher
     def query(text: Text, allowedUris: Array[DBpediaResource]) = {
-        LOG.debug("Setting up query.")
+        SpotlightLog.debug(this.getClass, "Setting up query.")
 
         val context = if (text.text.size<250) text.text.concat(" "+text.text) else text.text //HACK for text that is too short
-        //LOG.debug(context)
+        //SpotlightLog.debug(this.getClass, context)
         val nHits = allowedUris.size
         val filter = new org.apache.lucene.search.TermsFilter() //TODO can use caching? val filter = new FieldCacheTermsFilter(DBpediaResourceField.CONTEXT.toString,allowedUris)
         allowedUris.foreach( u => filter.addTerm(new Term(DBpediaResourceField.URI.toString,u.uri)) )
 
-        val mlt = new MoreLikeThis(contextSearcher.mReader);
+        val mlt = new MoreLikeThis(contextSearcher.mReader)
         mlt.setFieldNames(Array(DBpediaResourceField.CONTEXT.toString))
         mlt.setAnalyzer(contextSearcher.getLuceneManager.defaultAnalyzer)
-        //LOG.debug("Analyzer %s".format(contextLuceneManager.defaultAnalyzer))
+        //SpotlightLog.debug(this.getClass, "Analyzer %s", contextLuceneManager.defaultAnalyzer)
         //val inputStream = new ByteArrayInputStream(context.getBytes("UTF-8"));
-        val query = mlt.like(new StringReader(context), DBpediaResourceField.CONTEXT.toString);
-        LOG.debug("Running query.")
+        val query = mlt.like(new StringReader(context), DBpediaResourceField.CONTEXT.toString)
+        SpotlightLog.debug(this.getClass, "Running query.")
         contextSearcher.getHits(query, nHits, 50000, filter)
     }
 
@@ -93,30 +91,30 @@ class TwoStepDisambiguator(val candidateSearcher: CandidateSearcher,
         val occs = paragraph.occurrences
             .foldLeft( Map[SurfaceFormOccurrence,List[DBpediaResource]]())(
             (acc,sfOcc) => {
-                LOG.debug("searching...")
+                SpotlightLog.debug(this.getClass, "searching...")
                 var candidates = new java.util.HashSet[DBpediaResource]().asScala
                 try {
                     candidates = candidateSearcher.getCandidates(sfOcc.surfaceForm).asScala //.map(r => r.uri)
                 } catch {
-                    case e: ItemNotFoundException => LOG.debug(e);
+                    case e: ItemNotFoundException => SpotlightLog.debug(this.getClass, "%s\n%s", e.getMessage, e.getStackTraceString)
                 }
                 //ATTENTION there is no r.support at this point
                 //TODO if support comes from candidate index, it means c(sf,r).
 
-                //LOG.debug("# candidates for: %s = %s (%s)".format(sfOcc.surfaceForm,candidates.size,candidates))
-                LOG.debug("# candidates for: %s = %s.".format(sfOcc.surfaceForm,candidates.size))
+                //SpotlightLog.debug(this.getClass, "# candidates for: %s = %s (%s)", sfOcc.surfaceForm,candidates.size,candidates)
+                SpotlightLog.debug(this.getClass, "# candidates for: %s = %s.", sfOcc.surfaceForm,candidates.size)
                 candidates.foreach( r => allCandidates.add(r))
                 acc + (sfOcc -> candidates.toList)
             });
         val e1 = System.nanoTime()
-        //LOG.debug("Time with %s: %f.".format(m1, (e1-s1) / 1000000.0 ))
+        //SpotlightLog.debug(this.getClass, "Time with %s: %f.", m1, (e1-s1) / 1000000.0 )
         occs
     }
 
 
     def bestK(paragraph:  Paragraph, k: Int): Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]] = {
 
-        LOG.debug("Running bestK for paragraph %s.".format(paragraph.id))
+        SpotlightLog.debug(this.getClass, "Running bestK for paragraph %s.", paragraph.id)
 
         if (paragraph.occurrences.size==0) return Map[SurfaceFormOccurrence,List[DBpediaResourceOccurrence]]()
 
@@ -125,7 +123,7 @@ class TwoStepDisambiguator(val candidateSearcher: CandidateSearcher,
 
         // step1: get candidates for all surface forms
         //       (TODO here building allCandidates directly, but could extract from occs)
-        var allCandidates = CompactHashSet[DBpediaResource]();
+        var allCandidates = CompactHashSet[DBpediaResource]()
         val occs = getCandidates(paragraph,allCandidates)
 
         val s2 = System.nanoTime()
@@ -134,13 +132,13 @@ class TwoStepDisambiguator(val candidateSearcher: CandidateSearcher,
         try {
             hits = query(paragraph.text, allCandidates.toArray)
         } catch {
-            case e: Exception => throw new SearchException(e);
-            case r: RuntimeException => throw new SearchException(r);
-            case _ => LOG.error("Unknown really scary error happened. You can cry now.")
+            case e: Exception => throw new SearchException(e)
+            case r: RuntimeException => throw new SearchException(r)
+            case _ => SpotlightLog.error(this.getClass, "Unknown really scary error happened. You can cry now.")
         }
-        // LOG.debug("Hits (%d): %s".format(hits.size, hits.map( sd => "%s=%s".format(sd.doc,sd.score) ).mkString(",")))
+        // SpotlightLog.debug(this.getClass, "Hits (%d): %s", hits.size, hits.map( sd => "%s=%s".format(sd.doc,sd.score) ).mkString(","))
 
-        // LOG.debug("Reading DBpediaResources.")
+        // SpotlightLog.debug(this.getClass, "Reading DBpediaResources.")
         val scores = hits
             .foldRight(Map[String,Tuple2[DBpediaResource,Double]]())((hit,acc) => {
             var resource: DBpediaResource = contextSearcher.getDBpediaResource(hit.doc) //this method returns resource.support=c(r)
@@ -149,9 +147,9 @@ class TwoStepDisambiguator(val candidateSearcher: CandidateSearcher,
             acc + (resource.uri -> (resource,score))
         })
         val e2 = System.nanoTime()
-        //LOG.debug("Scores (%d): %s".format(scores.size, scores))
+        //SpotlightLog.debug(this.getClass, "Scores (%d): %s", scores.size, scores)
 
-        //LOG.debug("Time with %s: %f.".format(m2, (e2-s2) / 1000000.0 ))
+        //SpotlightLog.debug(this.getClass, "Time with %s: %f.".format(m2, (e2-s2) / 1000000.0 )
 
         // pick the best k for each surface form
         val r = occs.keys.foldLeft(Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]())( (acc,aSfOcc) => {
@@ -167,18 +165,17 @@ class TwoStepDisambiguator(val candidateSearcher: CandidateSearcher,
                             resource, //TODO this resource may contain the c(s,r) that can be used for conditional prob.
                             supportConfidence)
                     })
-                    .sortBy(o => o.contextualScore) //TODO should be final score
-                .reverse
+                    .sortBy(o => -o.contextualScore) //TODO should be final score
                 .take(k)
             acc + (aSfOcc -> candOccs)
-        });
+        })
 
-       // LOG.debug("Reranked (%d)".format(r.size))
+       // SpotlightLog.debug(this.getClass, "Reranked (%d)", r.size)
 
         r
     }
 
-    def name() : String = {
+    def name = {
         "2step+"+disambiguator.name
     }
 
