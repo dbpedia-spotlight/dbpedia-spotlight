@@ -159,36 +159,32 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
     val trainingDir=entityTopicFolder+"/traincorpus"
     val docCorpusList=new ListBuffer[DocumentCorpus]()
     //init document corpus list (all documents were split into a set of corpus, in initializeWikiDocuments())
-    (0 until threadNum+1).foreach(id=>
-        docCorpusList+=new DocumentCorpus("%s/%d".format(trainingDir, id))
-    )
+    (0 until threadNum+1).foreach(id=>{
+       val corpus=new DocumentCorpus("%s/%d".format(trainingDir, id))
+       corpus.loadDocs()
+       docCorpusList+=corpus
+    })
 
-    ( 1 to maxEpoch).foreach((i:Int)=>{
-      var j:Int=0
-      readGlobalCounters(trainingDir)
-      docCorpusList.foreach((corpus:DocumentCorpus)=>{
-        val documents=corpus.loadDocs()
-        documents.foreach((doc:Document)=>{
-          doc.updateAssignment(true)
-          corpus.add(doc)
-          j+=1
-          if(j%10000==0)
-            LOG.info("%d of %d-th iteration".format(j, i))
-        })
-        corpus.closeOutputStream()
+    readGlobalCounters(trainingDir)
+    (1 to maxEpoch).foreach((i:Int)=>{
+      val memLoaded = (Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / (1024 * 1024)
+      LOG.info("%d-th iteration, mem %d M".format(i, memLoaded))
+      docCorpusList.foreach((corpus:DocumentCorpus)=>corpus.run)
+      var finishedNum=0
+      while(finishedNum<docCorpusList.size){
+        Thread.sleep(60000)
+        docCorpusList.foreach(corpus=>if(corpus.isRunning==false) finishedNum+=1)
+      }
+      if(i>=burninEpoch && i%sampleLag==0)
+        updateCounterSum(i)
 
-        if(i>=burninEpoch && i%sampleLag==0)
-          updateCounterSum(i)
-
-        //save counters for every epoch to re-organze the hash map
+      if(i>=burninEpoch&&i%checkpointFreq==0){
+        docCorpusList.foreach(corpus=>corpus.dump())
         saveGlobalCounters(trainingDir,
           List(Document.entitymentionCount,Document.topicentityCount, Document.entitywordCount,
             entitymentionCounterSum, entitywordCounterSum, topicentityCounterSum))
-
-        if(i>=burninEpoch&&i%checkpointFreq==0){
-          doCheckpoint(i,entityTopicFolder)
-        }
-      })
+        doCheckpoint(i,entityTopicFolder)
+      }
     })
   }
 

@@ -4,7 +4,7 @@ import java.util.HashMap
 import java.io._
 import org.apache.commons.logging.LogFactory
 import scala.collection.JavaConverters._
-
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
 /**
@@ -19,37 +19,63 @@ import scala.collection.JavaConverters._
 
 class GlobalCounter(val name:String, val matrix: Array[HashMap[Int,Float]],val rowSum: Array[Float],var samples:Int=1) {
 
+  val readwriteLock=new Array[ReentrantReadWriteLock](rowSum.size)
+  (0 until rowSum.size).foreach(i=>readwriteLock(i)=new ReentrantReadWriteLock())
+  val readlock=readwriteLock.map(lock=>lock.readLock())
+  val writelock=readwriteLock.map(lock=>lock.writeLock())
+
   def incCount(row: Int, col: Int){
-    val rowMap=matrix(row)
-    rowMap.get(col) match{
-      case v:Float=>rowMap.put(col,v+1)
-      case _=>rowMap.put(col,1)
+    writelock(row).lock()
+    try{
+      val rowMap=matrix(row)
+      rowMap.get(col) match{
+        case v:Float=>rowMap.put(col,v+1)
+        case _=>rowMap.put(col,1)
+      }
+    }finally {
+      writelock(row).unlock()
     }
 
     rowSum(row)+=1
   }
 
   def decCount(row: Int, col: Int){
-    val rowMap=matrix(row)
-    rowMap.get(col) match{
-      case v:Float=>if (v>0) rowMap.put(col, v-1) else throw new IllegalArgumentException("decrease 0 matrix entry %d %d %s".format(row,col,name))
-      case _=> throw new IllegalArgumentException("decrease null entry %d %d %s".format(row,col,name))
+    writelock(row).lock()
+    try{
+
+        val rowMap=matrix(row)
+      rowMap.get(col) match{
+        case v:Float=>if (v>0) rowMap.put(col, v-1) else throw new IllegalArgumentException("decrease 0 matrix entry %d %d %s".format(row,col,name))
+        case _=> throw new IllegalArgumentException("decrease null entry %d %d %s".format(row,col,name))
+      }
+      if(rowSum(row)>0)
+        rowSum(row)-=1
+      else throw new IllegalArgumentException("decrease 0 rowSum %d %d %s".format(row,col,name))
+    }finally {
+      writelock(row).unlock()
     }
-    if(rowSum(row)>0)
-      rowSum(row)-=1
-    else throw new IllegalArgumentException("decrease 0 rowSum %d %d %s".format(row,col,name))
   }
 
   def getCount(row: Int, col: Int):Float={
-    val rowMap=matrix(row)
-    rowMap.get(col) match{
-      case v:Float=>v
-      case _=>0
+    readlock(row).lock()
+    try{
+      val rowMap=matrix(row)
+      rowMap.get(col) match{
+        case v:Float=>v
+        case _=>0
+      }
+    }finally {
+      readlock(row).unlock()
     }
   }
 
   def getCountSum(row: Int):Float={
-    rowSum(row)
+    readlock(row).lock()
+    try{
+      rowSum(row)
+    }finally {
+      readlock(row).unlock()
+    }
   }
 
   def add(other:GlobalCounter){

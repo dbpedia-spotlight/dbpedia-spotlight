@@ -10,14 +10,15 @@ import scala.util.control.Breaks._
  * @param diskPath
  * @param capacity
  */
-class DocumentCorpus (val diskPath:String, val capacity:Int){
+class DocumentCorpus (val diskPath:String, val capacity:Int) extends Runnable{
 
-  val docs=new Array[Document](capacity)
+  val docs=new ListBuffer[Document]()
   var size:Int=0
   var total:Int=0
 
   var outputStream:BufferedWriter=null
   var inputStream:BufferedReader=null
+  var isRunning=false
 
   def this(diskPath:String){
     this(diskPath, 10000)
@@ -27,7 +28,7 @@ class DocumentCorpus (val diskPath:String, val capacity:Int){
     if (size==capacity)
       saveDocs()
 
-    docs(size)=doc
+    docs+=doc
     size+=1
     total+=1
   }
@@ -39,6 +40,7 @@ class DocumentCorpus (val diskPath:String, val capacity:Int){
     (0 until size).foreach((i:Int)=>{
       docs(i).save(outputStream)
     })
+    docs.clear()
     size=0
   }
 
@@ -55,11 +57,10 @@ class DocumentCorpus (val diskPath:String, val capacity:Int){
    *
    * @return
    */
-  def loadDocs():Array[Document]={
+  def loadDocs():ListBuffer[Document]={
     if(inputStream==null)
       inputStream=new BufferedReader(new FileReader(diskPath))
 
-    val retDocs=new ListBuffer[Document]()
     var doc:Document=null
     var num=0
     //val LOG = LogFactory.getLog(this.getClass)
@@ -68,16 +69,36 @@ class DocumentCorpus (val diskPath:String, val capacity:Int){
         doc=Document.load(inputStream)
         if(doc==null)
           break
-        retDocs+=doc
+        docs+=doc
         num+=1
       }
     }
     closeInputStream()
-    retDocs.toArray
+    docs
+  }
+
+  def dump()={
+    if(outputStream==null)
+      outputStream=new BufferedWriter(new FileWriter(diskPath))
+
+    docs.foreach(doc=>
+      doc.save(outputStream)
+    )
+    outputStream.flush()
+    outputStream.close()
+    outputStream=null
   }
 
   def closeInputStream(){
     inputStream.close()
     inputStream=null
+  }
+
+  def run{
+    isRunning=true
+    docs.foreach((doc:Document)=>{
+      doc.updateAssignment(true)
+    })
+    isRunning=false
   }
 }
