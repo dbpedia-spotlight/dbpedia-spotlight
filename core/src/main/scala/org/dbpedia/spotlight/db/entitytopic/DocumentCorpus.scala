@@ -77,6 +77,9 @@ class DocumentCorpus (val diskPath:String, val capacity:Int) extends Runnable{
     docs
   }
 
+  /**
+   * dump docs onto disk
+   */
   def dump()={
     if(outputStream==null)
       outputStream=new BufferedWriter(new FileWriter(diskPath))
@@ -94,6 +97,9 @@ class DocumentCorpus (val diskPath:String, val capacity:Int) extends Runnable{
     inputStream=null
   }
 
+  /**
+   * run updates for docs in this corpus
+   */
   def run{
     isRunning=true
     docs.foreach((doc:Document)=>{

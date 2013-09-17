@@ -145,7 +145,8 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
 
   /**
    * update document assignment and global counters through gibbs sampling
-   * do sampling after burninEpoch; for every sampleLag epochs, do a sample (i.e., aggregate the counters)
+   * do sampling after burninEpoch; for every sampleLag epoch, do a sample (i.e., aggregate the counters)
+   * for every checkpointFreq, do a checkpoint for the docs and counters
    *
    * @param entityTopicFolder
    */
@@ -158,7 +159,7 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
 
     val trainingDir=entityTopicFolder+"/traincorpus"
     val docCorpusList=new ListBuffer[DocumentCorpus]()
-    //init document corpus list (all documents were split into a set of corpus, in initializeWikiDocuments())
+    //init document corpus list (all documents were split into a set of corpus in initializeWikiDocuments())
     (0 until threadNum+1).foreach(id=>{
        val corpus=new DocumentCorpus("%s/%d".format(trainingDir, id))
        corpus.loadDocs()
@@ -169,15 +170,22 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
     (1 to maxEpoch).foreach((i:Int)=>{
       val memLoaded = (Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / (1024 * 1024)
       LOG.info("%d-th iteration, mem %d M".format(i, memLoaded))
+
+      //docCorpus update docs in parallel
       docCorpusList.foreach((corpus:DocumentCorpus)=>corpus.run)
+
+      //wait until all docCorpus finish
       var finishedNum=0
       while(finishedNum<docCorpusList.size){
         Thread.sleep(60000)
         docCorpusList.foreach(corpus=>if(corpus.isRunning==false) finishedNum+=1)
       }
+
+      //do sampling
       if(i>=burninEpoch && i%sampleLag==0)
         updateCounterSum(i)
 
+      //do checkpoint
       if(i>=burninEpoch&&i%checkpointFreq==0){
         docCorpusList.foreach(corpus=>corpus.dump())
         saveGlobalCounters(trainingDir,
@@ -294,9 +302,10 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
 
   /**
    * merge counters from all initializers
+   * save docs of each initializer to disk
    *
    * @param initializers
-   * @return
+   * @return the merged global counters
    */
   def mergeCounters(initializers:Array[DocumentInitializer]):List[GlobalCounter]={
     val ret=initializers(0)
@@ -354,7 +363,7 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
     updateAssignments(entityTopicFolder, properties)
     LOG.info("Done (%d ms)".format(System.currentTimeMillis() - start))
 
-    //save global knowledge/counters
+    //save global knowledge/counters (do avergage for the aggregated counters,i.e., counters ended with _sum)
     saveGlobalCounters(entityTopicFolder, List(entitymentionCounterSum,entitywordCounterSum,topicentityCounterSum), true)
     LOG.info("Finish training")
   }

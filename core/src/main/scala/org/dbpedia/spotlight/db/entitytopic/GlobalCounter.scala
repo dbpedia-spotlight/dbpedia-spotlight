@@ -19,6 +19,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 class GlobalCounter(val name:String, val matrix: Array[HashMap[Int,Float]],val rowSum: Array[Float],var samples:Int=1) {
 
+  //add locks ensuring concurrency for reading and writing global counters
   val readwriteLock=new Array[ReentrantReadWriteLock](rowSum.size)
   (0 until rowSum.size).foreach(i=>readwriteLock(i)=new ReentrantReadWriteLock())
   val readlock=readwriteLock.map(lock=>lock.readLock())
