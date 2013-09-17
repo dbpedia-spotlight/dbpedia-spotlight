@@ -162,6 +162,7 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
     //init document corpus list (all documents were split into a set of corpus in initializeWikiDocuments())
     (0 until threadNum+1).foreach(id=>{
        val corpus=new DocumentCorpus("%s/%d".format(trainingDir, id))
+      LOG.info("log corpus:%d".format(id))
        corpus.loadDocs()
        docCorpusList+=corpus
     })
