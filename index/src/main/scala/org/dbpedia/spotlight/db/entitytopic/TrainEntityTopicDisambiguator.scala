@@ -154,14 +154,14 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
     val sampleLag=properties.getProperty("sampleLag").toInt
     val checkpointFreq=properties.getProperty("checkpointFreq").toInt
     val maxEpoch=properties.getProperty("maxEpoch").toInt
+    val threadNum=properties.getProperty("threadNum").toInt
 
     val trainingDir=entityTopicFolder+"/traincorpus"
     val docCorpusList=new ListBuffer[DocumentCorpus]()
     //init document corpus list (all documents were split into a set of corpus, in initializeWikiDocuments())
-    new File(trainingDir).listFiles().foreach((c:File)=>{
-      if (c.getName.matches("[0-9]+.+"))
-        docCorpusList+=new DocumentCorpus(c.getPath.substring(0,c.getPath.indexOf('.')))
-    })
+    (0 until threadNum+1).foreach(id=>
+        docCorpusList+=new DocumentCorpus("%s/%d".format(trainingDir, id))
+    )
 
     ( 1 to maxEpoch).foreach((i:Int)=>{
       var j:Int=0
@@ -228,7 +228,10 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
         }
         bestK.values.filter(a=>a.size>0).flatten.toList.sortWith((a,b)=>a.textOffset<b.textOffset)
       }catch {
-        case e:SpottingException=>List[DBpediaResourceOccurrence]()
+        case e:SpottingException=>{
+          System.out.println("sentence too long for "+pageNode.title)
+          List[DBpediaResourceOccurrence]()
+          }
       }
     }
     else
@@ -261,7 +264,7 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
 
     //iterate each wiki page
     wikisource.foreach((wikiPage:WikiPage)=>{
-      System.out.println(wikiPage.title)
+      System.out.println("to parse:"+wikiPage.title)
       // clean the wiki markup from everything but links
       val cleanSource = WikiMarkupStripper.stripEverything(wikiPage.source)
       // parse the (clean) wiki page
@@ -285,7 +288,7 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
       }
     })
 
-    LOG.info("%d docs parsed, mem %d M".format(parsedDocs,  memLoaded))
+    LOG.info("%d docs parsed".format(parsedDocs))
     shutdownAndAwaitTermination(pool)
     val counters=mergeCounters(initializers.toArray)
     saveGlobalCounters(trainingDir,counters)

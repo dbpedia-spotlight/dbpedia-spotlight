@@ -17,9 +17,8 @@ abstract class DBSpotter(
  spotFeatureWeights: Option[Seq[Double]],
  stopwords: Set[String]
 ) extends Spotter {
-  val MaxSentenceLen=200
   var tokenizer: TextTokenizer = null
-
+  val maxSentenceLen=500
   val uppercaseFinder = new RegexNameFinder(
     Array[Pattern](
       Pattern.compile("([A-Z][^ ,!?.:;]*[ ]?)+")
@@ -43,10 +42,10 @@ abstract class DBSpotter(
 
     var spots = ListBuffer[SurfaceFormOccurrence]()
     val sentences: List[List[Token]] = DBSpotter.tokensToSentences(text.featureValue[List[Token]]("tokens").get)
-    if (sentences.size>MaxSentenceLen)
-      throw new SpottingException("The sentence is too long")
     //Go through all sentences
     sentences.foreach{ sentence: List[Token] =>
+      if (sentence.size>maxSentenceLen)
+        throw new SpottingException("the sentence is too long")
       val spans = generateCandidates(sentence)
 
       val tokenTypes = sentence.map(_.tokenType).toArray
