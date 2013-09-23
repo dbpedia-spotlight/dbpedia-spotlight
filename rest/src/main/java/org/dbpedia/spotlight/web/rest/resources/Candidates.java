@@ -84,8 +84,7 @@ public class Candidates {
             Server.getTokenizer().tokenizeMaybe(textObject);
 
         List<SurfaceFormOccurrence> entityMentions = spotter.extract(textObject);
-        if (entityMentions.size()==0) return annotation; //nothing to di
-        // sambiguate
+        if (entityMentions.size()==0) return annotation; //nothing to disambiguate
         Paragraph paragraph = Factory.paragraph().fromJ(entityMentions);
         LOG.info(String.format("Spotted %d entity mentions.",entityMentions.size()));
 
@@ -94,7 +93,11 @@ public class Candidates {
 
         Enumeration.Value listColor = blacklist ? FilterPolicy$.MODULE$.Blacklist() : FilterPolicy$.MODULE$.Whitelist();
 
-        FilterElement filter = new OccsFilter(confidence, support, ontologyTypesString, sparqlQuery, blacklist, coreferenceResolution, Server.getSimilarityThresholds(), Server.getSparqlExecute());
+        /*The previous addition of filter to the Candidates requests (which has usability questioned) produce the error described at issue #136.
+          To solve it, this feature for this argument (Candidates) is disabled, setting coreferenceResolution to false ever. Ignoring the user's configuration.
+        */
+        Boolean unableCoreferenceResolution = false;
+        FilterElement filter = new OccsFilter(confidence, support, ontologyTypesString, sparqlQuery, blacklist, unableCoreferenceResolution, Server.getSimilarityThresholds(), Server.getSparqlExecute());
 
         Map<SurfaceFormOccurrence,List<DBpediaResourceOccurrence>> filteredEntityCandidates = new HashMap<SurfaceFormOccurrence,List<DBpediaResourceOccurrence>>();;
 
