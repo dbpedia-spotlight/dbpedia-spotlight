@@ -65,7 +65,7 @@ class GenerativeContextSimilarity(tokenTypeStore: TokenTypeStore) extends Contex
       contextScores.put(
         res,
         query.map({ case(t: TokenType, c: Int) => (breeze.numerics.log(c.toDouble) + p(t, res, contextCounts.get(res).get, totalContextCounts.get(res).get)) })
-          .filter({ s: Double => s != -inf}).foldLeft(0.0)(_+_)
+          .filter({ s: Double => s != -inf}).foldLeft(0.0)((x: Double, y: Double) => if(x == -inf || y == -inf) -inf else x + y)
       )
     })
     contextScores
@@ -74,7 +74,7 @@ class GenerativeContextSimilarity(tokenTypeStore: TokenTypeStore) extends Contex
   def nilScore(query: java.util.Map[TokenType, Int]): Double = {
       query.map{ case(t: TokenType, c: Int) =>
         (breeze.numerics.log(c.toDouble) + breeze.numerics.log(1-lambda) + pLM(t))
-      }.foldLeft(0.0)(_+_)
+      }.foldLeft(0.0)((x: Double, y: Double) => if(x == -inf || y == -inf) -inf else x + y)
   }
 
 }
