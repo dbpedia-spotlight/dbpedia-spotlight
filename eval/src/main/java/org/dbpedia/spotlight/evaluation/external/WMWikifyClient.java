@@ -33,11 +33,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * The External Clients were translated to Scala but this class was not.
+ * Because the Wikipedia Miner service (http://wdm.cs.waikato.ac.nz/services) and contact page are unavailable.
+ * As result of that, this client is no more working.
  *
+ * Last Tested: 08/27th/2013 by Alexandre Cançado Cardoso
+ */
+
+/**
  * Distributed under GNU
  * 
  * @author pablomendes
  */
+
 public class WMWikifyClient extends AnnotationClient {
 
     //TODO minProbability:0.3 &minProbability=0.8

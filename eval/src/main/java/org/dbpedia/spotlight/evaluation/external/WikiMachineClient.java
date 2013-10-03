@@ -32,13 +32,19 @@ import java.util.List;
 import java.io.*;
 import java.util.ArrayList;
 
-
+/**
+ * The External Clients were translated to Scala but this class was not.
+ * Because The WikiMachine service and website (http://thewikimachine.fbk.eu/) are unavailable.
+ * As result of that, this client is no more working.
+ *
+ * Last Tested: 08/27th/2013 by Alexandre Cançado Cardoso
+ */
 
 /**
- *
  * @author pablomendes (first incomplete version, final touches to Andres' code.)
  * @author Andres Garcia-Silva (main implementation)
  */
+
 public class WikiMachineClient extends AnnotationClient {
 
     String wikiPrefix = "http://en.wikipedia.org/wiki/";
@@ -123,7 +129,5 @@ public class WikiMachineClient extends AnnotationClient {
         client.evaluate(csawEvalInput, csawEvalOutput);
 
     }
-
-
 
 }

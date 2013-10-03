@@ -36,6 +36,15 @@ import java.util.List;
 import java.util.Vector;
 
 /**
+ * The External Clients were translated to Scala but this class was not.
+ * Because the Ontos Semantic API site (http://wdm.cs.waikato.ac.nz/services) is broken and
+ * the contact page (http://www.ontos.com/semantic-api/getting-started/index.php?page_id=596), for request api key, is unavailable.
+ * As result of that, there is no api key to test and/or use the client.
+ *
+ * Last Tested: 08/27th/2013 by Alexandre Cançado Cardoso
+ */
+
+/**
  * Annotates text via Ontos API
  *  
  * Notes about the Ontos API:
@@ -50,6 +59,7 @@ import java.util.Vector;
  * Some parts (indicated) are adapted from example code provided by 
  * @author Alex Klebeck, Ontos AG, (C)2010
  */
+
 public class OntosClient extends AnnotationClient {
 
     //public static final String dbpediaPrefix = "http://dbpedia.org/resource/";

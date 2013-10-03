@@ -40,6 +40,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
+/**
+ * The External Clients were translated to Scala but this class was not.
+ * Because the Extrectiv service (http://extractiv.com/) is no longer available. As result of that, this client is no more working.
+ *
+ * Last Tested: 08/27th/2013 by Alexandre Cançado Cardoso
+ */
 
 /**
  * This is a simple Annotation Client for Extractiv.com
@@ -53,7 +59,6 @@ import java.util.Properties;
  *
  * An extensive Java interface is available at
  * - https://github.com/extractiv/ExtractivPublicCode/
- *
  *
  */
 
@@ -154,8 +159,6 @@ public class ExtractivClient extends AnnotationClient {
 				
 			}
 		}
-
-
 
 
 		return extractedResources;

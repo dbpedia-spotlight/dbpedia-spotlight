@@ -34,6 +34,17 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * This External Clients was partly tranlated to scala, wich has a bug to be fixed.
+ * The buged scala code can be found at: https://github.com/accardoso/dbpedia-spotlight/tree/dev/conv/external_clients/eval/src/main/scala/org/dbpedia/spotlight/evaluation/external
+ * As result of that, this java class still be the unique client for OpenCalais
+ *
+ * Last Tested: 08/28th/2013 by Alexandre Cançado Cardoso
+
+ * Tested for English and Portuguese, ok for English only. To use for any other supported language (Franch and Spanish),
+ * changes at the text pre-appended tag for language set is needed. (in function process(..) )
+ */
+
+/**
  * Client to the Open Calais REST API to extract DBpediaResourceOccurrences.
  * This is by no means a complete client for OpenCalais. If that's what you're looking for, try http://code.google.com/p/j-calais/
  * Our client aims at simply returning DBpediaResourceOccurrences for evaluation.
@@ -54,8 +65,11 @@ import java.util.Set;
  * User complaints:
  * - The Washing Post was picked up 3 times. I don't know why the terms "private" and "broker" were picked up at all. ... tagging is sometimes much better, sometimes it's like this - not very useful http://www.opencalais.com/forums/known-issues/erratic-calais-performance
  *
- * @author pablomendes
+ * @author pablomendes (main implementation)
+ * @author Alexandre Cançado Cardoso (workaround to the OpanCalais service language identification bug)
+ * Last Modified: 23th/08/13
  */
+
 public class OpenCalaisClient extends AnnotationClient {
 
     Log LOG = LogFactory.getLog(this.getClass());
@@ -187,6 +201,9 @@ public class OpenCalaisClient extends AnnotationClient {
     }
     
     protected String process(String text) throws AnnotationException {
+        //Pre-append English tag to text. It's a workaround to allow the text to have a word that is the name of an unsuported language. Reference:
+        text = "Prefix to circumvent OpenCalais bug, this is English text" + text;
+        //Original process method
         PostMethod method = new PostMethod(url);
         // Set mandatory parameters
         method.setRequestHeader("x-calais-licenseID", apikey);
@@ -244,14 +261,17 @@ public class OpenCalaisClient extends AnnotationClient {
 //        File inputFile = new File("/home/pablo/eval/wikify/gold/WikifyAllInOne.txt");
 //        File outputFile = new File("/home/pablo/eval/wikify/systems/OpenCalais.list");
 
-        File inputFile = new File("/home/pablo/eval/csaw/gold/paragraphs.txt");
-        File outputFile = new File("/home/pablo/eval/csaw/systems/OpenCalais.list");
+//        File inputFile = new File("/home/pablo/eval/csaw/gold/paragraphs.txt");
+//        File outputFile = new File("/home/pablo/eval/csaw/systems/OpenCalais.list");
+
+        File inputFile = new File("/home/alexandre/Projects/Test_Files/Germany.txt");
+        File outputFile = new File("/home/alexandre/Projects/Test_Files/OpenCalais-java_Germany.list");
 
         try {
             OpenCalaisClient client = new OpenCalaisClient(apikey);
             client.evaluate(inputFile, outputFile);
         } catch (Exception e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
 
     }
@@ -299,8 +319,6 @@ public class OpenCalaisClient extends AnnotationClient {
             return method;
         }
 
-        /*
-        */
         protected String process(String text) throws AnnotationException {
             PostMethod method = createPostMethod();
             NameValuePair[] params = {new NameValuePair("licenseID",apikey), new NameValuePair("content",text), new NameValuePair("paramsXML",paramsXml)};

@@ -28,7 +28,15 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 /**
- * ExtractivClient test case.
+ * The External Clients were translated to Scala but this tester class was not.
+ * Because the The WikiMachine service and website (http://thewikimachine.fbk.eu/) are unavailable.
+ * As result of that, this client is no more working.
+ *
+ * Last Tested: 08/27th/2013 by Alexandre Cançado Cardoso
+ */
+
+/**
+ * WikiMachineClient test case.
  * TODO set up one test class for AnnotationClient that contains methods for each of the clients in order to avoid boilerplate code
  *
  * @author pablomendes, adapted from jodaiber
