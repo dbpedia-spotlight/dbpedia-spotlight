@@ -31,6 +31,13 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
+ * The External Clients were translated to Scala but this class was not.
+ * Because the HeadUp (http://www.headup.com/) was discontinued. As result of that, this client is no more working.
+ *
+ * Last Tested: 08/27th/2013 by Alexandre Cançado Cardoso
+ */
+
+/**
  * @author jodaiber
  *
  * This is an AnnotationClient for HeadUpClient (http://www.headup.com/).
@@ -129,7 +136,5 @@ public class HeadUpClient extends AnnotationClient {
          File output = new File("/home/pablo/eval/csaw/systems/HeadUp.list");
          client.evaluate(input, output);
      }
-
-
 
 }

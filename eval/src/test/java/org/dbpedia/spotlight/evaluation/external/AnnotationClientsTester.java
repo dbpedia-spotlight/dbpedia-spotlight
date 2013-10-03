@@ -7,8 +7,18 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
+ * The External Clients were translated to Scala but this class was not.
+ * Because some of the services are working (no longer exist, unavailable) this tester was not deleted.
+ * But it contain now only the calling for the not tanslated clients.
+ * As result of client's problems, this tester is no more working.
  *
+ * There are no AnnotationClientsTester implemented in scala yet. One can test each client running its scala class.
+ * They can be found at: eval/src/main/java/org/dbpedia/spotlight/evaluation/external/
  *
+ * Last Tested: 08/27th/2013 by Alexandre Cançado Cardoso
+ */
+
+/**
  * @author Joachim Daiber
  */
 
@@ -19,12 +29,15 @@ public class AnnotationClientsTester extends TestCase {
 
 		clients.add(new ExtractivClient(null));
 		clients.add(new HeadUpClient());
-		clients.add(new DBpediaSpotlightClient());
+        //clients.add(new OntosClient(USERNAME,PASSWORD));
 		clients.add(new WikiMachineClient());
 		clients.add(new WMWikifyClient());
-		//clients.add(new AlchemyClient(API_KEY))
-		//clients.add(new OntosClient(USERNAME,PASSWORD));
 
+        //The clients below were translated to scala, and the java clients were deleted from the project
+        //clients.add(new DBpediaSpotlightClient()); // Scala client at DBpediaSpotlightClientScala.scala
+		//clients.add(new AlchemyClient(API_KEY)); // Scala client at AlchemyClientScala.scala
+        //clients.add(new OpenClalaisClient(API_KEY_OC)); // Scala client at OpenCalaisClientScala.scala
+        //clients.add(new ZemantaClient(API_KEY_OC)); // Scala client at ZemantaClientScala.scala
 	}
 
 	Text text = new Text("Google Inc. is an American multinational public corporation " +
