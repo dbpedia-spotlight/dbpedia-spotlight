@@ -158,6 +158,10 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
     val threadNum=properties.getProperty("threadNum").toInt
 
     val trainingDir=entityTopicFolder+"/traincorpus"
+    readGlobalCounters(trainingDir)
+    val mem = (Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / (1024 * 1024)
+    LOG.info("Finished loading global counters, mem %d M".format(mem))
+
     val docCorpusList=new ListBuffer[DocumentCorpus]()
     //init document corpus list (all documents were split into a set of corpus in initializeWikiDocuments())
     (0 until threadNum+1).foreach(id=>{
@@ -167,7 +171,6 @@ class TrainEntityTopicDisambiguator( val wikiToDBpediaClosure:WikipediaToDBpedia
        docCorpusList+=corpus
     })
 
-    readGlobalCounters(trainingDir)
     (1 to maxEpoch).foreach((i:Int)=>{
       val memLoaded = (Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / (1024 * 1024)
       LOG.info("%d-th iteration, mem %d M".format(i, memLoaded))
