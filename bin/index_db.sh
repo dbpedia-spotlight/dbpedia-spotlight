@@ -152,17 +152,24 @@ fi
 cd $BASE_DIR
 cd $1/pig/pignlproc
 
+PIGNLPROC_JAR="$BASE_WDIR/pig/pignlproc/target/pignlproc-0.1.0-SNAPSHOT.jar"
+
 #Run pig:
-pig -param lang="$LANGUAGE" \
-    -param analyzer_name="$4Analyzer" \
-    -param pig_path="$BASE_WDIR/pig/pignlproc" \
-    -param hadoop_path="/user/$USER" \
+pig -param LANG="$LANGUAGE" \
+    -param ANALYZER_NAME="$4Analyzer" \
+    -param INPUT="/user/$USER/${LANGUAGE}wiki-latest-pages-articles.xml" \
+    -param OUTPUT_DIR="/user/$USER/$LANGUAGE/tokenCounts" \
+    -param STOPLIST_PATH="/user/$USER/stopwords.$LANGUAGE.list" \
+    -param STOPLIST_NAME="stopwords.$LANGUAGE.list" \
+    -param PIGNLPROC_JAR="$PIGNLPROC_JAR" \
     -m examples/indexing/token_counts.pig.params examples/indexing/token_counts.pig
 
-pig -param lang="$LANGUAGE" \
-    -param locale="$2" \
-    -param pig_path="$BASE_WDIR/pig/pignlproc" \
-    -param hadoop_path="/user/$USER" \
+pig -param LANG="$LANGUAGE" \
+    -param LOCALE="$2" \
+    -param INPUT="/user/$USER/${LANGUAGE}wiki-latest-pages-articles.xml" \
+    -param OUTPUT="/user/$USER/$LANGUAGE/names_and_entities" \
+    -param TEMPORARY_SF_LOCATION="/user/$USER/$LANGUAGE/sf_lookup" \
+    -param PIGNLPROC_JAR="$PIGNLPROC_JAR" \
     -m examples/indexing/names_and_entities.pig.params examples/indexing/names_and_entities.pig
 
 #Copy results to local:
