@@ -162,6 +162,7 @@ pig -param LANG="$LANGUAGE" \
     -param STOPLIST_PATH="/user/$USER/stopwords.$LANGUAGE.list" \
     -param STOPLIST_NAME="stopwords.$LANGUAGE.list" \
     -param PIGNLPROC_JAR="$PIGNLPROC_JAR" \
+    -param MACROS_DIR="$BASE_WDIR/pig/pignlproc/examples/macros/" \
     -m examples/indexing/token_counts.pig.params examples/indexing/token_counts.pig
 
 pig -param LANG="$LANGUAGE" \
@@ -170,6 +171,7 @@ pig -param LANG="$LANGUAGE" \
     -param OUTPUT="/user/$USER/$LANGUAGE/names_and_entities" \
     -param TEMPORARY_SF_LOCATION="/user/$USER/$LANGUAGE/sf_lookup" \
     -param PIGNLPROC_JAR="$PIGNLPROC_JAR" \
+    -param MACROS_DIR="$BASE_WDIR/pig/pignlproc/examples/macros/" \
     -m examples/indexing/names_and_entities.pig.params examples/indexing/names_and_entities.pig
 
 #Copy results to local:
