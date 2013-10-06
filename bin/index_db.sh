@@ -152,31 +152,26 @@ fi
 cd $BASE_DIR
 cd $1/pig/pignlproc
 
-#Replace token parameters:
-sed -i s#%LANG#$LANGUAGE#g examples/indexing/token_counts.pig.params
-sed -i s#ANALYZER_NAME=DutchAnalyzer#ANALYZER_NAME=$4Analyzer#g examples/indexing/token_counts.pig.params
-sed -i s#%PIG_PATH#$BASE_WDIR/pig/pignlproc#g examples/indexing/token_counts.pig.params
-
-#Replace names+entities parameters:
-sed -i s#%LANG#${LANGUAGE}#g examples/indexing/names_and_entities.pig.params
-sed -i s#%LOCALE#$2#g examples/indexing/names_and_entities.pig.params
-sed -i s#%PIG_PATH#$BASE_WDIR/pig/pignlproc#g examples/indexing/names_and_entities.pig.params
-
-#Add username to params
-sed -i s#/user/hadoop#/user/$USER#g examples/indexing/token_counts.pig.params
-sed -i s#/user/hadoop#/user/$USER#g examples/indexing/names_and_entities.pig.params
-
 #Run pig:
-pig -m examples/indexing/token_counts.pig.params examples/indexing/token_counts.pig
-pig -m examples/indexing/names_and_entities.pig.params examples/indexing/names_and_entities.pig
+pig -param lang="$LANGUAGE" \
+    -param analyzer_name="$4Analyzer" \
+    -param pig_path="$BASE_WDIR/pig/pignlproc" \
+    -param hadoop_path="/user/$USER" \
+    -m examples/indexing/token_counts.pig.params examples/indexing/token_counts.pig
+
+pig -param lang="$LANGUAGE" \
+    -param locale="$2" \
+    -param pig_path="$BASE_WDIR/pig/pignlproc" \
+    -param hadoop_path="/user/$USER" \
+    -m examples/indexing/names_and_entities.pig.params examples/indexing/names_and_entities.pig
 
 #Copy results to local:
 cd $BASE_DIR
 cd $WDIR
-hadoop fs -cat ${LANGUAGE}/tokenCounts/part* > tokenCounts
-hadoop fs -cat ${LANGUAGE}/names_and_entities/pairCounts/part* > pairCounts
-hadoop fs -cat ${LANGUAGE}/names_and_entities/uriCounts/part* > uriCounts
-hadoop fs -cat ${LANGUAGE}/names_and_entities/sfAndTotalCounts/part* > sfAndTotalCounts
+hadoop fs -cat $LANGUAGE/tokenCounts/part* > tokenCounts
+hadoop fs -cat $LANGUAGE/names_and_entities/pairCounts/part* > pairCounts
+hadoop fs -cat $LANGUAGE/names_and_entities/uriCounts/part* > uriCounts
+hadoop fs -cat $LANGUAGE/names_and_entities/sfAndTotalCounts/part* > sfAndTotalCounts
 
 #Create the model:
 cd $BASE_DIR
