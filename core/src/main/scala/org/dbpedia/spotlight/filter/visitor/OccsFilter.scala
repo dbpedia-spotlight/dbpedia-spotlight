@@ -19,6 +19,7 @@ import org.dbpedia.spotlight.filter.annotations._
 import org.dbpedia.spotlight.model.Factory._
 import org.dbpedia.spotlight.sparql.SparqlQueryExecuter
 import scala.collection.JavaConverters._
+import java.util.{Comparator, Collections}
 
 
 class OccsFilter(confidence: Double, support: Int,
@@ -115,11 +116,24 @@ class OccsFilter(confidence: Double, support: Int,
    */
   def accept(visitor: FilterOccsVisitor, occs: java.util.List[DBpediaResourceOccurrence]): java.util.List[DBpediaResourceOccurrence] = {
 
-    if (coreferenceResolution) return new CoreferenceFilter().filterOccs(occs.asScala.toTraversable).toList.asJava
+    var result: java.util.List[DBpediaResourceOccurrence] = new java.util.ArrayList[DBpediaResourceOccurrence]
 
-    var result: java.util.List[DBpediaResourceOccurrence] = occs
+    if (coreferenceResolution)
+      result.addAll(new CoreferenceFilter().filterOccs(occs.asScala.toTraversable).toList.asJava)
+    else{
+      var unfiltered: java.util.List[DBpediaResourceOccurrence] = occs
+      elements.foreach(elem => unfiltered = elem.accept(visitor, unfiltered))
 
-    elements.foreach(elem => result = elem.accept(visitor, result))
+      result.addAll(unfiltered)
+    }
+
+    Collections.sort(result, new Comparator[DBpediaResourceOccurrence] {
+      def compare(o1: DBpediaResourceOccurrence, o2: DBpediaResourceOccurrence): Int = {
+        if (o1.textOffset > o2.textOffset)
+          return  1
+        -1
+      }
+    })
 
     result
   }
