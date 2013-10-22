@@ -8,14 +8,20 @@ import org.scalatest.matchers.ShouldMatchers
 import org.dbpedia.spotlight.lucene.LuceneManager
 import java.io.File
 import org.apache.lucene.index.IndexReader
-import org.apache.lucene.search.IndexSearcher
+import org.apache.lucene.document.Document
+import org.dbpedia.spotlight.log.SpotlightLog
+
+/**
+ * This ScalaTest test if the informed text is valid.
+ *
+ * @author Alexandre Cançado Cardoso - accardoso
+ */
 
 
 @RunWith(classOf[JUnitRunner])
 class InformedIndexTest extends FlatSpec with ShouldMatchers {
 
   "The informed index" should " be valid" in {
-
     InformedIndexTest.isIndexValid() should be === true
   }
 
@@ -24,71 +30,48 @@ class InformedIndexTest extends FlatSpec with ShouldMatchers {
 object InformedIndexTest {
 
   val indexPath: String = "/media/221CF5031CF4D2B1/Users/Alexandre/Intrisic_SpotIndex/index-withSF-withTypes-compressed"
-  //TODO remove indexPath and get the index path or the already instantiated LuceneManager
+  //TODO remove indexPath and get the index path from who has got it form server.properties OR use a default path and set indexPath to it
 
   var lucene: LuceneManager = null
 
   def isIndexValid(): Boolean = {
-    //MergedOccurrencesContextIndexer.get_mLucene
-
-    // Instantiate a LuceneManager with the index directory
     val indexDirectory = LuceneManager.pickDirectory(new File(indexPath))
-    //lucene = new LuceneManager(indexDirectory)
     val reader: IndexReader = IndexReader.open(indexDirectory)
-    //val searcher: IndexSearcher = new IndexSearcher(reader)
 
-//    var i = 0
-//    var doc = searcher.doc(i)
-    for (i <-0 to 5){//reader.maxDoc()) {
+    for (i <-0 to reader.maxDoc()) {
+    //for (i <-0 to 5) {
       if (!reader.isDeleted(i)){
-        val doc = reader.document(i)
-        //val docId: String = doc.get("docId")
-        val fields = doc.getFields
-         println(fields)
-
+        SpotlightLog.info(this.getClass, "**** Running validation on Document #%d ****", i)
+        SpotlightLog.debug(this.getClass, "**** Running validation on Document #%d ****", i)
+        if(!isDocumentValid(reader.document(i)))
+          return false
       }
     }
 
-
-
     reader.close()
-
-    false
+    true
   }
 
-// //Reference: https://github.com/kurzum/nif4oggd/blob/master/index/src/main/java/org/aksw/lucene/extractor/DocumentExtractor.java#L222
-//  private List<Place> getPlaces(String cityFilter) throws IOException {
-//
-//    List<Place> result = new ArrayList<Place>();
-//
-//    LOG.debug("Reading streets by city...");
-//    LOG.debug("City:%s".format(city));
-//
-//    IndexReader reader = IndexReader.open(FSDirectory.open(indexDirectory));
-//    IndexSearcher searcher = new IndexSearcher(reader);
-//
-//    BooleanQuery bq = new BooleanQuery();
-//    bq.add(new TermQuery(new Term(IndexField.CITY, cityFilter.toLowerCase())), BooleanClause.Occur.MUST);
-//
-//    ScoreDoc[] hits = searcher.search(bq, Integer.MAX_VALUE).scoreDocs;
-//
-//    for (int i = 0; i < hits.length; i++) {
-//
-//      Document doc = searcher.doc(hits[i].doc);
-//
-//      String street = doc.get(IndexField.DESCRIPTION).toLowerCase();
-//      String city = doc.get(IndexField.CITY).toLowerCase();
-//      Place p = new Place();
-//      p.setName(street);
-//      p.setCity(city);
-//      result.add(p);
-//
-//    }
-//
-//    reader.close();
-//
-//    return result;
-//
-//  }
+  def isDocumentValid(doc: Document): Boolean = {
+    val fields = doc.getFields
 
+    val uriField: String = doc.get("URI")
+    val uriCountField: String = doc.get("URI_COUNT")
+    val typeFields = doc.getValues("TYPE").toList
+
+    SpotlightLog.debug(this.getClass, "Document Fields: %s\n" +
+                      "URI field: %s\n" +
+                      "URI_COUNT field: %s\n" +
+                      "TYPE fields: %s\n", fields, uriField, uriCountField, typeFields)
+
+//    SpotlightLog.info(this.getClass, "Document Fields: %s\n" +
+//                       "URI field: %s\n" +
+//                       "URI_COUNT field: %s\n" +
+//                       "TYPE fields: %s\n", fields, uriField, uriCountField, typeFields)
+
+    if(uriField == null || uriCountField == null)
+      return false
+
+    true
+  }
 }
