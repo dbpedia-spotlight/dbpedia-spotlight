@@ -38,10 +38,13 @@ object InformedIndexTest {
     val indexDirectory = LuceneManager.pickDirectory(new File(indexPath))
     val reader: IndexReader = IndexReader.open(indexDirectory)
 
-    for (i <-0 to reader.maxDoc()) {
+    for (i <-0 to reader.maxDoc()-1) {
     //for (i <-0 to 5) {
       if (!reader.isDeleted(i)){
-        SpotlightLog.info(this.getClass, "**** Running validation on Document #%d ****", i)
+        if (i%100000 == 0){
+          SpotlightLog.info(this.getClass, "Index test has validated %d documents", i)
+        }
+        //SpotlightLog.info(this.getClass, "**** Running validation on Document #%d ****", i)
         SpotlightLog.debug(this.getClass, "**** Running validation on Document #%d ****", i)
         if(!isDocumentValid(reader.document(i)))
           return false
