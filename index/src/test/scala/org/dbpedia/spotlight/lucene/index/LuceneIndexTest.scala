@@ -26,8 +26,7 @@ class LuceneIndexTest extends FlatSpec with ShouldMatchers {
 
   /* Test params */
   //The path of the server.properties file
-  val indexingConfigFileName: String = "../Useful/server.properties"
-  //val indexingConfigFileName: String = "./conf/server.properties"
+  val indexingConfigFileName: String = "./conf/server.properties"
   //Minimum percentage of documents with TYPE to succeed at the second test
   val minPercentage: Int = 80
 
