@@ -15,7 +15,8 @@ import org.dbpedia.spotlight.model.SurfaceForm
 import org.apache.lucene.store.FSDirectory
 
 /**
- * This ScalaTest test if the lucene index is valid and has a minimum of documents with the field TYPE.
+ * This ScalaTest test if the lucene index is valid, it it has a minimum of documents with the field TYPE, and if for each
+ * valid document of the index the surface form is accessible from the reader uri.
  *
  * @author Alexandre Cançado Cardoso - accardoso
  */
@@ -25,9 +26,9 @@ import org.apache.lucene.store.FSDirectory
 class LuceneIndexTest extends FlatSpec with ShouldMatchers {
 
   /* Test params */
-  //The path of the server.properties file
+    //The path of the server.properties file
   val indexingConfigFileName: String = "./conf/server.properties"
-  //Minimum percentage of documents with TYPE to succeed at the second test
+    //Minimum percentage of documents with TYPE to succeed at the second test
   val minPercentage: Int = 80
 
 
@@ -74,7 +75,6 @@ object LuceneIndexTest {
 
     for (i <-0 to reader.maxDoc()-1) {
       if (!reader.isDeleted(i)){
-        SpotlightLog.debug(this.getClass, "**** Running validation on Document #%d ****", i)
         if(!isDocumentValid(reader.document(i)))
           return false
       }
@@ -85,22 +85,12 @@ object LuceneIndexTest {
   }
 
   private def isDocumentValid(doc: Document): Boolean = {
-    val fields = doc.getFields
-
     val uriField: String = doc.get("URI")
     val uriCountField: String = doc.get("URI_COUNT")
     val typeFields = doc.getValues("TYPE").toList
     val surfaceFormStr: String = uriField.replaceAll("_", " ")
     val lucene: LuceneManager = new LuceneManager(indexDirectory)
     val surfaceFormField = lucene.getField(new SurfaceForm(surfaceFormStr))
-
-    SpotlightLog.debug(this.getClass, "Document Fields: %s\n" +
-      "URI field: %s\n" +
-      "URI_COUNT field: %s\n" +
-      "TYPE fields: %s\n" +
-      "SURFACE_FORM: %s\n" +
-      "SURFACE_FORM_FIELD: %s\n"
-      , fields, uriField, uriCountField, typeFields, surfaceFormStr, surfaceFormField.toString)
 
     if(uriField == "" || uriCountField == "")
       return false
@@ -110,7 +100,7 @@ object LuceneIndexTest {
 
     totalOfValidDocs += 1
 
-    //Of course the uriField is not empty so it should recover and access the surface form
+    //Of course the uriField is not empty. So it should recover and access the surface form
     if(surfaceFormStr == "" || surfaceFormField == null || !surfaceFormField.isStored || !surfaceFormField.isIndexed)
       accessAllSurfaceForms = false
 
