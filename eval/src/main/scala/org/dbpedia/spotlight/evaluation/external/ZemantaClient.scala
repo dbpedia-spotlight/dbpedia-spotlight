@@ -39,9 +39,9 @@ import java.io.{File, IOException}
  * (Zemanta service support only English language.)
  */
 
-class ZemantaClientScala(api_key: String) extends AnnotationClientScala {
+class ZemantaClient(api_key: String) extends AnnotationClientScala {
 
-  override val LOG: Log = LogFactory.getLog(classOf[ZemantaClientScala])
+  override val LOG: Log = LogFactory.getLog(classOf[ZemantaClient])
 
   /**
    * DISCLAIMER these are not really promised by Zemanta to be DBpediaEntities. We extract them from wikipedia links.
@@ -93,19 +93,19 @@ class ZemantaClientScala(api_key: String) extends AnnotationClientScala {
 }
 
 
-object ZemantaClientScala {
+object ZemantaClient {
 
   def main(args: Array[String]) {
 
     val api_key: String = args(0)
-    val c = new ZemantaClientScala(api_key)
+    val c = new ZemantaClient(api_key)
 
-    val input: File = new File("/home/alexandre/Projects/Test_Files/Caminhao.txt")
-    val output: File = new File("/home/alexandre/Projects/Test_Files/Zemanta-scala_Caminhao.list")
+    val input: File = new File("/home/alexandre/Projects/test-files-spotlight/ExternalClients_TestFiles/Caminhao.txt")
+    val output: File = new File("/home/alexandre/Projects/test-files-spotlight/ExternalClients_TestFiles/Zemanta-scala_Caminhao.list")
     c.evaluate(input, output)
 
-    val inputEng: File = new File("/home/alexandre/Projects/Test_Files/Germany.txt")
-    val outputEng: File = new File("/home/alexandre/Projects/Test_Files/Zemanta-scala_Germany.list")
+    val inputEng: File = new File("/home/alexandre/Projects/test-files-spotlight/ExternalClients_TestFiles/Berlin.txt")
+    val outputEng: File = new File("/home/alexandre/Projects/test-files-spotlight/ExternalClients_TestFiles/Zemanta-scala_Berlin.list")
     c.evaluate(inputEng, outputEng)
 
   }

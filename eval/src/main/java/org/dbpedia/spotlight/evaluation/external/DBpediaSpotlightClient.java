@@ -104,8 +104,9 @@ public class DBpediaSpotlightClient extends AnnotationClient {
 //        File input = new File("/home/pablo/eval/wikify/gold/WikifyAllInOne.txt");
 //        File output = new File("/home/pablo/eval/wikify/systems/Spotlight.list");
 
-        File input = new File("/home/pablo/eval/csaw/gold/paragraphs.txt");
-        File output = new File("/home/pablo/eval/csaw/systems/Spotlight.list");
+        File input = new File("/home/alexandre/Projects/test-files-spotlight/ExternalClients_TestFiles/Berlin.txt");
+        File output = new File("/home/alexandre/Projects/test-files-spotlight/ExternalClients_TestFiles/Spotlight.list");
+
 
         c.evaluate(input, output);
 
