@@ -17,17 +17,13 @@
 package org.dbpedia.spotlight.evaluation.external;
 
 import org.apache.http.client.*;
-import org.apache.http.client.params.*;
 import org.apache.http.client.methods.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
-import org.apache.http.HttpException;
 import org.apache.http.HttpEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.util.EntityUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
 import org.dbpedia.spotlight.exceptions.AnnotationException;
 import org.dbpedia.spotlight.model.DBpediaResource;
