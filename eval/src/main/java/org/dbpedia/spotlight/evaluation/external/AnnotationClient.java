@@ -16,8 +16,16 @@
 
 package org.dbpedia.spotlight.evaluation.external;
 
-import org.apache.commons.httpclient.*;
-import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.apache.http.client.*;
+import org.apache.http.client.params.*;
+import org.apache.http.client.methods.*;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.HttpException;
+import org.apache.http.HttpEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
+import org.apache.http.util.EntityUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
@@ -42,38 +50,41 @@ public abstract class AnnotationClient {
     public Logger LOG = Logger.getLogger(this.getClass());
     
     // Create an instance of HttpClient.
-    private static HttpClient client = new HttpClient();
+    private static HttpClient client = new DefaultHttpClient();
 
 
-    public String request(HttpMethod method) throws AnnotationException {
+    public String request(HttpRequestBase method) throws AnnotationException {
 
         String response = null;
 
         // Provide custom retry handler is necessary
-        method.getParams().setParameter(HttpMethodParams.RETRY_HANDLER,
-                new DefaultHttpMethodRetryHandler(3, false));
+        method.getParams().setParameter("http.method.retry-handler", new DefaultHttpRequestRetryHandler(3, false));
+        //method.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpRequestRetryHandler(3, false));
 
         try {
             // Execute the method.
-            int statusCode = client.executeMethod(method);
+            HttpResponse httpResponse = client.execute(method);
+            int statusCode = httpResponse.getStatusLine().getStatusCode();
+            HttpEntity entity = httpResponse.getEntity();
 
             if (statusCode != HttpStatus.SC_OK) {
-                LOG.error("Method failed: " + method.getStatusLine());
+                LOG.error("Method failed: " + httpResponse.getStatusLine());
             }
 
             // Read the response body.
-            byte[] responseBody = method.getResponseBody(); //TODO Going to buffer response body of large or unknown size. Using getResponseBodyAsStream instead is recommended.
+            byte[] responseBody = EntityUtils.toByteArray(entity); //TODO Going to buffer response body of large or unknown size. Using getResponseBodyAsStream instead is recommended.
 
             // Deal with the response.
             // Use caution: ensure correct character encoding and is not binary data
             response = new String(responseBody);
 
-        } catch (HttpException e) {
-            LOG.error("Fatal protocol violation: " + e.getMessage());
-            throw new AnnotationException("Protocol error executing HTTP request.",e);
+        //TODO: check this exception using the new API
+        //} catch (HttpException e) {
+        //    LOG.error("Fatal protocol violation: " + e.getMessage());
+        //    throw new AnnotationException("Protocol error executing HTTP request.",e);
         } catch (IOException e) {
             LOG.error("Fatal transport error: " + e.getMessage());
-            LOG.error(method.getQueryString());
+            LOG.error(method.getURI());
             throw new AnnotationException("Transport error executing HTTP request.",e);
         } finally {
             // Release the connection.

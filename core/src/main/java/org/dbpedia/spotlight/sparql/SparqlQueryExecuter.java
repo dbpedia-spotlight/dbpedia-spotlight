@@ -1,20 +1,20 @@
 /*
- * Copyright 2012 DBpedia Spotlight Development Team
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *
- *  Check our project website for information on how to acknowledge the authors and how to contribute to the project: http://spotlight.dbpedia.org
- */
+* Copyright 2012 DBpedia Spotlight Development Team
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*
+* Check our project website for information on how to acknowledge the authors and how to contribute to the project: http://spotlight.dbpedia.org
+*/
 
 package org.dbpedia.spotlight.sparql;
 
@@ -25,10 +25,18 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.*;
 
-import org.apache.commons.httpclient.*;
+import org.apache.http.client.*;
+import org.apache.http.impl.client.*;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.apache.http.client.methods.*;
+import org.apache.http.client.params.*;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpException;
+import org.apache.http.util.EntityUtils;
+import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
+import org.apache.http.message.AbstractHttpMessage;
 import org.apache.log4j.Logger;
 import org.dbpedia.spotlight.exceptions.OutputException;
 import org.dbpedia.spotlight.exceptions.SparqlExecutionException;
@@ -47,10 +55,10 @@ import org.json.JSONArray;
  */
 public class SparqlQueryExecuter {
 
-	private final static Logger LOG = Logger.getLogger(SparqlQueryExecuter.class);
+    private final static Logger LOG = Logger.getLogger(SparqlQueryExecuter.class);
 
-       // Create an instance of HttpClient.
-    private static HttpClient client = new HttpClient();
+    // Create an instance of HttpClient.
+    private static HttpClient client = new DefaultHttpClient();
 
     String mainGraph;
     String sparqlUrl;
@@ -70,18 +78,18 @@ public class SparqlQueryExecuter {
         return new URL(url);
     }
 
-	public List<DBpediaResource> query(String query) throws IOException, OutputException, SparqlExecutionException {
+    public List<DBpediaResource> query(String query) throws IOException, OutputException, SparqlExecutionException {
         if (query==null) return new ArrayList<DBpediaResource>();
-		LOG.debug("--SPARQL QUERY: " + query.replace("\n", " "));
+        LOG.debug("--SPARQL QUERY: " + query.replace("\n", " "));
 
-		URL url = getUrl(query);
-		//LOG.trace(url);
+        URL url = getUrl(query);
+        //LOG.trace(url);
 
-		//FIXME Do some test with the returned results to see if there actually are results.
+        //FIXME Do some test with the returned results to see if there actually are results.
         List<DBpediaResource> uris = null;
         String response = null;
         try {
-//            uris = parse(readOutput(get(url)));
+// uris = parse(readOutput(get(url)));
             response = request(url);
             uris = parse(response);
         } catch (JSONException e) {
@@ -89,7 +97,7 @@ public class SparqlQueryExecuter {
         }
         LOG.debug(String.format("-- %s found.", uris.size()));
         return uris;
-	}
+    }
 
     public String update(String query) throws SparqlExecutionException {
         String response = null;
@@ -103,35 +111,38 @@ public class SparqlQueryExecuter {
     }
 
     public String request(URL url) throws SparqlExecutionException {
-        GetMethod method = new GetMethod(url.toString());
+        HttpGet method = new HttpGet(url.toString());
         String response = null;
 
         // Provide custom retry handler is necessary
-        method.getParams().setParameter(HttpMethodParams.RETRY_HANDLER,
-                new DefaultHttpMethodRetryHandler(3, false));
+        method.getParams().setParameter("http.method.retry-handler", new DefaultHttpRequestRetryHandler(3, false));
+        //method.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpRequestRetryHandler(3, false));
 
         try {
             // Execute the method.
-            int statusCode = client.executeMethod(method);
+            HttpResponse httpResponse = client.execute(method);
+            int statusCode = httpResponse.getStatusLine().getStatusCode();
+            HttpEntity entity = httpResponse.getEntity();
 
-            if (statusCode != HttpStatus.SC_OK) {
-                LOG.error("SparqlQuery failed: " + method.getStatusLine());
+            if (statusCode != HttpStatus.SC_OK || entity == null) {
+                LOG.error("SparqlQuery failed: " + httpResponse.getStatusLine());
                 throw new SparqlExecutionException(String.format("%s (%s). %s",
-                                                                 method.getStatusLine(),
-                                                                 method.getURI(),
-                                                                 method.getResponseBodyAsString()));
+                        httpResponse.getStatusLine(),
+                        method.getURI(),
+                        EntityUtils.toString(entity)));
             }
 
             // Read the response body.
-            byte[] responseBody = method.getResponseBody();
+            byte[] responseBody = EntityUtils.toByteArray(entity);
 
             // Deal with the response.
             // Use caution: ensure correct character encoding and is not binary data
             response = new String(responseBody);
 
-        } catch (HttpException e) {
-            System.err.println("Fatal protocol violation: " + e.getMessage());
-            throw new SparqlExecutionException(e);
+        //TODO: check this exception in the new API
+        //} catch (HttpException e) {
+        //    System.err.println("Fatal protocol violation: " + e.getMessage());
+        //    throw new SparqlExecutionException(e);
         } catch (IOException e) {
             System.err.println("Fatal transport error: " + e.getMessage());
             throw new SparqlExecutionException(e);
@@ -177,7 +188,7 @@ public class SparqlQueryExecuter {
                 "GRAPH ?g {\n" +
                 "?resource <http://www.w3.org/2004/02/skos/core#altLabel> ?label.\n" +
                 "}\n" +
-                "?g  <http://dbpedia.org/spotlight/score>  ?score.\n" +
+                "?g <http://dbpedia.org/spotlight/score> ?score.\n" +
                 "FILTER (REGEX(?label, \"woolworth\", \"i\"))\n" +
                 "}";
 

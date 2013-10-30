@@ -18,13 +18,17 @@ package org.dbpedia.spotlight.evaluation.external;
 
 import net.sf.json.JSONObject;
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.httpclient.*;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.http.client.*;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.exceptions.AnnotationException;
 import org.dbpedia.spotlight.model.*;
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -32,17 +36,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-/**
- * This External Clients was partly tranlated to scala, wich has a bug to be fixed.
- * The buged scala code can be found at: https://github.com/accardoso/dbpedia-spotlight/tree/dev/conv/external_clients/eval/src/main/scala/org/dbpedia/spotlight/evaluation/external
- * As result of that, this java class still be the unique client for OpenCalais
- *
- * Last Tested: 08/28th/2013 by Alexandre Cançado Cardoso
-
- * Tested for English and Portuguese, ok for English only. To use for any other supported language (Franch and Spanish),
- * changes at the text pre-appended tag for language set is needed. (in function process(..) )
- */
 
 /**
  * Client to the Open Calais REST API to extract DBpediaResourceOccurrences.
@@ -65,18 +58,15 @@ import java.util.Set;
  * User complaints:
  * - The Washing Post was picked up 3 times. I don't know why the terms "private" and "broker" were picked up at all. ... tagging is sometimes much better, sometimes it's like this - not very useful http://www.opencalais.com/forums/known-issues/erratic-calais-performance
  *
- * @author pablomendes (main implementation)
- * @author Alexandre Cançado Cardoso (workaround to the OpanCalais service language identification bug)
- * Last Modified: 23th/08/13
+ * @author pablomendes
  */
-
 public class OpenCalaisClient extends AnnotationClient {
 
     Log LOG = LogFactory.getLog(this.getClass());
 
     private static String url ="http://api.opencalais.com/tag/rs/enrich";
     // Create an instance of HttpClient.
-    HttpClient client = new HttpClient();
+    HttpClient client = new DefaultHttpClient();
 
     String apikey;
 
@@ -110,8 +100,8 @@ public class OpenCalaisClient extends AnnotationClient {
 
     private String dereference(String uri) throws AnnotationException {
         LOG.debug("Dereferencing: "+uri);
-        GetMethod method = new GetMethod(uri);
-        method.setRequestHeader("Accept", "rdf/xml");
+        HttpGet method = new HttpGet(uri);
+        method.setHeader("Accept", "rdf/xml");
         String response = request(method);
 
         //HACK I'm really sorry if you're reading this. hahaha this is UGLY!
@@ -201,19 +191,23 @@ public class OpenCalaisClient extends AnnotationClient {
     }
     
     protected String process(String text) throws AnnotationException {
-        //Pre-append English tag to text. It's a workaround to allow the text to have a word that is the name of an unsuported language. Reference:
-        text = "Prefix to circumvent OpenCalais bug, this is English text" + text;
-        //Original process method
-        PostMethod method = new PostMethod(url);
+        HttpPost method = new HttpPost(url);
         // Set mandatory parameters
-        method.setRequestHeader("x-calais-licenseID", apikey);
+        method.setHeader("x-calais-licenseID", apikey);
         // Set input content type
-        method.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+        method.setHeader("Content-type","application/x-www-form-urlencoded");
         // Set response/output format
-        method.setRequestHeader("Accept", "application/json");
+        method.setHeader("Accept", "application/json");
         // Define params for the body
-        NameValuePair[] params = {new NameValuePair("licenseID",apikey), new NameValuePair("content",text), new NameValuePair("paramsXML",paramsXml)};
-        method.setRequestBody(params);
+        ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair("licenseID",apikey));
+        params.add(new BasicNameValuePair("content",text));
+        params.add(new BasicNameValuePair("paramsXML",paramsXml));
+        try {
+            method.setEntity(new UrlEncodedFormEntity(params));
+        } catch(Exception e) {
+            LOG.error("Error in http connection " + e.getMessage());
+        }
         String response = request(method);
         //System.out.println(response);
         return response;
@@ -261,17 +255,14 @@ public class OpenCalaisClient extends AnnotationClient {
 //        File inputFile = new File("/home/pablo/eval/wikify/gold/WikifyAllInOne.txt");
 //        File outputFile = new File("/home/pablo/eval/wikify/systems/OpenCalais.list");
 
-//        File inputFile = new File("/home/pablo/eval/csaw/gold/paragraphs.txt");
-//        File outputFile = new File("/home/pablo/eval/csaw/systems/OpenCalais.list");
-
-        File inputFile = new File("/home/alexandre/Projects/Test_Files/Germany.txt");
-        File outputFile = new File("/home/alexandre/Projects/Test_Files/OpenCalais-java_Germany.list");
+        File inputFile = new File("/home/pablo/eval/csaw/gold/paragraphs.txt");
+        File outputFile = new File("/home/pablo/eval/csaw/systems/OpenCalais.list");
 
         try {
             OpenCalaisClient client = new OpenCalaisClient(apikey);
             client.evaluate(inputFile, outputFile);
         } catch (Exception e) {
-            e.printStackTrace();
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
 
     }
@@ -295,22 +286,22 @@ public class OpenCalaisClient extends AnnotationClient {
             super(apikey);
         }
 
-        private PostMethod createPostMethod() {
+        private HttpPost createPostMethod() {
 
-            PostMethod method = new PostMethod(url);
+            HttpPost method = new HttpPost(url);
 
             // Set mandatory parameters
-            method.setRequestHeader("x-calais-licenseID", apikey);
+            method.setHeader("x-calais-licenseID", apikey);
 
             // Set input content type
-            method.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+            method.setHeader("Content-type","application/x-www-form-urlencoded");
             //method.setRequestHeader("Content-Type", "text/xml; charset=UTF-8");
             //method.setRequestHeader("Content-Type", "text/html; charset=UTF-8");
             //method.setRequestHeader("Content-Type", "text/raw; charset=UTF-8");
 
             // Set response/output format
             //method.setRequestHeader("Accept", "xml/rdf");
-            method.setRequestHeader("Accept", "application/json");
+            method.setHeader("Accept", "application/json");
 
             // Enable Social Tags processing
             //method.setRequestHeader("enableMetadataType", "SocialTags");
@@ -319,10 +310,19 @@ public class OpenCalaisClient extends AnnotationClient {
             return method;
         }
 
+        /*
+        */
         protected String process(String text) throws AnnotationException {
-            PostMethod method = createPostMethod();
-            NameValuePair[] params = {new NameValuePair("licenseID",apikey), new NameValuePair("content",text), new NameValuePair("paramsXML",paramsXml)};
-            method.setRequestBody(params);
+            HttpPost method = createPostMethod();
+            ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+            params.add(new BasicNameValuePair("licenseID",apikey));
+            params.add(new BasicNameValuePair("content",text));
+            params.add(new BasicNameValuePair("paramsXML",paramsXml));
+            try {
+                method.setEntity(new UrlEncodedFormEntity(params));
+            } catch(Exception e) {
+                LOG.error("Error in http connection " + e.getMessage());
+            }
             String response = request(method);
             //System.out.println(response);
             return response;

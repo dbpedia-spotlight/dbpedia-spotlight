@@ -16,7 +16,7 @@
 
 package org.dbpedia.spotlight.evaluation.external;
 
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.http.client.methods.HttpGet;
 import org.dbpedia.spotlight.exceptions.AnnotationException;
 import org.dbpedia.spotlight.model.DBpediaResource;
 import org.dbpedia.spotlight.model.Text;
@@ -66,7 +66,7 @@ public class WMWikifyClient extends AnnotationClient {
         } catch (UnsupportedEncodingException e) {
             throw new AnnotationException(e);
         }
-        GetMethod method = new GetMethod(url);
+        HttpGet method = new HttpGet(url);
         String response = request(method);
         //System.out.println(response);
         return response;

@@ -17,9 +17,19 @@
 
 package org.dbpedia.spotlight.evaluation.external;
 
-import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.multipart.*;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.entity.mime.FormBodyPart;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.entity.mime.MultipartEntity;
+//import org.apache.http.client.methods.multipart.*;
 import org.dbpedia.spotlight.exceptions.AnnotationException;
 import org.dbpedia.spotlight.model.DBpediaResource;
 import org.dbpedia.spotlight.model.DBpediaType;
@@ -33,6 +43,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -95,7 +106,7 @@ public class ExtractivClient extends AnnotationClient {
 			throw new AnnotationException(e);
 		}
 
-		final HttpMethodBase extractivRequest;
+		final HttpRequestBase extractivRequest;
 
 		File tmp = null;
 		try {
@@ -177,28 +188,45 @@ public class ExtractivClient extends AnnotationClient {
 	 * @param extractivURI The URI of the Extractiv annotation service
 	 * @param file		 The file to process
 	 */
-	private PostMethod getExtractivProcessFileRequest(final URI extractivURI, final File file)
+	private HttpPost getExtractivProcessFileRequest(final URI extractivURI, final File file)
 			throws FileNotFoundException {
 
-		final PartBase filePart = new FilePart("content", file, "multipart/form-data", null);
+        HttpClient httpclient = new DefaultHttpClient();
 
-		// bytes to upload
-		final ArrayList<Part> message = new ArrayList<Part>();
-		message.add(filePart);
-		message.add(new StringPart("formids", "content"));
-		message.add(new StringPart("output_format", "JSON"));
-		if (apiKey != null) {
-			message.add(new StringPart("api_key", apiKey));
-		}
+        // Use a Post for the file upload
+        final HttpPost postMethod = new HttpPost(extractivURI.toString());
 
-		final Part[] messageArray = message.toArray(new Part[0]);
+        try {
+            MultipartEntity entity = new MultipartEntity();
+            // For File parameters
+            final FormBodyPart filePart = new FormBodyPart( "content", new FileBody((( File ) file ), "multipart/form-data" ));
+            entity.addPart(filePart);
+            //final PartBase filePart = new FilePart("content", file, "multipart/form-data", null);
 
-		// Use a Post for the file upload
-		final PostMethod postMethod = new PostMethod(extractivURI.toString());
-		postMethod.setRequestEntity(new MultipartRequestEntity(messageArray, postMethod.getParams()));
+            // bytes to upload
+            entity.addPart(filePart);
+            entity.addPart("formids", new StringBody("content"));
+            entity.addPart("output_format", new StringBody("JSON"));
+            if (apiKey != null) {
+                entity.addPart("api_key", new StringBody(apiKey));
+            }
 
-		return postMethod;
+            //final Part[] messageArray = message.toArray(new Part[0]);
 
+
+            //postMethod.setEntity( new StringEntity(new MultipartRequestEntity(messageArray, postMethod.getParams())) );
+            postMethod.setEntity(entity);
+
+
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            httpclient.getConnectionManager().shutdown();
+        }
+
+        return postMethod;
 	}
 
 

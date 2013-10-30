@@ -18,8 +18,10 @@
 
 package org.dbpedia.spotlight.evaluation.external;
 
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
 
 import net.htmlparser.jericho.Source;
 import net.htmlparser.jericho.Element;
@@ -58,15 +60,18 @@ public class WikiMachineClient extends AnnotationClient {
 
     protected String process(String text) throws AnnotationException {
         String url = "http://thewikimachine.fbk.eu/gui/basic";
-        PostMethod method = new PostMethod(url);
-        method.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+        HttpPost method = new HttpPost(url);
+        method.setHeader("Content-type","application/x-www-form-urlencoded");
 
-        NameValuePair[] params = {
-                new NameValuePair("context",text),
-                new NameValuePair("type","link"),
-                new NameValuePair("si","10"),
-        };
-        method.setRequestBody(params);
+        ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair("context",text));
+        params.add(new BasicNameValuePair("type","link"));
+        params.add(new BasicNameValuePair("si","10"));
+        try {
+            method.setEntity(new UrlEncodedFormEntity(params));
+        } catch(Exception e) {
+            LOG.error("Error in http connection " + e.getMessage());
+        }
         LOG.debug("Sending request to WikiMachine: "+params);
 
         String response = request(method);
