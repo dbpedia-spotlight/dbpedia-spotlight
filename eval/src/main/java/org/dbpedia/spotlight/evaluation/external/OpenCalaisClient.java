@@ -158,7 +158,6 @@ public class OpenCalaisClient extends AnnotationClient {
                         Integer offset = (Integer) PropertyUtils.getProperty(i,"offset");
                         String dbpediaUri = dereference(uri);
                         DBpediaResource resource = new DBpediaResource(dbpediaUri);
-                        //System.out.println(response);
                         entities.add(resource);
 
                         //TODO For annotations we can get occurrences instead of just DBpediaResources
