@@ -34,8 +34,12 @@ class DBpediaResourceTest extends FlatSpec with ShouldMatchers {
     new DBpediaResource("http://pt.wikipedia.org/resource/Berlim").toString should be === "WiktionaryResource[http://pt.wikipedia.org/resource/Berlim]"
   }
 
-  "WiktionaryResource[http://en.wikipERROedia.org/resource/Berlim]" should "be construct when 'http://en.wikipERROedia.org/resource/Berlim' is passed as uri" in {
-    new DBpediaResource("http://en.wikipERROedia.org/resource/Berlim").toString should be === "WiktionaryResource[http://en.wikipERROedia.org/resource/Berlim]"
+  "WiktionaryResource[http://en.wikipedia.org/resource/Berlim]" should "be construct when 'http://en.wikipedia.org/resource/Berlim' is passed as uri" in {
+    new DBpediaResource("http://en.wikipedia.org/resource/Berlim").toString should be === "WiktionaryResource[http://en.wikipedia.org/resource/Berlim]"
+  }
+
+  "WiktionaryResource[http://pt.wikipedia.org/resource/Berlin]" should "be construct when 'http://pt.wikipERROedia.org/resource/Berlin' is passed as uri" in {
+    new DBpediaResource("http://pt.wikipedia.org/resource/Berlin").toString should be === "WiktionaryResource[http://pt.wikipedia.org/resource/Berlin]"
   }
 
   "WiktionaryResource[http://ontologia.globo.com/resource/Berlim]" should "be construct when 'http://ontologia.globo.com/resource/Berlim' is passed as uri" in {
