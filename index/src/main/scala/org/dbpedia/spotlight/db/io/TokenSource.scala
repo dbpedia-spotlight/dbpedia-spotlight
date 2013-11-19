@@ -24,6 +24,7 @@ object TokenSource {
   private val ADDITIONAL_TOKEN_COUNT = 1
 
   def fromSFStore(sfStore: SurfaceFormStore, tokenizer: StringTokenizer): Seq[String] = {
+    SpotlightLog.info(this.getClass, "Adding all surface form tokens to the TokenStore...")
     sfStore.iterateSurfaceForms.grouped(100000).toList.par.flatMap(_.map{
       sf: SurfaceForm =>
         //Tokenize all SFs first

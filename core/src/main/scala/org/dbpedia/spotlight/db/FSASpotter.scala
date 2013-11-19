@@ -113,7 +113,7 @@ object FSASpotter {
       case (sf: SurfaceForm, tokens: Seq[Token]) if tokens.size > 0 => {
 
         z+=1
-        if ((z % 10000) == 0)
+        if ((z % 100000) == 0)
           System.err.println("Processed %d SFs.".format(z))
 
         val ids = tokens.map(_.tokenType.id).toArray

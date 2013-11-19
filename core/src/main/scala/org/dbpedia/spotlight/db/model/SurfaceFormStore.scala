@@ -37,6 +37,14 @@ trait SurfaceFormStore {
 
 
   /**
+   * Get the count of the lowercase version of a surface form (for working with ill-cased text).
+   *
+   * @param surfaceform the queried surface form
+   * @return
+   */
+  def getLowercaseSurfaceFormCount(surfaceform: String): Int
+
+  /**
    * Returns the total annotated count of all [[org.dbpedia.spotlight.model.SurfaceForm]]s in the store.
    *
    * @return
