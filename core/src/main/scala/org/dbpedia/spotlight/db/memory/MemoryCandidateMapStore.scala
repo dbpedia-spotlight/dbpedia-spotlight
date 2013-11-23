@@ -16,7 +16,7 @@ class MemoryCandidateMapStore
   with CandidateMapStore {
 
   var candidates      = Array[Array[Int]]()
-  var candidateCounts = Array[Array[Int]]()
+  var candidateCounts = Array[Array[Short]]()
 
   def size = candidates.size
 
@@ -26,7 +26,7 @@ class MemoryCandidateMapStore
   def getCandidates(surfaceform: SurfaceForm): Set[Candidate] = {
     try {
       candidates(surfaceform.id).zip(candidateCounts(surfaceform.id)).map {
-            case (resID, count) => new Candidate(surfaceform, resourceStore.getResource(resID), count)
+            case (resID, count) => new Candidate(surfaceform, resourceStore.getResource(resID), qc(count))
       }.toSet
     } catch {
       case e: NullPointerException => Set[Candidate]()

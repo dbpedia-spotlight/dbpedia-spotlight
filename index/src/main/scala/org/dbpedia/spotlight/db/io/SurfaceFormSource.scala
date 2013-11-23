@@ -60,14 +60,14 @@ object SurfaceFormSource {
       }
     }
 
-    LOG.info("Done.")
+    SpotlightLog.info(this.getClass, "Done.")
 
     sfMap
   }
 
   def lowercaseCountsFromPigInputStream(sfAndTotalCounts: InputStream): Map[String, Int] = {
 
-    LOG.info("Determining lowercase surfaceform counts...")
+    SpotlightLog.info(this.getClass, "Determining lowercase surfaceform counts...")
 
     val lowercaseCountsMap = new HashMap[String, Int]()
 
@@ -84,7 +84,7 @@ object SurfaceFormSource {
       }
     }
 
-    LOG.info("Done.")
+    SpotlightLog.info(this.getClass, "Done.")
     lowercaseCountsMap
   }
 

@@ -93,7 +93,7 @@ class WikipediaToDBpediaClosure (
         }
 
       }
-      case _ => throw new NotADBpediaResourceException("Resource is a disambiguation page."); LOG.error("Invalid Wikipedia URL %s".format(wikiURL)); null
+      case _ => throw new NotADBpediaResourceException("Resource is a disambiguation page."); SpotlightLog.error(this.getClass, "Invalid Wikipedia URL %s".format(wikiURL)); null
     }
   }
 

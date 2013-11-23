@@ -120,7 +120,7 @@ object DBpediaResourceSource {
 
     //Read types:
     if (instanceTypes != null && instanceTypes._1.equals("tsv")) {
-      LOG.info("Reading types (tsv format)...")
+      SpotlightLog.info(this.getClass, "Reading types (tsv format)...")
       val uriNotFound = HashSet[String]()
       Source.fromInputStream(instanceTypes._2).getLines() foreach {
         line: String => {
@@ -134,10 +134,10 @@ object DBpediaResourceSource {
           }
         }
       }
-      LOG.warn("URI for %d type definitions not found!".format(uriNotFound.size) )
-      LOG.info("Done.")
+      SpotlightLog.warn(this.getClass, "URI for %d type definitions not found!".format(uriNotFound.size) )
+      SpotlightLog.info(this.getClass, "Done.")
     } else if (instanceTypes != null && instanceTypes._1.equals("nt")) {
-      LOG.info("Reading types (nt format)...")
+      SpotlightLog.info(this.getClass, "Reading types (nt format)...")
 
       val uriNotFound = HashSet[String]()
 
@@ -159,8 +159,8 @@ object DBpediaResourceSource {
         }
 
       }
-      LOG.warn("URI for %d type definitions not found!".format(uriNotFound.size) )
-      LOG.info("Done.")
+      SpotlightLog.info(this.getClass, "URI for %d type definitions not found!".format(uriNotFound.size) )
+      SpotlightLog.info(this.getClass, "Done.")
     }
 
     resourceByURI foreach {

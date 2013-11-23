@@ -23,9 +23,11 @@ class MemorySurfaceFormStore
   @transient
   var idForString: java.util.Map[String, Integer] = null
 
+  var lowercaseCounts: java.util.Map[String, java.lang.Short] = null
+
   var stringForID: Array[String]      = null
-  var annotatedCountForID: Array[Int] = null
-  var totalCountForID: Array[Int]     = null
+  var annotatedCountForID: Array[Short] = null
+  var totalCountForID: Array[Short]     = null
 
   @transient
   var totalAnnotatedCount = 0
@@ -52,7 +54,7 @@ class MemorySurfaceFormStore
 
   def iterateSurfaceForms: Seq[SurfaceForm] = {
     annotatedCountForID.zipWithIndex.flatMap{
-      case (count: Int, id: Int) if count > 0 => Some(sfForID(id))
+      case (count: Short, id: Int) if qc(count) > 0 => Some(sfForID(id))
       case _ => None
     }
   }
@@ -61,8 +63,8 @@ class MemorySurfaceFormStore
   def createReverseLookup() {
 
     SpotlightLog.info(this.getClass, "Summing total SF counts.")
-    totalAnnotatedCount = annotatedCountForID.sum
-    totalOccurrenceCount = totalCountForID.sum
+    totalAnnotatedCount = annotatedCountForID.map(q => qc(q)).sum
+    totalOccurrenceCount = totalCountForID.map(q => qc(q)).sum
 
 
     if (stringForID != null) {
@@ -75,7 +77,7 @@ class MemorySurfaceFormStore
           idForString.put(sf, i)
 
           val n = normalize(sf)
-          if (idForString.get(n) == null || annotatedCountForID(idForString.get(n)) < annotatedCountForID(i))
+          if (idForString.get(n) == null || qc(annotatedCountForID(idForString.get(n))) < qc(annotatedCountForID(i)))
             idForString.put(n, i)
         }
         i += 1
@@ -86,8 +88,8 @@ class MemorySurfaceFormStore
 
 
   private def sfForID(id: Int) = {
-    val annotatedCount = annotatedCountForID(id)
-    val totalCount = totalCountForID(id)
+    val annotatedCount = qc(annotatedCountForID(id))
+    val totalCount = qc(totalCountForID(id))
 
     new SurfaceForm(stringForID(id), id, annotatedCount, totalCount)
   }
@@ -109,10 +111,21 @@ class MemorySurfaceFormStore
     if (id == null)
       throw new SurfaceFormNotFoundException("SurfaceForm %s not found.".format(surfaceform))
 
-    val annotatedCount = annotatedCountForID(id)
-    val totalCount = totalCountForID(id)
+    val annotatedCount = qc(annotatedCountForID(id))
+    val totalCount = qc(totalCountForID(id))
 
     new SurfaceForm(surfaceform, id, annotatedCount, totalCount)
+  }
+
+  /**
+   * Get the count of the lowercase version of a surface form (for working with ill-cased text).
+   *
+   * @param surfaceform the queried surface form
+   * @return
+   */
+  def getLowercaseSurfaceFormCount(surfaceform: String): Int = lowercaseCounts.get(surfaceform) match {
+    case c: java.lang.Short => qc(c)
+    case _ => 0
   }
 
 }

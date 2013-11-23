@@ -7,10 +7,11 @@ import similarity.ContextSimilarity
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguator
 import org.dbpedia.spotlight.exceptions.{SurfaceFormNotFoundException, InputException}
 import scala.Predef._
-import org.dbpedia.spotlight.util.MathUtil
 import breeze.linalg
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ArrayBuffer
+import org.dbpedia.spotlight.log.SpotlightLog
+import org.dbpedia.spotlight.util.MathUtil
 
 
 /**

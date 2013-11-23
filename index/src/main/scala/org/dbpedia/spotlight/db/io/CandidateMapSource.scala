@@ -37,7 +37,7 @@ object CandidateMapSource {
     var sfNotFound  = 0
     var uriIgnored  = 0
 
-    LOG.info("Reading Candidate Map.")
+    SpotlightLog.info(this.getClass, "Reading Candidate Map.")
     Source.fromInputStream(pairCounts).getLines() foreach {
       line: String => {
         try {
@@ -53,7 +53,7 @@ object CandidateMapSource {
           candidateMap.put(c, initialCount + count.toInt)
         } catch {
           case e: NotADBpediaResourceException     => uriIgnored += 1
-          case e: ArrayIndexOutOfBoundsException   => LOG.warn("WARNING: Could not read line.")
+          case e: ArrayIndexOutOfBoundsException   => SpotlightLog.warn(this.getClass, "WARNING: Could not read line.")
           case e: DBpediaResourceNotFoundException => {uriNotFound += 1; println(line)}
           case e: SurfaceFormNotFoundException     => sfNotFound += 1
         }

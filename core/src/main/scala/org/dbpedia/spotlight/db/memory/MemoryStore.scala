@@ -13,6 +13,9 @@ import com.esotericsoftware.kryo.serializers.DefaultSerializers.KryoSerializable
 import com.esotericsoftware.kryo.Kryo
 import org.dbpedia.spotlight.db.model.{TokenTypeStore, ResourceStore}
 import org.dbpedia.spotlight.db.FSADictionary
+import scala.Some
+import it.unimi.dsi.fastutil.objects.Object2ShortOpenHashMap
+import scala.Some
 
 
 /**
@@ -23,6 +26,10 @@ import org.dbpedia.spotlight.db.FSADictionary
 
 @SerialVersionUID(1001001)
 abstract class MemoryStore extends Serializable {
+
+  var quantizedCountStore: MemoryQuantizedCountStore = null
+
+  def qc(quantizedCount: scala.Short): Int = quantizedCountStore.getCount(quantizedCount)
 
   /**
    * Method called after the store has been deserialized.
@@ -48,6 +55,7 @@ object MemoryStore {
     kryo.setRegistrationRequired(true)
 
     kryo.register(classOf[Array[Int]], new DefaultArraySerializers.IntArraySerializer())
+    kryo.register(classOf[Array[scala.Short]], new DefaultArraySerializers.ShortArraySerializer())
     kryo.register(classOf[Array[String]], new DefaultArraySerializers.StringArraySerializer())
     kryo.register(classOf[Array[Array[Short]]], new JavaSerializer())
 
@@ -68,9 +76,11 @@ object MemoryStore {
     val kryo = new Kryo()
     kryo.setRegistrationRequired(true)
 
-    kryo.register(classOf[Array[Int]],    new DefaultArraySerializers.IntArraySerializer())
+    kryo.register(classOf[Array[scala.Short]], new DefaultArraySerializers.ShortArraySerializer())
     kryo.register(classOf[Array[String]], new DefaultArraySerializers.StringArraySerializer())
     kryo.register(classOf[MemorySurfaceFormStore])
+    kryo.register(classOf[java.util.Map[String, java.lang.Short]], new JavaSerializer())
+    kryo.register(classOf[Object2ShortOpenHashMap[String]], new JavaSerializer())
 
     kryo
   }
@@ -123,19 +133,29 @@ object MemoryStore {
   }
   )
 
-  def load[T](in: InputStream, simpleName: String): T = {
+  kryos.put(classOf[MemoryQuantizedCountStore].getSimpleName,
+  {
+    val kryo = new Kryo()
+    kryo.setRegistrationRequired(false)
+    kryo
+  }
+  )
+
+  def load[T](in: InputStream, simpleName: String, quantizedCountStore: Option[MemoryQuantizedCountStore] = None): T = {
 
     val kryo: Kryo = kryos.get(simpleName).get
 
-    SpotlightLog.info(this.getClass, "Loading %s...", simpleName)
+    SpotlightLog.info(this.getClass, "Loading %s...".format(simpleName))
     val sStart = System.currentTimeMillis()
     val input = new Input(in)
 
     val s = kryo.readClassAndObject(input).asInstanceOf[T]
+
+    quantizedCountStore.foreach(qcs => s.asInstanceOf[MemoryStore].quantizedCountStore = qcs)
     s.asInstanceOf[MemoryStore].loaded()
 
     input.close()
-    SpotlightLog.info(this.getClass, "Done (%d ms)", System.currentTimeMillis() - sStart)
+    SpotlightLog.info(this.getClass, "Done (%d ms)".format(System.currentTimeMillis() - sStart))
     s
   }
 
@@ -143,22 +163,22 @@ object MemoryStore {
     load[MemoryTokenTypeStore](in, classOf[MemoryTokenTypeStore].getSimpleName)
   }
 
-  def loadSurfaceFormStore(in: InputStream): MemorySurfaceFormStore = {
-    load[MemorySurfaceFormStore](in, classOf[MemorySurfaceFormStore].getSimpleName)
+  def loadSurfaceFormStore(in: InputStream, quantizedCountStore: MemoryQuantizedCountStore): MemorySurfaceFormStore = {
+    load[MemorySurfaceFormStore](in, classOf[MemorySurfaceFormStore].getSimpleName, Some(quantizedCountStore))
   }
 
-  def loadResourceStore(in: InputStream): MemoryResourceStore = {
-    load[MemoryResourceStore](in, classOf[MemoryResourceStore].getSimpleName)
+  def loadResourceStore(in: InputStream, quantizedCountStore: MemoryQuantizedCountStore): MemoryResourceStore = {
+    load[MemoryResourceStore](in, classOf[MemoryResourceStore].getSimpleName, Some(quantizedCountStore))
   }
 
-  def loadCandidateMapStore(in: InputStream, resourceStore: ResourceStore): MemoryCandidateMapStore = {
-    val s = load[MemoryCandidateMapStore](in, classOf[MemoryCandidateMapStore].getSimpleName)
+  def loadCandidateMapStore(in: InputStream, resourceStore: ResourceStore, quantizedCountStore: MemoryQuantizedCountStore): MemoryCandidateMapStore = {
+    val s = load[MemoryCandidateMapStore](in, classOf[MemoryCandidateMapStore].getSimpleName, Some(quantizedCountStore))
     s.resourceStore = resourceStore
     s
   }
 
-  def loadContextStore(in: InputStream, tokenStore: TokenTypeStore): MemoryContextStore = {
-    val s = load[MemoryContextStore](in, classOf[MemoryContextStore].getSimpleName)
+  def loadContextStore(in: InputStream, tokenStore: TokenTypeStore, quantizedCountStore: MemoryQuantizedCountStore): MemoryContextStore = {
+    val s = load[MemoryContextStore](in, classOf[MemoryContextStore].getSimpleName, Some(quantizedCountStore))
     s.tokenStore = tokenStore
     s
   }
@@ -167,10 +187,14 @@ object MemoryStore {
     load[FSADictionary](in, classOf[FSADictionary].getSimpleName)
   }
 
+  def loadQuantizedCountStore(in: InputStream): MemoryQuantizedCountStore = {
+    load[MemoryQuantizedCountStore](in, classOf[MemoryQuantizedCountStore].getSimpleName)
+  }
+
   def dump(store: MemoryStore, out: File) {
     val kryo = kryos.get(store.getClass.getSimpleName).get
 
-    SpotlightLog.info(this.getClass, "Writing %s...", store.getClass.getSimpleName)
+    SpotlightLog.info(this.getClass, "Writing %s...".format(store.getClass.getSimpleName))
     val output = new Output(new FileOutputStream(out))
     kryo.writeClassAndObject(output, store)
 
