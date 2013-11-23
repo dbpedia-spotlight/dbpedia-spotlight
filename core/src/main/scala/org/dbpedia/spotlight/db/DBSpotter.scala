@@ -12,6 +12,7 @@ import opennlp.tools.util.Span
 import opennlp.tools.namefind.RegexNameFinder
 import java.util.regex.Pattern
 import org.apache.commons.lang.StringUtils
+import org.dbpedia.spotlight.log.SpotlightLog
 
 abstract class DBSpotter(
  surfaceFormStore: SurfaceFormStore,
@@ -76,9 +77,12 @@ abstract class DBSpotter(
 
               val spot = text.text.substring(startOffset, endOffset)
 
-              if (surfaceFormMatch(spot)) {
+              SpotlightLog.info(this.getClass, spot + ":" + chunkSpan.getType)
+
+              val sfMatch = surfaceFormMatch(spot)
+              if (sfMatch.isDefined) {
                 //The sub-chunk is in the dictionary, finish the processing of this chunk
-                val spotOcc = new SurfaceFormOccurrence(surfaceFormStore.getSurfaceForm(spot), text, startOffset, Provenance.Annotation, spotScore(spot))
+                val spotOcc = new SurfaceFormOccurrence(sfMatch.get, text, startOffset, Provenance.Annotation, spotScore(spot)._2)
                 spotOcc.setFeature(new Nominal("spot_type", chunkSpan.getType))
                 spotOcc.setFeature(new Feature("token_types", tokenTypes.slice(startToken, lastToken)))
                 spots += spotOcc
@@ -94,15 +98,15 @@ abstract class DBSpotter(
   }
 
 
-  private def editDistanceScore(s1: String, sOriginal: String): Double = {
-    val ed = StringUtils.getLevenshteinDistance(s1, sOriginal)
+  private def editDistanceScore(sData: String, sReal: String): Double = {
+    val ed = StringUtils.getLevenshteinDistance(sData, sReal)
 
-    if (sOriginal.equals(s1))
+    if (sReal.equals(sData))
       1.0
-    else if (sOriginal.toUpperCase.equals(s1) || sOriginal.toLowerCase.equals(s1))
+    else if (sData.toUpperCase.equals(sReal) || sData.toLowerCase.equals(sReal))
       0.85
     else
-      0.85 * (1.0 - (ed / sOriginal.length.toDouble))
+      0.85 * (1.0 - (ed / sReal.length.toDouble))
   }
 
   /**
@@ -113,7 +117,7 @@ abstract class DBSpotter(
    * @param spot
    * @return
    */
-  private def spotScore(spot: String): Double = {
+  private def spotScore(spot: String): (Option[SurfaceForm], Double) = {
     try {
       spotFeatureWeightVector match {
         case Some(weights) => {
@@ -127,32 +131,51 @@ abstract class DBSpotter(
                 val cLower = surfaceFormStore.getLowercaseSurfaceFormCount(spot.toLowerCase)
                 val cTotal = candSf.totalCount
 
+                SpotlightLog.debug(this.getClass, spot + " p: "+ candSf.annotationProbability)
+                SpotlightLog.debug(this.getClass, spot + " edit distance: "+ editDistanceScore(candSf.name, spot))
+                SpotlightLog.debug(this.getClass, spot + " c in total: "+ cTotal.toDouble / (cLower+cTotal))
+
                 (candSf,
                   //Score for the surface form (including the case adaptation):
                   editDistanceScore(candSf.name, spot) *
                   candSf.annotationProbability *
-                  (if((cTotal.toDouble / cLower+cTotal) > 0.5) 1.0 else 0.2)
+                  (if((cTotal.toDouble / (cLower+cTotal)) > 0.4) 1.0 else 0.4)
                 )
               }.maxBy(_._2)
             }
           }
 
-          weights dot DBSpotter.spotFeatures(spot, p)
+          sf.name = spot
+          (Some(sf), weights dot DBSpotter.spotFeatures(spot, p))
         }
-        case None => surfaceFormStore.getSurfaceForm(spot).annotationProbability
+        case None => (Some(surfaceFormStore.getSurfaceForm(spot)), surfaceFormStore.getSurfaceForm(spot).annotationProbability)
       }
     } catch {
-      case e: SurfaceFormNotFoundException => 0.0
-      case e: Exception => e.printStackTrace(); 0.0
-      case _ => 0.0
+      case e: SurfaceFormNotFoundException => (None, 0.0)
+      case e: Exception => e.printStackTrace(); (None, 0.0)
+      case _ => (None, 0.0)
     }
   }
 
-  protected def surfaceFormMatch(spot: String): Boolean = {
+  protected def surfaceFormMatch(spot: String): Option[SurfaceForm] = {
+    val score: (Option[SurfaceForm], Double) = spotScore(spot)
+    score._1 match {
+      case Some(sf) => SpotlightLog.debug(this.getClass, sf.toString + ":" + score._2)
+      case None => SpotlightLog.debug(this.getClass, "None :" + score._2)
+    }
+
+    
     if (spotFeatureWeightVector.isDefined)
-      spotScore(spot) >= 0.5
+       if(score._2 >= 0.5)
+         score._1
+       else
+        None
     else
-      spotScore(spot) >= 0.25
+      if(score._2 >= 0.25)
+        score._1
+      else
+        None
+
   }
 
 

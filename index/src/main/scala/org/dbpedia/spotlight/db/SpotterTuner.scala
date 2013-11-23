@@ -31,7 +31,7 @@ object SpotterTuner {
     }}
 
 
-    val (nx, ny) = (DBSpotter.spotFeatures(new SurfaceForm("test")).activeSize, allSpots.map(_._2.size()).sum)
+    val (nx, ny) = (DBSpotter.spotFeatures("test", 0.0).activeSize, allSpots.map(_._2.size()).sum)
 
     val x = DenseMatrix.zeros[Double](ny, nx)
     val y = DenseVector.zeros[Double](ny)
@@ -40,7 +40,7 @@ object SpotterTuner {
     allSpots.foreach{
       case(goldSpotSet: Set[String], spots: java.util.List[SurfaceFormOccurrence]) => {
         spots.foreach{ spot: SurfaceFormOccurrence =>
-          x(i,::) := DBSpotter.spotFeatures(spot.surfaceForm).t
+          x(i,::) := DBSpotter.spotFeatures(spot.surfaceForm.name, spot.surfaceForm.annotationProbability).t
           y(i)     = ( if(goldSpotSet.contains(spot.surfaceForm.name)) 1.0 else 0.0 )
           i += 1
         }
