@@ -11,6 +11,7 @@ import collection.mutable.ListBuffer
 import opennlp.tools.util.Span
 import opennlp.tools.namefind.RegexNameFinder
 import java.util.regex.Pattern
+import org.apache.commons.lang.StringUtils
 
 abstract class DBSpotter(
  surfaceFormStore: SurfaceFormStore,
@@ -93,12 +94,50 @@ abstract class DBSpotter(
   }
 
 
+  private def editDistanceScore(s1: String, sOriginal: String): Double = {
+    val ed = StringUtils.getLevenshteinDistance(s1, sOriginal)
 
+    if (sOriginal.equals(s1))
+      1.0
+    else if (sOriginal.toUpperCase.equals(s1) || sOriginal.toLowerCase.equals(s1))
+      0.85
+    else
+      0.85 * (1.0 - (ed / sOriginal.length.toDouble))
+  }
+
+  /**
+   * This is the most important method in this class. Given the set of possible matches,
+   * which are very general (e.g. based on stems in FSASpotter), we need to find a score
+   * for each match. Matches will be filtered out by this score.
+   *
+   * @param spot
+   * @return
+   */
   private def spotScore(spot: String): Double = {
     try {
       spotFeatureWeightVector match {
         case Some(weights) => {
-          (weights dot DBSpotter.spotFeatures(surfaceFormStore.getSurfaceForm(spot)))
+
+          val (sf, p) = try {
+            val sf = surfaceFormStore.getSurfaceForm(spot)
+            (sf, sf.annotationProbability)
+          } catch {
+            case e: SurfaceFormNotFoundException => {
+              surfaceFormStore.getSurfaceFormsNormalized(spot).map{ candSf: SurfaceForm =>
+                val cLower = surfaceFormStore.getLowercaseSurfaceFormCount(spot.toLowerCase)
+                val cTotal = candSf.totalCount
+
+                (candSf,
+                  //Score for the surface form (including the case adaptation):
+                  editDistanceScore(candSf.name, spot) *
+                  candSf.annotationProbability *
+                  (if((cTotal.toDouble / cLower+cTotal) > 0.5) 1.0 else 0.2)
+                )
+              }.maxBy(_._2)
+            }
+          }
+
+          weights dot DBSpotter.spotFeatures(spot, p)
         }
         case None => surfaceFormStore.getSurfaceForm(spot).annotationProbability
       }
@@ -181,16 +220,16 @@ abstract class DBSpotter(
 }
 
 object DBSpotter {
-  def spotFeatures(spot: SurfaceForm): DenseVector[Double] =
+  def spotFeatures(spot: String, spotProbability: Double): DenseVector[Double] =
     DenseVector(
       //Annotation probability:
-      spot.annotationProbability,
+      spotProbability,
 
       //Abbreviations:
-      if(spot.name.toUpperCase.equals(spot.name) && spot.name.size < 5 && !spot.name.matches("[0-9]+")) 1.0 else 0.0,
+      if(spot.toUpperCase.equals(spot) && spot.size < 5 && !spot.matches("[0-9]+")) 1.0 else 0.0,
 
       //Numbers (e.g. years):
-      if(spot.name.matches("[0-9]+")) 1.0 else 0.0,
+      if(spot.matches("[0-9]+")) 1.0 else 0.0,
 
       //Bias:
       1.0

@@ -24,7 +24,10 @@ trait SurfaceFormStore {
   def getSurfaceForm(surfaceform: String): SurfaceForm
 
 
-  /**
+  @throws(classOf[SurfaceFormNotFoundException])
+  def getSurfaceFormsNormalized(surfaceform: String): Seq[SurfaceForm]
+
+    /**
    * Attempt to find a [[org.dbpedia.spotlight.model.SurfaceForm]] for the String by
    * first normalizing it (removing stop words, punctuation, lowercasing).
    *

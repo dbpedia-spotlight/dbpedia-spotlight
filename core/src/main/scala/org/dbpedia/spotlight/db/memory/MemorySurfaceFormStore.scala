@@ -7,6 +7,7 @@ import org.dbpedia.spotlight.exceptions.SurfaceFormNotFoundException
 import scala.Array
 import java.lang.Integer
 import util.StringToIDMapFactory
+import scala.collection.mutable
 
 /**
  * @author Joachim Daiber
@@ -22,6 +23,9 @@ class MemorySurfaceFormStore
 
   @transient
   var idForString: java.util.Map[String, Integer] = null
+
+  @transient
+  val lowercaseMap: java.util.HashMap[String, List[Int]] = new java.util.HashMap[String, List[Int]]()
 
   var lowercaseCounts: java.util.Map[String, java.lang.Short] = null
 
@@ -76,9 +80,14 @@ class MemorySurfaceFormStore
         if (sf != null) {
           idForString.put(sf, i)
 
-          val n = normalize(sf)
-          if (idForString.get(n) == null || qc(annotatedCountForID(idForString.get(n))) < qc(annotatedCountForID(i)))
-            idForString.put(n, i)
+          val normalizedSF = normalize(sf)
+          var is = if(lowercaseMap.containsKey(normalizedSF))
+            lowercaseMap.get(normalizedSF)
+          else
+            List[Int]()
+
+          is ::= i
+          lowercaseMap.put(normalizedSF, is)
         }
         i += 1
       }
@@ -105,16 +114,18 @@ class MemorySurfaceFormStore
   }
 
   @throws(classOf[SurfaceFormNotFoundException])
-  def getSurfaceFormNormalized(surfaceform: String): SurfaceForm = {
-    val id = idForString.get(normalize(surfaceform))
-
-    if (id == null)
+  def getSurfaceFormsNormalized(surfaceform: String): Seq[SurfaceForm] = {
+    if(!lowercaseMap.containsKey(normalize(surfaceform)))
       throw new SurfaceFormNotFoundException("SurfaceForm %s not found.".format(surfaceform))
 
-    val annotatedCount = qc(annotatedCountForID(id))
-    val totalCount = qc(totalCountForID(id))
+    lowercaseMap.get(normalize(surfaceform)).map{ id: Int =>
+      new SurfaceForm(stringForID(id), id, qc(annotatedCountForID(id)), qc(totalCountForID(id)))
+    }
+  }
 
-    new SurfaceForm(surfaceform, id, annotatedCount, totalCount)
+  @throws(classOf[SurfaceFormNotFoundException])
+  def getSurfaceFormNormalized(surfaceform: String): SurfaceForm = {
+    getSurfaceFormsNormalized(surfaceform).maxBy(_.annotationProbability)
   }
 
   /**
