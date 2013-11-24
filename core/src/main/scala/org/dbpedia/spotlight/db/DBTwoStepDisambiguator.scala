@@ -40,10 +40,10 @@ class DBTwoStepDisambiguator(
 
 
   //maximum number of considered candidates
-  val MAX_CANDIDATES = 20
+  val MAX_CANDIDATES = 10
 
   //maximum context window in tokens in both directions
-  val MAX_CONTEXT = 250
+  val MAX_CONTEXT = 200
 
 
   def bestK(paragraph: Paragraph, k: Int): Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]] = {
@@ -107,26 +107,19 @@ class DBTwoStepDisambiguator(
         SpotlightLog.debug(this.getClass, "Searching...")
 
         val candidateRes = {
-          val sf = try {
-            surfaceFormStore.getSurfaceForm(sfOcc.surfaceForm.name)
-          } catch {
-            case e: SurfaceFormNotFoundException => sfOcc.surfaceForm
-          }
 
-          val cands = candidateSearcher.getCandidates(sf)
-          SpotlightLog.debug(this.getClass, "# candidates for: %s = %s.", sf, cands.size)
+          val cands = candidateSearcher.getCandidates(sfOcc.surfaceForm)
+          SpotlightLog.debug(this.getClass, "# candidates for: %s = %s.", sfOcc.surfaceForm, cands.size)
 
           if (cands.size > MAX_CANDIDATES) {
             SpotlightLog.debug(this.getClass, "Reducing number of candidates to %d.", MAX_CANDIDATES)
-            cands.toList.sortBy( _.support ).reverse.take(MAX_CANDIDATES).toSet
+            cands.toList.sortBy( -_.prior ).take(MAX_CANDIDATES).toSet
           } else {
             cands
           }
         }
 
-
         allCandidateResources ++= candidateRes.map(_.resource)
-
         acc + (sfOcc -> candidateRes.toList)
       })
 

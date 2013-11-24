@@ -77,7 +77,7 @@ abstract class DBSpotter(
 
               val spot = text.text.substring(startOffset, endOffset)
 
-              SpotlightLog.info(this.getClass, spot + ":" + chunkSpan.getType)
+              //SpotlightLog.info(this.getClass, spot + ":" + chunkSpan.getType)
 
               val sfMatch = surfaceFormMatch(spot)
               if (sfMatch.isDefined) {
@@ -98,17 +98,6 @@ abstract class DBSpotter(
   }
 
 
-  private def editDistanceScore(sData: String, sReal: String): Double = {
-    val ed = StringUtils.getLevenshteinDistance(sData, sReal)
-
-    if (sReal.equals(sData))
-      1.0
-    else if (sData.toUpperCase.equals(sReal) || sData.toLowerCase.equals(sReal))
-      0.85
-    else
-      0.85 * (1.0 - (ed / sReal.length.toDouble))
-  }
-
   /**
    * This is the most important method in this class. Given the set of possible matches,
    * which are very general (e.g. based on stems in FSASpotter), we need to find a score
@@ -126,23 +115,7 @@ abstract class DBSpotter(
             val sf = surfaceFormStore.getSurfaceForm(spot)
             (sf, sf.annotationProbability)
           } catch {
-            case e: SurfaceFormNotFoundException => {
-              surfaceFormStore.getSurfaceFormsNormalized(spot).map{ candSf: SurfaceForm =>
-                val cLower = surfaceFormStore.getLowercaseSurfaceFormCount(spot.toLowerCase)
-                val cTotal = candSf.totalCount
-
-                SpotlightLog.debug(this.getClass, spot + " p: "+ candSf.annotationProbability)
-                SpotlightLog.debug(this.getClass, spot + " edit distance: "+ editDistanceScore(candSf.name, spot))
-                SpotlightLog.debug(this.getClass, spot + " c in total: "+ cTotal.toDouble / (cLower+cTotal))
-
-                (candSf,
-                  //Score for the surface form (including the case adaptation):
-                  editDistanceScore(candSf.name, spot) *
-                  candSf.annotationProbability *
-                  (if((cTotal.toDouble / (cLower+cTotal)) > 0.4) 1.0 else 0.4)
-                )
-              }.maxBy(_._2)
-            }
+            case e: SurfaceFormNotFoundException => surfaceFormStore.getRankedSurfaceFormCandidates(spot).head
           }
 
           sf.name = spot
@@ -151,8 +124,6 @@ abstract class DBSpotter(
         case None => (Some(surfaceFormStore.getSurfaceForm(spot)), surfaceFormStore.getSurfaceForm(spot).annotationProbability)
       }
     } catch {
-      case e: SurfaceFormNotFoundException => (None, 0.0)
-      case e: Exception => e.printStackTrace(); (None, 0.0)
       case _ => (None, 0.0)
     }
   }
@@ -164,7 +135,6 @@ abstract class DBSpotter(
       case None => SpotlightLog.debug(this.getClass, "None :" + score._2)
     }
 
-    
     if (spotFeatureWeightVector.isDefined)
        if(score._2 >= 0.5)
          score._1

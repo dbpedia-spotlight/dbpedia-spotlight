@@ -9,6 +9,9 @@ import org.dbpedia.spotlight.exceptions.DBpediaResourceNotFoundException
 import org.dbpedia.spotlight.db.model.{OntologyTypeStore, ResourceStore}
 import java.lang.Integer
 import util.StringToIDMapFactory
+import java.net.URLDecoder
+import org.dbpedia.extraction.util.WikiUtil
+import org.dbpedia.util.text.uri.UriDecoder
 
 /**
  * @author Joachim Daiber
@@ -58,7 +61,7 @@ class MemoryResourceStore
   def getResource(id: Int): DBpediaResource = {
 
     val uri = try {
-        uriForID(id)
+      URLDecoder.decode( UriDecoder.decode( uriForID(id) ), "utf-8" )
     } catch {
       case e: java.lang.ArrayIndexOutOfBoundsException => null
     }
@@ -70,6 +73,7 @@ class MemoryResourceStore
     val typeIDs = typesForID(id)
 
     val res = new DBpediaResource(uri, qc(support))
+    res.uri = uri
 
     res.id = id
     res.setTypes((typeIDs map { typeID: java.lang.Short => ontologyTypeStore.getOntologyType(typeID) }).toList)

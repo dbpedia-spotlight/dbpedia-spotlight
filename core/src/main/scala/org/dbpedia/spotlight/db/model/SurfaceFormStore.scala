@@ -24,8 +24,7 @@ trait SurfaceFormStore {
   def getSurfaceForm(surfaceform: String): SurfaceForm
 
 
-  @throws(classOf[SurfaceFormNotFoundException])
-  def getSurfaceFormsNormalized(surfaceform: String): Seq[SurfaceForm]
+  def getSurfaceFormsNormalized(surfaceform: String): Set[SurfaceForm]
 
     /**
    * Attempt to find a [[org.dbpedia.spotlight.model.SurfaceForm]] for the String by
@@ -37,6 +36,8 @@ trait SurfaceFormStore {
    */
   @throws(classOf[SurfaceFormNotFoundException])
   def getSurfaceFormNormalized(surfaceform: String): SurfaceForm
+
+  def getRankedSurfaceFormCandidates(surfaceform: String): Seq[(SurfaceForm, Double)]
 
 
   /**
