@@ -22,12 +22,14 @@ usage ()
 
 
 opennlp="None"
-eval=""
+eval="false"
+data_only="false"
 
-while getopts "eo:" opt; do
+while getopts "eod:" opt; do
   case $opt in
     o) opennlp="$OPTARG";;
     e) eval="true";;
+    d) data_only="true"
   esac
 done
 
@@ -188,10 +190,16 @@ cd $1/dbpedia-spotlight
 mvn -q clean
 mvn -q install
 
-mvn -pl index exec:java -Dexec.mainClass=org.dbpedia.spotlight.db.CreateSpotlightModel -Dexec.args="$2 $WDIR $TARGET_DIR $opennlp $STOPWORDS $4Stemmer";
+CREATE_MODEL="mvn -pl index exec:java -Dexec.mainClass=org.dbpedia.spotlight.db.CreateSpotlightModel -Dexec.args=\"$2 $WDIR $TARGET_DIR $opennlp $STOPWORDS $4Stemmer\";"
 
-if [ "$eval" == "true" ]; then
-    mvn -pl eval exec:java -Dexec.mainClass=org.dbpedia.spotlight.evaluation.EvaluateSpotlightModel -Dexec.args="$TARGET_DIR $WDIR/heldout.txt" > $TARGET_DIR/evaluation.txt
+if [ "$data_only" == "true" ]; then
+    echo "$CREATE_MODEL" >> create_models.job.sh
+else
+  eval "$CREATE_MODEL"
+  
+  if [ "$eval" == "true" ]; then
+      mvn -pl eval exec:java -Dexec.mainClass=org.dbpedia.spotlight.evaluation.EvaluateSpotlightModel -Dexec.args="$TARGET_DIR $WDIR/heldout.txt" > $TARGET_DIR/evaluation.txt
+  fi
 fi
 
 echo "Finished!"
