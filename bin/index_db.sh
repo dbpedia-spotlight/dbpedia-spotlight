@@ -25,7 +25,7 @@ opennlp="None"
 eval="false"
 data_only="false"
 
-while getopts "eod:" opt; do
+while getopts "edo:" opt; do
   case $opt in
     o) opennlp="$OPTARG";;
     e) eval="true";;
