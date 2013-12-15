@@ -84,10 +84,11 @@ mkdir -p $WDIR
 #Download:
 echo "Downloading DBpedia dumps..."
 cd $WDIR
-curl -# http://downloads.dbpedia.org/current/$LANGUAGE/redirects_$LANGUAGE.nt.bz2 | bzcat > redirects.nt
-curl -# http://downloads.dbpedia.org/current/$LANGUAGE/disambiguations_$LANGUAGE.nt.bz2 | bzcat > disambiguations.nt
-curl -# http://downloads.dbpedia.org/current/$LANGUAGE/instance_types_$LANGUAGE.nt.bz2 | bzcat > instance_types.nt
-
+if [ ! -f "redirects.nt" ]; then
+  curl -# http://downloads.dbpedia.org/current/$LANGUAGE/redirects_$LANGUAGE.nt.bz2 | bzcat > redirects.nt
+  curl -# http://downloads.dbpedia.org/current/$LANGUAGE/disambiguations_$LANGUAGE.nt.bz2 | bzcat > disambiguations.nt
+  curl -# http://downloads.dbpedia.org/current/$LANGUAGE/instance_types_$LANGUAGE.nt.bz2 | bzcat > instance_types.nt
+fi
 
 
 if [ "$DATA_ONLY" != "true" ]; then
@@ -133,30 +134,31 @@ fi
 set -e
 
 #Load the dump into HDFS:
-echo "Loading Wikipedia dump into HDFS..."
-
-if [ "$eval" == "" ]; then
-    curl -# "http://dumps.wikimedia.org/${LANGUAGE}wiki/latest/${LANGUAGE}wiki-latest-pages-articles.xml.bz2" | bzcat | hadoop fs -put - ${LANGUAGE}wiki-latest-pages-articles.xml
+if hadoop fs -test -e ${LANGUAGE}wiki-latest-pages-articles.xml ; then
+  echo "Dump already in HDFS."
 else
-    curl -# "http://dumps.wikimedia.org/${LANGUAGE}wiki/latest/${LANGUAGE}wiki-latest-pages-articles.xml.bz2" | bzcat | python $BASE_WDIR/pig/pignlproc/utilities/split_train_test.py 12000 $WDIR/heldout.txt | hadoop fs -put - ${LANGUAGE}wiki-latest-pages-articles.xml
+  echo "Loading Wikipedia dump into HDFS..."
+  if [ "$eval" == "" ]; then
+      curl -# "http://dumps.wikimedia.org/${LANGUAGE}wiki/latest/${LANGUAGE}wiki-latest-pages-articles.xml.bz2" | bzcat | hadoop fs -put - ${LANGUAGE}wiki-latest-pages-articles.xml
+  else
+      curl -# "http://dumps.wikimedia.org/${LANGUAGE}wiki/latest/${LANGUAGE}wiki-latest-pages-articles.xml.bz2" | bzcat | python $BASE_WDIR/pig/pignlproc/utilities/split_train_test.py 12000 $WDIR/heldout.txt | hadoop fs -put - ${LANGUAGE}wiki-latest-pages-articles.xml
+  fi
 fi
+
 
 #Load the stopwords into HDFS:
 echo "Moving stopwords into HDFS..."
 cd $BASE_DIR
-hadoop fs -put $3 stopwords.$LANGUAGE.list
+hadoop fs -put $STOPWORDS stopwords.$LANGUAGE.list || echo "stopwords already in HDFS"
 
-touch empty;
-hadoop fs -put empty "$LANGUAGE.tokenizer_model";
-rm empty;
 
-#if [ -e "$opennlp/$LANGUAGE-token.bin" ]; then
-#    hadoop fs -put "$opennlp/$LANGUAGE-token.bin" "$LANGUAGE.tokenizer_model"
-#else
-#    touch empty;
-#    hadoop fs -put empty "$LANGUAGE.tokenizer_model";
-#    rm empty;
-#fi
+if [ -e "$opennlp/$LANGUAGE-token.bin" ]; then
+    hadoop fs -put "$opennlp/$LANGUAGE-token.bin" "$LANGUAGE.tokenizer_model" || echo "tokenizer model already in HDFS"
+else
+    touch empty;
+    hadoop fs -put empty "$LANGUAGE.tokenizer_model" || echo "tokenizer model already in HDFS"
+    rm empty;
+fi
 
 #Adapt pig params:
 cd $BASE_DIR
@@ -165,6 +167,16 @@ cd $1/pig/pignlproc
 PIGNLPROC_JAR="$BASE_WDIR/pig/pignlproc/target/pignlproc-0.1.0-SNAPSHOT.jar"
 
 #Run pig:
+pig -param LANG="$LANGUAGE" \
+    -param LOCALE="$2" \
+    -param INPUT="/user/$USER/${LANGUAGE}wiki-latest-pages-articles.xml" \
+    -param OUTPUT="/user/$USER/$LANGUAGE/names_and_entities" \
+    -param TEMPORARY_SF_LOCATION="/user/$USER/$LANGUAGE/sf_lookup" \
+    -param PIGNLPROC_JAR="$PIGNLPROC_JAR" \
+    -param MACROS_DIR="$BASE_WDIR/pig/pignlproc/examples/macros/" \
+    -m examples/indexing/names_and_entities.pig.params examples/indexing/names_and_entities.pig
+
+
 pig -param LANG="$LANGUAGE" \
     -param ANALYZER_NAME="$4Analyzer" \
     -param INPUT="/user/$USER/${LANGUAGE}wiki-latest-pages-articles.xml" \
@@ -175,14 +187,6 @@ pig -param LANG="$LANGUAGE" \
     -param MACROS_DIR="$BASE_WDIR/pig/pignlproc/examples/macros/" \
     -m examples/indexing/token_counts.pig.params examples/indexing/token_counts.pig
 
-pig -param LANG="$LANGUAGE" \
-    -param LOCALE="$2" \
-    -param INPUT="/user/$USER/${LANGUAGE}wiki-latest-pages-articles.xml" \
-    -param OUTPUT="/user/$USER/$LANGUAGE/names_and_entities" \
-    -param TEMPORARY_SF_LOCATION="/user/$USER/$LANGUAGE/sf_lookup" \
-    -param PIGNLPROC_JAR="$PIGNLPROC_JAR" \
-    -param MACROS_DIR="$BASE_WDIR/pig/pignlproc/examples/macros/" \
-    -m examples/indexing/names_and_entities.pig.params examples/indexing/names_and_entities.pig
 
 #Copy results to local:
 cd $BASE_DIR
@@ -198,7 +202,7 @@ cd $1/dbpedia-spotlight
 
 CREATE_MODEL="mvn -pl index exec:java -Dexec.mainClass=org.dbpedia.spotlight.db.CreateSpotlightModel -Dexec.args=\"$2 $WDIR $TARGET_DIR $opennlp $STOPWORDS $4Stemmer\";"
 
-if [ "$DATA_ONLY" == "true" ]; then
+if [ "$data_only" == "true" ]; then
     echo "$CREATE_MODEL" >> create_models.job.sh
 else
   eval "$CREATE_MODEL"
@@ -210,4 +214,3 @@ fi
 
 echo "Finished!"
 set +e
-
