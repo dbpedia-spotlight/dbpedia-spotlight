@@ -138,7 +138,7 @@ if hadoop fs -test -e ${LANGUAGE}wiki-latest-pages-articles.xml ; then
   echo "Dump already in HDFS."
 else
   echo "Loading Wikipedia dump into HDFS..."
-  if [ "$eval" == "" ]; then
+  if [ "$eval" == "false" ]; then
       curl -# "http://dumps.wikimedia.org/${LANGUAGE}wiki/latest/${LANGUAGE}wiki-latest-pages-articles.xml.bz2" | bzcat | hadoop fs -put - ${LANGUAGE}wiki-latest-pages-articles.xml
   else
       curl -# "http://dumps.wikimedia.org/${LANGUAGE}wiki/latest/${LANGUAGE}wiki-latest-pages-articles.xml.bz2" | bzcat | python $BASE_WDIR/pig/pignlproc/utilities/split_train_test.py 12000 $WDIR/heldout.txt | hadoop fs -put - ${LANGUAGE}wiki-latest-pages-articles.xml
