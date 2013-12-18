@@ -37,7 +37,7 @@ import scala.collection.immutable.List
   * Tested for English and Portuguese, ok for both.
   */
 
-class AlchemyClientScala(apikey: String) extends AnnotationClientScala {
+class AlchemyClient(apikey: String) extends AnnotationClientScala {
 
   val url: String = "http://access.alchemyapi.com/calls/text/TextGetRankedNamedEntities"
 
@@ -90,19 +90,19 @@ class AlchemyClientScala(apikey: String) extends AnnotationClientScala {
 }
 
 
-object AlchemyClientScala {
+object AlchemyClient {
 
   def main(args: Array[String]) {
     val apikey: String = args(0)
 
-    val alchemyClient = new AlchemyClientScala(apikey)
+    val alchemyClient = new AlchemyClient(apikey)
 
-    val input = new File("/home/alexandre/Projects/Test_Files/Caminhao.txt")
-    val output = new File("/home/alexandre/Projects/Test_Files/Alchemy-scala_Caminhao.list")
+    val input = new File("/home/alexandre/Projects/test-files-spotlight/ExternalClients_TestFiles/Caminhao.txt")
+    val output = new File("/home/alexandre/Projects/test-files-spotlight/ExternalClients_TestFiles/Alchemy-scala_Caminhao.list")
     alchemyClient.evaluate(input, output)
 
-    val inputEng = new File("/home/alexandre/Projects/Test_Files/Germany.txt")
-    val outputEng = new File("/home/alexandre/Projects/Test_Files/Alchemy-scala_Germany.list")
+    val inputEng = new File("/home/alexandre/Projects/test-files-spotlight/ExternalClients_TestFiles/Berlin.txt")
+    val outputEng = new File("/home/alexandre/Projects/test-files-spotlight/ExternalClients_TestFiles/Alchemy-scala_Berlin.list")
     alchemyClient.evaluate(inputEng, outputEng)
   }
 
