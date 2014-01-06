@@ -10,8 +10,7 @@ class SnowballStemmerTest  {
 
   @Test
   def englishStemmer(){
-    var snowballStemmer:SnowballStemmer = new SnowballStemmer("EnglishStemmer")
-
+    val snowballStemmer = new SnowballStemmer("EnglishStemmer")
     assertTrue( "buy".equals(snowballStemmer.stem("buying")))
     assertTrue( "poni".equals(snowballStemmer.stem("ponies")))
   }
