@@ -14,24 +14,34 @@ import org.apache.lucene.document.Document
 import org.apache.lucene.store.FSDirectory
 
 /**
+ * Test the creation of DBpediaResources using the DBpediaResourceFactoryLucene class.
  *
  * @author Alexandre Cançado Cardoso - accardoso
  */
 
 @RunWith(classOf[JUnitRunner])
-class DBpediaResourceFactoryScalaTest extends FlatSpec with ShouldMatchers {
+class DBpediaResourceFactoryLuceneTest extends FlatSpec with ShouldMatchers {
 
   /* Test Params */
+  //Using a mock lucene index with only one uri ("Berlin"). Which can be found at: https://github.com/accardoso/test-files-spotlight/tree/master/lucene-index/index-berlin
+  //The mock index path when the working directory is dbpedia-spotlight/
+  var indexPath: String = "core"+File.separator+"src"+File.separator+"test"+File.separator+"scala"+File.separator+"org"+File.separator+"dbpedia"+File.separator+"spotlight"+File.separator+"model"+File.separator+"DBpediaResourceFactoryLuceneTest_mock"+File.separator+"index-berlin"
+  //The mock index path when the working directory is dbpedia-spotlight/core/
+  val alternativeIndexPath: String = "src"+File.separator+"test"+File.separator+"scala"+File.separator+"org"+File.separator+"dbpedia"+File.separator+"spotlight"+File.separator+"model"+File.separator+"DBpediaResourceFactoryLuceneTest_mock"+File.separator+"index-berlin"
 
-  val indexPath: String = "/media/221CF5031CF4D2B1/Users/Alexandre/Intrisic_SpotIndex/index-withSF-withTypes-compressed"
+  val indexDir: File = new File(indexPath)
+  if(!indexDir.exists() || !indexDir.isDirectory)
+    indexPath = alternativeIndexPath
 
-  /* Tests */
 
+  /* Tests Initialization */
   val indexDirectory = LuceneManager.pickDirectory(new File(indexPath))
   val lucene: LuceneManager = new LuceneManager(indexDirectory)
   val dbpediaResourceFactoryLucene: DBpediaResourceFactoryLucene = (new DBpediaResourceFactoryLucene(lucene, new BaseSearcher(lucene)))
 
-  "DBpediaResource Factory" should "construct a correct DBpediaResource for 'Berlin'" in {
+
+  /* Tests for when the dbpedia id is informed */
+  "DBpediaResourceFactoryLucene.from(uri)" should "construct a correct DBpediaResource for 'Berlin'" in { //In the current tested class the uri must be a dbpedia id (aka dbpedia uri)
     val uri: String = "Berlin"
     dbpediaResourceFactoryLucene.from(uri).getFullUri should be === new DBpediaResource(uri).getFullUri
   }
@@ -41,6 +51,8 @@ class DBpediaResourceFactoryScalaTest extends FlatSpec with ShouldMatchers {
     dbpediaResourceFactoryLucene.from(uri).getFullUri should be === new DBpediaResource(uri).getFullUri
   }
 
+//By the designers idea the class should pass in this test too. But requested feature to do it is not implemented yet.
+//
 //  it should "construct a correct DBpediaResource for 'http://en.wikipedia.org/resource/Berlin'" in {
 //    val uri: String = "http://en.wikipedia.org/resource/Berlin"
 //    dbpediaResourceFactoryLucene.from(uri).getFullUri should be === new DBpediaResource(uri).getFullUri
@@ -56,9 +68,16 @@ class DBpediaResourceFactoryScalaTest extends FlatSpec with ShouldMatchers {
 //    dbpediaResourceFactoryLucene.from(uri).getFullUri should be === new DBpediaResource(uri).getFullUri
 //  }
 //
-//  it should "construct a correct DBpediaResource for 'http://ontologia.globo.com/resource/Berlim'" in {
+//  it should "construct a correct DBpediaResource for 'http://ontologia.organization.com/resource/Berlim'" in {
 //    val uri: String = "http://ontologia.globo.com/resource/Berlim"
 //    dbpediaResourceFactoryLucene.from(uri).getFullUri should be === new DBpediaResource(uri).getFullUri
 //  }
+
+  /* Test for when the lucene index document id is informed */
+  "DBpediaResourceFactoryLucene.from(luceneDocId)" should "construct a correct DBpediaResource 'Berlin' for the 1st document of the Mock Lucene index" in {
+    val luceneDocId: Int = 0
+    val expectedResourceUri: String = "Berlin"
+    dbpediaResourceFactoryLucene.from(luceneDocId).getFullUri should be === new DBpediaResource(expectedResourceUri).getFullUri
+  }
 
 }

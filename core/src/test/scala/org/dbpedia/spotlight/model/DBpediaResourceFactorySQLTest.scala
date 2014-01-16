@@ -7,15 +7,15 @@ import org.junit.Test
  * Makes sure that the factory that uses a database to build resources is working. Also times execution,
  * @author Joachim Daiber
  */
-class DBpediaResourceFactoryTests {
 
+//TODO fix hard codes and register into the module pom.
+
+class DBpediaResourceFactorySQLTest {
 
   val configuration: SpotlightConfiguration = new SpotlightConfiguration("conf/server.properties")
   val factory: SpotlightFactory = new SpotlightFactory(configuration)
 
-  //val dbpediaResourceFactory = new DBpediaResourceFactoryLucene(spotlightFactory.luceneManager, spotlightFactory.searcher)
   val dbpediaResourceFactory = configuration.getDBpediaResourceFactory
-
 
   def dbpediaResourceForAllConcepts() {
     //val configuration: IndexingConfiguration = new IndexingConfiguration("conf/indexing.properties")
@@ -31,10 +31,7 @@ class DBpediaResourceFactoryTests {
       }catch{
         case e: NoSuchElementException => //There may be a difference between the index and the concept list when testing...
       }
-
     })
-
-
   }
 
   @Test
