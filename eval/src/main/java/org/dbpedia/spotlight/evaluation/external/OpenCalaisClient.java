@@ -38,6 +38,17 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * This External Clients was partly tranlated to scala, wich has a bug to be fixed.
+ * The buged scala code can be found at: https://github.com/accardoso/dbpedia-spotlight/tree/dev/conv/external_clients/eval/src/main/scala/org/dbpedia/spotlight/evaluation/external
+ * As result of that, this java class still be the unique client for OpenCalais
+ *
+ * Last Tested: 08/28th/2013 by Alexandre Cançado Cardoso
+
+ * Tested for English and Portuguese, ok for English only. To use for any other supported language (Franch and Spanish),
+ * changes at the text pre-appended tag for language set is needed. (in function process(..) )
+ */
+
+/**
  * Client to the Open Calais REST API to extract DBpediaResourceOccurrences.
  * This is by no means a complete client for OpenCalais. If that's what you're looking for, try http://code.google.com/p/j-calais/
  * Our client aims at simply returning DBpediaResourceOccurrences for evaluation.
@@ -58,8 +69,11 @@ import java.util.Set;
  * User complaints:
  * - The Washing Post was picked up 3 times. I don't know why the terms "private" and "broker" were picked up at all. ... tagging is sometimes much better, sometimes it's like this - not very useful http://www.opencalais.com/forums/known-issues/erratic-calais-performance
  *
- * @author pablomendes
+ * @author pablomendes (main implementation)
+ * @author Alexandre Cançado Cardoso (workaround to the OpanCalais service language identification bug)
+ * Last Modified: 23th/08/13
  */
+
 public class OpenCalaisClient extends AnnotationClient {
 
     Log LOG = LogFactory.getLog(this.getClass());
@@ -72,9 +86,9 @@ public class OpenCalaisClient extends AnnotationClient {
 
     String id = "id";
     String submitter = "dbpa";
-//    String outputFormat = "Text/Simple";
+    //    String outputFormat = "Text/Simple";
     String outputFormat = "application/json";
-//    String outputFormat = "XML/RDF";
+    //    String outputFormat = "XML/RDF";
     String paramsXml = "<c:params xmlns:c=\"http://s.opencalais.com/1/pred/\"\n" +
             "              xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n" +
             "      <c:processingDirectives\n" +
@@ -158,6 +172,7 @@ public class OpenCalaisClient extends AnnotationClient {
                         Integer offset = (Integer) PropertyUtils.getProperty(i,"offset");
                         String dbpediaUri = dereference(uri);
                         DBpediaResource resource = new DBpediaResource(dbpediaUri);
+                        //System.out.println(response);
                         entities.add(resource);
 
                         //TODO For annotations we can get occurrences instead of just DBpediaResources
@@ -188,8 +203,11 @@ public class OpenCalaisClient extends AnnotationClient {
         List<DBpediaResource> entities = parseJson(text, process(text.text()));
         return entities;
     }
-    
+
     protected String process(String text) throws AnnotationException {
+        //Pre-append English tag to text. It's a workaround to allow the text to have a word that is the name of an unsuported language. Reference:
+        text = "Prefix to circumvent OpenCalais bug, this is English text" + text;
+        //Original process method
         HttpPost method = new HttpPost(url);
         // Set mandatory parameters
         method.setHeader("x-calais-licenseID", apikey);
@@ -230,7 +248,7 @@ public class OpenCalaisClient extends AnnotationClient {
 
 
 //        Text text2 = new Text("I went to Germany to talk to Barack Obama at IBM.");
-        
+
         //String json = "{\"doc\":{\"info\":{\"allowDistribution\":\"false\",\"allowSearch\":\"false\",\"calaisRequestID\":\"dbeff887-ba53-5d23-12be-3e562b236c5f\",\"externalID\":\"id\",\"id\":\"http://id.opencalais.com/ri3DvOkcv8tAy0D0dPkXWw\",\"docId\":\"http://d.opencalais.com/dochash-1/db3b6fe9-b523-3184-9be8-33706e01947f\",\"document\":\"\",\"docTitle\":\"\",\"docDate\":\"2010-10-25 09:58:02.796\",\"externalMetadata\":\"\",\"submitter\":\"dbpa\"},\"meta\":{\"contentType\":\"TEXT/RAW\",\"emVer\":\"7.1.1103.5\",\"langIdVer\":\"DefaultLangId\",\"processingVer\":\"CalaisJob01\",\"submitionDate\":\"2010-10-25 09:58:02.562\",\"submitterCode\":\"39637f0d-cab7-e7f0-b9e8-c3ed974c985d\",\"signature\":\"digestalg-1|DLhOuBRCxrJmSgGiG4DCVQW6zsw=|gsXhrUGy/OXuIXn1ErScnJZMU9BcEkPXts7pQHkKucN6XYqz84mrRA==\",\"language\":\"English\",\"messages\":[]}},\"http://d.opencalais.com/dochash-1/db3b6fe9-b523-3184-9be8-33706e01947f/cat/1\":{\"_typeGroup\":\"topics\",\"category\":\"http://d.opencalais.com/cat/Calais/TechnologyInternet\",\"classifierName\":\"Calais\",\"categoryName\":\"Technology_Internet\",\"score\":1},\"http://d.opencalais.com/dochash-1/db3b6fe9-b523-3184-9be8-33706e01947f/cat/2\":{\"_typeGroup\":\"topics\",\"category\":\"http://d.opencalais.com/cat/Calais/BusinessFinance\",\"classifierName\":\"Calais\",\"categoryName\":\"Business_Finance\",\"score\":0.64},\"http://d.opencalais.com/dochash-1/db3b6fe9-b523-3184-9be8-33706e01947f/SocialTag/1\":{\"_typeGroup\":\"socialTag\",\"id\":\"http://d.opencalais.com/dochash-1/db3b6fe9-b523-3184-9be8-33706e01947f/SocialTag/1\",\"socialTag\":\"http://d.opencalais.com/genericHasher-1/c84b1dc7-3aa6-3ead-8c8b-904460b42c2f\",\"name\":\"Scientific revolution\",\"importance\":\"1\"},\"http://d.opencalais.com/dochash-1/db3b6fe9-b523-3184-9be8-33706e01947f/SocialTag/2\":{\"_typeGroup\":\"socialTag\",\"id\":\"http://d.opencalais.com/dochash-1/db3b6fe9-b523-3184-9be8-33706e01947f/SocialTag/2\",\"socialTag\":\"http://d.opencalais.com/genericHasher-1/4f9a3d55-33f5-3738-a2f7-3e9065a5a169\",\"name\":\"Computing\",\"importance\":\"1\"},\"http://d.opencalais.com/dochash-1/db3b6fe9-b523-3184-9be8-33706e01947f/SocialTag/3\":{\"_typeGroup\":\"socialTag\",\"id\":\"http://d.opencalais.com/dochash-1/db3b6fe9-b523-3184-9be8-33706e01947f/SocialTag/3\",\"socialTag\":\"http://d.opencalais.com/genericHasher-1/4025a48f-ae10-3f5a-bcd7-e576b0787d03\",\"name\":\"Hypertext\",\"importance\":\"1\"},\"http://d.opencalais.com/dochash-1/db3b6fe9-b523-3184-9be8-33706e01947f/SocialTag/4\":{\"_typeGroup\":\"socialTag\",\"id\":\"http://d.opencalais.com/dochash-1/db3b6fe9-b523-3184-9be8-33706e01947f/SocialTag/4\",\"socialTag\":\"http://d.opencalais.com/genericHasher-1/5c31e8ed-0aa4-3e81-9cf7-ac9bd6f71b59\",\"name\":\"Human-computer interaction\",\"importance\":\"2\"},\"http://d.opencalais.com/dochash-1/db3b6fe9-b523-3184-9be8-33706e01947f/SocialTag/5\":{\"_typeGroup\":\"socialTag\",\"id\":\"http://d.opencalais.com/dochash-1/db3b6fe9-b523-3184-9be8-33706e01947f/SocialTag/5\",\"socialTag\":\"http://d.opencalais.com/genericHasher-1/a9234a67-1d5c-3451-83e0-fb48ce4187d8\",\"name\":\"World Wide Web\",\"importance\":\"2\"},\"http://d.opencalais.com/dochash-1/db3b6fe9-b523-3184-9be8-33706e01947f/SocialTag/6\":{\"_typeGroup\":\"socialTag\",\"id\":\"http://d.opencalais.com/dochash-1/db3b6fe9-b523-3184-9be8-33706e01947f/SocialTag/6\",\"socialTag\":\"http://d.opencalais.com/genericHasher-1/3f32ae31-f0e1-3522-a388-69fcd5835292\",\"name\":\"Internet\",\"importance\":\"2\"},\"http://d.opencalais.com/dochash-1/db3b6fe9-b523-3184-9be8-33706e01947f/SocialTag/7\":{\"_typeGroup\":\"socialTag\",\"id\":\"http://d.opencalais.com/dochash-1/db3b6fe9-b523-3184-9be8-33706e01947f/SocialTag/7\",\"socialTag\":\"http://d.opencalais.com/genericHasher-1/c8372098-cb83-3f4f-a0a7-d2f29778bc39\",\"name\":\"Mass media\",\"importance\":\"2\"},\"http://d.opencalais.com/dochash-1/db3b6fe9-b523-3184-9be8-33706e01947f/SocialTag/8\":{\"_typeGroup\":\"socialTag\",\"id\":\"http://d.opencalais.com/dochash-1/db3b6fe9-b523-3184-9be8-33706e01947f/SocialTag/8\",\"socialTag\":\"http://d.opencalais.com/genericHasher-1/046d89d7-95f1-30bc-a283-1a5ecd0c0007\",\"name\":\"Telecommunications\",\"importance\":\"2\"},\"http://d.opencalais.com/dochash-1/db3b6fe9-b523-3184-9be8-33706e01947f/SocialTag/9\":{\"_typeGroup\":\"socialTag\",\"id\":\"http://d.opencalais.com/dochash-1/db3b6fe9-b523-3184-9be8-33706e01947f/SocialTag/9\",\"socialTag\":\"http://d.opencalais.com/genericHasher-1/4cdc0d4a-ba75-3ec4-8ed5-5bff7f1cfef5\",\"name\":\"Smartphone\",\"importance\":\"2\"},\"http://d.opencalais.com/dochash-1/db3b6fe9-b523-3184-9be8-33706e01947f/SocialTag/10\":{\"_typeGroup\":\"socialTag\",\"id\":\"http://d.opencalais.com/dochash-1/db3b6fe9-b523-3184-9be8-33706e01947f/SocialTag/10\",\"socialTag\":\"http://d.opencalais.com/genericHasher-1/9a43d517-9eb2-377f-86fe-ebe665ef5477\",\"name\":\"Technology_Internet\",\"importance\":\"1\"},\"http://d.opencalais.com/dochash-1/db3b6fe9-b523-3184-9be8-33706e01947f/SocialTag/11\":{\"_typeGroup\":\"socialTag\",\"id\":\"http://d.opencalais.com/dochash-1/db3b6fe9-b523-3184-9be8-33706e01947f/SocialTag/11\",\"socialTag\":\"http://d.opencalais.com/genericHasher-1/c1bf4420-4b56-3ef2-a429-06a6098bf2ef\",\"name\":\"Business_Finance\",\"importance\":\"2\"},\"http://d.opencalais.com/genericHasher-1/4c478bb9-1128-302d-988a-c90e8294029a\":{\"_typeGroup\":\"entities\",\"_type\":\"Technology\",\"name\":\"HTML\",\"_typeReference\":\"http://s.opencalais.com/1/type/em/e/Technology\",\"instances\":[{\"detection\":\"[Web language that will soon power the Internet: ]HTML[ 5. The new Web code, the fifth \\nversion of]\",\"prefix\":\"Web language that will soon power the Internet: \",\"exact\":\"HTML\",\"suffix\":\" 5. The new Web code, the fifth \\nversion of\",\"offset\":620,\"length\":4}],\"relevance\":0.258},\"http://d.opencalais.com/genericHasher-1/596854c8-3dcc-3e06-9bae-6fa43c09782f\":{\"_typeGroup\":\"entities\",\"_type\":\"IndustryTerm\",\"name\":\"online activities\",\"_typeReference\":\"http://s.opencalais.com/1/type/em/e/IndustryTerm\",\"instances\":[{\"detection\":\"[to many more details about computer users' ]online activities[. Nearly \\neveryone who uses the Internet will]\",\"prefix\":\"to many more details about computer users' \",\"exact\":\"online activities\",\"suffix\":\". Nearly \\neveryone who uses the Internet will\",\"offset\":416,\"length\":17}],\"relevance\":0.33},\"http://d.opencalais.com/genericHasher-1/d2449cb6-4f7c-315f-8cba-14ebbe444255\":{\"_typeGroup\":\"entities\",\"_type\":\"IndustryTerm\",\"name\":\"Internet privacy\",\"_typeReference\":\"http://s.opencalais.com/1/type/em/e/IndustryTerm\",\"instances\":[{\"detection\":\"[Worries over ]Internet privacy[ have spurred lawsuits, conspiracy theories and]\",\"prefix\":\"Worries over \",\"exact\":\"Internet privacy\",\"suffix\":\" have spurred lawsuits, conspiracy theories and\",\"offset\":13,\"length\":16}],\"relevance\":0.36},\"http://d.opencalais.com/genericHasher-1/79b8af23-8e60-3170-b9b6-0327d40e3f9b\":{\"_typeGroup\":\"entities\",\"_type\":\"IndustryTerm\",\"name\":\"Web language\",\"_typeReference\":\"http://s.opencalais.com/1/type/em/e/IndustryTerm\",\"instances\":[{\"detection\":\"[ capabilities, which are an \\nintegral part of the ]Web language[ that will soon power the Internet: HTML 5. The]\",\"prefix\":\" capabilities, which are an \\nintegral part of the \",\"exact\":\"Web language\",\"suffix\":\" that will soon power the Internet: HTML 5. The\",\"offset\":572,\"length\":12}],\"relevance\":0.258},\"http://d.opencalais.com/genericHasher-1/eba7a0d7-4d38-3454-b5c0-74d0ff18940a\":{\"_typeGroup\":\"entities\",\"_type\":\"ProgrammingLanguage\",\"name\":\"HTML\",\"_typeReference\":\"http://s.opencalais.com/1/type/em/e/ProgrammingLanguage\",\"instances\":[{\"detection\":\"[Web language that will soon power the Internet: ]HTML[ 5. The new Web code, the fifth \\nversion of]\",\"prefix\":\"Web language that will soon power the Internet: \",\"exact\":\"HTML\",\"suffix\":\" 5. The new Web code, the fifth \\nversion of\",\"offset\":620,\"length\":4}],\"relevance\":0.258},\"http://d.opencalais.com/genericHasher-1/bf1bc77e-b157-32ce-a4ab-63e773115bb6\":{\"_typeGroup\":\"entities\",\"_type\":\"IndustryTerm\",\"name\":\"Web developers\",\"_typeReference\":\"http://s.opencalais.com/1/type/em/e/IndustryTerm\",\"instances\":[{\"detection\":\"[suite of capabilities will become available to ]Web developers[ that could \\ngive marketers and advertisers]\",\"prefix\":\"suite of capabilities will become available to \",\"exact\":\"Web developers\",\"suffix\":\" that could \\ngive marketers and advertisers\",\"offset\":308,\"length\":14}],\"relevance\":0.33},\"http://d.opencalais.com/genericHasher-1/a4313a37-b29c-32a3-87ac-8103732e79ce\":{\"_typeGroup\":\"entities\",\"_type\":\"Technology\",\"name\":\"Hypertext Markup Language\",\"_typeReference\":\"http://s.opencalais.com/1/type/em/e/Technology\",\"instances\":[{\"detection\":\"[HTML 5. The new Web code, the fifth \\nversion of ]Hypertext Markup Language[ used to create Web pages, is already in limited]\",\"prefix\":\"HTML 5. The new Web code, the fifth \\nversion of \",\"exact\":\"Hypertext Markup Language\",\"suffix\":\" used to create Web pages, is already in limited\",\"offset\":668,\"length\":25}],\"relevance\":0.18},\"http://d.opencalais.com/genericHasher-1/654a3983-0d2a-326d-ba56-efbef71e2981\":{\"_typeGroup\":\"entities\",\"_type\":\"IndustryTerm\",\"name\":\"extra software\",\"_typeReference\":\"http://s.opencalais.com/1/type/em/e/IndustryTerm\",\"instances\":[{\"detection\":\"[to view \\nmultimedia content without downloading ]extra software[; check e-mail offline; or find a favorite]\",\"prefix\":\"to view \\nmultimedia content without downloading \",\"exact\":\"extra software\",\"suffix\":\"; check e-mail offline; or find a favorite\",\"offset\":915,\"length\":14}],\"relevance\":0.123},\"http://d.opencalais.com/genericHasher-1/c2742ea7-b237-30d6-8e86-6eb88c3ac6b4\":{\"_typeGroup\":\"entities\",\"_type\":\"Technology\",\"name\":\"smartphone\",\"_typeReference\":\"http://s.opencalais.com/1/type/em/e/Technology\",\"instances\":[{\"detection\":\"[or find a favorite restaurant or \\nshop on a ]smartphone[.]\",\"prefix\":\"or find a favorite restaurant or \\nshop on a \",\"exact\":\"smartphone\",\"suffix\":\".\",\"offset\":997,\"length\":10}],\"relevance\":0.123},\"http://d.opencalais.com/genericHasher-1/0c61f5e6-dc3f-3ec5-8b09-ca6654971b76\":{\"_typeGroup\":\"entities\",\"_type\":\"IndustryTerm\",\"name\":\"Internet browsing\",\"_typeReference\":\"http://s.opencalais.com/1/type/em/e/IndustryTerm\",\"instances\":[{\"detection\":\"[use, and it promises to \\nusher in a new era of ]Internet browsing[ within the next few years. It will make it]\",\"prefix\":\"use, and it promises to \\nusher in a new era of \",\"exact\":\"Internet browsing\",\"suffix\":\" within the next few years. It will make it\",\"offset\":789,\"length\":17}],\"relevance\":0.18},\"http://d.opencalais.com/genericHasher-1/88958341-5ef0-33a2-9f74-3ff62c50df5a\":{\"_typeGroup\":\"entities\",\"_type\":\"IndustryTerm\",\"name\":\"Web code\",\"_typeReference\":\"http://s.opencalais.com/1/type/em/e/IndustryTerm\",\"instances\":[{\"detection\":\"[that will soon power the Internet: HTML 5. The ]new Web code[, the fifth \\nversion of Hypertext Markup Language]\",\"prefix\":\"that will soon power the Internet: HTML 5. The \",\"exact\":\"new Web code\",\"suffix\":\", the fifth \\nversion of Hypertext Markup Language\",\"offset\":632,\"length\":12}],\"relevance\":0.18}}";
 //        String xml = "<OpenCalaisSimple><Description><allowDistribution>false</allowDistribution><allowSearch>false</allowSearch><calaisRequestID>8912dfc8-d3cb-1e67-12bf-873471f77ac3</calaisRequestID><externalID>id</externalID><id>http://id.opencalais.com/ri3DvOkcv8tAy0D0dPkXWw</id><about>http://d.opencalais.com/dochash-1/db3b6fe9-b523-3184-9be8-33706e01947f</about><docTitle/><docDate>2010-10-29 10:45:26.933</docDate><externalMetadata/><submitter>dbpa</submitter></Description><CalaisSimpleOutputFormat><IndustryTerm count=\"1\" relevance=\"0.330\">online activities</IndustryTerm><IndustryTerm count=\"1\" relevance=\"0.360\">Internet privacy</IndustryTerm><IndustryTerm count=\"1\" relevance=\"0.258\">Web language</IndustryTerm><IndustryTerm count=\"1\" relevance=\"0.330\">Web developers</IndustryTerm><IndustryTerm count=\"1\" relevance=\"0.123\">extra software</IndustryTerm><IndustryTerm count=\"1\" relevance=\"0.180\">Internet browsing</IndustryTerm><IndustryTerm count=\"1\" relevance=\"0.180\">Web code</IndustryTerm><ProgrammingLanguage count=\"1\" relevance=\"0.258\">HTML</ProgrammingLanguage><Technology count=\"1\" relevance=\"0.258\">HTML</Technology><Technology count=\"1\" relevance=\"0.180\">Hypertext Markup Language</Technology><Technology count=\"1\" relevance=\"0.123\">smartphone</Technology><SocialTags><SocialTag importance=\"2\">Human-computer interaction</SocialTag><SocialTag importance=\"2\">World Wide Web</SocialTag><SocialTag importance=\"2\">Internet</SocialTag><SocialTag importance=\"2\">Mass media</SocialTag><SocialTag importance=\"2\">Telecommunications</SocialTag><SocialTag importance=\"2\">Smartphone</SocialTag><SocialTag importance=\"2\">Business_Finance</SocialTag><SocialTag importance=\"1\">Scientific revolution</SocialTag><SocialTag importance=\"1\">Computing</SocialTag><SocialTag importance=\"1\">Hypertext</SocialTag><SocialTag importance=\"1\">Technology_Internet</SocialTag></SocialTags><Topics><Topic Taxonomy=\"Calais\" Score=\"1.000\">Technology_Internet</Topic><Topic Taxonomy=\"Calais\" Score=\"0.640\">Business_Finance</Topic></Topics></CalaisSimpleOutputFormat></OpenCalaisSimple>";
 
@@ -254,20 +272,23 @@ public class OpenCalaisClient extends AnnotationClient {
 //        File inputFile = new File("/home/pablo/eval/wikify/gold/WikifyAllInOne.txt");
 //        File outputFile = new File("/home/pablo/eval/wikify/systems/OpenCalais.list");
 
-        File inputFile = new File("/home/pablo/eval/csaw/gold/paragraphs.txt");
-        File outputFile = new File("/home/pablo/eval/csaw/systems/OpenCalais.list");
+//        File inputFile = new File("/home/pablo/eval/csaw/gold/paragraphs.txt");
+//        File outputFile = new File("/home/pablo/eval/csaw/systems/OpenCalais.list");
+
+        File inputFile = new File("/home/alexandre/Projects/test-files-spotlight/ExternalClients_TestFiles/Berlin.txt");
+        File outputFile = new File("/home/alexandre/Projects/test-files-spotlight/ExternalClients_TestFiles/OpenCalais-java_Germany.list");
 
         try {
             OpenCalaisClient client = new OpenCalaisClient(apikey);
             client.evaluate(inputFile, outputFile);
         } catch (Exception e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
 
     }
 
 
-        public static class OldRest extends OpenCalaisClient {
+    public static class OldRest extends OpenCalaisClient {
 
         private static String url ="http://api.opencalais.com/enlighten/rest";
 
@@ -309,8 +330,6 @@ public class OpenCalaisClient extends AnnotationClient {
             return method;
         }
 
-        /*
-        */
         protected String process(String text) throws AnnotationException {
             HttpPost method = createPostMethod();
             ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
