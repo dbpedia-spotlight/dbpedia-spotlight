@@ -9,9 +9,6 @@ import org.dbpedia.spotlight.exceptions.DBpediaResourceNotFoundException
 import org.dbpedia.spotlight.db.model.{OntologyTypeStore, ResourceStore}
 import java.lang.Integer
 import util.StringToIDMapFactory
-import java.net.URLDecoder
-import org.dbpedia.extraction.util.WikiUtil
-import org.dbpedia.util.text.uri.UriDecoder
 
 /**
  * @author Joachim Daiber

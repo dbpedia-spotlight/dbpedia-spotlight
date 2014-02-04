@@ -6,8 +6,8 @@ import org.dbpedia.spotlight.log.SpotlightLog
 import collection.immutable.ListSet
 import scala.Predef._
 import org.dbpedia.spotlight.exceptions.NotADBpediaResourceException
-import java.net.{URLDecoder, URLEncoder}
-import org.dbpedia.spotlight.model.{SpotlightConfiguration, DBpediaResource}
+import java.net.URLDecoder
+import org.dbpedia.spotlight.model.SpotlightConfiguration
 import org.dbpedia.extraction.util.WikiUtil
 
 /**
