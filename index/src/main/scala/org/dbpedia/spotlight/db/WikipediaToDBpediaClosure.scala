@@ -69,30 +69,30 @@ class WikipediaToDBpediaClosure (
   val WikiURL = """http://([a-z]+)[.]wikipedia[.]org/wiki/(.*)$""".r
   val DBpediaURL = """http://([a-z]+)[.]dbpedia[.]org/resource/(.*)$""".r
 
+  private def cutOffBeforeAnchor(url: String): String = {
+    if(url.contains("%23")) //Take only the part of the URI before the last anchor (#)
+      url.take(url.lastIndexOf("%23"))
+    else if(url.contains("#"))
+      url.take(url.lastIndexOf("#"))
+    else
+      url
+  }
+
+  private def removeLeadingSlashes(url: String): String = {
+    url match {
+      case t: String if url.startsWith("/") => removeLeadingSlashes(t.tail)
+      case t: String => url
+    }
+  }
+
   private def wikiToDBpediaURI(wikiURL: String): String = {
     wikiURL match {
-      case WikiURL(language, title) => {
-
+      case WikiURL(language, title) =>
         //use only the part before the anchor, URL encode it
         WikiUtil.wikiEncode(
-          URLDecoder.decode(
-            title.takeWhile( p => p != '#' ) match {
-              case t: String if t.startsWith("/") => t.tail
-              case t: String => t
-            }, "utf-8"))
-      }
-      case DBpediaURL(language, title) => {
-        val article = if(title.contains("%23")) //Take only the part of the URI before the last anchor (#)
-          title.take(title.lastIndexOf("%23"))
-        else
-          title
-
-        article match {
-          case t: String if t.startsWith("/") => t.tail
-          case t: String => t
-        }
-
-      }
+          URLDecoder.decode(removeLeadingSlashes(cutOffBeforeAnchor(title)), "utf-8")
+        )
+      case DBpediaURL(language, title) => removeLeadingSlashes(cutOffBeforeAnchor(title))
       case _ => throw new NotADBpediaResourceException("Resource is a disambiguation page."); SpotlightLog.error(this.getClass, "Invalid Wikipedia URL %s".format(wikiURL)); null
     }
   }

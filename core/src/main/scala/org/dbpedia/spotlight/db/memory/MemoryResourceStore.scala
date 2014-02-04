@@ -61,7 +61,7 @@ class MemoryResourceStore
   def getResource(id: Int): DBpediaResource = {
 
     val uri = try {
-      URLDecoder.decode( UriDecoder.decode( uriForID(id) ), "utf-8" )
+      uriForID(id)
     } catch {
       case e: java.lang.ArrayIndexOutOfBoundsException => null
     }
