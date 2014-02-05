@@ -49,10 +49,8 @@
         <module>index</module>
         <module>eval</module>
 	    <module>uima</module>
-	    <!--
         <module>topical</module>
         <module>live</module>
-        -->
         <module>dist</module>
         <module>rest-tomcat</module>
     </modules>
@@ -946,12 +944,12 @@
 
         <repository>
             <id>spotlight-releases-repository</id>
-            <url>https://github.com/dbpedia-spotlight/maven-repo/raw/master/releases</url>
+            <url>https://dl.dropboxusercontent.com/u/259677512/maven-repo/releases</url>
         </repository>
 
         <repository>
             <id>spotlight-snapshots-repository</id>
-            <url>https://github.com/dbpedia-spotlight/maven-repo/raw/master/snapshots</url>
+            <url>https://dl.dropboxusercontent.com/u/259677512/maven-repo/snapshots</url>
         </repository>
 
 
