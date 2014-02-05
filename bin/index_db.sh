@@ -31,7 +31,7 @@ while getopts "ledo:" opt; do
   case $opt in
     o) opennlp="$OPTARG";;
     e) eval="true";;
-    d) data_only="true"
+    d) data_only="true";;
     l) local_mode="true"
   esac
 done
