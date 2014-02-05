@@ -120,12 +120,12 @@ class OccsFilter(confidence: Double, support: Int,
 
     if (coreferenceResolution)
       result.addAll(new CoreferenceFilter().filterOccs(occs.asScala.toTraversable).toList.asJava)
-    else{
-      var unfiltered: java.util.List[DBpediaResourceOccurrence] = occs
-      elements.foreach(elem => unfiltered = elem.accept(visitor, unfiltered))
 
-      result.addAll(unfiltered)
-    }
+    var unfiltered: java.util.List[DBpediaResourceOccurrence] = occs
+    elements.foreach(elem => unfiltered = elem.accept(visitor, unfiltered))
+
+    result.addAll(unfiltered)
+
 
     Collections.sort(result, new Comparator[DBpediaResourceOccurrence] {
       def compare(o1: DBpediaResourceOccurrence, o2: DBpediaResourceOccurrence): Int = {
