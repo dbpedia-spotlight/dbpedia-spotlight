@@ -75,6 +75,8 @@ object SpotlightModel {
     val c = properties.getProperty("opennlp_parallel", Runtime.getRuntime.availableProcessors().toString).toInt
     val cores = (1 to c)
 
+    val annotationThreshold = properties.getProperty("annotation_threshold", "0.5").toFloat
+
     val tokenizer: TextTokenizer = if(new File(modelFolder, "opennlp").exists()) {
 
       //Create the tokenizer:
@@ -112,6 +114,7 @@ object SpotlightModel {
       new GenerativeContextSimilarity(tokenTypeStore)
     ))
 
+
     //If there is at least one NE model or a chunker, use the OpenNLP spotter:
     val spotter = if( new File(modelFolder, "opennlp").exists() && new File(modelFolder, "opennlp").list().exists(f => f.startsWith("ner-") || f.startsWith("chunker")) ) {
       val nerModels = new File(modelFolder, "opennlp").list().filter(_.startsWith("ner-")).map { f: String =>
@@ -129,7 +132,8 @@ object SpotlightModel {
         nerModels,
         sfStore,
         stopwords,
-        Some(loadSpotterThresholds(new File(modelFolder, "spotter_thresholds.txt")))
+        Some(loadSpotterThresholds(new File(modelFolder, "spotter_thresholds.txt"))),
+        annotationThreshold
       ).asInstanceOf[Spotter]
 
       if(cores.size == 1)
@@ -146,7 +150,8 @@ object SpotlightModel {
         dict,
         sfStore,
         Some(loadSpotterThresholds(new File(modelFolder, "spotter_thresholds.txt"))),
-        stopwords
+        stopwords,
+        annotationThreshold
       ).asInstanceOf[Spotter]
     }
 

@@ -15,7 +15,8 @@ import java.util.regex.Pattern
 abstract class DBSpotter(
  surfaceFormStore: SurfaceFormStore,
  spotFeatureWeights: Option[Seq[Double]],
- stopwords: Set[String]
+ stopwords: Set[String],
+ annotationThreshold:Float
 ) extends Spotter {
 
   var tokenizer: TextTokenizer = null
@@ -111,7 +112,7 @@ abstract class DBSpotter(
 
   protected def surfaceFormMatch(spot: String): Boolean = {
     if (spotFeatureWeightVector.isDefined)
-      spotScore(spot) >= 0.5
+      spotScore(spot) >= annotationThreshold
     else
       spotScore(spot) >= 0.25
   }

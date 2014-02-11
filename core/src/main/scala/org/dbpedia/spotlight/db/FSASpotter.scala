@@ -17,8 +17,9 @@ class FSASpotter(
   fsaDictionary: FSADictionary,
   surfaceFormStore: SurfaceFormStore,
   spotFeatureWeights: Option[Seq[Double]],
-  stopwords: Set[String]
-) extends DBSpotter(surfaceFormStore, spotFeatureWeights, stopwords) {
+  stopwords: Set[String],
+  annotationThreshold:Float
+) extends DBSpotter(surfaceFormStore, spotFeatureWeights, stopwords, annotationThreshold) {
 
   def generateCandidates(sentence: List[Token]): Seq[Span] = {
 
