@@ -33,6 +33,7 @@ import org.dbpedia.spotlight.spot.Spotter;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Controller that interfaces between the REST API and the DBpedia Spotlight core.
@@ -66,6 +67,21 @@ public class SpotlightInterface {
             throw new SearchException(e);
         }
         return resources;
+    }
+
+    public List<DBpediaResourceOccurrence>  getRelevances(List<DBpediaResourceOccurrence> listOfResourceOcurrence){
+
+        Text allText = listOfResourceOcurrence.get(0).context();
+        if(Server.getTokenizer() != null){
+            Server.getTokenizer().tokenizeMaybe(allText);
+        }
+
+        Map<DBpediaResource, Double> relevanceScores = Server.getRelevance().calculateRelevances(listOfResourceOcurrence, allText);
+        for(DBpediaResourceOccurrence resourceOccurrence : listOfResourceOcurrence){
+            resourceOccurrence.setRelevanceScore(relevanceScores.get(resourceOccurrence.resource()));
+        }
+
+        return listOfResourceOcurrence;
     }
 
     public boolean policyIsBlacklist(String policy) {
@@ -160,7 +176,9 @@ public class SpotlightInterface {
         FilterElement filter = new OccsFilter(confidence, support, ontologyTypesString, sparqlQuery, blacklist, coreferenceResolution, Server.getSimilarityThresholds(), Server.getSparqlExecute());
         occList = filter.accept(new FilterOccsImpl() ,occList);
 
-
+        if (Server.getRelevance() != null && occList.size()>0){
+            occList = getRelevances(occList);
+        }
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("Shown:");

@@ -130,6 +130,7 @@ public class OutputManager {
             atts.addAttribute("", "", "surfaceForm", "CDATA", occ.surfaceForm().name());
             atts.addAttribute("","","offset","CDATA",String.valueOf(occ.textOffset()));
             atts.addAttribute("", "", "similarityScore", "CDATA", String.valueOf(occ.similarityScore()));
+            atts.addAttribute("", "", "relevanceScore", "CDATA", String.valueOf(occ.relevanceScore()));
             atts.addAttribute("","","percentageOfSecondRank","CDATA",String.valueOf(occ.percentageOfSecondRank()));
 
             hd.startElement("","","Resource",atts);

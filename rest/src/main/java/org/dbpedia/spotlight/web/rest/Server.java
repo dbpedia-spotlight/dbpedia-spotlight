@@ -31,6 +31,7 @@ import org.dbpedia.spotlight.model.DBpediaResource;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SpotlightFactory;
 import org.dbpedia.spotlight.model.SpotterConfiguration;
+import org.dbpedia.spotlight.relevance.Relevance;
 import org.dbpedia.spotlight.sparql.SparqlQueryExecuter;
 import org.dbpedia.spotlight.spot.Spotter;
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy;
@@ -80,6 +81,8 @@ public class Server {
     private static SparqlQueryExecuter sparqlExecuter = null;
 
     private static List<Double> similarityThresholds = new ArrayList<Double>();
+
+    private static Relevance relevance;
 
     public static void main(String[] args) throws IOException, InterruptedException, URISyntaxException, ClassNotFoundException, InitializationException {
 
@@ -147,6 +150,14 @@ public class Server {
             disambiguators = s;
         else
             throw new InitializationException("Trying to overwrite singleton Server.disambiguators. Something fishy happened!");
+    }
+
+    public static Relevance getRelevance(){
+        return relevance;
+    }
+
+    public static void setRelevance(Relevance r){
+        relevance = r;
     }
 
     public static Spotter getSpotter(String name) throws InputException {
@@ -301,6 +312,6 @@ public class Server {
         setSpotters(db.spotters());
         setDisambiguators(db.disambiguators());
         setSparqlExecuter(db.properties().getProperty("endpoint", ""),db.properties().getProperty("graph", ""));
-
+        setRelevance(db.relevance());
     }
 }
