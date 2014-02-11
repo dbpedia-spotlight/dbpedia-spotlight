@@ -25,6 +25,7 @@ import org.apache.lucene.store.FSDirectory
 import org.dbpedia.spotlight.lucene.LuceneManager
 import org.dbpedia.spotlight.util.IndexingConfiguration
 import org.dbpedia.spotlight.model.Factory
+import org.apache.lucene.index.IndexNotFoundException
 
 /**
  * Indexes all occurrences of a DBpedia Resource in Wikipedia as a Lucene index where each document represents one resource.
@@ -116,19 +117,31 @@ object IndexMergedOccurrences
             lucene.shouldOverwrite = shouldOverwrite
         }
 
-        val vectorBuilder = new MergedOccurrencesContextIndexer(lucene)
+     try{
+              val vectorBuilder = new MergedOccurrencesContextIndexer(lucene)
 
-        val freeMemGB : Double = Runtime.getRuntime.freeMemory / 1073741824.0
-        if (Runtime.getRuntime.freeMemory < minNumDocsBeforeFlush) SpotlightLog.error(this.getClass, "Your available memory %fGB is less than minNumDocsBeforeFlush. This setting is known to give OutOfMemoryError.", freeMemGB)
-        SpotlightLog.info(this.getClass, "Available memory: %fGB", freeMemGB)
-        SpotlightLog.info(this.getClass, "Max memory: %fGB", Runtime.getRuntime.maxMemory / 1073741824.0)
-        /* Total memory currently in use by the JVM */
-        SpotlightLog.info(this.getClass, "Total memory (bytes): %fGB", Runtime.getRuntime.totalMemory / 1073741824.0)
-        //SpotlightLog.info("MinNumDocsBeforeFlush: "+minNumDocsBeforeFlush, this.getClass)
-        
-        index(trainingInputFileName, vectorBuilder);
+              val freeMemGB : Double = Runtime.getRuntime.freeMemory / 1073741824.0
+              if (Runtime.getRuntime.freeMemory < minNumDocsBeforeFlush) SpotlightLog.error(this.getClass, "Your available memory %fGB is less than minNumDocsBeforeFlush. This setting is known to give OutOfMemoryError.", freeMemGB)
+              SpotlightLog.info(this.getClass, "Available memory: %fGB", freeMemGB)
+              SpotlightLog.info(this.getClass, "Max memory: %fGB", Runtime.getRuntime.maxMemory / 1073741824.0)
+              /* Total memory currently in use by the JVM */
+              SpotlightLog.info(this.getClass, "Total memory (bytes): %fGB", Runtime.getRuntime.totalMemory / 1073741824.0)
+              //SpotlightLog.info("MinNumDocsBeforeFlush: "+minNumDocsBeforeFlush, this.getClass)
 
-        SpotlightLog.info(this.getClass, "Index saved to: %s", indexOutputDir)
+              index(trainingInputFileName, vectorBuilder);
+
+              SpotlightLog.info(this.getClass, "Index saved to: %s", indexOutputDir)
+
+          } catch {
+        case indexNotFound: IndexNotFoundException =>
+        {
+          SpotlightLog.fatal(this.getClass, "The DBpedia Spotlight index (folder: %s) appears to be corrupted. Please delete the folder and try to reindex again.", baseDir )
+          SpotlightLog.fatal(this.getClass, " \n\n  *** Stacktrace ***   \n\n")
+          indexNotFound.printStackTrace()
+
+        }
+
+      }
         
     }
 
