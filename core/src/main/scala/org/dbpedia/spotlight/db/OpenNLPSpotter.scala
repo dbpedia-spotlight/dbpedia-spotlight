@@ -24,9 +24,10 @@ class OpenNLPSpotter(
   surfaceFormStore: SurfaceFormStore,
   stopwords: Set[String],
   spotFeatureWeights: Option[Seq[Double]],
+  annotationThreshold:Float,
   phraseTags: Set[String] = Set("NP"),
   nnTag: String = "NN"
-) extends DBSpotter(surfaceFormStore, spotFeatureWeights, stopwords) {
+) extends DBSpotter(surfaceFormStore, spotFeatureWeights, stopwords, annotationThreshold) {
 
   val chunker = chunkerModel match {
     case Some(m) => Some(new ChunkerME(m))
