@@ -21,13 +21,13 @@ import stem.SnowballStemmer
 import tokenize.{OpenNLPTokenizer, LanguageIndependentTokenizer}
 import org.dbpedia.spotlight.exceptions.ConfigurationException
 import org.dbpedia.spotlight.util.MathUtil
-import org.dbpedia.spotlight.relevance.{BaseRelevanceScore, RelevanceScorer, Relevance}
+import org.dbpedia.spotlight.relevance.{ContextRelevanceScore, RelevanceScorer}
 
 
 class SpotlightModel(val tokenizer: TextTokenizer,
                      val spotters: java.util.Map[SpotterPolicy, Spotter],
                      val disambiguators: java.util.Map[DisambiguationPolicy, ParagraphDisambiguatorJ],
-                     val properties: Properties, val relevance:Relevance)
+                     val properties: Properties, val relevance:RelevanceScorer)
 
 object SpotlightModel {
 
@@ -87,11 +87,12 @@ object SpotlightModel {
     def contextSimilarity(): ContextSimilarity = contextStore match {
       case store:MemoryContextStore => new GenerativeContextSimilarity(tokenTypeStore, contextStore)
       case _ => new NoContextSimilarity(MathUtil.ln(1.0))
+    }
 
-    def getRelevance():Relevance = properties.getProperty("relevance_scoring")match {
+    def getRelevance():RelevanceScorer = properties.getProperty("relevance_scoring") match {
       case null => null
       case s: String if s equals "None" => null
-      case s: String if s equals "default" => new RelevanceScorer(contextStore, new BaseRelevanceScore())
+      case s: String if s equals "default" => new RelevanceScorer(contextStore, new ContextRelevanceScore())
     }
 
     val c = properties.getProperty("opennlp_parallel", Runtime.getRuntime.availableProcessors().toString).toInt
@@ -174,7 +175,7 @@ object SpotlightModel {
 
     val spotters: java.util.Map[SpotterPolicy, Spotter] = Map(SpotterPolicy.SpotXmlParser -> new SpotXmlParser(), SpotterPolicy.Default -> spotter).asJava
     val disambiguators: java.util.Map[DisambiguationPolicy, ParagraphDisambiguatorJ] = Map(DisambiguationPolicy.Default -> disambiguator).asJava
-    val relevance:Relevance = getRelevance()
+    val relevance:RelevanceScorer = getRelevance()
     new SpotlightModel(tokenizer, spotters, disambiguators, properties, relevance)
   }
 }

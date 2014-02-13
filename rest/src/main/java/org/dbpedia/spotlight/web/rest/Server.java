@@ -31,7 +31,7 @@ import org.dbpedia.spotlight.model.DBpediaResource;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SpotlightFactory;
 import org.dbpedia.spotlight.model.SpotterConfiguration;
-import org.dbpedia.spotlight.relevance.Relevance;
+import org.dbpedia.spotlight.relevance.RelevanceScorer;
 import org.dbpedia.spotlight.sparql.SparqlQueryExecuter;
 import org.dbpedia.spotlight.spot.Spotter;
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy;
@@ -82,7 +82,7 @@ public class Server {
 
     private static List<Double> similarityThresholds = new ArrayList<Double>();
 
-    private static Relevance relevance;
+    private static RelevanceScorer relevance;
 
     public static void main(String[] args) throws IOException, InterruptedException, URISyntaxException, ClassNotFoundException, InitializationException {
 
@@ -152,11 +152,11 @@ public class Server {
             throw new InitializationException("Trying to overwrite singleton Server.disambiguators. Something fishy happened!");
     }
 
-    public static Relevance getRelevance(){
+    public static RelevanceScorer getRelevance(){
         return relevance;
     }
 
-    public static void setRelevance(Relevance r){
+    public static void setRelevance(RelevanceScorer r){
         relevance = r;
     }
 
