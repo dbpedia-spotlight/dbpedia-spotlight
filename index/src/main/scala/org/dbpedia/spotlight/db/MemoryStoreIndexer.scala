@@ -99,7 +99,7 @@ class MemoryStoreIndexer(val baseDir: File, val quantizedCountStore: MemoryQuant
         case (ngram: Seq[String], id: Int) if(ngram.size > 1) => {
           getAllNgrams(ngram).foreach{ subngram: Seq[String] =>
             sfId.get(subngram.mkString(" ")) match {
-              case Some(subID) if(totalCountForID(subID) > 0 && totalCountForID(id) > 0) => totalCountForID(subID) = totalCountForID(subID) - 0.5*totalCountForID(id)
+              case Some(subID) if(totalCountForID(subID) > 0 && totalCountForID(id) > 0) => totalCountForID(subID) = totalCountForID(subID) - (0.5*totalCountForID(id)).toInt
               case _ =>
             }
           }
