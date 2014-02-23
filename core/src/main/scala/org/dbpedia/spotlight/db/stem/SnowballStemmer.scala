@@ -12,7 +12,7 @@ class SnowballStemmer(stemmer: SnowballProgram) extends Stemmer {
   override def stem(token: String): String = this.synchronized {
     stemmer.setCurrent(token.toLowerCase)
     stemmer.stem()
-    new String(stemmer.getCurrentBuffer)
+    stemmer.getCurrent
   }
 
 }

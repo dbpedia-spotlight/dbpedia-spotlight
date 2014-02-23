@@ -16,6 +16,7 @@ import opennlp.tools.chunker.ChunkerModel
 import stem.SnowballStemmer
 import tokenize._
 import scala.Some
+import scala.collection.immutable.HashMap
 
 /**
  * This script creates a Spotlight model folder from the results of
@@ -27,6 +28,10 @@ import scala.Some
  */
 
 object CreateSpotlightModel {
+
+
+  val minimumContextCounts = Map("en" -> 8).withDefaultValue(0)
+
 
   val OPENNLP_FOLDER = "opennlp"
 
@@ -190,7 +195,8 @@ object CreateSpotlightModel {
     memoryIndexer.addTokenTypes(
       TokenSource.fromPigFile(
         new File(rawDataFolder, "tokenCounts"),
-        additionalTokens = Some(TokenSource.fromSFStore(sfStore, rawTokenizer))
+        additionalTokens = Some(TokenSource.fromSFStore(sfStore, rawTokenizer)),
+        minimumContextCounts(lang)
       )
     )
 
@@ -202,7 +208,8 @@ object CreateSpotlightModel {
         new File(rawDataFolder, "tokenCounts"),
         tokenStore,
         wikipediaToDBpediaClosure,
-        resStore
+        resStore,
+        minimumContextCounts(lang)
       )
     )
     memoryIndexer.writeTokenOccurrences()
