@@ -99,17 +99,18 @@ class MemorySurfaceFormStore
     sfForID(id)
   }
 
+  private def getLowercaseCandidateList(surfaceform: String): Array[Int] = {
+    val cs = lowercaseMap.get(surfaceform.toLowerCase)
+
+    if(cs != null && cs.size > 1)
+      cs.tail
+    else
+      Array[Int]()
+  }
+
   def getSurfaceFormsNormalized(surfaceform: String): Set[SurfaceForm] = {
-
-    var ls = Set[Int]()
-
-    if (lowercaseMap.containsKey(surfaceform.toLowerCase))
-      ls ++= lowercaseMap.get(surfaceform.toLowerCase).tail
-
-    if (lowercaseMap.containsKey(normalize(surfaceform)))
-      ls ++= lowercaseMap.get(normalize(surfaceform)).tail
-
-    ls.map( id => sfForID(id) )
+    val ls = getLowercaseCandidateList(surfaceform.toLowerCase) ++ getLowercaseCandidateList(normalize(surfaceform))
+    ls.map( id => sfForID(id) ).toSet
   }
 
   @throws(classOf[SurfaceFormNotFoundException])

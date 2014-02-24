@@ -57,7 +57,7 @@ class MemoryStoreIndexer(val baseDir: File, val quantizedCountStore: MemoryQuant
     val totalCountForID = new Array[Int](sfCount.size + 1)
     val stringForID = new Array[String](sfCount.size + 1)
 
-    val lowercaseMap = new mutable.HashMap[String, Set[Int]]().withDefaultValue(new mutable.HashSet[Int]())
+    val lowercaseMap: mutable.Map[String, mutable.Set[Int]] = new mutable.HashMap[String, mutable.Set[Int]]().withDefaultValue(new mutable.HashSet[Int]())
 
 
     var i = 1
@@ -67,8 +67,15 @@ class MemoryStoreIndexer(val baseDir: File, val quantizedCountStore: MemoryQuant
         annotatedCountForID(i) = counts._1
         totalCountForID(i) = counts._2
 
-        lowercaseMap.get(sfStore.normalize(sf.name)).get += i
-        lowercaseMap.get(sfStore.normalize(sf.name.toLowerCase)).get += i
+        lowercaseMap.put(sfStore.normalize(sf.name), lowercaseMap.get(sfStore.normalize(sf.name)) match {
+          case Some(s) => s + i
+          case None => mutable.HashSet[Int](i)
+        })
+
+        lowercaseMap.put(sfStore.normalize(sf.name.toLowerCase), lowercaseMap.get(sfStore.normalize(sf.name.toLowerCase)) match {
+          case Some(s) => s + i
+          case None => mutable.HashSet[Int](i)
+        })
 
         i += 1
       }
@@ -120,7 +127,7 @@ class MemoryStoreIndexer(val baseDir: File, val quantizedCountStore: MemoryQuant
     //Add lowercased counts:
     sfStore.lowercaseMap = new java.util.HashMap[String, Array[Int]]()
     lowercaseCounts.foreach{
-      case (s, c) => sfStore.lowercaseMap.put(s, (Array(c) ++ lowercaseMap.get(s).get).array )
+      case (s, c) => sfStore.lowercaseMap.put(s, (Array(c) ++ lowercaseMap.getOrElse(s, new mutable.HashSet[Int]())) )
       case _ => println("wut")
     }
 
