@@ -25,11 +25,7 @@ class MemorySurfaceFormStore
   @transient
   var idForString: java.util.Map[String, Integer] = null
 
-  @transient
-  val lowercaseMap: java.util.HashMap[String, Set[Int]] = new java.util.HashMap[String, Set[Int]]()
-
-  var lowercaseCounts: java.util.Map[String, java.lang.Short] = null
-
+  var lowercaseMap: java.util.HashMap[String, Array[Int]] = null
   var stringForID: Array[String]      = null
   var annotatedCountForID: Array[Short] = null
   var totalCountForID: Array[Short]     = null
@@ -63,16 +59,6 @@ class MemorySurfaceFormStore
     }
   }
 
-  private def addNormalizedSF(normalizedSF: String, i: Int) {
-    var is = if(lowercaseMap.containsKey(normalizedSF))
-      lowercaseMap.get(normalizedSF)
-    else
-      Set[Int]()
-
-    is += i
-    lowercaseMap.put(normalizedSF, is)
-  }
-
 
   def createReverseLookup() {
 
@@ -89,8 +75,6 @@ class MemorySurfaceFormStore
       stringForID foreach { sf =>
         if (sf != null) {
           idForString.put(sf, i)
-          addNormalizedSF(normalize(sf), i)
-          addNormalizedSF(sf.toLowerCase, i)
         }
         i += 1
       }
@@ -120,10 +104,10 @@ class MemorySurfaceFormStore
     var ls = Set[Int]()
 
     if (lowercaseMap.containsKey(surfaceform.toLowerCase))
-      ls ++= lowercaseMap.get(surfaceform.toLowerCase)
+      ls ++= lowercaseMap.get(surfaceform.toLowerCase).tail
 
     if (lowercaseMap.containsKey(normalize(surfaceform)))
-      ls ++= lowercaseMap.get(normalize(surfaceform))
+      ls ++= lowercaseMap.get(normalize(surfaceform)).tail
 
     ls.map( id => sfForID(id) )
   }
@@ -177,8 +161,8 @@ class MemorySurfaceFormStore
    * @param surfaceform the queried surface form
    * @return
    */
-  def getLowercaseSurfaceFormCount(surfaceform: String): Int = lowercaseCounts.get(surfaceform) match {
-    case c: java.lang.Short => qc(c)
+  def getLowercaseSurfaceFormCount(surfaceform: String): Int = lowercaseMap.get(surfaceform).headOption match {
+    case Some(c) => c
     case _ => 0
   }
 

@@ -14,8 +14,10 @@ import java.util.{Map, Set}
 import java.io.File
 import org.dbpedia.spotlight.model._
 import scala.{Array, Int}
-import collection.mutable
+import scala.collection.mutable
 import org.dbpedia.spotlight.db.memory.util.StringToIDMapFactory
+import scala.Predef._
+import scala.Some
 
 /**
  * Implements memory-based indexing. The memory stores are serialized and deserialized using Kryo.
@@ -55,12 +57,18 @@ class MemoryStoreIndexer(val baseDir: File, val quantizedCountStore: MemoryQuant
     val totalCountForID = new Array[Int](sfCount.size + 1)
     val stringForID = new Array[String](sfCount.size + 1)
 
+    val lowercaseMap = new mutable.HashMap[String, Set[Int]]().withDefaultValue(new mutable.HashSet[Int]())
+
+
     var i = 1
     sfCount foreach {
       case (sf, counts) => {
         stringForID(i) = sf.name
         annotatedCountForID(i) = counts._1
         totalCountForID(i) = counts._2
+
+        lowercaseMap.get(sfStore.normalize(sf.name)).get += i
+        lowercaseMap.get(sfStore.normalize(sf.name.toLowerCase)).get += i
 
         i += 1
       }
@@ -110,9 +118,9 @@ class MemoryStoreIndexer(val baseDir: File, val quantizedCountStore: MemoryQuant
     }
 
     //Add lowercased counts:
-    sfStore.lowercaseCounts = StringToIDMapFactory.createDefaultShort(lowercaseCounts.size())
+    sfStore.lowercaseMap = new java.util.HashMap[String, Array[Int]]()
     lowercaseCounts.foreach{
-      case (s, c) => sfStore.lowercaseCounts.put(s, quantizedCountStore.addCount(c))
+      case (s, c) => sfStore.lowercaseMap.put(s, (Array(c) ++ lowercaseMap.get(s).get).array )
       case _ => println("wut")
     }
 
