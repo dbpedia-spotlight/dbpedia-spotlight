@@ -103,13 +103,13 @@ class MemorySurfaceFormStore
     val cs = lowercaseMap.get(surfaceform.toLowerCase)
 
     if(cs != null && cs.size > 1)
-      cs.tail
+      cs.tail.toArray
     else
       Array[Int]()
   }
 
   def getSurfaceFormsNormalized(surfaceform: String): Set[SurfaceForm] = {
-    val ls = getLowercaseCandidateList(surfaceform.toLowerCase) ++ getLowercaseCandidateList(normalize(surfaceform))
+    val ls = getLowercaseCandidateList(surfaceform)
     ls.map( id => sfForID(id) ).toSet
   }
 

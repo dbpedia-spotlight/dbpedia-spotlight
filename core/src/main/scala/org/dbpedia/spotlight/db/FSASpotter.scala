@@ -25,9 +25,9 @@ class FSASpotter(
     var spans = findUppercaseSequences(sentence.map(_.token).toArray)
 
     val ids = sentence.map(_.tokenType.id)
-
     sentence.zipWithIndex.foreach {
       case (t: Token, i: Int) => {
+
         var currentState = FSASpotter.INITIAL_STATE
         var j = i
 

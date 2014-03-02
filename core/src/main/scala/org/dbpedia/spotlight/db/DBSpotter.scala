@@ -80,6 +80,7 @@ abstract class DBSpotter(
               //SpotlightLog.info(this.getClass, spot + ":" + chunkSpan.getType)
 
               val sfMatch = surfaceFormMatch(spot)
+              SpotlightLog.debug(this.getClass, "type:"+chunkSpan.getType)
               if (sfMatch.isDefined) {
                 //The sub-chunk is in the dictionary, finish the processing of this chunk
                 val spotOcc = new SurfaceFormOccurrence(sfMatch.get, text, startOffset, Provenance.Annotation, spotScore(spot)._2)
@@ -115,7 +116,12 @@ abstract class DBSpotter(
             val sf = surfaceFormStore.getSurfaceForm(spot)
             (sf, sf.annotationProbability)
           } catch {
-            case e: SurfaceFormNotFoundException => surfaceFormStore.getRankedSurfaceFormCandidates(spot).head
+            case e: SurfaceFormNotFoundException => {
+              surfaceFormStore.getRankedSurfaceFormCandidates(spot).headOption match {
+                case Some(p) => p
+                case None => throw e
+              }
+           }
           }
 
           sf.name = spot
@@ -124,7 +130,7 @@ abstract class DBSpotter(
         case None => (Some(surfaceFormStore.getSurfaceForm(spot)), surfaceFormStore.getSurfaceForm(spot).annotationProbability)
       }
     } catch {
-      case _ => (None, 0.0)
+      case e: Exception => (None, 0.0)
     }
   }
 

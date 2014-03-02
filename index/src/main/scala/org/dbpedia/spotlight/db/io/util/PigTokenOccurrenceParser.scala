@@ -13,7 +13,7 @@ class PigTokenOccurrenceParser extends TokenOccurrenceParser {
 
         if (count >= minimumCount) {
           tokensA :+= pair.take(i)
-          countsA :+= pair.drop(i+1).toInt
+          countsA :+= count
         }
       }
     }

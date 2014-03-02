@@ -29,6 +29,6 @@ trait SurfaceFormIndexer {
    * @param sfCount Map from SurfaceForms to their annotated and total counts
    * @param lowercaseCounts Map from lowercased surface forms to their total counts
    */
-  def addSurfaceForms(sfCount: Map[SurfaceForm, (Int, Int)], lowercaseCounts: Map[String, Int])
+  def addSurfaceForms(sfCount: Map[SurfaceForm, (Int, Int)], lowercaseCounts: Map[String, Int], MIN_SF_COUNT: Int)
 
 }

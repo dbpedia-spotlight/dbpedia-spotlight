@@ -30,8 +30,8 @@ import scala.collection.immutable.HashMap
 object CreateSpotlightModel {
 
 
-  val minimumContextCounts = Map("en" -> 8).withDefaultValue(0)
-
+  val minimumContextCounts = Map("en" -> 3).withDefaultValue(1)
+  val minimumSFCounts = Map("en" -> 2).withDefaultValue(1)
 
   val OPENNLP_FOLDER = "opennlp"
 
@@ -162,7 +162,8 @@ object CreateSpotlightModel {
         new File(rawDataFolder, "sfAndTotalCounts"),
         wikiClosure=wikipediaToDBpediaClosure
       ),
-      SurfaceFormSource.lowercaseCountsFromPigInputStream(new FileInputStream(new File(rawDataFolder, "sfAndTotalCounts")))
+      SurfaceFormSource.lowercaseCountsFromPigInputStream(new FileInputStream(new File(rawDataFolder, "sfAndTotalCounts"))),
+      minimumSFCounts(lang)
     )
 
     memoryIndexer.addResources(

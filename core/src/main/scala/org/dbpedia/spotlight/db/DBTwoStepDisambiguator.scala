@@ -176,6 +176,7 @@ class DBTwoStepDisambiguator(
         //Use the mixture to combine the scores
         resOcc.setSimilarityScore(mixture.getScore(resOcc))
 
+
         resOcc
       }
       }

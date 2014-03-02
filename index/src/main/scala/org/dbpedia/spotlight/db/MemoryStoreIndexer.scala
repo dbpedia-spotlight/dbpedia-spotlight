@@ -49,7 +49,7 @@ class MemoryStoreIndexer(val baseDir: File, val quantizedCountStore: MemoryQuant
 
   var tokenizer: Option[StringTokenizer] = None
 
-  def addSurfaceForms(sfCount: Map[SurfaceForm, (Int, Int)], lowercaseCounts: Map[String, Int]) {
+  def addSurfaceForms(sfCount: Map[SurfaceForm, (Int, Int)], lowercaseCounts: Map[String, Int], MIN_SF_COUNT: Int) {
 
     val sfStore = new MemorySurfaceFormStore()
 
@@ -62,27 +62,28 @@ class MemoryStoreIndexer(val baseDir: File, val quantizedCountStore: MemoryQuant
 
     var i = 1
     sfCount foreach {
-      case (sf, counts) => {
+      case (sf, counts) if counts._1 >= MIN_SF_COUNT => {
         stringForID(i) = sf.name
         annotatedCountForID(i) = counts._1
         totalCountForID(i) = counts._2
 
-        lowercaseMap.put(sfStore.normalize(sf.name), lowercaseMap.get(sfStore.normalize(sf.name)) match {
-          case Some(s) => s + i
-          case None => mutable.HashSet[Int](i)
-        })
-
-        lowercaseMap.put(sfStore.normalize(sf.name.toLowerCase), lowercaseMap.get(sfStore.normalize(sf.name.toLowerCase)) match {
-          case Some(s) => s + i
-          case None => mutable.HashSet[Int](i)
-        })
+        val lowerOcc = sfCount.get(new SurfaceForm(sf.name.toLowerCase))
+        if ( lowerOcc == null || lowerOcc._1 <= MIN_SF_COUNT ) {
+          lowercaseMap.put(sf.name.toLowerCase, lowercaseMap.get(sf.name.toLowerCase) match {
+            case Some(s) => s + i
+            case None => mutable.HashSet[Int](i)
+          })
+        }
 
         i += 1
       }
+      case _ =>
     }
 
 
     if (tokenizer.isDefined) {
+
+     println("Tokenizing sfs and correcting ngrams")
 
       //Get all sfs as ngrams in increasing order by their length in tokens
       val sfId = mutable.HashMap[String, Int]()
@@ -125,10 +126,15 @@ class MemoryStoreIndexer(val baseDir: File, val quantizedCountStore: MemoryQuant
     }
 
     //Add lowercased counts:
+    println("Adding lowercase map...")
     sfStore.lowercaseMap = new java.util.HashMap[String, Array[Int]]()
-    lowercaseCounts.foreach{
-      case (s, c) => sfStore.lowercaseMap.put(s, (Array(c) ++ lowercaseMap.getOrElse(s, new mutable.HashSet[Int]())) )
-      case _ => println("wut")
+    var howmany = 0
+    lowercaseCounts.keySet().filter( s => lowercaseMap.contains(s)).foreach { s: String =>
+      howmany += 1
+      sfStore.lowercaseMap.put(s, (lowercaseCounts.get(s) +: lowercaseMap.get(s).get.toArray))
+
+      if (howmany % 10000 == 0)
+        println("Added "+howmany+" lowercase SF")
     }
 
     sfStore.stringForID  = stringForID

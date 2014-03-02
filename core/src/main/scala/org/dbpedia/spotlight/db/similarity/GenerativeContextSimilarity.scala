@@ -67,7 +67,6 @@ class GenerativeContextSimilarity(tokenTypeStore: TokenTypeStore, contextStore: 
 
   def intersect(query: Seq[TokenType], res: DBpediaResource): Seq[(TokenType, Int)] = {
     val (tokens, counts) = contextStore.getRawContextCounts(res)
-
     if (tokens.length == 0) {
       query.map( t => (t, 0))
     } else {

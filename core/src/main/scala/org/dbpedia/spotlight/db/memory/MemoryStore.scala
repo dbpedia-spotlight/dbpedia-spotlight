@@ -77,9 +77,11 @@ object MemoryStore {
     kryo.setRegistrationRequired(true)
 
     kryo.register(classOf[Array[scala.Short]], new DefaultArraySerializers.ShortArraySerializer())
+    kryo.register(classOf[Array[scala.Int]], new DefaultArraySerializers.IntArraySerializer())
     kryo.register(classOf[Array[String]], new DefaultArraySerializers.StringArraySerializer())
     kryo.register(classOf[MemorySurfaceFormStore])
     kryo.register(classOf[java.util.Map[String, java.lang.Short]], new JavaSerializer())
+    kryo.register(classOf[java.util.HashMap[String, Array[scala.Int]]], new JavaSerializer())
     kryo.register(classOf[Object2ShortOpenHashMap[String]], new JavaSerializer())
 
     kryo
@@ -204,3 +206,4 @@ object MemoryStore {
 
 
 }
+
