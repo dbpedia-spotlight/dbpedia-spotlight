@@ -26,14 +26,16 @@ class MemoryTokenTypeStore
   var idFromToken: java.util.Map[String, java.lang.Integer] = null
 
   @transient
-  var totalTokenCount: Int = 0
+  var totalTokenCount: Double = 0.0
 
   @transient
   var vocabularySize: Int = 0
 
 
   override def loaded() {
-    totalTokenCount = counts.sum
+    counts.foreach( c =>
+      totalTokenCount += c
+    )
     vocabularySize = counts.size
     createReverseLookup()
   }
@@ -70,7 +72,7 @@ class MemoryTokenTypeStore
     new TokenType(id, token, count)
   }
 
-  def getTotalTokenCount: Int = totalTokenCount
+  def getTotalTokenCount: Double = totalTokenCount
 
   def getVocabularySize: Int = vocabularySize
 

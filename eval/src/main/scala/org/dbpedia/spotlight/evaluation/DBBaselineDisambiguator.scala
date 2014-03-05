@@ -27,7 +27,7 @@ class DBBaselineDisambiguator(
     paragraph.occurrences.map((occurrence: SurfaceFormOccurrence) => {
       try {
         val sf = surfaceFormStore.getSurfaceForm(occurrence.surfaceForm.name)
-        (occurrence, candidateMapStore.getCandidates(sf).toList.sortBy(_.support).reverse.map(_.resource).map(r => new DBpediaResourceOccurrence(r, sf, paragraph.text, occurrence.textOffset)))
+        (occurrence, candidateMapStore.getCandidates(sf).toList.sortBy(-_.prior).map(_.resource).map(r => new DBpediaResourceOccurrence(r, sf, paragraph.text, occurrence.textOffset)))
       } catch {
         case e: SurfaceFormNotFoundException => (occurrence, List[DBpediaResourceOccurrence]())
       }

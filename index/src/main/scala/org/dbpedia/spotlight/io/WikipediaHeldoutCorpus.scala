@@ -5,6 +5,8 @@ import org.dbpedia.spotlight.db.{DBCandidateSearcher, WikipediaToDBpediaClosure}
 import java.io.File
 import io.Source
 import org.dbpedia.spotlight.exceptions.NotADBpediaResourceException
+import org.dbpedia.extraction.util.WikiUtil
+import java.net.URLEncoder
 
 /**
  * AnnotatedTextSource for heldout data generated from Wikipedia using the
@@ -32,7 +34,7 @@ class WikipediaHeldoutCorpus(val lines: Seq[String],
     else
       occs.flatMap({ occ: DBpediaResourceOccurrence =>
         try {
-          occ.resource.uri = wikiToDBpediaClosure.get.wikipediaToDBpediaURI(occ.resource.uri)
+          occ.resource.uri = WikiUtil.wikiEncode(wikiToDBpediaClosure.get.wikipediaToDBpediaURI(occ.resource.uri))
 
           if (candidateSearcher.get.getAmbiguity(occ.surfaceForm) > 1)
             Some(occ)

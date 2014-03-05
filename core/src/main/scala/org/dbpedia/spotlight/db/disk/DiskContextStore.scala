@@ -33,6 +33,9 @@ class DiskContextStore(file: String) extends ContextStore
       0
   }
 
+  def getRawContextCounts(resource: DBpediaResource): (Seq[Int], Seq[Int]) = {
+    throw new NotImplementedException()
+  }
 
   def getContextCounts(resource: DBpediaResource): Map[TokenType, Int] = {
     val resTriple   = jdbm.get(resource.id)

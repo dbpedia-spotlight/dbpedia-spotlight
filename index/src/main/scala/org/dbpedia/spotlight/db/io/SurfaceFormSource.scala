@@ -38,27 +38,54 @@ object SurfaceFormSource {
 
         val surfaceform = new SurfaceForm(line(0))
         val countAnnotated = line(1).toInt
-        
-        //Read the total count: If there is no total count for the
-        //surface form, we use -1 to encode this case for handling 
-        //in later steps.
-        val countTotal = if( line.size == 3 ) line(2).toInt else -1
 
-        sfMap.put(
-          surfaceform,
-          if(sfMap.get(surfaceform) != null) {
-            val (existingCountAnnotated, existingCountTotal) = sfMap.get(surfaceform)
-            (existingCountAnnotated + countAnnotated, existingCountTotal + countTotal)
-          } else {
-            (countAnnotated, countTotal)
-          }
-        )
+        //Read only surface forms whose annotated count is not -1 (-1 is used to indicate lowercase counts)
+        if (countAnnotated != -1) {
+
+          //Read the total count: If there is no total count for the
+          //surface form, we use -1 to encode this case for handling
+          //in later steps.
+          val countTotal = if( line.size == 3 ) line(2).toInt else -1
+
+          sfMap.put(
+            surfaceform,
+            if(sfMap.get(surfaceform) != null) {
+              val (existingCountAnnotated, existingCountTotal) = sfMap.get(surfaceform)
+              (existingCountAnnotated + countAnnotated, existingCountTotal + countTotal)
+            } else {
+              (countAnnotated, countTotal)
+            }
+          )
+        }
       }
     }
 
     SpotlightLog.info(this.getClass, "Done.")
 
     sfMap
+  }
+
+  def lowercaseCountsFromPigInputStream(sfAndTotalCounts: InputStream): Map[String, Int] = {
+
+    SpotlightLog.info(this.getClass, "Determining lowercase surfaceform counts...")
+
+    val lowercaseCountsMap = new HashMap[String, Int]()
+
+    Source.fromInputStream(sfAndTotalCounts).getLines() foreach {
+      lineS: String => {
+        val line = lineS.trim().split('\t')
+
+        //Lowercase counts have a "-1" annotated count:
+        if (line(1).equals("-1")) {
+          val surfaceform = line(0)
+          val countTotal = if( line.size == 3 ) line(2).toInt else -1
+          lowercaseCountsMap.put(surfaceform, countTotal)
+        }
+      }
+    }
+
+    SpotlightLog.info(this.getClass, "Done.")
+    lowercaseCountsMap
   }
 
 

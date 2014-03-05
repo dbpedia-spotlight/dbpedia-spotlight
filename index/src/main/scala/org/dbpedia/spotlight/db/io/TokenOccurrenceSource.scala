@@ -23,7 +23,7 @@ object TokenOccurrenceSource {
   def fromPigInputStream(tokenInputStream: InputStream, tokenTypeStore: TokenTypeStore, wikipediaToDBpediaClosure: WikipediaToDBpediaClosure, resStore: ResourceStore): Iterator[Triple[DBpediaResource, Array[TokenType], Array[Int]]] = {
 
     var i = 0
-    plainTokenOccurrenceSource(tokenInputStream) map {
+    plainTokenOccurrenceSource(tokenInputStream, 0) map {
       case (wikiurl: String, tokens: Array[String], counts: Array[Int]) => {
         i += 1
         if (i % 10000 == 0)
@@ -43,15 +43,15 @@ object TokenOccurrenceSource {
 
   }
 
-  def fromPigFile(tokenFile: File, tokenStore: TokenTypeStore, wikipediaToDBpediaClosure: WikipediaToDBpediaClosure, resStore: ResourceStore) = fromPigInputStream(new FileInputStream(tokenFile), tokenStore, wikipediaToDBpediaClosure, resStore)
+  def fromPigFile(tokenFile: File, tokenStore: TokenTypeStore, wikipediaToDBpediaClosure: WikipediaToDBpediaClosure, resStore: ResourceStore, minimumCount: Int) = fromPigInputStream(new FileInputStream(tokenFile), tokenStore, wikipediaToDBpediaClosure, resStore)
 
   val tokensParser = TokenOccurrenceParser.createDefault
 
-  def plainTokenOccurrenceSource(tokenInputStream: InputStream): Iterator[Triple[String, Array[String], Array[Int]]] = {
+  def plainTokenOccurrenceSource(tokenInputStream: InputStream, minimumCount: Int): Iterator[Triple[String, Array[String], Array[Int]]] = {
     Source.fromInputStream(tokenInputStream) getLines() filter(!_.equals("")) map {
       line: String => {
         val Array(wikiurl, tokens) = line.trim().split('\t')
-        val Pair(tokensA, countsA) = tokensParser.parse(tokens)
+        val Pair(tokensA, countsA) = tokensParser.parse(tokens, minimumCount)
         Triple(wikiurl, tokensA, countsA)
       }
     }

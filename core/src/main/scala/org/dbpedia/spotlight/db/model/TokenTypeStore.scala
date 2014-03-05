@@ -34,7 +34,7 @@ trait TokenTypeStore {
    *
    * @return
    */
-  def getTotalTokenCount: Int
+  def getTotalTokenCount: Double
 
   /**
    * Returns the number of token types (distinct tokens) in the database.

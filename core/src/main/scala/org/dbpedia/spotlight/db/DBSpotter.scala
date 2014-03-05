@@ -11,6 +11,8 @@ import collection.mutable.ListBuffer
 import opennlp.tools.util.Span
 import opennlp.tools.namefind.RegexNameFinder
 import java.util.regex.Pattern
+import org.apache.commons.lang.StringUtils
+import org.dbpedia.spotlight.log.SpotlightLog
 
 abstract class DBSpotter(
  surfaceFormStore: SurfaceFormStore,
@@ -75,9 +77,13 @@ abstract class DBSpotter(
 
               val spot = text.text.substring(startOffset, endOffset)
 
-              if (surfaceFormMatch(spot)) {
+              //SpotlightLog.info(this.getClass, spot + ":" + chunkSpan.getType)
+
+              val sfMatch = surfaceFormMatch(spot)
+              SpotlightLog.debug(this.getClass, "type:"+chunkSpan.getType)
+              if (sfMatch.isDefined) {
                 //The sub-chunk is in the dictionary, finish the processing of this chunk
-                val spotOcc = new SurfaceFormOccurrence(surfaceFormStore.getSurfaceForm(spot), text, startOffset, Provenance.Annotation, spotScore(spot))
+                val spotOcc = new SurfaceFormOccurrence(sfMatch.get, text, startOffset, Provenance.Annotation, spotScore(spot)._2)
                 spotOcc.setFeature(new Nominal("spot_type", chunkSpan.getType))
                 spotOcc.setFeature(new Feature("token_types", tokenTypes.slice(startToken, lastToken)))
                 spots += spotOcc
@@ -93,27 +99,59 @@ abstract class DBSpotter(
   }
 
 
-
-  private def spotScore(spot: String): Double = {
+  /**
+   * This is the most important method in this class. Given the set of possible matches,
+   * which are very general (e.g. based on stems in FSASpotter), we need to find a score
+   * for each match. Matches will be filtered out by this score.
+   *
+   * @param spot
+   * @return
+   */
+  private def spotScore(spot: String): (Option[SurfaceForm], Double) = {
     try {
       spotFeatureWeightVector match {
         case Some(weights) => {
-          (weights dot DBSpotter.spotFeatures(surfaceFormStore.getSurfaceForm(spot)))
+
+          val (sf, p) = try {
+            val sf = surfaceFormStore.getSurfaceForm(spot)
+            (sf, sf.annotationProbability)
+          } catch {
+            case e: SurfaceFormNotFoundException => {
+              surfaceFormStore.getRankedSurfaceFormCandidates(spot).headOption match {
+                case Some(p) => p
+                case None => throw e
+              }
+           }
+          }
+
+          sf.name = spot
+          (Some(sf), weights dot DBSpotter.spotFeatures(spot, p))
         }
-        case None => surfaceFormStore.getSurfaceForm(spot).annotationProbability
+        case None => (Some(surfaceFormStore.getSurfaceForm(spot)), surfaceFormStore.getSurfaceForm(spot).annotationProbability)
       }
     } catch {
-      case e: SurfaceFormNotFoundException => 0.0
-      case e: Exception => e.printStackTrace(); 0.0
-      case _ => 0.0
+      case e: Exception => (None, 0.0)
     }
   }
 
-  protected def surfaceFormMatch(spot: String): Boolean = {
+  protected def surfaceFormMatch(spot: String): Option[SurfaceForm] = {
+    val score: (Option[SurfaceForm], Double) = spotScore(spot)
+    score._1 match {
+      case Some(sf) => SpotlightLog.debug(this.getClass, sf.toString + ":" + score._2)
+      case None => SpotlightLog.debug(this.getClass, "None :" + score._2)
+    }
+
     if (spotFeatureWeightVector.isDefined)
-      spotScore(spot) >= 0.5
+       if(score._2 >= 0.5)
+         score._1
+       else
+        None
     else
-      spotScore(spot) >= 0.25
+      if(score._2 >= 0.25)
+        score._1
+      else
+        None
+
   }
 
 
@@ -181,16 +219,16 @@ abstract class DBSpotter(
 }
 
 object DBSpotter {
-  def spotFeatures(spot: SurfaceForm): DenseVector[Double] =
+  def spotFeatures(spot: String, spotProbability: Double): DenseVector[Double] =
     DenseVector(
       //Annotation probability:
-      spot.annotationProbability,
+      spotProbability,
 
       //Abbreviations:
-      if(spot.name.toUpperCase.equals(spot.name) && spot.name.size < 5 && !spot.name.matches("[0-9]+")) 1.0 else 0.0,
+      if(spot.toUpperCase.equals(spot) && spot.size < 5 && !spot.matches("[0-9]+")) 1.0 else 0.0,
 
       //Numbers (e.g. years):
-      if(spot.name.matches("[0-9]+")) 1.0 else 0.0,
+      if(spot.matches("[0-9]+")) 1.0 else 0.0,
 
       //Bias:
       1.0

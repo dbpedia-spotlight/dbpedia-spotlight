@@ -14,7 +14,9 @@ import org.dbpedia.spotlight.exceptions.SurfaceFormNotFoundException
  * @author Joachim Daiber
  */
 
-class DBCandidateSearcher(val resStore: ResourceStore, val sfStore: SurfaceFormStore,  candidateMap: CandidateMapStore) {
+class DBCandidateSearcher(val resStore: ResourceStore, val sfStore: SurfaceFormStore, candidateMap: CandidateMapStore) {
+
+  val ADD_TOP_NORMALIZED_SFS = 5
 
   /**
    * Retrieves all DBpedia Resources that can be confused with surface form sf.
@@ -23,15 +25,24 @@ class DBCandidateSearcher(val resStore: ResourceStore, val sfStore: SurfaceFormS
    * @return
    */
   def getCandidates(sf: SurfaceForm): Set[Candidate] = {
-    val cands = candidateMap.getCandidates(sf)
-    try {
-      if (cands.size == 0)
-        candidateMap.getCandidates(sfStore.getSurfaceFormNormalized(sf.name))
-      else
-        cands
-    } catch {
-      case e: SurfaceFormNotFoundException => cands
-    }
+
+    var cands = Set[Candidate]()
+
+    if(sf.id > 0)
+      cands ++= candidateMap.getCandidates(sf)
+    else
+      try {
+        cands ++= candidateMap.getCandidates(sfStore.getSurfaceForm(sf.name))
+      } catch {
+        case e: SurfaceFormNotFoundException =>
+      }
+
+    if (cands.size == 0)
+      sfStore.getRankedSurfaceFormCandidates(sf.name).take(ADD_TOP_NORMALIZED_SFS).foreach(p =>
+        cands ++= candidateMap.getCandidates(p._1)
+      )
+
+    cands
   }
 
 
@@ -41,7 +52,13 @@ class DBCandidateSearcher(val resStore: ResourceStore, val sfStore: SurfaceFormS
    * @param sf the surface form
    * @return
    */
-  def getAmbiguity(sf: SurfaceForm): Int = getCandidates(sf).size
+  def getAmbiguity(sf: SurfaceForm): Int = {
+    try {
+      candidateMap.getCandidates(sfStore.getSurfaceForm(sf.name)).size
+    } catch {
+      case _: Throwable => 0
+    }
+  }
 
 
 }

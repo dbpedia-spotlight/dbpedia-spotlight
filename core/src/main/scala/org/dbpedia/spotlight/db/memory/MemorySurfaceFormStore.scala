@@ -7,6 +7,8 @@ import org.dbpedia.spotlight.exceptions.SurfaceFormNotFoundException
 import scala.Array
 import java.lang.Integer
 import util.StringToIDMapFactory
+import scala.collection.mutable
+import org.apache.commons.lang.StringUtils
 
 /**
  * @author Joachim Daiber
@@ -23,9 +25,10 @@ class MemorySurfaceFormStore
   @transient
   var idForString: java.util.Map[String, Integer] = null
 
+  var lowercaseMap: java.util.HashMap[String, Array[Int]] = null
   var stringForID: Array[String]      = null
-  var annotatedCountForID: Array[Int] = null
-  var totalCountForID: Array[Int]     = null
+  var annotatedCountForID: Array[Short] = null
+  var totalCountForID: Array[Short]     = null
 
   @transient
   var totalAnnotatedCount = 0
@@ -37,8 +40,7 @@ class MemorySurfaceFormStore
   @transient
   var stopWords: Set[String] = Set("the", "an", "a")
 
-  def normalize(sf: String): String =
-    "/" + sf.replaceAll("[\\p{Punct}]+", " ").toLowerCase.split(" ").filter({lcSF: String => !stopWords.contains(lcSF)}).mkString(" ")
+  def normalize(sf: String): String = sf.replaceAll("[\\p{Punct}]+", " ").toLowerCase.split(" ").filter({lcSF: String => !stopWords.contains(lcSF)}).mkString(" ")
 
   override def loaded() {
     createReverseLookup()
@@ -52,7 +54,7 @@ class MemorySurfaceFormStore
 
   def iterateSurfaceForms: Seq[SurfaceForm] = {
     annotatedCountForID.zipWithIndex.flatMap{
-      case (count: Int, id: Int) if count > 0 => Some(sfForID(id))
+      case (count: Short, id: Int) if qc(count) > 0 => Some(sfForID(id))
       case _ => None
     }
   }
@@ -61,8 +63,8 @@ class MemorySurfaceFormStore
   def createReverseLookup() {
 
     SpotlightLog.info(this.getClass, "Summing total SF counts.")
-    totalAnnotatedCount = annotatedCountForID.sum
-    totalOccurrenceCount = totalCountForID.sum
+    totalAnnotatedCount = annotatedCountForID.map(q => qc(q)).sum
+    totalOccurrenceCount = totalCountForID.map(q => qc(q)).sum
 
 
     if (stringForID != null) {
@@ -70,24 +72,19 @@ class MemorySurfaceFormStore
       idForString = StringToIDMapFactory.createDefault(stringForID.size * 2)
 
       var i = 0
-      stringForID foreach { sf => {
+      stringForID foreach { sf =>
         if (sf != null) {
           idForString.put(sf, i)
-
-          val n = normalize(sf)
-          if (idForString.get(n) == null || annotatedCountForID(idForString.get(n)) < annotatedCountForID(i))
-            idForString.put(n, i)
         }
         i += 1
-      }
       }
     }
   }
 
 
   private def sfForID(id: Int) = {
-    val annotatedCount = annotatedCountForID(id)
-    val totalCount = totalCountForID(id)
+    val annotatedCount = qc(annotatedCountForID(id))
+    val totalCount = qc(totalCountForID(id))
 
     new SurfaceForm(stringForID(id), id, annotatedCount, totalCount)
   }
@@ -102,17 +99,72 @@ class MemorySurfaceFormStore
     sfForID(id)
   }
 
+  private def getLowercaseCandidateList(surfaceform: String): Array[Int] = {
+    val cs = lowercaseMap.get(surfaceform.toLowerCase)
+
+    if(cs != null && cs.size > 1)
+      cs.tail.toArray
+    else
+      Array[Int]()
+  }
+
+  def getSurfaceFormsNormalized(surfaceform: String): Set[SurfaceForm] = {
+    val ls = getLowercaseCandidateList(surfaceform)
+    ls.map( id => sfForID(id) ).toSet
+  }
+
   @throws(classOf[SurfaceFormNotFoundException])
   def getSurfaceFormNormalized(surfaceform: String): SurfaceForm = {
-    val id = idForString.get(normalize(surfaceform))
+    val sfs = getRankedSurfaceFormCandidates(surfaceform)
 
-    if (id == null)
-      throw new SurfaceFormNotFoundException("SurfaceForm %s not found.".format(surfaceform))
+    if (sfs.isEmpty)
+      throw new SurfaceFormNotFoundException(surfaceform)
+    else
+      sfs.head._1
+  }
 
-    val annotatedCount = annotatedCountForID(id)
-    val totalCount = totalCountForID(id)
 
-    new SurfaceForm(surfaceform, id, annotatedCount, totalCount)
+  private def editDistanceScore(sData: String, sReal: String): Double = {
+    val ed = StringUtils.getLevenshteinDistance(sData, sReal)
+
+    if (sReal.equals(sData))
+      1.0
+    else if (sData.toUpperCase.equals(sReal) || sData.toLowerCase.equals(sReal))
+      0.85
+    else
+      0.85 * (1.0 - (ed / sReal.length.toDouble))
+  }
+
+  def getRankedSurfaceFormCandidates(surfaceform: String): Seq[(SurfaceForm, Double)] = {
+
+    getSurfaceFormsNormalized(surfaceform).map{ candSf: SurfaceForm =>
+      val cLower = getLowercaseSurfaceFormCount(surfaceform.toLowerCase)
+      val cTotal = candSf.totalCount
+
+      SpotlightLog.debug(this.getClass, surfaceform + " p: "+ candSf.annotationProbability)
+      SpotlightLog.debug(this.getClass, surfaceform + " edit distance: "+ editDistanceScore(candSf.name, surfaceform))
+      SpotlightLog.debug(this.getClass, surfaceform + " c in total: "+ cTotal.toDouble / (cLower+cTotal))
+
+      (candSf,
+        //Score for the surface form (including the case adaptation):
+        editDistanceScore(candSf.name, surfaceform) *
+        candSf.annotationProbability *
+        ((2.0 * cTotal.toDouble) / (cLower+cTotal))
+      )
+    }.toSeq.sortBy(-_._2)
+
+  }
+
+
+  /**
+   * Get the count of the lowercase version of a surface form (for working with ill-cased text).
+   *
+   * @param surfaceform the queried surface form
+   * @return
+   */
+  def getLowercaseSurfaceFormCount(surfaceform: String): Int = lowercaseMap.get(surfaceform).headOption match {
+    case Some(c) => c
+    case _ => 0
   }
 
 }

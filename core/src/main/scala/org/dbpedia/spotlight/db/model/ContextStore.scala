@@ -31,6 +31,7 @@ trait ContextStore {
    */
   def getContextCounts(resource: DBpediaResource): Map[TokenType, Int]
 
+  def getRawContextCounts(resource: DBpediaResource): (Seq[Int], Seq[Int])
 
   /**
    * Returns the total count of tokens occurring together with the DBpedia resource.

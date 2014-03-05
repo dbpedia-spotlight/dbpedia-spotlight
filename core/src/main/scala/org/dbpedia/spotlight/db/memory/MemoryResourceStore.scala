@@ -2,7 +2,7 @@ package org.dbpedia.spotlight.db.memory
 
 import org.dbpedia.spotlight.log.SpotlightLog
 import org.dbpedia.spotlight.model.DBpediaResource
-import java.lang.{Short, String}
+import java.lang.String
 import scala.collection.JavaConversions._
 import scala.{throws, transient}
 import org.dbpedia.spotlight.exceptions.DBpediaResourceNotFoundException
@@ -21,9 +21,9 @@ class MemoryResourceStore
 
   var ontologyTypeStore: OntologyTypeStore = null
 
-  var supportForID: Array[Int] = null
+  var supportForID: Array[Short] = null
   var uriForID: Array[String] = null
-  var typesForID: Array[Array[Short]] = null
+  var typesForID: Array[Array[java.lang.Short]] = null
 
   @transient
   var idFromURI: java.util.Map[String, Integer] = null
@@ -34,7 +34,7 @@ class MemoryResourceStore
   override def loaded() {
     createReverseLookup()
     SpotlightLog.info(this.getClass, "Counting total support...")
-    totalSupport = supportForID.sum.toDouble
+    totalSupport = supportForID.map(q => qc(q)).sum.toDouble
     SpotlightLog.info(this.getClass, "Done.")
   }
 
@@ -58,7 +58,7 @@ class MemoryResourceStore
   def getResource(id: Int): DBpediaResource = {
 
     val uri = try {
-        uriForID(id)
+      uriForID(id)
     } catch {
       case e: java.lang.ArrayIndexOutOfBoundsException => null
     }
@@ -69,9 +69,11 @@ class MemoryResourceStore
     val support = supportForID(id)
     val typeIDs = typesForID(id)
 
-    val res = new DBpediaResource(uri, support)
+    val res = new DBpediaResource(uri, qc(support))
+    res.uri = uri
+
     res.id = id
-    res.setTypes((typeIDs map { typeID: Short => ontologyTypeStore.getOntologyType(typeID) }).toList)
+    res.setTypes((typeIDs map { typeID: java.lang.Short => ontologyTypeStore.getOntologyType(typeID) }).toList)
 
     res.setPrior(res.support / totalSupport)
 
