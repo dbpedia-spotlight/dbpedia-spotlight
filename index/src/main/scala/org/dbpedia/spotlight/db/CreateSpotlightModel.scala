@@ -59,6 +59,18 @@ object CreateSpotlightModel {
     val Array(lang, country) = localeCode.split("_")
     val locale = new Locale(lang, country)
 
+    if (args.size > 6) {
+      //The last addition can be pruning parameter of the form prune=3,2
+      val a = args(6).split("=")
+      if (a(1) equals "prune") {
+        val Array(pSF, pCX) = a(2).split(",")
+        minimumContextCounts(lang) = pCX
+        minimumSFCounts(lang) = pSF
+        println("Using provided pruning values %d and %d".format(pSF, pCX))
+      }
+      
+    }
+
     if(!outputFolder.mkdir()) {
       System.err.println("Folder %s already exists, I am too afraid to overwrite it!".format(outputFolder.toString))
       System.exit(1)
