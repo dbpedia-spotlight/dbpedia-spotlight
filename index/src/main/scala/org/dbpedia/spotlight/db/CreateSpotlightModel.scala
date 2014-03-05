@@ -17,6 +17,7 @@ import stem.SnowballStemmer
 import tokenize._
 import scala.Some
 import scala.collection.immutable.HashMap
+import scala.collection.mutable
 
 /**
  * This script creates a Spotlight model folder from the results of
@@ -30,8 +31,8 @@ import scala.collection.immutable.HashMap
 object CreateSpotlightModel {
 
 
-  val minimumContextCounts = Map("en" -> 3).withDefaultValue(1)
-  val minimumSFCounts = Map("en" -> 2).withDefaultValue(1)
+  val minimumContextCounts = mutable.Map("en" -> 3).withDefaultValue(1)
+  val minimumSFCounts = mutable.Map("en" -> 2).withDefaultValue(1)
 
   val OPENNLP_FOLDER = "opennlp"
 
@@ -64,11 +65,10 @@ object CreateSpotlightModel {
       val a = args(6).split("=")
       if (a(1) equals "prune") {
         val Array(pSF, pCX) = a(2).split(",")
-        minimumContextCounts(lang) = pCX
-        minimumSFCounts(lang) = pSF
-        println("Using provided pruning values %d and %d".format(pSF, pCX))
+        minimumContextCounts.put(lang, pCX.toInt)
+        minimumSFCounts.put(lang, pSF.toInt)
+        println("Using provided pruning values %s and %s".format(pSF, pCX))
       }
-      
     }
 
     if(!outputFolder.mkdir()) {
