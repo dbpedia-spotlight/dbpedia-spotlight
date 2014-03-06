@@ -20,6 +20,7 @@ import opennlp.tools.namefind.TokenNameFinderModel
 import stem.SnowballStemmer
 import tokenize.{OpenNLPTokenizer, LanguageIndependentTokenizer}
 import org.dbpedia.spotlight.exceptions.ConfigurationException
+import org.dbpedia.spotlight.util.MathUtil
 
 
 class SpotlightModel(val tokenizer: TextTokenizer,
@@ -84,7 +85,7 @@ object SpotlightModel {
 
     def contextSimilarity(): ContextSimilarity = contextStore match {
       case store:MemoryContextStore => new GenerativeContextSimilarity(tokenTypeStore, contextStore)
-      case _ => new NoContextSimilarity(0.0)
+      case _ => new NoContextSimilarity(MathUtil.ln(1.0))
     }
 
     val c = properties.getProperty("opennlp_parallel", Runtime.getRuntime.availableProcessors().toString).toInt
