@@ -162,7 +162,7 @@ class DBTwoStepDisambiguator(
           Provenance.Undefined,
           0.0,
           0.0,
-          contextScores.get(cand.resource).get
+          contextScores.getOrElse(cand.resource, 0.0)
         )
 
         //Set the scores as features for the resource occurrence:
