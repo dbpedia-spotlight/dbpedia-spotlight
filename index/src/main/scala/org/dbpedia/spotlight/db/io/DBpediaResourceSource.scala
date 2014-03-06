@@ -130,6 +130,7 @@ object DBpediaResourceSource {
           }
         } catch {
           case e: NotADBpediaResourceException => //Ignore Disambiguation pages
+          case e: scala.MatchError => //Ignore lines with multiple tabs
         }
 
       }
