@@ -10,7 +10,7 @@ import org.apache.commons.logging.LogFactory
 /**
  * Generative context similarity based on Han et. al
  *
- * X. Han and L. Sun. A generative entity-mention model for linking entities with knowledge base.
+ * X. Han and L. Sun. A generative entity-mention model for linking entities with knowledge base.
  * In Proceedings of the 49th Annual Meeting of the Association for Computational Linguistics: Human
  * Language Technologies-Volume 1, pages 945–954. Association for Computational Linguistics, 2011.
  *
