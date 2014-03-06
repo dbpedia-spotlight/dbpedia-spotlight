@@ -11,10 +11,7 @@ class NoContextSimilarity(val defaultScoreValue:Double) extends ContextSimilarit
 
   def score(query: Seq[TokenType], candidates: Set[DBpediaResource]): mutable.Map[DBpediaResource, Double] ={
 
-    val contextScores = mutable.Map[DBpediaResource, Double]()
-    for(candidate <- candidates){
-      contextScores(candidate) = defaultScoreValue
-    }
+    val contextScores = mutable.Map[DBpediaResource, Double]().withDefaultValue(defaultScoreValue)
 
     contextScores
   }
