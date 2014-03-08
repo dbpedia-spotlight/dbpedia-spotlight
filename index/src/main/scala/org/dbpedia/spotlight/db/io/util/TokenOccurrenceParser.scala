@@ -9,7 +9,7 @@ package org.dbpedia.spotlight.db.io.util
  */
 
 trait TokenOccurrenceParser {
-  def parse(tokens: String): Pair[Array[String], Array[Int]]
+  def parse(tokens: String, minimumCount: Int): Pair[Array[String], Array[Int]]
 }
 
 object TokenOccurrenceParser {

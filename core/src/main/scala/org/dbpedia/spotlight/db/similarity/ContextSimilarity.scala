@@ -17,11 +17,10 @@ trait ContextSimilarity {
    * as q query of tokens and their counts.
    *
    * @param query the text context of the document
-   * @param contextCounts the counts for all tokens in the context of the DBpedia resources
-   * @param totalContextCounts total count of the tokens in the context of a DBpedia resource
+   * @param candidates the set of DBpedia resource candidates
    * @return
    */
-  def score(query: java.util.Map[TokenType, Int], contextCounts: Map[DBpediaResource, java.util.Map[TokenType, Int]], totalContextCounts: Map[DBpediaResource, Int]): mutable.Map[DBpediaResource, Double]
+  def score(query: Seq[TokenType], candidates: Set[DBpediaResource]): mutable.Map[DBpediaResource, Double]
 
 
   /**
@@ -32,6 +31,6 @@ trait ContextSimilarity {
    * @param query the text context of the document
    * @return
    */
-  def nilScore(query: java.util.Map[TokenType, Int]): Double
+  def nilScore(query: Seq[TokenType]): Double
 
 }

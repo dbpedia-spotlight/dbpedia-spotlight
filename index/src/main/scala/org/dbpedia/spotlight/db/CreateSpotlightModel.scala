@@ -2,7 +2,7 @@ package org.dbpedia.spotlight.db
 
 import io._
 import java.io.{FileOutputStream, FileInputStream, File}
-import memory.MemoryStore
+import org.dbpedia.spotlight.db.memory.{MemoryQuantizedCountStore, MemoryStore}
 import model.{TextTokenizer, StringTokenizer, Stemmer}
 import scala.io.Source
 import org.tartarus.snowball.SnowballProgram
@@ -16,6 +16,8 @@ import opennlp.tools.chunker.ChunkerModel
 import stem.SnowballStemmer
 import tokenize._
 import scala.Some
+import scala.collection.immutable.HashMap
+import scala.collection.mutable
 
 /**
  * This script creates a Spotlight model folder from the results of
@@ -27,6 +29,10 @@ import scala.Some
  */
 
 object CreateSpotlightModel {
+
+
+  val minimumContextCounts = mutable.Map("en" -> 3).withDefaultValue(1)
+  val minimumSFCounts = mutable.Map("en" -> 2).withDefaultValue(1)
 
   val OPENNLP_FOLDER = "opennlp"
 
@@ -53,6 +59,17 @@ object CreateSpotlightModel {
 
     val Array(lang, country) = localeCode.split("_")
     val locale = new Locale(lang, country)
+
+    if (args.size > 6) {
+      //The last addition can be pruning parameter of the form prune=3,2
+      val a = args(6).split("=")
+      if (a(1) equals "prune") {
+        val Array(pSF, pCX) = a(2).split(",")
+        minimumContextCounts.put(lang, pCX.toInt)
+        minimumSFCounts.put(lang, pSF.toInt)
+        println("Using provided pruning values %s and %s".format(pSF, pCX))
+      }
+    }
 
     if(!outputFolder.mkdir()) {
       System.err.println("Folder %s already exists, I am too afraid to overwrite it!".format(outputFolder.toString))
@@ -132,6 +149,7 @@ object CreateSpotlightModel {
     defaultProperties.setProperty("stemmer",   args(5))
     defaultProperties.setProperty("namespace", namespace)
     defaultProperties.setProperty("locale", localeCode)
+    defaultProperties.setProperty("version", "1.0")
 
 
     defaultProperties.store(new FileOutputStream(new File(outputFolder, "model.properties")), null)
@@ -140,7 +158,8 @@ object CreateSpotlightModel {
     val modelDataFolder = new File(outputFolder, "model")
     modelDataFolder.mkdir()
 
-    val memoryIndexer = new MemoryStoreIndexer(modelDataFolder)
+    val quantizedCountStore = new MemoryQuantizedCountStore()
+    val memoryIndexer = new MemoryStoreIndexer(modelDataFolder, quantizedCountStore)
     //val diskIndexer = new JDBMStoreIndexer(new File("data/"))
 
     val wikipediaToDBpediaClosure = new WikipediaToDBpediaClosure(
@@ -154,26 +173,27 @@ object CreateSpotlightModel {
       SurfaceFormSource.fromPigFiles(
         new File(rawDataFolder, "sfAndTotalCounts"),
         wikiClosure=wikipediaToDBpediaClosure
-      )
+      ),
+      SurfaceFormSource.lowercaseCountsFromPigInputStream(new FileInputStream(new File(rawDataFolder, "sfAndTotalCounts"))),
+      minimumSFCounts(lang)
     )
 
     memoryIndexer.addResources(
       DBpediaResourceSource.fromPigFiles(
         wikipediaToDBpediaClosure,
         new File(rawDataFolder, "uriCounts"),
-        (if (new File(rawDataFolder, "instance_types.nt").exists())
+        if (new File(rawDataFolder, "instance_types.nt").exists())
           new File(rawDataFolder, "instance_types.nt")
         else if (new File(rawDataFolder, "instanceTypes.tsv").exists())
           new File(rawDataFolder, "instanceTypes.tsv")
         else
-          null
-          ),
+          null,
         namespace
       )
     )
 
-    val resStore = MemoryStore.loadResourceStore(new FileInputStream(new File(modelDataFolder, "res.mem")))
-    val sfStore  = MemoryStore.loadSurfaceFormStore(new FileInputStream(new File(modelDataFolder, "sf.mem")))
+    val resStore = MemoryStore.loadResourceStore(new FileInputStream(new File(modelDataFolder, "res.mem")), quantizedCountStore)
+    val sfStore  = MemoryStore.loadSurfaceFormStore(new FileInputStream(new File(modelDataFolder, "sf.mem")), quantizedCountStore)
 
     memoryIndexer.addCandidatesByID(
       CandidateMapSource.fromPigFiles(
@@ -188,7 +208,8 @@ object CreateSpotlightModel {
     memoryIndexer.addTokenTypes(
       TokenSource.fromPigFile(
         new File(rawDataFolder, "tokenCounts"),
-        additionalTokens = Some(TokenSource.fromSFStore(sfStore, rawTokenizer))
+        additionalTokens = Some(TokenSource.fromSFStore(sfStore, rawTokenizer)),
+        minimumContextCounts(lang)
       )
     )
 
@@ -200,11 +221,12 @@ object CreateSpotlightModel {
         new File(rawDataFolder, "tokenCounts"),
         tokenStore,
         wikipediaToDBpediaClosure,
-        resStore
+        resStore,
+        minimumContextCounts(lang)
       )
     )
     memoryIndexer.writeTokenOccurrences()
-
+    memoryIndexer.writeQuantizedCounts()
 
     val tokenizer: TextTokenizer = if (opennlpFolder.isDefined) {
       val opennlpOut = new File(outputFolder, OPENNLP_FOLDER)

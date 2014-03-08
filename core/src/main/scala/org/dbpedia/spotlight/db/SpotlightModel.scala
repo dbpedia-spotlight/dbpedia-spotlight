@@ -1,13 +1,13 @@
 package org.dbpedia.spotlight.db
 
 import concurrent.{TokenizerWrapper, SpotterWrapper}
-import memory.MemoryStore
+import org.dbpedia.spotlight.db.memory.{MemoryContextStore, MemoryStore}
 import model._
 import opennlp.tools.tokenize.{TokenizerModel, TokenizerME}
 import opennlp.tools.sentdetect.{SentenceModel, SentenceDetectorME}
 import opennlp.tools.postag.{POSModel, POSTaggerME}
 import org.dbpedia.spotlight.disambiguate.mixtures.UnweightedMixture
-import similarity.GenerativeContextSimilarity
+import org.dbpedia.spotlight.db.similarity.{NoContextSimilarity, GenerativeContextSimilarity, ContextSimilarity}
 import scala.collection.JavaConverters._
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy
 import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy
@@ -19,6 +19,8 @@ import opennlp.tools.chunker.ChunkerModel
 import opennlp.tools.namefind.TokenNameFinderModel
 import stem.SnowballStemmer
 import tokenize.{OpenNLPTokenizer, LanguageIndependentTokenizer}
+import org.dbpedia.spotlight.exceptions.ConfigurationException
+import org.dbpedia.spotlight.util.MathUtil
 
 
 class SpotlightModel(val tokenizer: TextTokenizer,
@@ -45,12 +47,14 @@ object SpotlightModel {
           throw new IOException("Invalid Spotlight model folder: Could not read required file %s in %s.".format(modelFile.getName, modelFile.getPath))
     }
 
+    val quantizedCountsStore = MemoryStore.loadQuantizedCountStore(new FileInputStream(new File(modelDataFolder, "quantized_counts.mem")))
+
     val tokenTypeStore = MemoryStore.loadTokenTypeStore(new FileInputStream(new File(modelDataFolder, "tokens.mem")))
-    val sfStore = MemoryStore.loadSurfaceFormStore(new FileInputStream(new File(modelDataFolder, "sf.mem")))
-    val resStore = MemoryStore.loadResourceStore(new FileInputStream(new File(modelDataFolder, "res.mem")))
-    val candMapStore = MemoryStore.loadCandidateMapStore(new FileInputStream(new File(modelDataFolder, "candmap.mem")), resStore)
+    val sfStore = MemoryStore.loadSurfaceFormStore(new FileInputStream(new File(modelDataFolder, "sf.mem")), quantizedCountsStore)
+    val resStore = MemoryStore.loadResourceStore(new FileInputStream(new File(modelDataFolder, "res.mem")), quantizedCountsStore)
+    val candMapStore = MemoryStore.loadCandidateMapStore(new FileInputStream(new File(modelDataFolder, "candmap.mem")), resStore, quantizedCountsStore)
     val contextStore = if (new File(modelDataFolder, "context.mem").exists())
-      MemoryStore.loadContextStore(new FileInputStream(new File(modelDataFolder, "context.mem")), tokenTypeStore)
+      MemoryStore.loadContextStore(new FileInputStream(new File(modelDataFolder, "context.mem")), tokenTypeStore, quantizedCountsStore)
     else
       null
 
@@ -66,10 +70,22 @@ object SpotlightModel {
     val properties = new Properties()
     properties.load(new FileInputStream(new File(modelFolder, "model.properties")))
 
+    //Read the version of the model folder. The lowest version supported by this code base is:
+    val supportedVersion = 1.0
+    val modelVersion = properties.getProperty("version", "0.1").toFloat
+    if (modelVersion < supportedVersion)
+      throw new ConfigurationException("Incompatible model version %s. This version of DBpedia Spotlight requires models of version 1.0 or newer. Please download a current model from http://spotlight.sztaki.hu/downloads/.".format(modelVersion))
+
+
     //Load the stemmer from the model file:
     def stemmer(): Stemmer = properties.getProperty("stemmer") match {
       case s: String if s equals "None" => null
       case s: String => new SnowballStemmer(s)
+    }
+
+    def contextSimilarity(): ContextSimilarity = contextStore match {
+      case store:MemoryContextStore => new GenerativeContextSimilarity(tokenTypeStore, contextStore)
+      case _ => new NoContextSimilarity(MathUtil.ln(1.0))
     }
 
     val c = properties.getProperty("opennlp_parallel", Runtime.getRuntime.availableProcessors().toString).toInt
@@ -107,9 +123,8 @@ object SpotlightModel {
       sfStore,
       resStore,
       searcher,
-      contextStore,
       new UnweightedMixture(Set("P(e)", "P(c|e)", "P(s|e)")),
-      new GenerativeContextSimilarity(tokenTypeStore)
+      contextSimilarity()
     ))
 
     //If there is at least one NE model or a chunker, use the OpenNLP spotter:

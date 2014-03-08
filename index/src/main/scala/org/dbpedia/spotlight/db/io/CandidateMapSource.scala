@@ -42,7 +42,7 @@ object CandidateMapSource {
       line: String => {
         try {
           val Array(sf, wikiurl, count) = line.trim().split('\t')
-          val uri = wikipediaToDBpediaClosure.wikipediaToDBpediaURI(wikiurl)
+          val uri = wikipediaToDBpediaClosure.wikipediaToDBpediaURI(DBpediaResourceSource.normalizePigURI(wikiurl))
 
           val c = Pair(sfStore.getSurfaceForm(sf).id, resStore.getResourceByName(uri).id)
           val initialCount = candidateMap.get(c) match {
@@ -54,8 +54,9 @@ object CandidateMapSource {
         } catch {
           case e: NotADBpediaResourceException     => uriIgnored += 1
           case e: ArrayIndexOutOfBoundsException   => SpotlightLog.warn(this.getClass, "WARNING: Could not read line.")
-          case e: DBpediaResourceNotFoundException => {uriNotFound += 1; println(line)}
+          case e: DBpediaResourceNotFoundException => uriNotFound += 1
           case e: SurfaceFormNotFoundException     => sfNotFound += 1
+          case e: scala.MatchError => //Ignore lines with multiple tabs
         }
       }
     }

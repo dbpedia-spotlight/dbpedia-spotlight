@@ -24,6 +24,7 @@ object TokenSource {
   private val ADDITIONAL_TOKEN_COUNT = 1
 
   def fromSFStore(sfStore: SurfaceFormStore, tokenizer: StringTokenizer): Seq[String] = {
+    SpotlightLog.info(this.getClass, "Adding all surface form tokens to the TokenStore...")
     sfStore.iterateSurfaceForms.grouped(100000).toList.par.flatMap(_.map{
       sf: SurfaceForm =>
         //Tokenize all SFs first
@@ -31,13 +32,13 @@ object TokenSource {
     }).seq.flatten
   }
 
-  def fromPigFile(tokenFile: File, additionalTokens: Option[Seq[String]] = None) = fromPigInputStream(new FileInputStream(tokenFile), additionalTokens)
-  def fromPigInputStream(tokenFile: InputStream, additionalTokens: Option[Seq[String]] = None) = {
+  def fromPigFile(tokenFile: File, additionalTokens: Option[Seq[String]] = None, minimumCount: Int) = fromPigInputStream(new FileInputStream(tokenFile), additionalTokens, minimumCount)
+  def fromPigInputStream(tokenFile: InputStream, additionalTokens: Option[Seq[String]] = None, minimumCount: Int) = {
 
     val tokenMap = HashMap[String, Int]()
 
     var i = 0
-    TokenOccurrenceSource.plainTokenOccurrenceSource(tokenFile) foreach {
+    TokenOccurrenceSource.plainTokenOccurrenceSource(tokenFile, minimumCount) foreach {
       p: Triple[String, Array[String], Array[Int]] => {
         i += 1
         if (i % 10000 == 0)

@@ -1,6 +1,7 @@
 package org.dbpedia.spotlight.model
 
 import java.util.Map
+import java.lang.String
 
 /**
  * @author pablomendes
@@ -26,7 +27,8 @@ trait SurfaceFormIndexer {
    * corresponding annotated and total count.
    *
    * @param sfCount Map from SurfaceForms to their annotated and total counts
+   * @param lowercaseCounts Map from lowercased surface forms to their total counts
    */
-  def addSurfaceForms(sfCount: Map[SurfaceForm, (Int, Int)])
+  def addSurfaceForms(sfCount: Map[SurfaceForm, (Int, Int)], lowercaseCounts: Map[String, Int], MIN_SF_COUNT: Int)
 
 }

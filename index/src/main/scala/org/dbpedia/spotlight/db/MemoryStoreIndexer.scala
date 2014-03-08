@@ -3,7 +3,7 @@ package org.dbpedia.spotlight.db
 import memory._
 import model.StringTokenizer
 import org.apache.commons.lang.NotImplementedException
-import java.lang.{Short, String}
+import java.lang.String
 
 
 import scala.collection.JavaConversions._
@@ -14,7 +14,10 @@ import java.util.{Map, Set}
 import java.io.File
 import org.dbpedia.spotlight.model._
 import scala.{Array, Int}
-import collection.mutable
+import scala.collection.mutable
+import org.dbpedia.spotlight.db.memory.util.StringToIDMapFactory
+import scala.Predef._
+import scala.Some
 
 /**
  * Implements memory-based indexing. The memory stores are serialized and deserialized using Kryo.
@@ -22,7 +25,7 @@ import collection.mutable
  * @author Joachim Daiber
  */
 
-class MemoryStoreIndexer(val baseDir: File)
+class MemoryStoreIndexer(val baseDir: File, val quantizedCountStore: MemoryQuantizedCountStore)
   extends SurfaceFormIndexer
   with ResourceIndexer
   with CandidateIndexer
@@ -46,7 +49,7 @@ class MemoryStoreIndexer(val baseDir: File)
 
   var tokenizer: Option[StringTokenizer] = None
 
-  def addSurfaceForms(sfCount: Map[SurfaceForm, (Int, Int)]) {
+  def addSurfaceForms(sfCount: Map[SurfaceForm, (Int, Int)], lowercaseCounts: Map[String, Int], MIN_SF_COUNT: Int) {
 
     val sfStore = new MemorySurfaceFormStore()
 
@@ -54,19 +57,33 @@ class MemoryStoreIndexer(val baseDir: File)
     val totalCountForID = new Array[Int](sfCount.size + 1)
     val stringForID = new Array[String](sfCount.size + 1)
 
+    val lowercaseMap: mutable.Map[String, mutable.Set[Int]] = new mutable.HashMap[String, mutable.Set[Int]]().withDefaultValue(new mutable.HashSet[Int]())
+
+
     var i = 1
     sfCount foreach {
-      case (sf, counts) => {
+      case (sf, counts) if counts._1 >= MIN_SF_COUNT => {
         stringForID(i) = sf.name
         annotatedCountForID(i) = counts._1
         totalCountForID(i) = counts._2
 
+        val lowerOcc = sfCount.get(new SurfaceForm(sf.name.toLowerCase))
+        if ( lowerOcc == null || lowerOcc._1 <= MIN_SF_COUNT ) {
+          lowercaseMap.put(sf.name.toLowerCase, lowercaseMap.get(sf.name.toLowerCase) match {
+            case Some(s) => s + i
+            case None => mutable.HashSet[Int](i)
+          })
+        }
+
         i += 1
       }
+      case _ =>
     }
 
 
     if (tokenizer.isDefined) {
+
+     println("Tokenizing sfs and correcting ngrams")
 
       //Get all sfs as ngrams in increasing order by their length in tokens
       val sfId = mutable.HashMap[String, Int]()
@@ -98,7 +115,7 @@ class MemoryStoreIndexer(val baseDir: File)
         case (ngram: Seq[String], id: Int) if(ngram.size > 1) => {
           getAllNgrams(ngram).foreach{ subngram: Seq[String] =>
             sfId.get(subngram.mkString(" ")) match {
-              case Some(subID) if(totalCountForID(subID) > 0 && annotatedCountForID(id) > 0) => totalCountForID(subID) = totalCountForID(subID) - annotatedCountForID(id)
+              case Some(subID) if(totalCountForID(subID) > 0 && totalCountForID(id) > 0) => totalCountForID(subID) = totalCountForID(subID) - annotatedCountForID(id)
               case _ =>
             }
           }
@@ -108,10 +125,21 @@ class MemoryStoreIndexer(val baseDir: File)
 
     }
 
+    //Add lowercased counts:
+    println("Adding lowercase map...")
+    sfStore.lowercaseMap = new java.util.HashMap[String, Array[Int]]()
+    var howmany = 0
+    lowercaseCounts.keySet().filter( s => lowercaseMap.contains(s)).foreach { s: String =>
+      howmany += 1
+      sfStore.lowercaseMap.put(s, (lowercaseCounts.get(s) +: lowercaseMap.get(s).get.toArray))
+
+      if (howmany % 10000 == 0)
+        println("Added "+howmany+" lowercase SF")
+    }
 
     sfStore.stringForID  = stringForID
-    sfStore.annotatedCountForID = annotatedCountForID
-    sfStore.totalCountForID = totalCountForID
+    sfStore.annotatedCountForID = annotatedCountForID.map(quantizedCountStore.addCount)
+    sfStore.totalCountForID = totalCountForID.map(quantizedCountStore.addCount)
 
     MemoryStore.dump(sfStore, new File(baseDir, "sf.mem"))
   }
@@ -135,7 +163,7 @@ class MemoryStoreIndexer(val baseDir: File)
 
     val supportForID = new Array[Int](resourceCount.size+1)
     val uriForID = new Array[String](resourceCount.size+1)
-    val typesForID = new Array[Array[Short]](resourceCount.size+1)
+    val typesForID = new Array[Array[java.lang.Short]](resourceCount.size+1)
 
     resourceCount.foreach {
 
@@ -152,7 +180,7 @@ class MemoryStoreIndexer(val baseDir: File)
     }
 
     resStore.ontologyTypeStore = ontologyTypeStore
-    resStore.supportForID = supportForID.array
+    resStore.supportForID = supportForID.map(quantizedCountStore.addCount).array
     resStore.uriForID = uriForID.array
     resStore.typesForID = typesForID.array
 
@@ -185,7 +213,7 @@ class MemoryStoreIndexer(val baseDir: File)
     }
 
     candmapStore.candidates = (candidates map { l: ListBuffer[Int] => if(l != null) l.toArray else null} ).toArray
-    candmapStore.candidateCounts = (candidateCounts map { l: ListBuffer[Int] => if(l != null) l.toArray else null} ).toArray
+    candmapStore.candidateCounts = (candidateCounts map { l: ListBuffer[Int] => if(l != null) l.map(quantizedCountStore.addCount).toArray else null} ).toArray
 
     MemoryStore.dump(candmapStore, new File(baseDir, "candmap.mem"))
   }
@@ -210,7 +238,12 @@ class MemoryStoreIndexer(val baseDir: File)
     }
 
     candmapStore.candidates = candidates
-    candmapStore.candidateCounts = candidateCounts
+    candmapStore.candidateCounts = candidateCounts.map(cs =>
+      if (cs == null)
+        null
+      else
+        cs.map(quantizedCountStore.addCount).array
+    )
 
     MemoryStore.dump(candmapStore, new File(baseDir, "candmap.mem"))
   }
@@ -254,14 +287,14 @@ class MemoryStoreIndexer(val baseDir: File)
 
   def createContextStore(n: Int) {
     contextStore.tokens = new Array[Array[Int]](n)
-    contextStore.counts = new Array[Array[Int]](n)
+    contextStore.counts = new Array[Array[Short]](n)
   }
 
   def addTokenOccurrences(occs: Map[DBpediaResource, Map[Int, Int]]) {
     occs.foreach{ case(res, tokenCounts) => {
       val (t, c) = tokenCounts.unzip
       contextStore.tokens(res.id) = t.toArray
-      contextStore.counts(res.id) = c.toArray
+      contextStore.counts(res.id) = c.map(quantizedCountStore.addCount).toArray
     }
     }
   }
@@ -273,12 +306,12 @@ class MemoryStoreIndexer(val baseDir: File)
         if (res != null) {
           assert (tokens.size == counts.size)
           if(contextStore.tokens(res.id) != null) {
-            val (mergedTokens, mergedCounts) = (tokens.map{ t: TokenType => t.id }.array.zip(counts.array) ++ contextStore.tokens(res.id).zip( contextStore.counts(res.id) )).groupBy(_._1).map{ case(k, v) => (k, v.map{ p => p._2}.sum ) }.unzip
+            val (mergedTokens, mergedCounts) = (tokens.map{ t: TokenType => t.id }.array.zip(counts.array) ++ contextStore.tokens(res.id).zip( contextStore.counts(res.id).map(quantizedCountStore.getCount) )).groupBy(_._1).map{ case(k, v) => (k, v.map{ p => p._2}.sum ) }.unzip
             contextStore.tokens(res.id) = mergedTokens.toArray.array
-            contextStore.counts(res.id) = mergedCounts.toArray.array
+            contextStore.counts(res.id) = mergedCounts.asInstanceOf[Iterable[Int]].map(quantizedCountStore.addCount).toArray.array
           } else{
             contextStore.tokens(res.id) = tokens.map{ t: TokenType => t.id }.array
-            contextStore.counts(res.id) = counts.array
+            contextStore.counts(res.id) = counts.map(quantizedCountStore.addCount).array
           }
         }
       }
@@ -290,14 +323,19 @@ class MemoryStoreIndexer(val baseDir: File)
     MemoryStore.dump(contextStore, new File(baseDir, "context.mem"))
   }
 
+  def writeQuantizedCounts() {
+    MemoryStore.dump(quantizedCountStore, new File(baseDir, "quantized_counts.mem"))
+  }
+
+
 
 }
 
 object MemoryStoreIndexer {
 
   def createOntologyTypeStore(types: Set[OntologyType]): MemoryOntologyTypeStore = {
-    val idFromName = new java.util.HashMap[String, Short]()
-    val ontologyTypeFromID = new java.util.HashMap[Short, OntologyType]()
+    val idFromName = new java.util.HashMap[String, java.lang.Short]()
+    val ontologyTypeFromID = new java.util.HashMap[java.lang.Short, OntologyType]()
 
     var i = 0.toShort
     types foreach {

@@ -3,20 +3,18 @@ package org.dbpedia.spotlight.db.io
 import io.Source
 import java.io.{File, FileInputStream, InputStream}
 import org.dbpedia.spotlight.model.Factory.OntologyType
-import collection.immutable.HashMap
 import scala.collection.JavaConverters._
 import java.util.NoSuchElementException
 import scala.collection.mutable.HashSet
-import org.dbpedia.spotlight.lucene.index.ExtractOccsFromWikipedia._
-import org.dbpedia.spotlight.filter.occurrences.RedirectResolveFilter
 import org.dbpedia.spotlight.db.WikipediaToDBpediaClosure
 import org.dbpedia.spotlight.log.SpotlightLog
 import scala.Predef._
 import scala.Array
 import org.dbpedia.spotlight.model._
-import collection.parallel.mutable
 import org.dbpedia.spotlight.exceptions.NotADBpediaResourceException
 import org.semanticweb.yars.nx.parser.NxParser
+
+import org.dbpedia.extraction.util.WikiUtil
 
 
 /**
@@ -77,6 +75,25 @@ object DBpediaResourceSource {
     resourceMap.iterator.map( f => Pair(f._2, f._2.support) ).toMap.asJava
   }
 
+
+  /**
+   * Normalize the URI resulting from Pig to a format useable for us.
+   * At the moment, the Pig URIs are in DBpedia format but double-encoded.
+   *
+   * @param uri the DBpedia URI returned by Pig
+   * @return
+   */
+  def normalizePigURI(uri: String) = {
+    try {
+      //This seems a bit over the top (this is necessary because of the format of the data as it comes from pignlproc):
+      WikiUtil.wikiEncode(WikiUtil.wikiDecode(WikiUtil.wikiDecode(uri)))
+    } catch {
+      case e: Exception => println("Conversion to correct URI format failed at %s".format(uri)); uri
+    }
+
+  }
+
+
   def fromPigInputStreams(
     wikipediaToDBpediaClosure: WikipediaToDBpediaClosure,
     resourceCounts: InputStream,
@@ -97,7 +114,7 @@ object DBpediaResourceSource {
       line: String => {
         try {
           val Array(wikiurl, count) = line.trim().split('\t')
-          val res = new DBpediaResource(wikipediaToDBpediaClosure.wikipediaToDBpediaURI(wikiurl))
+          val res = new DBpediaResource(wikipediaToDBpediaClosure.wikipediaToDBpediaURI(normalizePigURI(wikiurl)))
 
           resourceByURI.get(res.uri) match {
             case Some(oldRes) => {
@@ -113,6 +130,7 @@ object DBpediaResourceSource {
           }
         } catch {
           case e: NotADBpediaResourceException => //Ignore Disambiguation pages
+          case e: scala.MatchError => //Ignore lines with multiple tabs
         }
 
       }
@@ -134,7 +152,7 @@ object DBpediaResourceSource {
           }
         }
       }
-      SpotlightLog.warn(this.getClass, "URI for %d type definitions not found!", uriNotFound.size)
+      SpotlightLog.warn(this.getClass, "URI for %d type definitions not found!".format(uriNotFound.size) )
       SpotlightLog.info(this.getClass, "Done.")
     } else if (instanceTypes != null && instanceTypes._1.equals("nt")) {
       SpotlightLog.info(this.getClass, "Reading types (nt format)...")
@@ -159,7 +177,7 @@ object DBpediaResourceSource {
         }
 
       }
-      SpotlightLog.warn(this.getClass, "URI for %d type definitions not found!", uriNotFound.size)
+      SpotlightLog.info(this.getClass, "URI for %d type definitions not found!".format(uriNotFound.size) )
       SpotlightLog.info(this.getClass, "Done.")
     }
 
