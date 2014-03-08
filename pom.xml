@@ -23,7 +23,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
-        <dbpedia.spotlight.version>0.6</dbpedia.spotlight.version>
+        <dbpedia.spotlight.version>0.7</dbpedia.spotlight.version>
 
         <java.compiler.version>1.6</java.compiler.version>
         <scala.compiler.version>2.9.2</scala.compiler.version>
@@ -48,11 +48,7 @@
         <module>rest</module>
         <module>index</module>
         <module>eval</module>
-	    <module>uima</module>
-	    <!--
-        <module>topical</module>
-        <module>live</module>
-        -->
+        <module>uima</module>
         <module>dist</module>
         <module>rest-tomcat</module>
     </modules>
