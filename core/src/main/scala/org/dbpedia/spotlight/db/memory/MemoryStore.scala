@@ -185,6 +185,7 @@ object MemoryStore {
   def loadContextStore(in: InputStream, tokenStore: TokenTypeStore, quantizedCountStore: MemoryQuantizedCountStore): MemoryContextStore = {
     val s = load[MemoryContextStore](in, classOf[MemoryContextStore].getSimpleName, Some(quantizedCountStore))
     s.tokenStore = tokenStore
+    s.calculateTotalTokenCounts()
     s
   }
 

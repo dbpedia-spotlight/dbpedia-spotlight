@@ -84,6 +84,20 @@ class MemoryContextStore
     output.writeChar('#')
   }
 
+  /*
+  * Calculates totalTokenCounts once kryo has read the Serialized Object
+  * */
+  def calculateTotalTokenCounts(){
+
+    for( (resourceContextCounts, i) <- counts.zipWithIndex){
+      for(tokenCounts <- resourceContextCounts){
+        totalTokenCounts(i) += qc(tokenCounts)
+      }
+    }
+
+  }
+
+
   def read(kryo: Kryo, input: Input) {
     val size = input.readInt()
 
@@ -110,7 +124,6 @@ class MemoryContextStore
         j = 0
         while(j < subsize) {
           counts(i)(j) = input.readShort()
-          totalTokenCounts(i) += counts(i)(j)
           j += 1
         }
      }
