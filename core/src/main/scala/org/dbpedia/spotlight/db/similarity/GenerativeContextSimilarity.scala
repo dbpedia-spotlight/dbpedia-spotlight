@@ -50,14 +50,10 @@ class GenerativeContextSimilarity(tokenTypeStore: TokenTypeStore, contextStore: 
    */
   def p(token: TokenType, res: DBpediaResource, cResAndToken: Int): Double = {
 
-    val pML = if (cResAndToken == 0)
+    val pML = if (cResAndToken == 0 || contextStore.getTotalTokenCount(res) == 0 )
       0.0
     else
-      try {
-        cResAndToken.toDouble / contextStore.getTotalTokenCount(res)
-      } catch {
-        case e: ArithmeticException => 0.0
-      }
+      cResAndToken.toDouble / contextStore.getTotalTokenCount(res)
 
     val ml = MathUtil.lnproduct(MathUtil.ln(lambda), MathUtil.ln(pML))
     val lm = MathUtil.lnproduct(MathUtil.ln(1-lambda), pLM(token))
