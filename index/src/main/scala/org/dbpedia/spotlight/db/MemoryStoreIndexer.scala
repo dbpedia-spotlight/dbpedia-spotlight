@@ -319,7 +319,21 @@ class MemoryStoreIndexer(val baseDir: File, val quantizedCountStore: MemoryQuant
   }
 
 
+  /**
+   * Iterates the Context Store sorting the tokens by their token Id.
+   */
+  def sortTokensInContextStore(){
+    for((currentTokens, i) <- contextStore.tokens.zipWithIndex){
+      if (currentTokens.isInstanceOf[Array[Int]] && currentTokens.size > 1){
+        val (sortedTokens, counts) = currentTokens.zip(contextStore.counts(i)).sortBy(_._1).unzip
+        contextStore.tokens(i) = sortedTokens.toArray
+        contextStore.counts(i) = counts.toArray
+      }
+    }
+  }
+
   def writeTokenOccurrences() {
+    sortTokensInContextStore()
     MemoryStore.dump(contextStore, new File(baseDir, "context.mem"))
   }
 
