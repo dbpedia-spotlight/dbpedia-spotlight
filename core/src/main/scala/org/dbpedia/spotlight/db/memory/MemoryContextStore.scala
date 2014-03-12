@@ -88,13 +88,20 @@ class MemoryContextStore
   * Calculates totalTokenCounts once kryo has read the Serialized Object
   * */
   def calculateTotalTokenCounts(){
+    var i = 0
+    while(i < counts.size){
 
-    for( (resourceContextCounts, i) <- counts.zipWithIndex){
-      for(tokenCounts <- resourceContextCounts){
-        totalTokenCounts(i) += qc(tokenCounts)
+      if (counts(i).isInstanceOf[Array[Short]]){
+        var j = 0
+
+        while(j < counts(i).size ){
+          totalTokenCounts(i) += qc(counts(i)(j))
+          j += 1
+        }
+
       }
+      i += 1
     }
-
   }
 
 
