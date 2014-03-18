@@ -24,6 +24,7 @@ import org.dbpedia.spotlight.log.SpotlightLog
 import java.io.{PrintStream, FileOutputStream, File}
 import xml.{XML, Elem}
 import org.dbpedia.extraction.util.Language
+import org.dbpedia.extraction.wikiparser.impl.simple.SimpleWikiParser
 
 /**
  * Loads Occurrences from a wiki dump.
@@ -72,7 +73,7 @@ object WikiOccurrenceSource
       new WikiOccurrenceSource(
         new MemorySource(
           testFile.map{ line =>
-            new WikiPage(new WikiTitle("Test Paragraph", Namespace.Main, Language.English), line.trim())
+            new WikiPage(new WikiTitle("Test Paragraph", Namespace.Main, Language.English,false,null), line.trim())
           }.toTraversable.asInstanceOf[scala.collection.immutable.Traversable[org.dbpedia.extraction.sources.WikiPage]]
         )
       )
@@ -83,7 +84,7 @@ object WikiOccurrenceSource
      */
     private class WikiOccurrenceSource(wikiPages : Source) extends OccurrenceSource
     {
-        val wikiParser = WikiParser()
+        val wikiParser = new SimpleWikiParser()
 
         override def foreach[U](f : DBpediaResourceOccurrence => U) : Unit =
         {

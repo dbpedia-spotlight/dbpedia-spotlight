@@ -24,6 +24,7 @@ import org.dbpedia.spotlight.log.SpotlightLog
 import java.io.{File}
 import xml.{XML, Elem}
 import org.dbpedia.extraction.util.Language
+import org.dbpedia.extraction.wikiparser.impl.simple.SimpleWikiParser
 
 /**
  * Loads Occurrences from a wiki dump.
@@ -68,7 +69,7 @@ object AllOccurrenceSource
      */
     private class AllOccurrenceSource(wikiPages : Source, multiplyDisambigs : Int=MULTIPLY_DISAMBIGUATION_CONTEXT) extends OccurrenceSource
     {
-        val wikiParser = WikiParser()
+        val wikiParser = new SimpleWikiParser()
 
         override def foreach[U](f : DBpediaResourceOccurrence => U) : Unit =
         {

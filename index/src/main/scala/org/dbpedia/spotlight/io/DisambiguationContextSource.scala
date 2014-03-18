@@ -24,6 +24,7 @@ import org.dbpedia.spotlight.log.SpotlightLog
 import java.io.{File}
 import xml.{XML, Elem}
 import org.dbpedia.extraction.util.Language
+import org.dbpedia.extraction.wikiparser.impl.simple.SimpleWikiParser
 
 /**
  * Loads descriptive text that occurs around entries in disambiguation pages from a wiki dump.
@@ -65,7 +66,7 @@ object DisambiguationContextSource
     }
 
     def wikiPageCopy(wikiPage: WikiPage, newSource: String) = {
-        new WikiPage(wikiPage.title, wikiPage.redirect, wikiPage.id, wikiPage.revision, wikiPage.timestamp, newSource)
+        new WikiPage(wikiPage.title, wikiPage.redirect, wikiPage.id, wikiPage.revision, wikiPage.timestamp, wikiPage.contributorID, wikiPage.contributorName, newSource, wikiPage.format)
     }
 
     /**
@@ -75,7 +76,7 @@ object DisambiguationContextSource
     {
         val splitDisambiguations = """\n"""
         
-        val wikiParser = WikiParser()
+        val wikiParser = new SimpleWikiParser()
 
         override def foreach[U](f : DBpediaResourceOccurrence => U) : Unit =
         {

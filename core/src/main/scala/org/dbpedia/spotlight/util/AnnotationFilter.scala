@@ -273,7 +273,7 @@ class AnnotationFilter(val config: SpotlightConfiguration)
         import scala.collection.JavaConversions._
         SpotlightLog.info(this.getClass, "Disambiguating... (%s)", disambiguator.name)
         val disambiguatedOccurrences : java.util.List[DBpediaResourceOccurrence] = disambiguator.disambiguate(selectedSpots)
-        val occurrences = asBuffer(disambiguatedOccurrences).toList
+        val occurrences = asScalaBuffer(disambiguatedOccurrences).toList
 
         SpotlightLog.info(this.getClass, "Filtering... ")
 

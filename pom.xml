@@ -23,10 +23,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
-        <dbpedia.spotlight.version>0.7</dbpedia.spotlight.version>
+        <dbpedia.spotlight.version>0.6</dbpedia.spotlight.version>
 
         <java.compiler.version>1.6</java.compiler.version>
-        <scala.compiler.version>2.9.2</scala.compiler.version>
+        <scala.compiler.version>2.10.2</scala.compiler.version>
         <lucene.version>3.6.0</lucene.version>
         <jersey.version>1.10</jersey.version>
 
@@ -39,7 +39,7 @@
 
     <groupId>org.dbpedia.spotlight</groupId>
     <artifactId>spotlight</artifactId>
-    <version>0.7</version>
+    <version>0.6</version>
     <packaging>pom</packaging>
     <name>DBpedia Spotlight annotation framework (parent POM)</name>
 
@@ -48,9 +48,14 @@
         <module>rest</module>
         <module>index</module>
         <module>eval</module>
-        <module>uima</module>
-        <module>dist</module>
+	    <!--module>uima</module-->
+	    <!--
+        <module>topical</module>
+        <module>live</module>
+        -->
+        <!--module>dist</module-->
         <module>rest-tomcat</module>
+        <module>entity_topic</module>
     </modules>
 
     <build>
@@ -245,7 +250,7 @@
             <dependency>
                 <groupId>org.dbpedia.extraction</groupId>
                 <artifactId>core</artifactId>
-                <version>3.8</version>
+                <version>3.9</version>
                 <!--
                     License: Apache Software License, Version 2.0
                 -->
@@ -495,8 +500,8 @@
 
             <dependency>
                 <groupId>org.scalatest</groupId>
-                <artifactId>scalatest_2.9.2</artifactId>
-                <version>2.0.M4</version>
+                <artifactId>scalatest_2.10</artifactId>
+                <version>2.1.0-RC3</version>
                 <!--
                     License: Apache Software License, Version 2.0
                 -->
@@ -565,8 +570,8 @@
 
             <dependency>
                 <groupId>org.scalanlp</groupId>
-                <artifactId>breeze-learn_2.9.2</artifactId>
-                <version>0.1</version>
+                <artifactId>breeze-learn_2.10</artifactId>
+                <version>0.3</version>
                 <!--
                     License: Apache Software License, Version 2.0
                 -->
@@ -574,8 +579,8 @@
 
             <dependency>
                 <groupId>com.typesafe.akka</groupId>
-                <artifactId>akka-actor</artifactId>
-                <version>2.0.5</version>
+                <artifactId>akka-actor_2.10</artifactId>
+                <version>2.2.3</version>
                 <!--
                     License: Apache Software License, Version 2.0
                 -->
@@ -653,8 +658,8 @@
 
             <dependency>
                 <groupId>org.scalaz</groupId>
-                <artifactId>scalaz-core_${scala.compiler.version}</artifactId>
-                <version>6.0.4</version>
+                <artifactId>scalaz-core_2.10</artifactId>
+                <version>7.0.5</version>
                 <!--
                   License: BSD 3-Clause
                 -->
@@ -672,7 +677,7 @@
             <dependency>
                 <groupId>org.apache.opennlp</groupId>
                 <artifactId>opennlp-tools</artifactId>
-                <version>1.5.3</version>
+                <version>1.5.2-incubating</version>
                 <!--
                      License: Apache Software License, Version 2.0
                  -->
@@ -727,8 +732,8 @@
 
             <dependency>
                 <groupId>net.liftweb</groupId>
-                <artifactId>lift-json_2.9.2</artifactId>
-                <version>2.5-M1</version>
+                <artifactId>lift-json_2.10</artifactId>
+                <version>2.5</version>
                 <!--
                   License: Apache Software License, Version 2.0
                 -->
@@ -783,7 +788,7 @@
             <dependency>
                 <groupId>cc.factorie</groupId>
                 <artifactId>factorie</artifactId>
-                <version>1.0.0-M4</version>
+                <version>1.0.0-RC1</version>
                 <!--
                   License: Apache Software License, Version 2.0
                 -->
@@ -890,11 +895,45 @@
                 -->
             </dependency>
 
+            <!-- Twitter dependencies -->
+
+            <dependency>
+                <groupId>com.twitter</groupId>
+                <artifactId>storehaus-memcache_2.10</artifactId>
+                <version>0.9.0rc2</version>
+                <!--
+                 License: Apache Software License, Version 2.0
+               -->
+            </dependency>
+            <dependency>
+                <groupId>com.twitter</groupId>
+                <artifactId>storehaus-redis_2.10</artifactId>
+                <version>0.9.0rc2</version>
+                <!--
+                 License: Apache Software License, Version 2.0
+               -->
+            </dependency>
+            <dependency>
+                <groupId>com.twitter</groupId>
+                <artifactId>bijection-core_2.10</artifactId>
+                <version>0.6.2</version>
+                <!--
+                 License: Apache Software License, Version 2.0
+               -->
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.spark</groupId>
+                <artifactId>spark-streaming_2.10</artifactId>
+                <version>0.9.0-incubating</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
 
     <repositories>
+
         <repository>
             <id>maven2-repository.dev.java.net</id>
             <name>Java.net Repository for Maven</name>
@@ -935,6 +974,11 @@
         </repository>
 
         <repository>
+            <id>twitter-twttr</id>
+            <url>http://maven.twttr.com/</url>
+        </repository>
+
+        <repository>
             <id>igetdb.sourceforge</id>
             <url>http://igetdb.sourceforge.net/maven2-repository</url>
         </repository>
@@ -959,6 +1003,33 @@
             <url>https://github.com/dbpedia-spotlight/maven-repo/raw/master/snapshots</url>
         </repository>
 
+        <repository>
+            <id>IESL Releases</id>
+            <name>IESL Repo</name>
+            <url>https://dev-iesl.cs.umass.edu/nexus/content/groups/public</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+
+        <repository>
+            <id>maven.aksw.internal</id>
+            <name>University Leipzig, AKSW Maven2 Repository</name>
+            <url>http://maven.aksw.org/archiva/repository/internal</url>
+        </repository>
+        <repository>
+            <id>maven.aksw.snapshots</id>
+            <name>University Leipzig, AKSW Maven2 Repository</name>
+            <url>http://maven.aksw.org/archiva/repository/snapshots</url>
+        </repository>
+
+        <repository>
+            <id>clojars</id>
+            <url>http://clojars.org/repo/</url>
+        </repository>
 
     </repositories>
 
