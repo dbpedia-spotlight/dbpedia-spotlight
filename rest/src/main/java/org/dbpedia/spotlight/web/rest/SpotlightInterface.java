@@ -142,6 +142,7 @@ public class SpotlightInterface {
             throw new InputException("No text was specified in the &text parameter.");
         }
         Text context = new Text(textString);
+        context.setFeature(new Score("confidence", confidence));
 
         // Find spots to annotate/disambiguate
         List<SurfaceFormOccurrence> spots = spot(spotterName,context);

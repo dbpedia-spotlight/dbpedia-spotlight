@@ -79,7 +79,9 @@ abstract class DBSpotter(
 
               //SpotlightLog.info(this.getClass, spot + ":" + chunkSpan.getType)
 
-              val sfMatch = surfaceFormMatch(spot)
+              val confidence = text.featureValue[Double]("confidence").getOrElse(0.5)
+              val sfMatch = surfaceFormMatch(spot, confidence=math.max(0.2, confidence))
+
               SpotlightLog.debug(this.getClass, "type:"+chunkSpan.getType)
               if (sfMatch.isDefined) {
                 //The sub-chunk is in the dictionary, finish the processing of this chunk
@@ -134,7 +136,7 @@ abstract class DBSpotter(
     }
   }
 
-  protected def surfaceFormMatch(spot: String): Option[SurfaceForm] = {
+  protected def surfaceFormMatch(spot: String, confidence: Double): Option[SurfaceForm] = {
     val score: (Option[SurfaceForm], Double) = spotScore(spot)
     score._1 match {
       case Some(sf) => SpotlightLog.debug(this.getClass, sf.toString + ":" + score._2)
@@ -142,7 +144,7 @@ abstract class DBSpotter(
     }
 
     if (spotFeatureWeightVector.isDefined)
-       if(score._2 >= 0.5)
+       if(score._2 >= confidence)
          score._1
        else
         None
