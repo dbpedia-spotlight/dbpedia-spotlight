@@ -36,8 +36,8 @@ class WikipediaToDBpediaClosure (
   val redParser = new NxParser(redirectsTriples)
   while (redParser.hasNext) {
     val triple = redParser.next
-    val subj = triple(0).toString.replace(namespace, "")
-    val obj  = triple(2).toString.replace(namespace, "")
+    val subj = URLDecoder.decode(triple(0).toString.replace(namespace, ""),"utf-8")
+    val obj  = URLDecoder.decode(triple(2).toString.replace(namespace, ""),"utf-8")
     linkMap  = linkMap.updated(subj, obj)
   }
   SpotlightLog.info(this.getClass, "Done.")
@@ -47,7 +47,7 @@ class WikipediaToDBpediaClosure (
   val disParser = new NxParser(disambiguationTriples)
   while (disParser.hasNext) {
     val triple = disParser.next
-    val subj = triple(0).toString.replace(namespace, "")
+    val subj = URLDecoder.decode(triple(0).toString.replace(namespace, ""),"utf-8")
     disambiguationsSet  = disambiguationsSet + subj
   }
   SpotlightLog.info(this.getClass, "Done.")
@@ -61,8 +61,8 @@ class WikipediaToDBpediaClosure (
     val wikiDBPParser = new NxParser(wikiToDBPTriples)
     while (wikiDBPParser.hasNext) {
       val triple = wikiDBPParser.next
-      val subj   = triple(0).toString.replaceFirst("http://[a-z]+[.]wikipedia[.]org/wiki/", "")
-      val obj    = triple(2).toString.replace(namespace, "")
+      val subj   = URLDecoder.decode(triple(0).toString.replaceFirst("http://[a-z]+[.]wikipedia[.]org/wiki/", ""),"utf-8")
+      val obj    = URLDecoder.decode(triple(2).toString.replace(namespace, ""),"utf-8")
       wikiToDBPMap = wikiToDBPMap.updated(subj, getEndOfChainURI(obj))
     }
   }
@@ -107,7 +107,7 @@ class WikipediaToDBpediaClosure (
         getEndOfChainURI(wikiToDBpediaURI(wikiURL))
       }
     } else {
-      getEndOfChainURI(wikiURL)
+      getEndOfChainURI(URLDecoder.decode(wikiURL,"utf-8"))
     }
 
     if (disambiguationsSet.contains(uri) || uri == null)
