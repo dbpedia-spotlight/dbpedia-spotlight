@@ -56,6 +56,8 @@ trait OntologyType extends Serializable {
  * Types from the DBpedia ontology (hierarchical)
  */
 
+
+@SerialVersionUID(8037662401509425326l)
 class DBpediaType(var name : String) extends OntologyType {
 
     name = name.replace(DBpediaType.DBPEDIA_ONTOLOGY_PREFIX, "")
@@ -85,6 +87,7 @@ object DBpediaType {
  * Types from Freebase: non-hierarchical, grouped into domains.
  */
 
+@SerialVersionUID(8037662401509425325l)
 class FreebaseType(val domain: String, val typeName: String) extends OntologyType {
 
   override def getFullUri = FreebaseType.FREEBASE_RDF_PREFIX + domain + "." + typeName
@@ -119,6 +122,7 @@ object FreebaseType {
   val FREEBASE_RDF_PREFIX = "http://rdf.freebase.com/ns"
 }
 
+@SerialVersionUID(8037662401509425324l)
 class SchemaOrgType(var name : String) extends OntologyType {
 
     name = name.replace(SchemaOrgType.SCHEMAORG_PREFIX, "")
@@ -139,6 +143,7 @@ object SchemaOrgType {
 }
 
 
+@SerialVersionUID(8037662401509425323l)
 class OpenCycConcept(var name : String) extends OntologyType {
 
     name = name.replace(OpenCycConcept.OPENCYCCONCEPT_PREFIX, "")

@@ -1,13 +1,13 @@
 package org.dbpedia.spotlight.db
 
 import concurrent.{TokenizerWrapper, SpotterWrapper}
-import memory.MemoryStore
+import org.dbpedia.spotlight.db.memory.{MemoryContextStore, MemoryStore}
 import model._
 import opennlp.tools.tokenize.{TokenizerModel, TokenizerME}
 import opennlp.tools.sentdetect.{SentenceModel, SentenceDetectorME}
 import opennlp.tools.postag.{POSModel, POSTaggerME}
 import org.dbpedia.spotlight.disambiguate.mixtures.UnweightedMixture
-import similarity.GenerativeContextSimilarity
+import org.dbpedia.spotlight.db.similarity.{NoContextSimilarity, GenerativeContextSimilarity, ContextSimilarity}
 import scala.collection.JavaConverters._
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy
 import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy
@@ -20,6 +20,7 @@ import opennlp.tools.namefind.TokenNameFinderModel
 import stem.SnowballStemmer
 import tokenize.{OpenNLPTokenizer, LanguageIndependentTokenizer}
 import org.dbpedia.spotlight.exceptions.ConfigurationException
+import org.dbpedia.spotlight.util.MathUtil
 
 
 class SpotlightModel(val tokenizer: TextTokenizer,
@@ -82,6 +83,11 @@ object SpotlightModel {
       case s: String => new SnowballStemmer(s)
     }
 
+    def contextSimilarity(): ContextSimilarity = contextStore match {
+      case store:MemoryContextStore => new GenerativeContextSimilarity(tokenTypeStore, contextStore)
+      case _ => new NoContextSimilarity(MathUtil.ln(1.0))
+    }
+
     val c = properties.getProperty("opennlp_parallel", Runtime.getRuntime.availableProcessors().toString).toInt
     val cores = (1 to c)
 
@@ -118,7 +124,7 @@ object SpotlightModel {
       resStore,
       searcher,
       new UnweightedMixture(Set("P(e)", "P(c|e)", "P(s|e)")),
-      new GenerativeContextSimilarity(tokenTypeStore, contextStore)
+      contextSimilarity()
     ))
 
     //If there is at least one NE model or a chunker, use the OpenNLP spotter:

@@ -27,6 +27,9 @@ import scala.Some
 @SerialVersionUID(1001001)
 abstract class MemoryStore extends Serializable {
 
+
+  //The QC store is provided via the constructor, hence it should not be serialized as part of any MemoryStore
+  @transient
   var quantizedCountStore: MemoryQuantizedCountStore = null
 
   def qc(quantizedCount: scala.Short): Int = quantizedCountStore.getCount(quantizedCount)
@@ -182,6 +185,7 @@ object MemoryStore {
   def loadContextStore(in: InputStream, tokenStore: TokenTypeStore, quantizedCountStore: MemoryQuantizedCountStore): MemoryContextStore = {
     val s = load[MemoryContextStore](in, classOf[MemoryContextStore].getSimpleName, Some(quantizedCountStore))
     s.tokenStore = tokenStore
+    s.calculateTotalTokenCounts()
     s
   }
 
@@ -195,6 +199,9 @@ object MemoryStore {
 
   def dump(store: MemoryStore, out: File) {
     val kryo = kryos.get(store.getClass.getSimpleName).get
+
+    //The QC store may not be serialized as part of the store, it is serialized separately
+    store.quantizedCountStore = null
 
     SpotlightLog.info(this.getClass, "Writing %s...".format(store.getClass.getSimpleName))
     val output = new Output(new FileOutputStream(out))

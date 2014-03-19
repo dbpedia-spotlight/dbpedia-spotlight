@@ -56,6 +56,7 @@ object CandidateMapSource {
           case e: ArrayIndexOutOfBoundsException   => SpotlightLog.warn(this.getClass, "WARNING: Could not read line.")
           case e: DBpediaResourceNotFoundException => uriNotFound += 1
           case e: SurfaceFormNotFoundException     => sfNotFound += 1
+          case e: scala.MatchError => //Ignore lines with multiple tabs
         }
       }
     }

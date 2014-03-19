@@ -123,7 +123,7 @@ class DBTwoStepDisambiguator(
         acc + (sfOcc -> candidateRes.toList)
       })
 
-    val tokensDistinct = tokens.distinct
+    val tokensDistinct = tokens.distinct.sortBy(_.id)
 
     // step2: query once for the paragraph context, get scores for each candidate resource
     val contextScores = contextSimilarity.score(tokensDistinct, allCandidateResources)
@@ -162,7 +162,7 @@ class DBTwoStepDisambiguator(
           Provenance.Undefined,
           0.0,
           0.0,
-          contextScores.get(cand.resource).get
+          contextScores(cand.resource)
         )
 
         //Set the scores as features for the resource occurrence:
