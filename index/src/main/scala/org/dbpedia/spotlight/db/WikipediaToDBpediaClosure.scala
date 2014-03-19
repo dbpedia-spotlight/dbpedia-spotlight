@@ -117,14 +117,13 @@ class WikipediaToDBpediaClosure (
   }
 
   def getEndOfChainURI(uri: String): String = {
-    getURIChain(ListBuffer(uri)).last
+    getEndOfChainURI(uri,Set(uri))
   }
 
-  private def getURIChain(chain: ListBuffer[String]): ListBuffer[String] = {
-      // get end of chain but check for redirects to itself
-      linkMap.get(chain.last) match {
-          case Some(s: String) => if (chain.contains(s)) chain else getURIChain(chain :+ s)
-          case None => chain
-      }
+  private def getEndOfChainURI(uri: String, alreadyTraversed:Set[String]): String = {
+    linkMap.get(uri) match {
+      case Some(s: String) => if (alreadyTraversed.contains(s)) uri else getEndOfChainURI(s, alreadyTraversed + s)
+      case None => uri
+    }
   }
 }
