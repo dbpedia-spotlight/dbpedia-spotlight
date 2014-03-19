@@ -79,6 +79,7 @@ public class Candidates {
         List<Spot> spots = new LinkedList<Spot>();
 
         Text textObject = new Text(text);
+        textObject.setFeature(new Score("confidence", confidence));
 
         if(Server.getTokenizer() != null)
             Server.getTokenizer().tokenizeMaybe(textObject);
