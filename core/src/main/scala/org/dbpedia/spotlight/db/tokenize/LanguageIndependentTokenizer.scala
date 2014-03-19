@@ -101,7 +101,7 @@ object Helper {
     }
 
     while (end != BreakIterator.DONE) {
-      if (!Character.isWhitespace(normalizedText.charAt(start)))
+      if ((start until end) exists (i => ! Character.isWhitespace(normalizedText.charAt(i))))
         spans += new Span(start, end)
 
       start = end
