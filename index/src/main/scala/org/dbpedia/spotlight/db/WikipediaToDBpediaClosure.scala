@@ -9,6 +9,7 @@ import org.dbpedia.spotlight.exceptions.NotADBpediaResourceException
 import java.net.URLDecoder
 import org.dbpedia.spotlight.model.SpotlightConfiguration
 import org.dbpedia.extraction.util.WikiUtil
+import scala.collection.mutable.ListBuffer
 
 /**
  * Parts of this are taken from
@@ -62,7 +63,7 @@ class WikipediaToDBpediaClosure (
       val triple = wikiDBPParser.next
       val subj   = triple(0).toString.replaceFirst("http://[a-z]+[.]wikipedia[.]org/wiki/", "")
       val obj    = triple(2).toString.replace(namespace, "")
-      wikiToDBPMap = wikiToDBPMap.updated(subj, getEndOfChainURI(linkMap, obj))
+      wikiToDBPMap = wikiToDBPMap.updated(subj, getEndOfChainURI(obj))
     }
   }
 
@@ -101,12 +102,12 @@ class WikipediaToDBpediaClosure (
 
     val uri = if(wikiURL.startsWith("http:")){
       if(wikiToDBPMap.size > 0) {
-        getEndOfChainURI(linkMap, wikiToDBPMap(wikiURL))
+        getEndOfChainURI(wikiToDBPMap(wikiURL))
       } else {
-        getEndOfChainURI(linkMap, wikiToDBpediaURI(wikiURL))
+        getEndOfChainURI(wikiToDBpediaURI(wikiURL))
       }
     } else {
-      getEndOfChainURI(linkMap, wikiURL)
+      getEndOfChainURI(wikiURL)
     }
 
     if (disambiguationsSet.contains(uri) || uri == null)
@@ -115,14 +116,14 @@ class WikipediaToDBpediaClosure (
       uri
   }
 
-  def getEndOfChainURI(m: Map[String, String], uri: String): String = {
-    getURIChain(m, ListSet(uri)).last
+  def getEndOfChainURI(uri: String): String = {
+    getURIChain(ListBuffer(uri)).last
   }
 
-  private def getURIChain(m: Map[String, String], chain: ListSet[String]): ListSet[String] = {
+  private def getURIChain(chain: ListBuffer[String]): ListBuffer[String] = {
       // get end of chain but check for redirects to itself
-      m.get(chain.last) match {
-          case Some(s: String) => if (chain.contains(s)) chain else getURIChain(m, chain + s)
+      linkMap.get(chain.last) match {
+          case Some(s: String) => if (chain.contains(s)) chain else getURIChain(chain :+ s)
           case None => chain
       }
   }
