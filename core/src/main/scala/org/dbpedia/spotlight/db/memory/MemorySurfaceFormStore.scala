@@ -136,22 +136,33 @@ class MemorySurfaceFormStore
   }
 
   def getRankedSurfaceFormCandidates(surfaceform: String): Seq[(SurfaceForm, Double)] = {
+    val upperCaseNormalForm = surfaceform.trim.replaceAll("""\s+""", " ")
+    try{
+      val normalCand = getSurfaceForm(upperCaseNormalForm)
+      val normalCandScore = normalCand.annotationProbability - (surfaceform.count(_ == ' ').toDouble / surfaceform.size.toDouble)
+      val normalSurfaceFormCandidates = mutable.Seq((normalCand, normalCandScore))
+      normalSurfaceFormCandidates
 
-    getSurfaceFormsNormalized(surfaceform).map{ candSf: SurfaceForm =>
-      val cLower = getLowercaseSurfaceFormCount(surfaceform.toLowerCase)
-      val cTotal = candSf.totalCount
+    } catch{
+      case e: SurfaceFormNotFoundException => {
+        getSurfaceFormsNormalized(upperCaseNormalForm).map{ candSf: SurfaceForm =>
+          val cLower = getLowercaseSurfaceFormCount(upperCaseNormalForm.toLowerCase)
+          val cTotal = candSf.totalCount
 
-      SpotlightLog.debug(this.getClass, surfaceform + " p: "+ candSf.annotationProbability)
-      SpotlightLog.debug(this.getClass, surfaceform + " edit distance: "+ editDistanceScore(candSf.name, surfaceform))
-      SpotlightLog.debug(this.getClass, surfaceform + " c in total: "+ cTotal.toDouble / (cLower+cTotal))
+          SpotlightLog.debug(this.getClass, surfaceform + " p: "+ candSf.annotationProbability)
+          SpotlightLog.debug(this.getClass, surfaceform + " edit distance: "+ editDistanceScore(candSf.name, surfaceform))
+          SpotlightLog.debug(this.getClass, surfaceform + " c in total: "+ cTotal.toDouble / (cLower+cTotal))
 
-      (candSf,
-        //Score for the surface form (including the case adaptation):
-        editDistanceScore(candSf.name, surfaceform) *
-        candSf.annotationProbability *
-        ((2.0 * cTotal.toDouble) / (cLower+cTotal))
-      )
-    }.toSeq.sortBy(-_._2)
+          (candSf,
+            //Score for the surface form (including the case adaptation):
+            editDistanceScore(candSf.name, surfaceform) *
+              candSf.annotationProbability *
+              ((2.0 * cTotal.toDouble) / (cLower+cTotal))
+            )
+        }.toSeq.sortBy(-_._2)
+
+      }
+    }
 
   }
 
