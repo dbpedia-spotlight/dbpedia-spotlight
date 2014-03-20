@@ -1,6 +1,7 @@
 package org.dbpedia.spotlight.log
 
-import org.apache.commons.logging.LogFactory
+import org.apache.commons.logging.{Log, LogFactory}
+import scala.collection.mutable
 
 trait SpotlightLog[T] {
   def _debug(c:Class[_], msg: T, args: Any*)
@@ -26,53 +27,70 @@ object SpotlightLog {
     instance._warn(c, msg, args: _*)
 
   implicit object StringSpotlightLog extends SpotlightLog[String] {
+
+    val loggers = new mutable.HashMap[Class[_], Log]()
+
     def _debug(c:Class[_], msg: String, args: Any*) = {
-      @transient lazy val log = LogFactory.getLog(c)
-      if (log.isDebugEnabled)
+      val log = loggers.getOrElseUpdate(c, LogFactory.getLog(c))
+
+      if (log.isDebugEnabled) {
         if(args.size == 0)
-          log.debug(msg);
+          log.debug(msg)
         else
           log.debug(msg.format(args: _*))
+      }
     }
     def _info(c:Class[_], msg: String, args: Any*) = {
-      @transient lazy val log = LogFactory.getLog(c)
-      if(log.isInfoEnabled)
+      val log = loggers.getOrElseUpdate(c, LogFactory.getLog(c))
+
+      if(log.isInfoEnabled) {
         if(args.size == 0)
-          log.info(msg);
+          log.info(msg)
         else
           log.info(msg.format(args: _*))
+      }
     }
     def _error(c:Class[_], msg: String, args: Any*) = {
-      @transient lazy val log = LogFactory.getLog(c)
-      if(log.isErrorEnabled)
+      val log = loggers.getOrElseUpdate(c, LogFactory.getLog(c))
+
+      if(log.isErrorEnabled) {
         if(args.size == 0)
-          log.error(msg);
+          log.error(msg)
         else
           log.error(msg.format(args: _*))
+      }
     }
     def _fatal(c:Class[_], msg: String, args: Any*) = {
-      @transient lazy val log = LogFactory.getLog(c)
-      if(log.isFatalEnabled)
+      val log = loggers.getOrElseUpdate(c, LogFactory.getLog(c))
+
+      if(log.isFatalEnabled) {
         if(args.size == 0)
-          log.fatal(msg);
+          log.fatal(msg)
         else
           log.fatal(msg.format(args: _*))
+      }
     }
     def _trace(c:Class[_], msg: String, args: Any*) = {
-      @transient lazy val log = LogFactory.getLog(c)
-      if(log.isTraceEnabled)
+      val log = loggers.getOrElseUpdate(c, LogFactory.getLog(c))
+
+      if(log.isTraceEnabled) {
         if(args.size == 0)
-          log.trace(msg);
+          log.trace(msg)
         else
           log.trace(msg.format(args: _*))
+      }
     }
     def _warn(c:Class[_], msg: String, args: Any*) = {
-      @transient lazy val log = LogFactory.getLog(c)
-      if(log.isWarnEnabled)
+      val log = loggers.getOrElseUpdate(c, LogFactory.getLog(c))
+
+      if(log.isWarnEnabled) {
         if(args.size == 0)
-          log.warn(msg);
+          log.warn(msg)
         else
           log.warn(msg.format(args: _*))
+      }
     }
   }
+
+
 }

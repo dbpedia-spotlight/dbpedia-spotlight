@@ -31,13 +31,15 @@ class WikipediaToDBpediaClosure (
     this(SpotlightConfiguration.DEFAULT_NAMESPACE, redirectsTriples, disambiguationTriples)
   }
 
+  private def decodeURL(uri: String) = URLDecoder.decode(uri,"utf-8")
+
   SpotlightLog.info(this.getClass, "Loading redirects...")
   var linkMap = Map[String, String]()
   val redParser = new NxParser(redirectsTriples)
   while (redParser.hasNext) {
     val triple = redParser.next
-    val subj = URLDecoder.decode(triple(0).toString.replace(namespace, ""),"utf-8")
-    val obj  = URLDecoder.decode(triple(2).toString.replace(namespace, ""),"utf-8")
+    val subj = decodeURL(triple(0).toString.replace(namespace, ""))
+    val obj  = decodeURL(triple(2).toString.replace(namespace, ""))
     linkMap  = linkMap.updated(subj, obj)
   }
   SpotlightLog.info(this.getClass, "Done.")
@@ -47,25 +49,10 @@ class WikipediaToDBpediaClosure (
   val disParser = new NxParser(disambiguationTriples)
   while (disParser.hasNext) {
     val triple = disParser.next
-    val subj = URLDecoder.decode(triple(0).toString.replace(namespace, ""),"utf-8")
+    val subj = decodeURL(triple(0).toString.replace(namespace, ""))
     disambiguationsSet  = disambiguationsSet + subj
   }
   SpotlightLog.info(this.getClass, "Done.")
-
-
-  var wikiToDBPMap = Map[String, String]()
-  def this(redirectsTriples: InputStream, disambiguationTriples: InputStream, wikiToDBPTriples: InputStream) {
-    this(redirectsTriples, disambiguationTriples)
-
-    SpotlightLog.info(this.getClass, "Reading Wikipedia to DBpediaMapping...")
-    val wikiDBPParser = new NxParser(wikiToDBPTriples)
-    while (wikiDBPParser.hasNext) {
-      val triple = wikiDBPParser.next
-      val subj   = URLDecoder.decode(triple(0).toString.replaceFirst("http://[a-z]+[.]wikipedia[.]org/wiki/", ""),"utf-8")
-      val obj    = URLDecoder.decode(triple(2).toString.replace(namespace, ""),"utf-8")
-      wikiToDBPMap = wikiToDBPMap.updated(subj, getEndOfChainURI(obj))
-    }
-  }
 
   val WikiURL = """http://([a-z]+)[.]wikipedia[.]org/wiki/(.*)$""".r
   val DBpediaURL = """http://([a-z]+)[.]dbpedia[.]org/resource/(.*)$""".r
@@ -86,28 +73,30 @@ class WikipediaToDBpediaClosure (
     }
   }
 
-  private def wikiToDBpediaURI(wikiURL: String): String = {
-    wikiURL match {
-      case WikiURL(language, title) =>
-        //use only the part before the anchor, URL encode it
-        WikiUtil.wikiEncode(
-          URLDecoder.decode(removeLeadingSlashes(cutOffBeforeAnchor(title)), "utf-8")
-        )
-      case DBpediaURL(language, title) => removeLeadingSlashes(cutOffBeforeAnchor(title))
-      case _ => throw new NotADBpediaResourceException("Resource is a disambiguation page."); SpotlightLog.error(this.getClass, "Invalid Wikipedia URL %s".format(wikiURL)); null
-    }
+  /**
+   * Use only the part before the anchor, ensure the URL encoding is correct.
+   *
+   * @param url the full DBpedia or Wikipedia URL
+   * @return
+   */
+  private def decodedNameFromURL(url: String): String = url match {
+    case WikiURL(language, title) =>  WikiUtil.wikiEncode(decodeURL(removeLeadingSlashes(cutOffBeforeAnchor(title))))
+    case DBpediaURL(language, title) => decodeURL(removeLeadingSlashes(cutOffBeforeAnchor(title)))
+    case _ => throw new NotADBpediaResourceException("Resource is a disambiguation page."); SpotlightLog.error(this.getClass, "Invalid Wikipedia URL %s", url); null
   }
 
-  def wikipediaToDBpediaURI(wikiURL: String): String = {
+  /**
+   * Get the end of the redirect chain for the URL or name (last part of the URL).
+   *
+   * @param url either full Wiki or DBpedia URL or only the name
+   * @return
+   */
+  def wikipediaToDBpediaURI(url: String): String = {
 
-    val uri = if(wikiURL.startsWith("http:")){
-      if(wikiToDBPMap.size > 0) {
-        getEndOfChainURI(wikiToDBPMap(wikiURL))
-      } else {
-        getEndOfChainURI(wikiToDBpediaURI(wikiURL))
-      }
+    val uri = if(url.startsWith("http:")) {
+      getEndOfChainURI(decodedNameFromURL(url))
     } else {
-      getEndOfChainURI(URLDecoder.decode(wikiURL,"utf-8"))
+      getEndOfChainURI(decodeURL(url))
     }
 
     if (disambiguationsSet.contains(uri) || uri == null)
@@ -116,14 +105,11 @@ class WikipediaToDBpediaClosure (
       uri
   }
 
-  def getEndOfChainURI(uri: String): String = {
-    getEndOfChainURI(uri,Set(uri))
+  def getEndOfChainURI(uri: String): String = getEndOfChainURI(uri, Set(uri))
+
+  private def getEndOfChainURI(uri: String, alreadyTraversed:Set[String]): String = linkMap.get(uri) match {
+    case Some(s: String) => if (alreadyTraversed.contains(s)) uri else getEndOfChainURI(s, alreadyTraversed + s)
+    case None => uri
   }
 
-  private def getEndOfChainURI(uri: String, alreadyTraversed:Set[String]): String = {
-    linkMap.get(uri) match {
-      case Some(s: String) => if (alreadyTraversed.contains(s)) uri else getEndOfChainURI(s, alreadyTraversed + s)
-      case None => uri
-    }
-  }
 }
