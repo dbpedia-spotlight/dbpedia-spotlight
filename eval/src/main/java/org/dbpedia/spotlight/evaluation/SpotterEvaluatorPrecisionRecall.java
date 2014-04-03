@@ -270,7 +270,7 @@ public class SpotterEvaluatorPrecisionRecall {
                 else if (c.equals(SpotClass.part))
                     selectorResult.addPart();
                 else {
-                    System.out.println("WTF?");
+                    System.out.println("The SpotClass instance is neither common nor valid nor part.");
                 }
 			} else {
 			    selectorResult.addBlank();
@@ -315,7 +315,7 @@ public class SpotterEvaluatorPrecisionRecall {
                     else if (c.equals(SpotClass.part))
                         selectorResult.addPart();
                     else {
-                        System.out.println("WTF?");
+                        System.out.println("The SpotClass instance is neither common nor valid nor part.");
                     }
                 } else {
                     //Annotation not found
@@ -413,7 +413,7 @@ public class SpotterEvaluatorPrecisionRecall {
         else if (c.equals(SpotClass.part))
             selectorResult.addPart();
         else {
-            System.out.println("WTF?");
+            System.out.println("The SpotClass instance is neither common nor valid nor part.");
         }
     }
 
