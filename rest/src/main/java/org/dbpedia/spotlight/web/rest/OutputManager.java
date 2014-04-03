@@ -66,7 +66,7 @@ public class OutputManager {
         return hd;
     }
 
-    private String getText(String t, List<DBpediaResourceOccurrence> occList) {  //WTF?
+    private String getText(String t, List<DBpediaResourceOccurrence> occList) {
         if(occList == null || occList.isEmpty()) {
             return t.replaceAll("\\[\\[(.*?)\\]\\]", "$1");
         }
@@ -147,7 +147,7 @@ public class OutputManager {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             TransformerHandler hd = initXMLDoc(out);
 
-            text = getText(text, new LinkedList<DBpediaResourceOccurrence>()); //TODO wtf?
+            text = getText(text, new LinkedList<DBpediaResourceOccurrence>());
 
             //Create Annotation element
             //First create text attribute
