@@ -6,6 +6,7 @@ import java.io.StringReader;
 
 import javax.ws.rs.core.MediaType;
 
+import org.apache.log4j.Logger;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_component.JCasAnnotator_ImplBase;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
@@ -18,8 +19,6 @@ import org.dbpedia.spotlight.uima.types.JCasResource;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Wrapper for the DbpediaSpotlight Annotate Web Service. This annotator assumes that the
@@ -34,7 +33,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class SpotlightAnnotator extends JCasAnnotator_ImplBase {
 
-	Log LOG = LogFactory.getLog(this.getClass());
+	Logger LOG = Logger.getLogger(this.getClass());
 	
 	private String SPOTLIGHT_ENDPOINT;
 
@@ -183,7 +182,12 @@ public class SpotlightAnnotator extends JCasAnnotator_ImplBase {
 					documentOffset += request.length() + 1 ;
 
 		}
-		documentReader.close();
+		try {
+			documentReader.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 
