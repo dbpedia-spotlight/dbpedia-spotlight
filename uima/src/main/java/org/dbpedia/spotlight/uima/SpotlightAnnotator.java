@@ -35,16 +35,25 @@ public class SpotlightAnnotator extends JCasAnnotator_ImplBase {
 
 	Logger LOG = Logger.getLogger(this.getClass());
 	
+	public static String PARAM_ENDPOINT = "endPoint";
 	private String SPOTLIGHT_ENDPOINT;
 
 	// Default values for the web service parameters for the spotlight endpoint
+	public static String PARAM_CONFIDENCE = "confidence";
 	private double CONFIDENCE = 0.0;
+	public static String PARAM_SUPPORT = "suppport";
 	private int SUPPORT = 0;
+	public static String PARAM_TYPES = "types";
 	private String TYPES = "";
+	public static String PARAM_SPARQL = "sparql";
 	private String SPARQL = "";
+	public static String PARAM_POLICY = "policy";
 	private String POLICY = "whitelist";
+	public static String PARAM_COREFERENCE_RESOLUTION = "coferenceResolution";
 	private boolean COREFERENCE_RESOLUTION = true;
+	public static String PARAM_SPOTTER = "spotter";
 	private String SPOTTER = "Default";
+	public static String PARAM_DISAMBIGUATOR = "disambiguator";
 	private String DISAMBIGUATOR = "Default";
 
 	private final int BATCH_SIZE = 10; 
@@ -54,38 +63,37 @@ public class SpotlightAnnotator extends JCasAnnotator_ImplBase {
 			throws ResourceInitializationException {
 
 		if ((SPOTLIGHT_ENDPOINT = (String) aContext
-				.getConfigParameterValue("endPoint")) == null) {
+				.getConfigParameterValue(PARAM_ENDPOINT)) == null) {
 			throw new ResourceInitializationException(
 					"Spotlight Endpoint can not be null", null);
 		}
-		if ((aContext.getConfigParameterValue("confidence")) != null) {
+		if ((aContext.getConfigParameterValue(PARAM_CONFIDENCE)) != null) {
 			CONFIDENCE = (Double) aContext
-					.getConfigParameterValue("confidence");
+					.getConfigParameterValue(PARAM_CONFIDENCE);
 		}
-		if ((aContext.getConfigParameterValue("support")) != null) {
-			SUPPORT = (Integer) aContext.getConfigParameterValue("support");
+		if ((aContext.getConfigParameterValue(PARAM_SUPPORT)) != null) {
+			SUPPORT = (Integer) aContext.getConfigParameterValue(PARAM_SUPPORT);
 		}
-		if ((aContext.getConfigParameterValue("types")) != null) {
-			TYPES = (String) aContext.getConfigParameterValue("types");
+		if ((aContext.getConfigParameterValue(PARAM_TYPES)) != null) {
+			TYPES = (String) aContext.getConfigParameterValue(PARAM_TYPES);
 		}
-		if ((aContext.getConfigParameterValue("sparql")) != null) {
-			SPARQL = (String) aContext.getConfigParameterValue("sparql");
+		if ((aContext.getConfigParameterValue(PARAM_SPARQL)) != null) {
+			SPARQL = (String) aContext.getConfigParameterValue(PARAM_SPARQL);
 		}
-		if ((aContext.getConfigParameterValue("policy")) != null) {
-			POLICY = (String) aContext.getConfigParameterValue("policy");
+		if ((aContext.getConfigParameterValue(PARAM_POLICY)) != null) {
+			POLICY = (String) aContext.getConfigParameterValue(PARAM_POLICY);
 		}
-		if ((aContext.getConfigParameterValue("coferenceResolution")) != null) {
+		if ((aContext.getConfigParameterValue(PARAM_COREFERENCE_RESOLUTION)) != null) {
 			COREFERENCE_RESOLUTION = (Boolean) aContext
-					.getConfigParameterValue("coferenceResolution");
+					.getConfigParameterValue(PARAM_COREFERENCE_RESOLUTION);
 		}
-		if ((aContext.getConfigParameterValue("spotter")) != null) {
-			SPOTTER = (String) aContext.getConfigParameterValue("spotter");
+		if ((aContext.getConfigParameterValue(PARAM_SPOTTER)) != null) {
+			SPOTTER = (String) aContext.getConfigParameterValue(PARAM_SPOTTER);
 		}
-		if ((aContext.getConfigParameterValue("disambiguator")) != null) {
+		if ((aContext.getConfigParameterValue(PARAM_DISAMBIGUATOR)) != null) {
 			DISAMBIGUATOR = (String) aContext
-					.getConfigParameterValue("disambiguator");
+					.getConfigParameterValue(PARAM_DISAMBIGUATOR);
 		}
-
 	}
 
 	@Override
