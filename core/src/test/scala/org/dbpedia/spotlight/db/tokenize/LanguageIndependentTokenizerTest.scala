@@ -16,9 +16,9 @@ import org.scalatest.junit.AssertionsForJUnit
 class LanguageIndependentTokenizerTest extends AssertionsForJUnit {
 
   @Test
-  def tokenizeEnglishTest() {
+  def tokenizeEnglishSentencesTest() {
     // Mock the locale used for tokenization.
-    val enLocale = new Locale("US", "en")
+    val enLocale = new Locale("en", "US")
     // Case 0: Input text is a sequence of blank spaces.
     val text0 = "     "
     val sentences0 = Helper.tokenizeSentences(enLocale, text0)
@@ -81,6 +81,36 @@ class LanguageIndependentTokenizerTest extends AssertionsForJUnit {
       sentences3(2).getStart, sentences3(2).getEnd
       ).equals("That is sentence drei. ")
     )
+  }
+
+  @Test
+  def tokenizeEnglishWordsTest() {
+    // Mock the locale used for tokenization.
+    val enLocale = new Locale("en", "US")
+    // Case 0: Mock a sentence containing english contractions.
+    val sentence0 = "India's elections might determine economic growth."
+    val words0 = Helper.tokenizeWords(enLocale, sentence0)
+    // Assert
+    assertTrue(sentence0.subSequence(words0(0).getStart, words0(0).getEnd) == "India")
+
+    //Mock the french locale for tokenization.
+    val frLocale = new Locale("fr", "FR")
+    // Case 1: Mock a sentence containing a french contraction.
+    val sentence1 = "L'amour d’homme est tragique."
+    val words1 = Helper.tokenizeWords(frLocale, sentence1)
+    // Assert
+    assertTrue(sentence1.subSequence(words1(1).getStart, words1(1).getEnd) == "amour")
+    assertTrue(sentence1.subSequence(words1(3).getStart, words1(3).getEnd) == "homme")
+
+
+    //Mock the french locale for tokenization.
+    val itLocale = new Locale("it", "IT")
+    // Case 2: Mock a sentence containing an italian contraction.
+    val sentence2 = "Gianni fare l'università."
+    val words2 = Helper.tokenizeWords(itLocale, sentence2)
+    // Assert
+    assertTrue(sentence2.subSequence(words2(3).getStart, words2(3).getEnd) == "università")
+
   }
 
 }
