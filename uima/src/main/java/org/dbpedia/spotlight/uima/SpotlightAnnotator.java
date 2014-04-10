@@ -3,6 +3,7 @@ package org.dbpedia.spotlight.uima;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.URLEncoder;
 
 import javax.ws.rs.core.MediaType;
 
@@ -68,7 +69,7 @@ public class SpotlightAnnotator extends JCasAnnotator_ImplBase {
 					"Spotlight Endpoint can not be null", null);
 		}
 		if ((aContext.getConfigParameterValue(PARAM_CONFIDENCE)) != null) {
-			CONFIDENCE = (Double) aContext
+			CONFIDENCE = (Float) aContext
 					.getConfigParameterValue(PARAM_CONFIDENCE);
 		}
 		if ((aContext.getConfigParameterValue(PARAM_SUPPORT)) != null) {
@@ -139,7 +140,7 @@ public class SpotlightAnnotator extends JCasAnnotator_ImplBase {
 
 					WebResource r = c.resource(SPOTLIGHT_ENDPOINT);
 					response =
-							r.queryParam("text", request)
+							r.queryParam("text", URLEncoder.encode(request,"ISO-8859-1"))
 							.queryParam("confidence", "" + CONFIDENCE)
 							.queryParam("support", "" + SUPPORT)
 							.queryParam("types", TYPES)
