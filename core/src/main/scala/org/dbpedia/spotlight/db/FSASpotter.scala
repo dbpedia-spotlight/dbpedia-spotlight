@@ -152,6 +152,28 @@ class FSADictionary extends MemoryStore {
   var transitionsStates: Array[Array[Int]] = null
 
   /**
+  * Returns the index of the first ocurrance of Token inside the transition tokens
+  * of a given state
+  *
+  * @param state
+  * @param token
+  * @return index of the first occurance
+  */
+  def searchTokenInTransitions(state:Int, token:Int):Int = {
+
+    var i = java.util.Arrays.binarySearch(transitionsTokens(state), token)
+
+    /* Checks if previous element has the same transitionToken
+      (odd cases in binary Search)
+    */
+    if (i > 0 && transitionsTokens(state)(i-1) == token){
+      i = i -1
+    }
+
+    i
+  }
+
+  /**
    * Returns state transitions in the form:
    * (accepting state, next state)
    *
@@ -160,8 +182,7 @@ class FSADictionary extends MemoryStore {
    * @return
    */
   def next(state: Int, token: Int): (Int, Int) = {
-    val j = java.util.Arrays.binarySearch(transitionsTokens(state), token)
-    val i = if (j > 0 && transitionsTokens(state)(j-1) == token) j-1 else j
+    val i = searchTokenInTransitions(state, token)
 
     if(i < 0) {
       (FSASpotter.REJECTING_STATE, FSASpotter.REJECTING_STATE)
