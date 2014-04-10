@@ -37,6 +37,8 @@ abstract class DBSpotter(
 
   def generateCandidates(sentence: List[Token]): Seq[Span]
 
+  val MIN_CONFIDENCE = 0.1
+
   def extract(text: Text): java.util.List[SurfaceFormOccurrence] = {
 
     if (tokenizer != null)
@@ -80,7 +82,7 @@ abstract class DBSpotter(
               //SpotlightLog.info(this.getClass, spot + ":" + chunkSpan.getType)
 
               val confidence = text.featureValue[Double]("confidence").getOrElse(0.5)
-              val sfMatch = surfaceFormMatch(spot, confidence=math.max(0.2, confidence))
+              val sfMatch = surfaceFormMatch(spot, confidence=math.max(MIN_CONFIDENCE, confidence))
 
               SpotlightLog.debug(this.getClass, "type:"+chunkSpan.getType)
               if (sfMatch.isDefined) {

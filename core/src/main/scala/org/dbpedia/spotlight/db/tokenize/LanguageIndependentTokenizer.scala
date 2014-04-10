@@ -64,7 +64,8 @@ object Helper {
 
   val normalizations = Map[String, List[(String, String)]](
     "fr" -> List( ("([dDlL])[’']", "$1 ") ), //French def. and indef. article
-    "it" -> List( ("([lL]|[uU]n)[’']", "$1 ") ) //Italian def. and indef. article
+    "it" -> List( ("([lL]|[uU]n)[’']", "$1 ") ), //Italian def. and indef. article
+    "en" -> List( ("[’']s", " s") ) //normalize possesive
   )
 
   def normalize(locale: Locale, text: String): String = {
@@ -94,7 +95,7 @@ object Helper {
     var end = try {
       it.next()
     } catch {
-      case e: java.lang.ArrayIndexOutOfBoundsException => 
+      case e: java.lang.ArrayIndexOutOfBoundsException =>
         System.err.println("Encountered JVM bug JDK-7104012, consider upgrading to Java 8!")
         it.setText( java.text.Normalizer.normalize(normalizedText, java.text.Normalizer.Form.NFD).replaceAll("[^\\p{ASCII}]", "") )
         it.next()

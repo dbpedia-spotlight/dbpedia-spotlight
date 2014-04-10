@@ -105,7 +105,7 @@ object FSASpotter {
     var z = 0
 
     System.err.println("Tokenizing SFs...")
-    sfStore.iterateSurfaceForms.filter(_.annotationProbability >= 0.1).grouped(100000).toList.par.flatMap(_.map{
+    sfStore.iterateSurfaceForms.filter(_.annotationProbability >= 0.05).grouped(100000).toList.par.flatMap(_.map{
       sf: SurfaceForm =>
         //Tokenize all SFs first
         ( sf, tokenizer.tokenize(new Text(sf.name)) )
@@ -160,7 +160,8 @@ class FSADictionary extends MemoryStore {
    * @return
    */
   def next(state: Int, token: Int): (Int, Int) = {
-    val i = java.util.Arrays.binarySearch(transitionsTokens(state), token)
+    val j = java.util.Arrays.binarySearch(transitionsTokens(state), token)
+    val i = if (j > 0 && transitionsTokens(state)(j-1) == token) j-1 else j
 
     if(i < 0) {
       (FSASpotter.REJECTING_STATE, FSASpotter.REJECTING_STATE)
