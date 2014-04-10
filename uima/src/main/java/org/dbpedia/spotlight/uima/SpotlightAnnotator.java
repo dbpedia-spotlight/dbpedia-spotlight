@@ -140,7 +140,7 @@ public class SpotlightAnnotator extends JCasAnnotator_ImplBase {
 
 					WebResource r = c.resource(SPOTLIGHT_ENDPOINT);
 					response =
-							r.queryParam("text", URLEncoder.encode(request,"ISO-8859-1"))
+							r.queryParam("text", request)
 							.queryParam("confidence", "" + CONFIDENCE)
 							.queryParam("support", "" + SUPPORT)
 							.queryParam("types", TYPES)
