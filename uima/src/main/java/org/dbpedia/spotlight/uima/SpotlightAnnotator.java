@@ -148,10 +148,11 @@ public class SpotlightAnnotator extends JCasAnnotator_ImplBase {
 							.queryParam("policy", POLICY)
 							.queryParam("coreferenceResolution",
 									Boolean.toString(COREFERENCE_RESOLUTION))
-									.queryParam("spotter", SPOTTER)
-									.queryParam("disambiguator", DISAMBIGUATOR)
-									.type("application/x-www-form-urlencoded")
-									.accept(MediaType.TEXT_XML).post(Annotation.class);
+							.queryParam("spotter", SPOTTER)
+							.queryParam("disambiguator", DISAMBIGUATOR)
+							.type("application/x-www-form-urlencoded;charset=UTF-8")
+							.accept(MediaType.TEXT_XML)
+							.post(Annotation.class);
 					retry = false;
 				} catch (Exception e){
 					//In case of a failure, try sending the request with a 2 second delay at least three times before throwing an exception
