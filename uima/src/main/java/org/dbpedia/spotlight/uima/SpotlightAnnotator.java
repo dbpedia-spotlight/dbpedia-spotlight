@@ -42,7 +42,7 @@ public class SpotlightAnnotator extends JCasAnnotator_ImplBase {
 	// Default values for the web service parameters for the spotlight endpoint
 	public static String PARAM_CONFIDENCE = "confidence";
 	private double CONFIDENCE = 0.0;
-	public static String PARAM_SUPPORT = "suppport";
+	public static String PARAM_SUPPORT = "support";
 	private int SUPPORT = 0;
 	public static String PARAM_TYPES = "types";
 	private String TYPES = "";
