@@ -42,7 +42,7 @@ public class SpotlightAnnotator extends JCasAnnotator_ImplBase {
 	public static final String PARAM_CONFIDENCE = "confidence";
 	@ConfigurationParameter(name=PARAM_CONFIDENCE, defaultValue="0.0")
 	private double CONFIDENCE;
-	public static final String PARAM_SUPPORT = "suppport";
+	public static final String PARAM_SUPPORT = "support";
 	@ConfigurationParameter(name=PARAM_SUPPORT, defaultValue="0")
 	private int SUPPORT;
 	public static final String PARAM_TYPES = "types";
