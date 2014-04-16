@@ -585,7 +585,7 @@
             <dependency>
                 <groupId>de.l3s.boilerpipe</groupId>
                 <artifactId>boilerpipe</artifactId>
-                <version>1.1.0</version>
+                <version>1.2.0</version>
                 <!--
                     License: Apache Software License, Version 2.0
                 -->
@@ -957,6 +957,17 @@
         <repository>
             <id>spotlight-snapshots-repository</id>
             <url>https://github.com/dbpedia-spotlight/maven-repo/raw/master/snapshots</url>
+        </repository>
+
+        <repository>
+            <id>boilerpipe-m2-repo</id>
+            <url>http://boilerpipe.googlecode.com/svn/repo/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
 
 
