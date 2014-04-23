@@ -55,7 +55,7 @@ class DBTwoStepDisambiguator(
 
     //Tokenize the text if it wasn't tokenized before:
     if (tokenizer != null) {
-      SpotlightLog.info(this.getClass, "Tokenizing input text...")
+      SpotlightLog.debug(this.getClass, "Tokenizing input text...")
       val tokens = tokenizer.tokenize(paragraph.text)
       paragraph.text.setFeature(new Feature("tokens", tokens))
     }

@@ -7,7 +7,7 @@ import org.dbpedia.spotlight.model._
 import util.control.Breaks._
 import scala.{None, Some}
 import org.dbpedia.spotlight.exceptions.SurfaceFormNotFoundException
-import collection.mutable.ListBuffer
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import opennlp.tools.util.Span
 import opennlp.tools.namefind.RegexNameFinder
 import java.util.regex.Pattern
@@ -25,10 +25,32 @@ abstract class DBSpotter(
   val uppercaseFinder = new RegexNameFinder(
     Array[Pattern](
       Pattern.compile("([A-Z][^ ,!?.:;]*[ ]?)+")
-    )
+    ),"Capital_Sequences"
   )
 
-  def findUppercaseSequences(tokens: Array[String]) = uppercaseFinder.find(tokens).map{ s: Span => new Span(s.getStart, s.getEnd, "Capital_Sequences") }.toArray
+  //from dirk: Had problems with StackOverflows; this might have caused it.
+  //Anyway, the previous implementation is overly complex since we already have the tokenization, because opennlp builds the whole sentence again and searches in it
+  //def findUppercaseSequences(tokens: Array[String]) = uppercaseFinder.find(tokens).toArray
+  def findUppercaseSequences(tokens: Array[String]) = {
+    var idx = 0
+    var currentStart = -1
+    val notAllowed =  List(',','!','?','.',':',';')
+
+    tokens.foldLeft(new ArrayBuffer[Span]())((acc,token) => {
+      var res = acc
+      if(token.head.isUpper && !token.exists(notAllowed.contains)) {
+        if(currentStart < 0) currentStart = idx
+      }
+      else if(currentStart >= 0) {
+        res += new Span(currentStart,idx,"Capital_Sequences")
+          currentStart = -1
+      }
+
+      idx += 1
+      res
+    }).toArray
+  }
+
 
   val spotFeatureWeightVector: Option[DenseVector[Double]] = spotFeatureWeights match {
     case Some(w) => Some(DenseVector(w.toArray:_*))

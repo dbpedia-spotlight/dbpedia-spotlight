@@ -1,26 +1,28 @@
 package org.dbpedia.spotlight.train
 
 import org.apache.spark.{SparkConf, SparkContext}
-import scala.collection.mutable
-import org.apache.spark.rdd.RDD
-import org.apache.spark.streaming.{Seconds, StreamingContext}
-import org.dbpedia.spotlight.io.{EntityTopicDocument, AllOccurrenceSource, EntityTopicModelDocumentsSource}
+import org.apache.spark.SparkContext._
+import org.apache.spark.streaming.{Seconds}
+import org.dbpedia.spotlight.io.{AllOccurrenceSource, EntityTopicModelDocumentsSource}
 import org.dbpedia.extraction.util.Language
 import java.io.{FileInputStream, File}
-import org.dbpedia.spotlight.db.{FSASpotter, SpotlightModel}
-import org.dbpedia.spotlight.db.memory.{MemorySurfaceFormStore, MemoryCandidateMapStore, MemoryStore}
+import org.dbpedia.spotlight.db.{FSASpotter, SpotlightModel, WikipediaToDBpediaClosure}
+import org.dbpedia.spotlight.db.memory._
 import org.dbpedia.spotlight.spot.Spotter
 import org.dbpedia.spotlight.db.tokenize.LanguageIndependentTokenizer
-import java.util.Locale
+import java.util.{Locale}
 import org.dbpedia.spotlight.db.stem.SnowballStemmer
-import org.dbpedia.spotlight.storage.StorehausCountStore.StorehausCountStore
-import scala.Array
-import com.twitter.util.Await
-import org.dbpedia.spotlight.storage.StorehausCountStore
-import org.dbpedia.spotlight.storage.StorehausCountStore.StorehausCountStore
-import org.dbpedia.spotlight.db.model.CandidateMapStore
-import scala.util.Random
-import org.apache.spark.storage.StorageLevel
+import scala.collection.mutable
+import org.dbpedia.spotlight.storage.{RedisCountStore, LocalCountStore, CountStoreConfiguration, CountStore}
+import scala.Predef._
+import com.esotericsoftware.kryo.Kryo
+import org.apache.spark.rdd.RDD
+import org.apache.spark.streaming.StreamingContext._
+import org.apache.spark.streaming.StreamingContext
+import org.dbpedia.spotlight.io.EntityTopicDocument
+import org.apache.spark.serializer.KryoRegistrator
+import com.esotericsoftware.kryo.io.{Input, Output}
+import org.apache.commons.logging.LogFactory
 
 
 /**
@@ -28,326 +30,242 @@ import org.apache.spark.storage.StorageLevel
  */
 object TrainEntityTopicModelWithSpark {
 
-    def main(args:Array[String]) {
-        val wikidump = new File(args(0))
-        val modelDir = new File(args(1))
-        val sparkCluster = args(2)
-        val storeHost = args(3)
-        val storePort = args(4).toInt
-        val numTopics = args(5).toInt
-        val dataDir = new File(args(6))
+  private val LOG = LogFactory.getLog(getClass)
 
-        val storeName = "entity_topic_model_store"
+  def main(args: Array[String]) {
+    System.setProperty("spark.cleaner.ttl", "600000")
+    val kryo = new Kryo()
+    new EntityTopicKryoRegistrator().registerClasses(kryo)
 
-        val (tokenStore,sfStore,resStore,candMapStore,_) = SpotlightModel.storesFromFolder(modelDir)
-        val vocabSize = tokenStore.getVocabularySize
-        val mentionSize = sfStore.asInstanceOf[MemorySurfaceFormStore].size
+    val wikidump = new File(args(0))
+    val modelDir = new File(args(1))
+    val sparkCluster = args(2)
+    val storeHost = args(3)
+    val storePort = args(4).toInt
 
-        val beta = 0.1
-        val gamma = 0.0001
-        val delta =  2000.0 / vocabSize
-        val alpha = 50.0/numTopics
+    val storeConf = new CountStoreConfiguration()
+    storeConf.setHost(storeHost)
+    storeConf.setPort(storePort)
 
-        val stopwords: Set[String] = SpotlightModel.loadStopwords(modelDir)
+    val numTopics = args(5).toInt
+    val dataDir = new File(args(6))
+    val parallelism = if (args.size > 7) args(7).toInt else 8
+    val nrOfDocsInRDD = if (args.size > 8) args(8).toInt else 1000
 
-        lazy val spotter = {
-            val dict = MemoryStore.loadFSADictionary(new FileInputStream(new File(modelDir, "fsa_dict.mem")))
-            new FSASpotter(
-                dict,
-                sfStore,
-                Some(SpotlightModel.loadSpotterThresholds(new File(modelDir, "spotter_thresholds.txt"))),
-                stopwords
-            ).asInstanceOf[Spotter]
+    val storeName = "entity_topic_model_store"
+
+    //currently only en
+    val locale = new Locale("en", "US")
+    val namespace = if (locale.getLanguage.equals("en")) {
+      "http://dbpedia.org/resource/"
+    } else {
+      "http://%s.dbpedia.org/resource/"
+    }
+
+    val wikipediaToDBpediaClosure = new WikipediaToDBpediaClosure(
+      namespace,
+      new FileInputStream(new File(modelDir, "redirects.nt")),
+      new FileInputStream(new File(modelDir, "disambiguations.nt"))
+    )
+
+    val (tokenStore, sfStore, resStore, candMapStore, _) = SpotlightModel.storesFromFolder(modelDir)
+    val vocabSize = tokenStore.getVocabularySize
+    val mentionSize = sfStore.asInstanceOf[MemorySurfaceFormStore].size
+
+    val cands = candMapStore.asInstanceOf[MemoryCandidateMapStore].candidates
+
+    val beta = 0.1
+    val gamma = 0.0001
+    val delta = 2000.0 / vocabSize
+    val alpha = 50.0 / numTopics
+
+    val stopwords: Set[String] = SpotlightModel.loadStopwords(modelDir)
+
+    lazy val spotter = {
+      val dict = MemoryStore.loadFSADictionary(new FileInputStream(new File(modelDir, "fsa_dict.mem")))
+      new FSASpotter(
+        dict,
+        sfStore,
+        Some(SpotlightModel.loadSpotterThresholds(new File(modelDir, "spotter_thresholds.txt"))),
+        stopwords
+      ).asInstanceOf[Spotter]
+    }
+
+    val tokenizer =
+      new LanguageIndependentTokenizer(stopwords, new SnowballStemmer("EnglishStemmer"), locale, tokenStore)
+
+    /*
+    var c = 0
+    var start = System.currentTimeMillis()
+    val occSource1 = AllOccurrenceSource.fromXMLDumpFile(wikidump,Language.English)
+    EntityTopicModelDocumentsSource.fromOccurrenceSource(occSource1,
+        spotter,tokenizer,
+        resStore,sfStore,candMapStore.asInstanceOf[MemoryCandidateMapStore].candidates,
+        wikipediaToDBpediaClosure).foreach(doc => {
+
+        c+=1
+
+        if(c >= 1000) {
+            println(System.currentTimeMillis() - start)
+            start = System.currentTimeMillis()
+            c -= 1000
         }
+    }) */
 
-        val tokenizer =
-            new LanguageIndependentTokenizer(stopwords, new SnowballStemmer("EnglishStemmer"), new Locale("en", "US"), tokenStore)
+    /*
+    val store = StorehausCountStore.cachedOrFromConfig(storeName,storeHost,storePort)
+    var start = System.currentTimeMillis()
+    var c = 0
 
-        val conf = new SparkConf()
-            .setMaster(sparkCluster)
-            .setAppName("Entity Topic Model Training")
-            .set("spark.executor.memory", "1g")
-            .setSparkHome(System.getenv("SPARK_HOME"))
-            .setJars(StreamingContext.jarOfClass(this.getClass))
-
-        val sc = new SparkContext(conf)
-
-        def setup(init:Boolean, rddQueue: mutable.SynchronizedQueue[RDD[EntityTopicDocument]], ssc:StreamingContext, dir:File) {
-            val docs = ssc.queueStream(rddQueue)
-            val stream = docs.map(doc => {
-                val store = StorehausCountStore.cachedOrFromConfig(storeName,storeHost,storePort)
-                val updates = gibbsSampleDocument(doc, store, numTopics, candMapStore, mentionSize, vocabSize, alpha, beta, gamma, delta, init)
-                store.multiMerge(updates)
-                doc
-            })
-
-            stream.saveAsObjectFiles(new File(dir,"entity_topic_document").getAbsolutePath)
-        }
-        
-        
-        val ssc = new StreamingContext(sc, Seconds(1))
-        val rddQueue = new mutable.SynchronizedQueue[RDD[EntityTopicDocument]]()
-
-        var currentDir = new File(dataDir,"initialized")
-
-        setup(init = true, rddQueue, ssc, currentDir)
-        ssc.start()
-        //Start streaming
-        var ctr = 0
-        var l = List[EntityTopicDocument]()
-        val occSource = AllOccurrenceSource.fromXMLDumpFile(wikidump,Language.English)
-        EntityTopicModelDocumentsSource.fromOccurrenceSource(occSource,spotter,tokenizer,resStore).foreach(doc => {
-            l ::= doc
-            if(ctr == 1000) {
-                rddQueue += ssc.sparkContext.makeRDD(l)
-                ctr = 0
-                l = List[EntityTopicDocument]()
+    var list = List[EntityTopicDocument]()
+    val occSource = AllOccurrenceSource.fromXMLDumpFile(wikidump,Language.English)
+    EntityTopicModelDocumentsSource.fromOccurrenceSource(occSource,spotter,tokenizer,resStore,sfStore,wikipediaToDBpediaClosure).foreach(doc => {
+        list ::= doc
+        c+= 1
+        if(c % 1000 == 0) {
+            println(System.currentTimeMillis() - start)
+            start = System.currentTimeMillis()
+            try {
+                list.foreach(doc => gibbsSampleDocument(doc, store, numTopics, candMapStore, mentionSize, vocabSize, alpha, beta, gamma, delta, false))
             }
-        })
-
-        Thread.sleep(60000)
-        ssc.stop(stopSparkContext = false)
-
-        //Training
-        (0 until 300).foreach(i => {
-            val ssc = new StreamingContext(sc, Seconds(1))
-            val rddQueue = new mutable.SynchronizedQueue[RDD[EntityTopicDocument]]()
-            val newDir = new File(dataDir,s"iteration$i")
-            setup(init = false, rddQueue, ssc,newDir)
-
-            ssc.start()
-
-            currentDir.listFiles().foreach(file => {
-                rddQueue += ssc.sparkContext.objectFile[EntityTopicDocument](file.getAbsolutePath)
-                file.deleteOnExit()
-            })
-            Thread.sleep(60000)
-            ssc.stop(false)
-            currentDir.delete()
-            currentDir = newDir
-        })
-        sc.stop()
-    }
-
-
-    private def gibbsSampleDocument(doc: EntityTopicDocument, store: StorehausCountStore,
-                                    numTopics: Int, candMapStore: CandidateMapStore, mentionSize: Int, vocabSize: Int,
-                                    alpha: Double, beta: Double, gamma: Double, delta: Double,
-                                    init:Boolean = false) = {
-        var updates = Map[String, Int]()
-        def incr(key: String, value: Int) = updates += key -> (updates.getOrElse(key, 0) + value)
-
-        {
-            //Sample new topics
-            val (topicCounts, topicEntityCounts) = getTopicCountsForDoc(doc, numTopics, store)
-            val docTopicCounts = doc.entityTopics.foldLeft(Map[Int, Int]())((acc, topic) => {
-                if (topic >= 0)
-                    acc + (topic -> (acc.getOrElse(topic, 0) + 1))
-                else
-                    acc
-            })
-            (0 until doc.entityTopics.length).foreach(idx => {
-                val entity = doc.mentionEntities(idx)
-                val oldTopic = doc.entityTopics(idx)
-
-                val newTopic = sampleFromProportionals(topic => {
-                    val add = {
-                        if (topic == oldTopic) -1 else 0
-                    }
-                    (docTopicCounts.getOrElse(topic, 0) + add + alpha) *
-                        (topicEntityCounts(entity)(topic) + add + beta) / (topicCounts(topic) + add + numTopics * beta)
-                }, 0 until numTopics)
-
-                doc.entityTopics(idx) = newTopic
-
-                if (!init && oldTopic >= 0) {
-                    incr(getCTEKey(oldTopic, entity), -1)
-                    incr(getCTKey(oldTopic), -1)
-                }
-                incr(getCTEKey(newTopic, entity), 1)
-                incr(getCTKey(newTopic), 1)
-            })
+            catch {
+                case ex:Throwable => ex.printStackTrace()
+            }
+            list = List[EntityTopicDocument]()
+            println(System.currentTimeMillis() - start)
+            start = System.currentTimeMillis()
+            println()
         }
 
-        {
-            //Sample new entities
-            val entityCounts = getEntityCountsForDoc(doc, candMapStore.asInstanceOf[MemoryCandidateMapStore], store)
-            val docEntityCounts = doc.mentionEntities.foldLeft(Map[Int, Int]())((acc, entity) => {
-                if (entity >= 0)
-                    acc + (entity -> (acc.getOrElse(entity, 0) + 1))
-                else
-                    acc
-            })
-            val docAssignmentCounts = doc.tokenEntities.foldLeft(Map[Int, Int]())((acc, entity) => {
-                if (entity >= 0)
-                    acc + (entity -> (acc.getOrElse(entity, 0) + 1))
-                else
-                    acc
-            })
-            (0 until doc.mentionEntities.length).foreach(idx => {
-                val oldEntity = doc.mentionEntities(idx)
-                val mention = doc.mentions(idx)
-                val newEntity = sampleFromProportionals(entity => {
-                    val add = {
-                        if (entity == oldEntity) -1 else 0
-                    }
-                    val (cte, cem, ce) = entityCounts(idx)(entity)
-                    (cte + add + beta) *
-                        (cem + add + gamma) / (ce + add + mentionSize * gamma) *
-                        (0 until docAssignmentCounts(entity)).foldLeft(1)((acc, _) => acc * (docEntityCounts(entity) + 1) / docEntityCounts(entity))
-                }, entityCounts(idx).keySet)
 
-                doc.mentionEntities(idx) = newEntity
+    })*/
 
-                if (!init && oldEntity >= 0) {
-                    incr(getCEMKey(oldEntity, mention), -1)
-                    incr(getCEOfMKey(oldEntity), -1)
-                }
-                incr(getCEMKey(newEntity, mention), 1)
-                incr(getCEOfMKey(newEntity), 1)
-            })
-        }
+    CountStore.cachedOrFromConfig(storeName, storeConf, typ = RedisCountStore).clear()
 
-        {
-            //Sample new assignments
-            val (wordEntityCounts, entityCountsForWords) = getAssignmentCountsForDoc(doc, store)
-            val docAssignmentCounts = doc.tokenEntities.foldLeft(Map[Int, Int]())((acc, entity) => {
-                if (entity >= 0)
-                    acc + (entity -> (acc.getOrElse(entity, 0) + 1))
-                else
-                    acc
-            })
-            val candidateEntities = doc.mentionEntities.toSet
-            (0 until doc.tokenEntities.length).foreach(idx => {
-                val oldEntity = doc.tokenEntities(idx)
-                val token = doc.tokens(idx)
-                val newEntity = sampleFromProportionals(entity => {
-                    val add = {
-                        if (entity == oldEntity) -1 else 0
-                    }
-                    docAssignmentCounts(entity) *
-                        (wordEntityCounts(idx)(entity) + add + delta) / (entityCountsForWords(entity) + add + vocabSize * delta)
-                }, candidateEntities)
+    val sparkHome = System.getenv("SPARK_HOME")
 
-                doc.tokenEntities(idx) = newEntity
+    val conf = new SparkConf()
+      .setMaster(sparkCluster)
+      .setAppName("Entity Topic Model Training")
+      .set("spark.executor.memory", "7g")
+      .set("spark.default.parallelism", parallelism.toString)
+      .setSparkHome({
+      if (sparkHome == null) "" else sparkHome
+    })
+      .setJars(StreamingContext.jarOfClass(this.getClass))
+    //.setJars(Array("entity_topic/target/entity_topic-0.7.jar"))
+    //conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+    //conf.set("spark.kryo.registrator", "org.dbpedia.spotlight.train.EntityTopicKryoRegistrator")
+    conf.set("spark.streaming.unpersist", "true")
+    conf.set("spark.broadcast.blockSize", "10240")
 
-                if (!init && oldEntity >= 0) {
-                    incr(getCEWKey(oldEntity, token), -1)
-                    incr(getCEOfWKey(oldEntity), -1)
-                }
-                incr(getCEWKey(newEntity, token), 1)
-                incr(getCEOfWKey(newEntity), 1)
-            })
-        }
+    val sc = new SparkContext(conf)
+    val candidates = sc.broadcast(cands)
+    val counter = sc.accumulator(0)
 
-        updates.filterNot(_._2 == 0)
-    }
-
-    def sampleFromProportionals(calcProportion:Int => Double, candidates:Traversable[Int]) = {
-        var sum = 0.0
-        val cands = candidates.map(cand => {
-            var res = calcProportion(cand)
-            sum += res
-            (cand, res)
+    def setup(init: Boolean, rddQueue: mutable.SynchronizedQueue[RDD[EntityTopicDocument]], ssc: StreamingContext, dir: File) {
+      ssc.queueStream(rddQueue, oneAtATime = false, defaultRDD = null).repartition(parallelism).mapPartitions(docs => {
+        val store = CountStore.cachedOrFromConfig(storeName, storeConf, typ = RedisCountStore)
+        val totalUpdates = mutable.Map[String, Int]()
+        var ct = 0
+        docs.foreach(doc => {
+          val updates = SamplingFromCountStore.gibbsSampleDocument(doc, store, numTopics, candidates.value, mentionSize, vocabSize, alpha, beta, gamma, delta, init)
+          updates.foreach(update => {
+            totalUpdates += update._1 -> (totalUpdates.getOrElse(update._1, 0) + update._2)
+          })
+          ct += 1
+          doc
         })
-        var random = Random.nextDouble() * sum
-        var selected = (-1, 0.0)
-        val it = cands.toIterator
-        while (random >= 0.0) {
-            selected = it.next()
-            random -= selected._2
-        }
-        selected._1
+        store.multiMerge(totalUpdates)
+        counter.add(ct)
+        docs
+      }).foreachRDD(rdd => {
+        rdd.saveAsObjectFile(new File(dir, "ETD_" + System.currentTimeMillis()).getAbsolutePath)
+      })
     }
 
-    private val cte_prefix = "cte_"
-    private val cem_prefix = "cem_"
-    private val cew_prefix = "cew_"
 
-    private def getCTEKey(topic:Int,entity:Int) = cte_prefix+topic+"-"+entity
-    private def getCTKey(topic:Int) = cte_prefix+topic
+    val ssc = new StreamingContext(sc, Seconds(1))
+    val rddQueue = new mutable.SynchronizedQueue[RDD[EntityTopicDocument]]()
 
-    private def getCEMKey(entity:Int,mention:Int) = cem_prefix+entity+"-"+mention
-    private def getCEOfMKey(entity:Int) = cem_prefix+entity
+    var currentDir = new File(dataDir, "initialized")
 
-    private def getCEWKey(entity:Int,word:Int) = cew_prefix+entity+"-"+word
-    private def getCEOfWKey(entity:Int) = cew_prefix+entity
+    setup(init = true, rddQueue, ssc, currentDir)
+    ssc.start()
 
-    //ct* -> total counts of topics; cte -> array over all topics for each entity
-    def getTopicCountsForDoc(doc:EntityTopicDocument, numTopics:Int, store:StorehausCountStore) = {
-        val keys = (0 until numTopics).flatMap(topic => {
-            Set(getCTKey(topic)) ++ doc.entityTopics.flatMap(entity  => {
-                if(entity  >= 0)
-                    Some(getCTEKey(topic,entity))
-                else
-                    None
-            })
-        }).toSet
+    //Start streaming
+    var ctr = 0
+    var l = List[EntityTopicDocument]()
+    val occSource = AllOccurrenceSource.fromXMLDumpFile(wikidump, Language.English)
+    EntityTopicModelDocumentsSource.fromOccurrenceSource(occSource,
+      spotter, tokenizer,
+      resStore, sfStore, candMapStore.asInstanceOf[MemoryCandidateMapStore].candidates,
+      wikipediaToDBpediaClosure).foreach(doc => {
+      l ::= doc
+      ctr += 1
+      if (ctr % nrOfDocsInRDD == 0) {
+        val rdd = ssc.sparkContext.makeRDD(l)
+        rddQueue += rdd
+        l = List[EntityTopicDocument]()
+        LOG.info(s"$ctr entity topic documents pushed")
+        LOG.info(s"${counter.value} entity topic documents sampled")
+      }
+    })
 
-        val result = store.multiGet(keys)
 
-        val topicCounts = (0 until numTopics).map(topic => {
-            Await.result{ result(getCTKey(topic)) }.getOrElse(0)
-        }).toArray
-
-        val entityTopicCounts = doc.mentionEntities.map(entity => {
-            (0 until numTopics).map(topic => {
-                if(entity  < 0)
-                    0
-                else {
-                    Await.result{ result(getCTEKey(topic,entity)) }.getOrElse(0)
-                }
-            }).toArray
-        }).toArray
-
-        (topicCounts,entityTopicCounts)
+    //Ugly hack, wait until finished
+    while (ctr > counter.value) {
+      LOG.info(s"$ctr entity-topic-documents pushed")
+      LOG.info(s"${counter.value} entity topic documents sampled")
+      Thread.sleep(10000)
     }
+    ssc.stop(false)
 
-    //cte; cem; ce* for all entities for each mention
-    def getEntityCountsForDoc(doc:EntityTopicDocument, candMapStore:MemoryCandidateMapStore, store:StorehausCountStore) = {
-        val keys = (0 until doc.mentions.length).flatMap(idx => {
-            val mention = doc.mentions(idx)
-            val topic = doc.entityTopics(idx)
-            candMapStore.candidates(mention).flatMap(entity => {
-                Set(getCEMKey(entity,mention), getCEOfMKey(entity), getCTEKey(topic,entity))
-            })
-        }).toSet
+    //Training
+    (0 until 300).foreach(i => {
+      val ssc = new StreamingContext(sc, Seconds(1))
+      val rddQueue = new mutable.SynchronizedQueue[RDD[EntityTopicDocument]]()
+      val newDir = new File(dataDir, s"iteration$i")
 
-        val result = store.multiGet(keys)
+      counter.value = 0
 
-        (0 until doc.mentions.length).map(idx => {
-            val mention = doc.mentions(idx)
-            val topic = doc.entityTopics(idx)
-            candMapStore.candidates(mention).map(entity => {
-                entity -> {
-                    val cem = Await.result { result(getCEMKey(entity,mention)) }.getOrElse(0)
-                    val ce = Await.result { result(getCEOfMKey(entity)) }.getOrElse(0)
-                    val cte = Await.result { result(getCTEKey(topic,entity)) }.getOrElse(0)
-                    (cte,cem,ce)
-                }
-            }).toMap
-        }).toArray
-    }
+      setup(init = false, rddQueue, ssc, newDir)
+      ssc.start()
 
-    def getAssignmentCountsForDoc(doc:EntityTopicDocument, store:StorehausCountStore) = {
-        val keys = doc.tokens.flatMap(word => {
-            doc.mentionEntities.flatMap(entity => {
-                Set(getCEWKey(entity,word), getCEOfWKey(entity))
-            })
-        }).toSet
+      currentDir.listFiles().foreach(file => {
+        val rdd = ssc.sparkContext.objectFile[EntityTopicDocument](file.getAbsolutePath)
+        rddQueue += rdd
 
-        val result = store.multiGet(keys)
+        LOG.info(s"${counter.value} of $ctr entity-topic-documents processed")
 
-        val candidates = doc.mentionEntities.toSet
-        val wordEntities = doc.tokens.map(word => {
-            candidates.map(entity =>
-                entity -> { Await.result{ result(getCEWKey(entity,word)) }.getOrElse(0) } ).toMap
-        })
+        file.deleteOnExit()
+      })
+      //Ugly hack, wait until finished
+      while (ctr > counter.value) {
+        LOG.info(s"$ctr entity-topic-documents pushed")
+        LOG.info(s"${counter.value} entity topic documents processed")
+        Thread.sleep(10000)
+      }
+      ssc.stop(false)
+      currentDir.delete()
+      currentDir = newDir
+    })
+    sc.stop()
 
-        val entityCounts = candidates.map(entity =>
-            entity -> { Await.result{ result(getCEOfWKey(entity)) }.getOrElse(0) } ).toMap
+    val store = CountStore.cachedOrFromConfig(storeName, storeConf)
+    if (store.isInstanceOf[RedisCountStore])
+      store.asInstanceOf[RedisCountStore].writerPool.withClient(_.save)
 
-        (wordEntities,entityCounts)
-    }
+    System.exit(0)
+  }
 
+}
+
+class EntityTopicKryoRegistrator extends KryoRegistrator {
+  override def registerClasses(kryo: Kryo) {
+    kryo.register(classOf[EntityTopicDocument])
+    kryo.register(classOf[Array[EntityTopicDocument]])
+    kryo.register(classOf[Array[(String, Int)]])
+    kryo.register(classOf[(String, Int)])
+  }
 }
