@@ -88,6 +88,23 @@ class MemoryStoreIndexer(val baseDir: File, val quantizedCountStore: MemoryQuant
       //Get all sfs as ngrams in increasing order by their length in tokens
       val sfId = mutable.HashMap[String, Int]()
 
+      /*
+        a map storing statistics about the superSF of a SF.
+        i.e: Sf: google , SuperSurfaceForms = [Google Maps, Google Drive...]
+        key: Google, Value: [555000, 300]:
+           - 300 stands for the number of superSF.
+           - 555000 stands for the sum(annotatedCount(superSf)) such that superSf is a superSF of "Google"
+      */
+      val subSfToSuperSf = mutable.HashMap[Int, mutable.ArrayBuffer[Int]]()
+
+      /*
+      * the max number of superSf seen from the data.
+      * The real number is much higher.
+      * This number corresponds to number of superSF of "FC"
+      *
+      * */
+      var maxNumberOfSuperSf:Int = 3879
+
       //Here be dragons:
       // Correct the counts for sf that are parts of large surface forms:
       // Careful:
@@ -115,7 +132,20 @@ class MemoryStoreIndexer(val baseDir: File, val quantizedCountStore: MemoryQuant
         case (ngram: Seq[String], id: Int) if(ngram.size > 1) => {
           getAllNgrams(ngram).foreach{ subngram: Seq[String] =>
             sfId.get(subngram.mkString(" ")) match {
-              case Some(subID) if(totalCountForID(subID) > 0 && totalCountForID(id) > 0) => totalCountForID(subID) = (totalCountForID(subID) - (1.25 * annotatedCountForID(id))).toInt
+
+              // Filling the stats of superSF
+              case Some(subID) if(totalCountForID(subID) > 0 && totalCountForID(id) > 0) => {
+
+                        val currentSuperSf = subSfToSuperSf.getOrElse(subID, mutable.ArrayBuffer[Int](0, 0))
+                        // sum of annotated counts
+                        currentSuperSf(0) = currentSuperSf(0) + math.abs(annotatedCountForID(id))
+
+                        // total number of superSfs
+                        currentSuperSf(1) = currentSuperSf(1) + 1
+
+                       subSfToSuperSf.put(subID, currentSuperSf )
+                   }
+
               case _ =>
             }
           }
@@ -123,7 +153,65 @@ class MemoryStoreIndexer(val baseDir: File, val quantizedCountStore: MemoryQuant
         case _ =>
       }
 
-    }
+
+
+    /*
+
+       Once the superSf stats are calculated, lets make some discounts
+       So the idea is to discount less Sf's which are too general such as:
+         "John", "And", "of", "University"...
+
+        But we want to discount more on more specific  Sf such as :
+         - "Google" , "Apple"...
+
+        Let A be a surfaceForm:
+         generalProbability(A) =  (1 - ( NumberOfSuperSfs(A) / maxNumberOfSuperSfs) )
+
+        Discount1 :
+          discount = generalProbability(A) * sumOfAnnotatedCountSuperSfs(A)
+
+        Discount2 :
+          discount = 1.25 * discount1
+
+        Discount2 is applied if:
+           - discount 1 was applied
+           - the the sf prob is still below the default confidence value
+           - the previous discount boost the prob less than a ratio of : 2.5
+   */
+    subSfToSuperSf.foreach{
+               case(subSfId:Int, statsForSubSf:mutable.ArrayBuffer[Int]) => {
+
+                   val generalSfProbability = (1 - (statsForSubSf(1)/ maxNumberOfSuperSf.toDouble))
+
+                     // checking if the numberOfsuperSf was above the maxNumberOfSuperSf, in that case the sf was way too general
+                    // we dont want to boost it
+
+                     if(math.abs(generalSfProbability)==generalSfProbability){
+
+                           //discount1
+                           val minTotalCountForSubSf = (annotatedCountForID(subSfId) / 0.9).toInt // Min TotalCount such that the prob = 0.9
+                           val sumOfAnnotatedCounts = statsForSubSf(0)
+                           val newTotalCountForSubId = (totalCountForID(subSfId) - (generalSfProbability * sumOfAnnotatedCounts)).toInt
+                           val oldProbability = annotatedCountForID(subSfId)/ totalCountForID(subSfId).toDouble
+                           totalCountForID(subSfId) = scala.math.max( minTotalCountForSubSf,  newTotalCountForSubId).toInt
+                           val newProbability = annotatedCountForID(subSfId)/ totalCountForID(subSfId).toDouble
+
+                           // discount2
+                           if(newProbability < SpotlightConfiguration.DEFAULT_CONFIDENCE.toDouble  && newProbability/oldProbability < 2.5 ){
+                             val furtherDiscount = 1.25 * (generalSfProbability * sumOfAnnotatedCounts)
+                             val newTotalCountForSubId2 = (totalCountForID(subSfId) - furtherDiscount).toInt
+                             totalCountForID(subSfId) = scala.math.max( minTotalCountForSubSf,  newTotalCountForSubId2).toInt
+                           }
+
+                      }
+
+                   }
+
+                }
+   }
+
+
+
 
     //Add lowercased counts:
     println("Adding lowercase map...")
