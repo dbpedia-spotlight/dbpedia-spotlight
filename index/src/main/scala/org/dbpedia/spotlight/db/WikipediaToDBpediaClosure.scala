@@ -10,6 +10,7 @@ import java.net.URLDecoder
 import org.dbpedia.spotlight.model.SpotlightConfiguration
 import org.dbpedia.extraction.util.WikiUtil
 import scala.collection.mutable.ListBuffer
+import scala.annotation.tailrec
 
 /**
  * Parts of this are taken from
@@ -55,7 +56,7 @@ class WikipediaToDBpediaClosure (
   SpotlightLog.info(this.getClass, "Done.")
 
   val WikiURL = """http://([a-z]+)[.]wikipedia[.]org/wiki/(.*)$""".r
-  val DBpediaURL = """http://([a-z]+)[.]dbpedia[.]org/resource/(.*)$""".r
+  val DBpediaURL = """http://([a-z]*)[.]?dbpedia[.]org/resource/(.*)$""".r
 
   private def cutOffBeforeAnchor(url: String): String = {
     if(url.contains("%23")) //Take only the part of the URI before the last anchor (#)
@@ -107,6 +108,7 @@ class WikipediaToDBpediaClosure (
 
   def getEndOfChainURI(uri: String): String = getEndOfChainURI(uri, Set(uri))
 
+  @tailrec
   private def getEndOfChainURI(uri: String, alreadyTraversed:Set[String]): String = linkMap.get(uri) match {
     case Some(s: String) => if (alreadyTraversed.contains(s)) uri else getEndOfChainURI(s, alreadyTraversed + s)
     case None => uri

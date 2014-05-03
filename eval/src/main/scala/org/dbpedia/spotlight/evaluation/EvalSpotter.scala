@@ -2,18 +2,26 @@ package org.dbpedia.spotlight.evaluation
 
 import org.dbpedia.spotlight.spot.Spotter
 import org.dbpedia.spotlight.corpus.{CSAWCorpus, MilneWittenCorpus}
-import java.io.File
+import java.io.{FileInputStream, File}
 import org.dbpedia.spotlight.io.AnnotatedTextSource
 import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter
 import com.aliasi.dict.{DictionaryEntry, MapDictionary}
 import org.apache.lucene.analysis.en.EnglishAnalyzer
 import org.apache.lucene.util.Version
-import org.dbpedia.spotlight.model.{SurfaceForm, Factory, SurfaceFormOccurrence}
+import org.dbpedia.spotlight.model._
 import collection.JavaConversions
 import org.apache.lucene.analysis._
 import org.dbpedia.spotlight.log.SpotlightLog
 import org.apache.lucene.analysis.standard.{StandardAnalyzer, ClassicAnalyzer}
 import org.dbpedia.spotlight.spot.ahocorasick.AhoCorasickSpotter
+import org.dbpedia.spotlight.ner._
+import org.dbpedia.spotlight.model.Factory.OntologyType
+import org.dbpedia.spotlight.db.{WikipediaToDBpediaClosure, SpotlightModel}
+import org.dbpedia.spotlight.db.memory.MemoryStore
+import org.dbpedia.spotlight.db.tokenize.LanguageIndependentTokenizer
+import java.util.Locale
+import org.dbpedia.spotlight.db.stem.SnowballStemmer
+import org.dbpedia.spotlight.exceptions.NotADBpediaResourceException
 
 /**
  * This class evaluates spotters by taking an annotated corpus, indexing its surface forms,
@@ -25,7 +33,7 @@ import org.dbpedia.spotlight.spot.ahocorasick.AhoCorasickSpotter
 object EvalSpotter {
 
   def evalCorpus = {
-    MilneWittenCorpus.fromDirectory(new File("/home/max/spotlight-data/milne-witten"))
+    MilneWittenCorpus.fromDirectory(new File("/data/wikifiedStories"))
     //AnnotatedTextSource.fromOccurrencesFile(new File("/home/max/spotlight-data/CSAWoccs.red-dis-3.7-sorted.tsv")))
   }
 
@@ -35,10 +43,56 @@ object EvalSpotter {
   }
 
   def main(args: Array[String]) {
-    val expected = getExpectedResult(evalCorpus)
-    for (spotter <- spotterMethods) {
+    //val expected = getExpectedResult(evalCorpus)
+    /*for (spotter <- spotterMethods) {
       evalSpotting(evalCorpus, spotter, expected)
+    }*/
+    val closure = new WikipediaToDBpediaClosure(
+      new FileInputStream("/media/dirk/Data/Wikipedia/model/en_2+2/redirects.nt"),
+      new FileInputStream("/media/dirk/Data/Wikipedia/model/en_2+2/disambiguations.nt"))
+
+    val types = Set(OntologyType.fromURI("http://dbpedia.org/ontology/Person"),
+      OntologyType.fromURI("http://dbpedia.org/ontology/Organisation"),
+      OntologyType.fromURI("http://dbpedia.org/ontology/Place"))
+
+    val modelFolder = new File("/media/dirk/Data/Wikipedia/model/en_2+2")
+    val modelDataFolder = new File(modelFolder, "model")
+    val quantizedCountsStore = MemoryStore.loadQuantizedCountStore(new FileInputStream(new File(modelDataFolder, "quantized_counts.mem")))
+    val tokenTypeStore = MemoryStore.loadTokenTypeStore(new FileInputStream(new File(modelDataFolder, "tokens.mem")))
+    val resStore = MemoryStore.loadResourceStore(new FileInputStream(new File(modelDataFolder, "res.mem")), quantizedCountsStore)
+    val stopwords = SpotlightModel.loadStopwords(modelFolder)
+
+    val locale = new Locale("en","US")
+    val tokenizer = new LanguageIndependentTokenizer(stopwords, new SnowballStemmer("EnglishStemmer"), locale, tokenTypeStore)
+
+    val corpus = new AnnotatedTextSource {
+      def foreach[U](f: (AnnotatedParagraph) => U) = evalCorpus.foreach(p => {
+        p.occurrences.foreach(occ =>
+          if(!closure.disambiguationsSet.contains(occ.resource.uri))
+            try {
+              occ.resource.uri = closure.wikipediaToDBpediaURI(occ.resource.uri)
+            } catch {
+              case t:NotADBpediaResourceException => SpotlightLog.warn(getClass,occ.resource.uri +" is not a DBpediaResource")
+            }
+        )
+        f(p)
+      })
     }
+
+    val crf = LinearChainCRFSpotter.fromAnnotatedTextSource(corpus,types,resStore, tokenizer = tokenizer)
+
+    val expected = corpus.foldLeft(Set[SurfaceFormOccurrence]()){ (set, par) =>
+      set ++ par.occurrences.withFilter(occ => {
+        try {
+          resStore.getResourceByName(occ.resource.uri).types.exists(types.contains)
+        }
+        catch {
+          case t:Throwable => false
+        }
+      }).map(Factory.SurfaceFormOccurrence.from(_))
+    }
+
+    evalSpotter(corpus,crf, expected)
   }
 
 
@@ -85,9 +139,9 @@ object EvalSpotter {
 
     // run spotting
     var actual = Set[SurfaceFormOccurrence]()
-    for (paragraph <- annotatedTextSource) {
+    annotatedTextSource.foreach(paragraph => {
       actual = JavaConversions.asScalaBuffer(spotter.extract(paragraph.text)).toSet union actual
-    }
+    })
 
     // compare
     printResults("%s and corpus %s".format(spotter.getName, annotatedTextSource.name), expected, actual)

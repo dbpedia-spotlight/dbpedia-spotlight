@@ -103,6 +103,11 @@
 
         <dependency>
             <groupId>org.dbpedia.spotlight</groupId>
+            <artifactId>ner</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dbpedia.spotlight</groupId>
             <artifactId>entity_topic</artifactId>
         </dependency>
 
