@@ -8,11 +8,10 @@ import java.net.URLEncoder;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
-import org.apache.uima.UimaContext;
-import org.apache.uima.analysis_component.JCasAnnotator_ImplBase;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
+import org.apache.uima.fit.component.JCasAnnotator_ImplBase;
+import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.jcas.JCas;
-import org.apache.uima.resource.ResourceInitializationException;
 import org.dbpedia.spotlight.uima.response.Annotation;
 import org.dbpedia.spotlight.uima.response.Resource;
 import org.dbpedia.spotlight.uima.types.JCasResource;
@@ -36,71 +35,41 @@ public class SpotlightAnnotator extends JCasAnnotator_ImplBase {
 
 	Logger LOG = Logger.getLogger(this.getClass());
 	
-	public static String PARAM_ENDPOINT = "endPoint";
+	public static final String PARAM_ENDPOINT = "endPoint";
+	@ConfigurationParameter(name=PARAM_ENDPOINT)
 	private String SPOTLIGHT_ENDPOINT;
 
 	// Default values for the web service parameters for the spotlight endpoint
-	public static String PARAM_CONFIDENCE = "confidence";
-	private double CONFIDENCE = 0.0;
-	public static String PARAM_SUPPORT = "support";
-	private int SUPPORT = 0;
-	public static String PARAM_TYPES = "types";
-	private String TYPES = "";
-	public static String PARAM_SPARQL = "sparql";
-	private String SPARQL = "";
-	public static String PARAM_POLICY = "policy";
-	private String POLICY = "whitelist";
-	public static String PARAM_COREFERENCE_RESOLUTION = "coferenceResolution";
-	private boolean COREFERENCE_RESOLUTION = true;
-	public static String PARAM_SPOTTER = "spotter";
-	private String SPOTTER = "Default";
-	public static String PARAM_DISAMBIGUATOR = "disambiguator";
-	private String DISAMBIGUATOR = "Default";
+
+	public static final String PARAM_CONFIDENCE = "confidence";
+	@ConfigurationParameter(name=PARAM_CONFIDENCE, defaultValue="0.0")
+	private double CONFIDENCE;
+	public static final String PARAM_SUPPORT = "support";
+	@ConfigurationParameter(name=PARAM_SUPPORT, defaultValue="0")
+	private int SUPPORT;
+	public static final String PARAM_TYPES = "types";
+	@ConfigurationParameter(name=PARAM_TYPES, defaultValue="")
+	private String TYPES;
+	public static final String PARAM_SPARQL = "sparql";
+	@ConfigurationParameter(name=PARAM_SPARQL, defaultValue="")
+	private String SPARQL;
+	public static final String PARAM_POLICY = "policy";
+	@ConfigurationParameter(name=PARAM_POLICY, defaultValue="whitelist")
+	private String POLICY;
+	public static final String PARAM_COREFERENCE_RESOLUTION = "coferenceResolution";
+	@ConfigurationParameter(name=PARAM_COREFERENCE_RESOLUTION, defaultValue="true")
+	private boolean COREFERENCE_RESOLUTION;
+	public static final String PARAM_SPOTTER = "spotter";
+	@ConfigurationParameter(name=PARAM_SPOTTER, defaultValue="Default")
+	private String SPOTTER;
+	public static final String PARAM_DISAMBIGUATOR = "disambiguator";
+	@ConfigurationParameter(name=PARAM_DISAMBIGUATOR, defaultValue="Default")
+	private String DISAMBIGUATOR;
 
 	private final int BATCH_SIZE = 10; 
 
-	@Override
-	public void initialize(UimaContext aContext)
-			throws ResourceInitializationException {
-
-		if ((SPOTLIGHT_ENDPOINT = (String) aContext
-				.getConfigParameterValue(PARAM_ENDPOINT)) == null) {
-			throw new ResourceInitializationException(
-					"Spotlight Endpoint can not be null", null);
-		}
-		if ((aContext.getConfigParameterValue(PARAM_CONFIDENCE)) != null) {
-			CONFIDENCE = (Float) aContext
-					.getConfigParameterValue(PARAM_CONFIDENCE);
-		}
-		if ((aContext.getConfigParameterValue(PARAM_SUPPORT)) != null) {
-			SUPPORT = (Integer) aContext.getConfigParameterValue(PARAM_SUPPORT);
-		}
-		if ((aContext.getConfigParameterValue(PARAM_TYPES)) != null) {
-			TYPES = (String) aContext.getConfigParameterValue(PARAM_TYPES);
-		}
-		if ((aContext.getConfigParameterValue(PARAM_SPARQL)) != null) {
-			SPARQL = (String) aContext.getConfigParameterValue(PARAM_SPARQL);
-		}
-		if ((aContext.getConfigParameterValue(PARAM_POLICY)) != null) {
-			POLICY = (String) aContext.getConfigParameterValue(PARAM_POLICY);
-		}
-		if ((aContext.getConfigParameterValue(PARAM_COREFERENCE_RESOLUTION)) != null) {
-			COREFERENCE_RESOLUTION = (Boolean) aContext
-					.getConfigParameterValue(PARAM_COREFERENCE_RESOLUTION);
-		}
-		if ((aContext.getConfigParameterValue(PARAM_SPOTTER)) != null) {
-			SPOTTER = (String) aContext.getConfigParameterValue(PARAM_SPOTTER);
-		}
-		if ((aContext.getConfigParameterValue(PARAM_DISAMBIGUATOR)) != null) {
-			DISAMBIGUATOR = (String) aContext
-					.getConfigParameterValue(PARAM_DISAMBIGUATOR);
-		}
-	}
-
-	@Override
 	public void process(JCas aJCas) throws AnalysisEngineProcessException {
 		String documentText = aJCas.getDocumentText();
-
 
 		Client c = Client.create();
 
@@ -198,8 +167,6 @@ public class SpotlightAnnotator extends JCasAnnotator_ImplBase {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 	}
-
 	
 }
