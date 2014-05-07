@@ -14,7 +14,6 @@ import org.apache.lucene.analysis._
 import org.dbpedia.spotlight.log.SpotlightLog
 import org.apache.lucene.analysis.standard.{StandardAnalyzer, ClassicAnalyzer}
 import org.dbpedia.spotlight.spot.ahocorasick.AhoCorasickSpotter
-import org.dbpedia.spotlight.ner._
 import org.dbpedia.spotlight.model.Factory.OntologyType
 import org.dbpedia.spotlight.db.{WikipediaToDBpediaClosure, SpotlightModel}
 import org.dbpedia.spotlight.db.memory.MemoryStore
@@ -22,6 +21,7 @@ import org.dbpedia.spotlight.db.tokenize.LanguageIndependentTokenizer
 import java.util.Locale
 import org.dbpedia.spotlight.db.stem.SnowballStemmer
 import org.dbpedia.spotlight.exceptions.NotADBpediaResourceException
+import org.dbpedia.spotlight.spot.factorie.LinearChainCRFSpotter
 
 /**
  * This class evaluates spotters by taking an annotated corpus, indexing its surface forms,
@@ -79,9 +79,9 @@ object EvalSpotter {
       })
     }
 
-    val crf = LinearChainCRFSpotter.fromAnnotatedTextSource(corpus,types,resStore, tokenizer = tokenizer)
+    val crf = LinearChainCRFSpotter.fromAnnotatedTextSource(corpus,/*resStore = resStore,*/ tokenizer = tokenizer)
 
-    val expected = corpus.foldLeft(Set[SurfaceFormOccurrence]()){ (set, par) =>
+    /*val expectedWithTypes = corpus.foldLeft(Set[SurfaceFormOccurrence]()){ (set, par) =>
       set ++ par.occurrences.withFilter(occ => {
         try {
           resStore.getResourceByName(occ.resource.uri).types.exists(types.contains)
@@ -90,9 +90,15 @@ object EvalSpotter {
           case t:Throwable => false
         }
       }).map(Factory.SurfaceFormOccurrence.from(_))
-    }
+    }*/
 
-    evalSpotter(corpus,crf, expected)
+    val expected = corpus.flatMap(_.occurrences.map(Factory.SurfaceFormOccurrence.from))
+
+    evalSpotter(corpus, crf, expected)
+
+    LinearChainCRFSpotter.serialize(new File("/tmp/model.bin"),crf)
+    val model2 = LinearChainCRFSpotter.deserialize(new File("/tmp/model.bin"),tokenizer)
+    evalSpotter(corpus, model2, expected)
   }
 
 

@@ -246,6 +246,11 @@
             <artifactId>akka-actor_2.10</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>cc.factorie</groupId>
+            <artifactId>factorie</artifactId>
+        </dependency>
+
 
     </dependencies>
 
