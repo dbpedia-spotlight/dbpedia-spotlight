@@ -3,10 +3,10 @@ package org.dbpedia.spotlight.corpus
 import org.dbpedia.spotlight.io.AnnotatedTextSource
 import org.dbpedia.spotlight.model._
 import java.io.File
-import io.Source
 import scala.None
 import collection.mutable.ListBuffer
 import org.dbpedia.spotlight.corpus.AidaCorpus.{CoNLLToken, CoNLLDoc}
+import scala.io.Source
 
 /**
  * Occurrence source for reading the corpus from the AIDA System

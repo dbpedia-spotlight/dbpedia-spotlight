@@ -4,10 +4,10 @@ import org.dbpedia.spotlight.io.AnnotatedTextSource
 import org.dbpedia.spotlight.model._
 import java.io.File
 import xml.XML
-import io.Source
 import collection.mutable.ListBuffer
 import org.dbpedia.extraction.util.WikiUtil
 import org.dbpedia.spotlight.log.SpotlightLog
+import scala.io.Source
 
 /**
  * Created with IntelliJ IDEA.

@@ -12,23 +12,6 @@
     <artifactId>entity_topic</artifactId>
 
     <dependencies>
-
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-streaming_2.10</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.spark-project.akka</groupId>
-                    <artifactId>akka-actor_2.10</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>cc.factorie</groupId>
-            <artifactId>factorie</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>org.dbpedia.spotlight</groupId>
             <artifactId>core</artifactId>
@@ -45,20 +28,11 @@
             </exclusions>
         </dependency>
 
-        <dependency>
-            <groupId>net.debasishg</groupId>
-            <artifactId>redisclient_2.10</artifactId>
-            <version>2.12</version>
-        </dependency>
-
     </dependencies>
 
     <build>
         <plugins>
             <plugin>
-                <!-- NOTE: We don't need a groupId specification because the group is
-                     org.apache.maven.plugins ...which is assumed by default.
-                 -->
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>2.4</version>
                 <configuration>
@@ -66,37 +40,6 @@
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
                 </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>1.5</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <filters>
-                                <filter>
-                                    <artifact>*:*</artifact>
-                                    <excludes>
-                                        <exclude>META-INF/*.SF</exclude>
-                                        <exclude>META-INF/*.DSA</exclude>
-                                        <exclude>META-INF/*.RSA</exclude>
-                                    </excludes>
-                                </filter>
-                            </filters>
-                            <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>reference.conf</resource>
-                                </transformer>
-                            </transformers>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

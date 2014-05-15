@@ -1,15 +1,20 @@
 package org.dbpedia.spotlight.model
 
-import org.dbpedia.spotlight.db.memory.MemoryCandidateMapStore
+import org.dbpedia.spotlight.db.memory.{MemoryResourceStore, MemoryContextStore, MemoryCandidateMapStore}
 import scala.collection.mutable
-import org.dbpedia.spotlight.io.EntityTopicDocument
+import org.dbpedia.spotlight.io.{EntityTopicModelDocumentsSource, WikiOccurrenceSource}
 import scala.util.Random
-import java.util.concurrent.ConcurrentHashMap
 import scala.collection.JavaConversions._
 import com.esotericsoftware.kryo.Kryo
 import java.io.{FileInputStream, FileOutputStream, File}
 import scala.Array
 import com.esotericsoftware.kryo.io.{Input, Output}
+import org.dbpedia.extraction.util.Language
+import org.dbpedia.spotlight.db.{WikipediaToDBpediaClosure, SpotlightModel}
+import org.dbpedia.spotlight.db.tokenize.LanguageIndependentTokenizer
+import org.dbpedia.spotlight.db.stem.SnowballStemmer
+import java.util.Locale
+import org.dbpedia.spotlight.log.SpotlightLog
 
 /**
  * @author dirk
@@ -17,195 +22,254 @@ import com.esotericsoftware.kryo.io.{Input, Output}
  *         Time: 12:16 PM
  */
 class SimpleEntityTopicModel(val numTopics: Int, val numEntities: Int, val vocabularySize: Int, val numMentions: Int,
-                             val alpha: Double, val beta: Double, val gamma: Double, val delta: Double, candMap: MemoryCandidateMapStore = null) {
+                             val alpha: Double, val beta: Double, val gamma: Double, val delta: Double, create:Boolean = false,
+                             var candMap: MemoryCandidateMapStore = null, var contextStore:MemoryContextStore = null) {
 
-  var entityTopicMatrix: Array[Array[Int]] = null
-  var sparseMentionEntityMatrix: Array[ConcurrentHashMap[Int, Int]] = null
-  var sparseWordEntityMatrix: Array[ConcurrentHashMap[Int, Int]] = null
-  var topicCounts: Array[Int] = null
-  var entityCounts: Array[Int] = null
-  var assignmentCounts: Array[Int] = null
+  private val resStore:MemoryResourceStore = if(candMap != null) candMap.resourceStore.asInstanceOf[MemoryResourceStore] else null
 
-  if (candMap != null)
-    init
+  var entityTopicMatrix:Array[Array[Int]] = null
+  var sparseWordEntityMatrix:Array[java.util.HashMap[Int,Int]] = null
+  var sparseMentionEntityMatrix:Array[java.util.HashMap[Int,Int]] = null
 
-  def init {
-    sparseMentionEntityMatrix = Array.tabulate[ConcurrentHashMap[Int, Int]](candMap.candidates.size)(i => {
-      if (candMap.candidates(i) != null) {
-        val candCounts = candMap.candidateCounts(i)
-        candMap.candidates(i).zip(candCounts.map(candMap.qc)).foldLeft(new ConcurrentHashMap[Int, Int]())((acc, p) => {
-          acc.put(p._1, p._2); acc
-        })
-      }
-      else new ConcurrentHashMap[Int, Int]()
-    })
+  var topicCounts:Array[Int] = null
+  var entityCounts:Array[Int] = null
+  var assignmentCounts:Array[Int] = null
 
+  if(create) {
     entityTopicMatrix = Array.ofDim[Int](numTopics, numEntities)
-    sparseWordEntityMatrix = Array.fill(vocabularySize)(new ConcurrentHashMap[Int, Int]())
+    sparseWordEntityMatrix = Array.fill(vocabularySize)(new java.util.HashMap[Int, Int]())
     topicCounts = new Array[Int](numTopics)
     entityCounts = new Array[Int](numEntities)
     assignmentCounts = new Array[Int](numEntities)
+    sparseMentionEntityMatrix = Array.fill(numMentions)(new java.util.HashMap[Int, Int]())
   }
 
-  def gibbsSampleDocument(doc: EntityTopicDocument, withUpdate: Boolean = false, init: Boolean = false) {
-    sampleNewTopics(doc, withUpdate, init)
-    sampleNewEntities(doc, withUpdate, init)
-    sampleNewAssignments(doc, withUpdate, init)
-  }
-
-  private[model] def sampleNewTopics(doc: EntityTopicDocument, withUpdate: Boolean, init: Boolean) = {
-    val docTopicCounts = doc.entityTopics.foldLeft(mutable.Map[Int, Int]())((acc, topic) => {
-      if (topic >= 0)
-        acc += (topic -> (acc.getOrElse(topic, 0) + 1))
+  private def getCountMap(elements: Array[Int]): mutable.HashMap[Int, Int] =
+    elements.foldLeft(mutable.HashMap[Int, Int]())((acc, element) => {
+      if (element >= 0)
+        acc += (element -> (acc.getOrElse(element, 0) + 1))
       acc
     })
+  
 
-    (0 until doc.entityTopics.length).foreach(idx => {
-      val entity = doc.mentionEntities(idx)
-      val oldTopic = doc.entityTopics(idx)
-
-      val newTopic = sampleFromProportionals(topic => {
-        val add = {
-          if (topic == oldTopic) -1 else 0
-        }
-        if (entity >= 0)
-          (docTopicCounts.getOrElse(topic, 0) + add + alpha) *
-            (entityTopicMatrix(topic)(entity) + add + beta) / (topicCounts(topic) + add + numTopics * beta)
-        else
-          (docTopicCounts.getOrElse(topic, 0) + add + alpha) *
-            (add + beta) / (topicCounts(topic) + add + numTopics * beta)
-      }, 0 until numTopics)
-
-      doc.entityTopics(idx) = newTopic
-
-      if (withUpdate && oldTopic != newTopic) {
-        if (!init && oldTopic >= 0) {
-          topicCounts(oldTopic) -= 1
-          if (entity >= 0)
-            entityTopicMatrix(oldTopic)(entity) -= 1
-        }
-        topicCounts(newTopic) += 1
-        if (entity >= 0)
-          entityTopicMatrix(newTopic)(entity) += 1
+  private def updateCountMap(oldKey:Int,newKey:Int,map:mutable.Map[Int,Int]) {
+    if(oldKey != newKey) {
+      if(oldKey >= 0) {
+        val oldValue = map.getOrElse(oldKey,1)
+        if(oldValue == 1) map.remove(oldKey)
+        else map += oldKey -> (oldValue-1)
       }
-    })
+      if(newKey >= 0)
+        map += newKey -> (map.getOrElse(newKey,0) + 1)
+    }
   }
 
-  private[model] def sampleNewEntities(doc: EntityTopicDocument, withUpdate: Boolean, init: Boolean) = {
-    //Sample new entities
-    val docEntityCounts = doc.mentionEntities.foldLeft(mutable.Map[Int, Int]())((acc, entity) => {
-      if (entity >= 0)
-        acc += (entity -> (acc.getOrElse(entity, 0) + 1))
-      acc
-    })
-    val docAssignmentCounts = doc.tokenEntities.foldLeft(mutable.Map[Int, Int]())((acc, entity) => {
-      if (entity >= 0)
-        acc += (entity -> (acc.getOrElse(entity, 0) + 1))
-      acc
-    })
-    (0 until doc.mentionEntities.length).foreach(idx => {
-      val oldEntity = doc.mentionEntities(idx)
-      val mention = doc.mentions(idx)
-      val topic = doc.entityTopics(idx)
-      val mentionCounts = sparseMentionEntityMatrix(mention)
+  def trainWithDocument(doc:EntityTopicDocument, firstTime:Boolean, iterations:Int = 1) {
+    if(doc.mentions.length > 0) {
+      val oldDoc = doc.clone()
+      gibbsSampleDocument(doc, iterations = iterations, training = true, init = firstTime)
 
-      //Keep original assignments in initialization phase
-      val newEntity = if (init && oldEntity >= 0)
-        oldEntity
-      else {
-        val entityTopicCounts = entityTopicMatrix(topic)
-        val cands = candMap.candidates(mention)
+      //Perform synchronized update
+      this.synchronized {
+        (0 until oldDoc.mentions.length).foreach(idx => {
+          val mention = doc.mentions(idx)
+          val oldEntity = oldDoc.mentionEntities(idx)
+          val oldTopic = oldDoc.entityTopics(idx)
+          val newEntity = doc.mentionEntities(idx)
+          val newTopic = doc.entityTopics(idx)
 
-        sampleFromProportionals(entity => {
-          val add = {
-            if (entity == oldEntity) -1 else 0
-          }
-          val cte = entityTopicCounts(entity)
-          val cem = mentionCounts.get(entity)
-          val ce = entityCounts(entity)
-
-          (cte + add + beta) *
-            (cem + add + gamma) / (ce + add + numMentions * gamma) *
-            (0 until docAssignmentCounts.getOrElse(entity, 0)).foldLeft(1)((acc, _) => acc * (docEntityCounts(entity) + 1) / docEntityCounts(entity))
-        }, cands)
-      }
-
-      doc.mentionEntities(idx) = newEntity
-
-      if (withUpdate && oldEntity != newEntity) {
-        if (!init && oldEntity >= 0) {
-          entityTopicMatrix(topic)(oldEntity) -= 1
-          mentionCounts.put(oldEntity, mentionCounts.get(oldEntity) - 1)
-          entityCounts(oldEntity) = entityCounts(oldEntity) - 1
-        }
-
-        //It is possible, that no entity is found for that mention
-        if (newEntity >= 0) {
-          entityTopicMatrix(topic)(newEntity) += 1
-          //Initialized with anchor counts, so no updates if oldEntity was an anchor and we are in init phase
-          if (!init || oldEntity < 0)
-            mentionCounts.put(newEntity, mentionCounts.get(newEntity) + 1)
-          entityCounts(newEntity) = entityCounts(newEntity) + 1
-        }
-      }
-    })
-  }
-
-  private[model] def sampleNewAssignments(doc: EntityTopicDocument, withUpdate: Boolean, init: Boolean) = {
-    //Sample new assignments
-    val docEntityCounts = doc.mentionEntities.foldLeft(mutable.Map[Int, Int]())((acc, entity) => {
-      if (entity >= 0)
-        acc += (entity -> (acc.getOrElse(entity, 0) + 1))
-      acc
-    })
-    val candidateEntities = docEntityCounts.keySet
-    if (!candidateEntities.isEmpty)
-      (0 until doc.tokenEntities.length).foreach(idx => {
-        val oldEntity = doc.tokenEntities(idx)
-        val token = doc.tokens(idx)
-        val entityTokenCounts = sparseWordEntityMatrix(token)
-
-        val newEntity = sampleFromProportionals(entity => {
-          val add = {
-            if (entity == oldEntity) -1 else 0
-          }
-          docEntityCounts(entity) *
-            (entityTokenCounts.getOrElse(entity, 0) + add + delta) / (assignmentCounts(entity) + add + vocabularySize * delta)
-        }, candidateEntities)
-
-        doc.tokenEntities(idx) = newEntity
-
-        if (withUpdate && oldEntity != newEntity) {
-          if (!init && oldEntity >= 0) {
-            val oldCount = entityTokenCounts(oldEntity)
-            if (oldCount == 1)
-              entityTokenCounts.remove(oldEntity)
-            else
-              entityTokenCounts(oldEntity) = oldCount - 1
-            assignmentCounts(oldEntity) -= 1
+          //Update total topic counts
+          if(firstTime || newTopic != oldTopic) {
+            if(!firstTime && oldTopic >= 0)
+              topicCounts(oldTopic) -= 1
+            topicCounts(newTopic) += 1
           }
 
-          entityTokenCounts += newEntity -> (1 + entityTokenCounts.getOrElse(newEntity, 0))
-          assignmentCounts(newEntity) += 1
-        }
-      })
+          if(firstTime || oldEntity != newEntity) {
+            //update total entity counts
+            if(!firstTime && oldEntity >= 0)
+              entityCounts(oldEntity) -= 1
+            entityCounts(newEntity) += 1
+
+            //update entity-mention counts
+            val mentionCounts = sparseMentionEntityMatrix(mention)
+            updateCountMap({ if(firstTime) -1 else oldEntity },newEntity,mentionCounts)
+          }
+
+          //update entity-topic counts
+          if(firstTime || oldEntity!= newEntity || oldTopic != newTopic) {
+            if (!firstTime && oldTopic >= 0 && oldEntity >= 0)
+              entityTopicMatrix(oldTopic)(oldEntity) -= 1
+            entityTopicMatrix(newTopic)(newEntity) += 1
+          }
+        })
+
+        (0 until doc.tokens.length).foreach(idx => {
+          val token = doc.tokens(idx)
+          val oldEntity = oldDoc.tokenEntities(idx)
+          val newEntity = doc.tokenEntities(idx)
+
+          if(firstTime || oldEntity != newEntity) {
+            //update total assignment counts
+            if(!firstTime && oldEntity >= 0)
+              assignmentCounts(oldEntity) -= 1
+            assignmentCounts(newEntity) += 1
+
+            //update context counts
+            val tokenCounts = sparseWordEntityMatrix(token)
+            updateCountMap({ if(firstTime) -1 else oldEntity },newEntity,tokenCounts)
+          }
+        })
+      }
+    }
+  }
+
+  def gibbsSampleDocument(doc: EntityTopicDocument, iterations:Int = 300, training: Boolean = false, init: Boolean = false, returnStatistics:Boolean = false) = {
+    val docTopicCounts = getCountMap(doc.entityTopics)
+    val docEntityCounts = getCountMap(doc.mentionEntities)
+    val docAssignmentCounts = getCountMap(doc.tokenEntities)
+
+    val stats = if(returnStatistics) doc.mentionEntities.map(_ => mutable.Map[Int,Int]()) else null
+
+    require(!training || iterations == 1, "At the moment training is only possible with iterations=1, because after one iteration information about old assignments is lost!")
+
+    (0 until iterations).foreach(i => {
+
+      { //Sample Topics & Entities
+        (0 until doc.entityTopics.length).foreach(idx => {
+          val oldEntity = doc.mentionEntities(idx)
+          val oldTopic = doc.entityTopics(idx)
+          val mention = doc.mentions(idx)
+
+          //entity
+          val newEntity = if (doc.isInstanceOf[EntityTopicTrainingDocument] && doc.asInstanceOf[EntityTopicTrainingDocument].entityFixed(idx))
+            oldEntity
+          else {
+            val mentionCounts = sparseMentionEntityMatrix(mention)
+            var cands:Iterable[Int] =
+              if(candMap == null) mentionCounts.keySet()
+              else candMap.candidates(mention)
+
+            val candCounts:Map[Int,Int] = if(init && candMap != null) cands.zip(candMap.candidateCounts(mention).map(candMap.qc)).toMap else null
+
+            if(cands == null || cands.isEmpty) {
+              SpotlightLog.debug(getClass,s"There are no candidates for mention id $mention")
+              cands = Iterable[Int]()
+            }
+
+            sampleFromProportionals(entity => {
+              val localAdd = if (entity == oldEntity) -1 else 0
+              val globalAdd = if (training) localAdd else 0
+              val cte =
+                if(oldTopic >= 0) entityTopicMatrix(oldTopic)(entity)
+                else 0
+              //if initial phase use counts from statistical model
+              val (cem,ce) =
+                if(init && candMap != null) (candCounts(entity) ,resStore.qc(resStore.supportForID(entity)))
+                else (mentionCounts.getOrElse(entity,0)+globalAdd,entityCounts(entity)+globalAdd)
+
+              val docAssCount = docAssignmentCounts.getOrElse(entity, 0)
+              val docCount = docEntityCounts.getOrElse(entity,0) + localAdd
+
+              (cte + globalAdd + beta) *
+                (cem + gamma) / (ce + numMentions * gamma) *
+                { if(docCount > 0 && docAssCount > 0 ) math.pow((docCount + 1) / docCount, docAssCount)
+                else 1
+                }
+            }, cands)
+          }
+
+          doc.mentionEntities(idx) = newEntity
+
+          //local update
+          updateCountMap(oldEntity,newEntity,docEntityCounts)
+
+          if(returnStatistics)
+            stats(idx) += newEntity -> (stats(idx).getOrElse(newEntity,0) + 1)
+
+          //topic
+          val newTopic =
+            sampleFromProportionals(topic => {
+              val localAdd = if (topic == oldTopic) -1 else 0
+              val globalAdd = if (training) localAdd else 0
+              if (newEntity >= 0)
+                (docTopicCounts.getOrElse(topic, 0) + localAdd + alpha) *
+                  (entityTopicMatrix(topic)(newEntity) + {if(newEntity == oldEntity) globalAdd else 0} + beta) / (topicCounts(topic) + globalAdd + numTopics * beta)
+              else
+                (docTopicCounts.getOrElse(topic, 0) + localAdd + alpha) / (topicCounts(topic) + globalAdd + numTopics * beta)
+            }, 0 until numTopics)
+
+          doc.entityTopics(idx) = newTopic
+
+          //local update
+          if(i < iterations - 1)
+            updateCountMap(oldTopic, newTopic, docTopicCounts)
+        })
+      }
+
+      { //Sample new assignments
+        val candidateEntities = docEntityCounts.keySet
+        if (!candidateEntities.isEmpty)
+          (0 until doc.tokenEntities.length).foreach(idx => {
+            val oldEntity = doc.tokenEntities(idx)
+            val token = doc.tokens(idx)
+            val entityTokenCounts = sparseWordEntityMatrix(token)
+
+            val newEntity =
+              sampleFromProportionals(entity => {
+                //if initial phase and context model is given, use counts from statistical model
+                val add = if (training && entity == oldEntity) -1 else 0
+                val (cew,ce) =
+                  if(init && contextStore != null) {
+                    val tokens = contextStore.tokens(entity)
+                    if(tokens != null) {
+                      val ct = (0 until tokens.length).
+                        find(i => tokens(i) == token).map(i => contextStore.qc(contextStore.counts(entity)(i)))
+                      (ct.getOrElse(0), contextStore.totalTokenCounts(entity))
+                    } else (entityTokenCounts.getOrElse(entity, 0)+add, assignmentCounts(entity)+add)
+                  } else  {
+                    (entityTokenCounts.getOrElse(entity, 0)+add, assignmentCounts(entity)+add)
+                  }
+
+                docEntityCounts(entity) *
+                  (cew + delta) / (ce + vocabularySize * delta)
+              }, candidateEntities)
+
+            doc.tokenEntities(idx) = newEntity
+
+            //local update
+            if(i < iterations - 1)
+              updateCountMap(oldEntity,newEntity,docAssignmentCounts)
+          })
+      }
+    })
+
+    stats
   }
 
   private[model] def sampleFromProportionals(calcProportion: Int => Double, candidates: Traversable[Int]) = {
     var sum = 0.0
     val cands = candidates.map(cand => {
       var res = calcProportion(cand)
+      require(res >= 0.0,s"Calculating negative proportion is impossible! Candidate: $cand")
       sum += res
       (cand, res)
-    })
-    var random = Random.nextDouble() * sum
-    var selected = (Int.MinValue, 0.0)
-    val it = cands.toIterator
-    while (random >= 0.0 && it.hasNext) {
-      selected = it.next()
-      random -= selected._2
+    }).toList
+
+    if(cands.isEmpty)
+      Int.MinValue
+    else if(cands.tail.isEmpty)
+      cands.head._1
+    else {
+      var random = Random.nextDouble() * sum
+      var selected = (Int.MinValue, 0.0)
+      val it = cands.toIterator
+      while (random >= 0.0 && it.hasNext) {
+        selected = it.next()
+        random -= selected._2
+      }
+      selected._1
     }
-    selected._1
   }
 
 }
@@ -216,10 +280,14 @@ object SimpleEntityTopicModel {
   kryo.register(classOf[Int])
   kryo.register(classOf[Double])
   kryo.register(classOf[Array[Int]])
+  kryo.register(classOf[java.util.HashMap[Int, Int]])
   kryo.register(classOf[Array[Array[Int]]])
-  kryo.register(classOf[Array[ConcurrentHashMap[Int, Int]]])
+  kryo.register(classOf[Array[java.util.HashMap[Int, Int]]])
 
-  def fromFile(file: File) {
+  def fromFile(file: File) = {
+    SpotlightLog.info(getClass,s"Loading Entity-Topic-Model from ${file.getAbsolutePath}...")
+    val start = System.currentTimeMillis()
+
     val in = new Input(new FileInputStream(file))
     val numTopics = kryo.readObject(in, classOf[Int])
     val numEntities = kryo.readObject(in, classOf[Int])
@@ -231,22 +299,18 @@ object SimpleEntityTopicModel {
     val gamma = kryo.readObject(in, classOf[Double])
     val delta = kryo.readObject(in, classOf[Double])
 
-    val entityTopicMatrix = kryo.readObject(in, classOf[Array[Array[Int]]])
-    val sparseWordEntityMatrix = kryo.readObject(in, classOf[Array[ConcurrentHashMap[Int, Int]]])
-    val sparseMentionEntityMatrix = kryo.readObject(in, classOf[Array[ConcurrentHashMap[Int, Int]]])
-
-    val topicCounts = kryo.readObject(in, classOf[Array[Int]])
-    val entityCounts = kryo.readObject(in, classOf[Array[Int]])
-    val assignmentCounts = kryo.readObject(in, classOf[Array[Int]])
-    in.close()
-
     val model = new SimpleEntityTopicModel(numTopics, numEntities, vocabularySize, numMentions, alpha, beta, gamma, delta)
-    model.assignmentCounts = assignmentCounts
-    model.entityCounts = entityCounts
-    model.entityTopicMatrix = entityTopicMatrix
-    model.sparseMentionEntityMatrix = sparseMentionEntityMatrix
-    model.sparseWordEntityMatrix = sparseWordEntityMatrix
-    model.topicCounts = topicCounts
+    model.entityTopicMatrix = kryo.readObject(in, classOf[Array[Array[Int]]])
+    model.sparseWordEntityMatrix = kryo.readObject(in, classOf[Array[java.util.HashMap[Int, Int]]])
+    model.sparseMentionEntityMatrix= kryo.readObject(in, classOf[Array[java.util.HashMap[Int, Int]]])
+
+    model.topicCounts = kryo.readObject(in, classOf[Array[Int]])
+    model.entityCounts = kryo.readObject(in, classOf[Array[Int]])
+    model.assignmentCounts = kryo.readObject(in, classOf[Array[Int]])
+
+    in.close()
+    SpotlightLog.info(getClass,s"loaded in ${System.currentTimeMillis()-start}ms!")
+    model
   }
 
   def toFile(file: File, model: SimpleEntityTopicModel) {
@@ -272,7 +336,52 @@ object SimpleEntityTopicModel {
   }
 
   def main(args:Array[String]) {
-    val model = fromFile(new File("/home/dirk/model0"))
-    model
+    val locale = new Locale("en", "US")
+    val namespace = if (locale.getLanguage.equals("en")) {
+      "http://dbpedia.org/resource/"
+    } else {
+      "http://%s.dbpedia.org/resource/"
+    }
+    val modelDir = new File(args(0))
+    val iterations = args(2).toInt
+    val wikipediaToDBpediaClosure = new WikipediaToDBpediaClosure(
+      namespace,
+      new FileInputStream(new File(modelDir, "redirects.nt")),
+      new FileInputStream(new File(modelDir, "disambiguations.nt"))
+    )
+
+    val (tokenStore, sfStore, resStore, candMap, _) = SpotlightModel.storesFromFolder(modelDir)
+    val stopwords: Set[String] = SpotlightModel.loadStopwords(modelDir)
+
+    val tokenizer =
+      new LanguageIndependentTokenizer(stopwords, new SnowballStemmer("EnglishStemmer"), locale, tokenStore)
+
+    args.drop(3).foreach(modelFile => {
+      val model = fromFile(new File(modelFile))
+
+      val occSource = WikiOccurrenceSource.fromXMLDumpFile(new File(args(1)), Language.English)
+      var pr = 0
+      var count = 0
+
+      EntityTopicModelDocumentsSource.fromOccurrenceSource(occSource,null,tokenizer,resStore,sfStore,
+        candMap.asInstanceOf[MemoryCandidateMapStore].candidates,wikipediaToDBpediaClosure).foreach(doc => {
+        try {
+          val goldStandard = doc.mentionEntities.clone()
+          model.gibbsSampleDocument(doc,iterations=iterations)
+
+          pr += goldStandard.zip(doc.mentionEntities).count(p => p._1 == p._2)
+          count += goldStandard.length
+        }
+        catch {
+          case t:Throwable => println(t.printStackTrace())
+        }
+      })
+
+      if(count > 0 )
+        SpotlightLog.info(getClass, "Precision: "+pr.toDouble/count)
+      else
+        SpotlightLog.info(getClass, "Nothing to evaluate!")
+    })
+
   }
 }

@@ -6,9 +6,9 @@ import org.dbpedia.spotlight.lucene.similarity.{CachedInvCandFreqSimilarity, JCS
 import org.dbpedia.spotlight.lucene.search.MergedOccurrencesContextSearcher
 import java.io.File
 import org.dbpedia.spotlight.string.WikiLinkParser
-import io.Source
 import org.dbpedia.spotlight.model.{Text, SpotlightConfiguration}
 import org.dbpedia.spotlight.extract.LuceneTagExtractor
+import scala.io.Source
 
 /**
  * Evaluation class for LuceneTagExtractor

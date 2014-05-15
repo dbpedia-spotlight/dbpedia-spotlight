@@ -16,10 +16,9 @@
 
 package org.dbpedia.spotlight.evaluation
 
-import external.WikiMachineClient
 import java.io.{PrintStream, File}
-import io.Source
-import org.dbpedia.spotlight.string.WikiLinkParser
+import scala.io.Source
+
 /**
  * Generates files in token matrix format. It is basically a TSV file with on pair (token, spotlight) per line.
  * Takes as command line argument a base directory to look for files.

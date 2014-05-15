@@ -19,7 +19,6 @@
 package org.dbpedia.spotlight.evaluation
 
 import org.dbpedia.spotlight.log.SpotlightLog
-import io.Source
 import org.dbpedia.spotlight.util.AnnotationFilter
 import org.dbpedia.spotlight.string.WikiLinkParser
 import scala.collection.JavaConversions._
@@ -28,6 +27,7 @@ import org.dbpedia.spotlight.model.{SpotlightFactory, SpotlightConfiguration, DB
 import org.dbpedia.spotlight.annotate.DefaultParagraphAnnotator
 import org.dbpedia.spotlight.disambiguate.{ParagraphDisambiguatorJ, TwoStepDisambiguator}
 import org.dbpedia.spotlight.extract.TagExtractorFromAnnotator
+import scala.io.Source
 
 /**
  * Reads in text from evaluation corpus, for each text item produces a list of ranked tags

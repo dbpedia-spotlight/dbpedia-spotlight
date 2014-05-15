@@ -14,7 +14,7 @@ import org.dbpedia.spotlight.exceptions.SurfaceFormNotFoundException
  * @author Joachim Daiber
  */
 
-class DBCandidateSearcher(val resStore: ResourceStore, val sfStore: SurfaceFormStore, candidateMap: CandidateMapStore) {
+class DBCandidateSearcher(val resStore: ResourceStore, val sfStore: SurfaceFormStore, val candidateMap: CandidateMapStore) {
 
   val ADD_TOP_NORMALIZED_SFS = 5
 

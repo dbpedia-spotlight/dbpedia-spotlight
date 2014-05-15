@@ -31,7 +31,14 @@ import scala.io.Source
  * @author pablomendes
  */
 trait AnnotatedTextSource extends Traversable[AnnotatedParagraph] {
-    def name : String = "AnnotatedTextSource"
+  def name : String = "AnnotatedTextSource"
+
+  def mapConserve(m: AnnotatedParagraph => AnnotatedParagraph) = {
+    val outer = this
+    new AnnotatedTextSource {
+      def foreach[U](f: (AnnotatedParagraph) => U) = outer.foreach(p => f(m(p)))
+    }
+  }
 }
 
 object AnnotatedTextSource {

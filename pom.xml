@@ -47,11 +47,11 @@
         <module>core</module>
         <!--module>rest</module-->
         <module>index</module>
-        <module>eval</module>
+        <module>entity_topic</module>
         <!--module>uima</module-->
         <!--module>dist</module-->
         <!--module>rest-tomcat</module-->
-        <module>entity_topic</module>
+        <module>eval</module>
     </modules>
 
     <build>
@@ -211,6 +211,14 @@
             <dependency>
                 <groupId>org.dbpedia.spotlight</groupId>
                 <artifactId>index</artifactId>
+                <version>${dbpedia.spotlight.version}</version>
+                <!--
+                License: Apache Software License, Version 2.0
+                -->
+            </dependency>
+            <dependency>
+                <groupId>org.dbpedia.spotlight</groupId>
+                <artifactId>entity_topic</artifactId>
                 <version>${dbpedia.spotlight.version}</version>
                 <!--
                 License: Apache Software License, Version 2.0
@@ -872,13 +880,6 @@
                 License: Apache Software License, Version 2.0
                 -->
             </dependency>
-
-            <dependency>
-                <groupId>org.apache.spark</groupId>
-                <artifactId>spark-streaming_2.10</artifactId>
-                <version>0.9.0-incubating</version>
-            </dependency>
-
         </dependencies>
     </dependencyManagement>
 
@@ -898,11 +899,11 @@
             <url>https://maven.java.net/content/groups/public/</url>
         </repository>
 
-        <repository>
+        <!--repository>
             <id>scala-tools.org</id>
             <name>Scala-tools Maven2 Repository</name>
             <url>http://scala-tools.org/repo-releases/</url>
-        </repository>
+        </repository-->
 
         <repository>
             <id>anonsvn</id>
@@ -980,11 +981,11 @@
     </repositories>
 
     <pluginRepositories>
-        <pluginRepository>
+        <!--pluginRepository>
             <id>scala-tools.org</id>
             <name>Scala-tools Maven2 Repository</name>
             <url>http://scala-tools.org/repo-releases/</url>
-        </pluginRepository>
+        </pluginRepository-->
     </pluginRepositories>
 
 </project>

@@ -3,8 +3,8 @@ package org.dbpedia.spotlight.corpus
 import org.dbpedia.spotlight.io.AnnotatedTextSource
 import org.dbpedia.spotlight.model._
 import java.io.File
-import io.Source
 import collection.mutable.ListBuffer
+import scala.io.Source
 
 /**
  * Annotated text source for reading the corpus from the PREDOSE project at Knoesis
