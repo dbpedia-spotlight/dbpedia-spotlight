@@ -25,8 +25,7 @@ abstract class DBSpotter(
   val uppercaseFinder = new RegexNameFinder(
     Array[Pattern](
       Pattern.compile("([A-Z][^ ,!?.:;]*[ ]?)+")
-    ),"Capital_Sequences"
-  )
+    ))
 
   //from dirk: Had problems with StackOverflows; this might have caused it.
   //Anyway, the previous implementation is overly complex since we already have the tokenization, because opennlp builds the whole sentence again and searches in it
