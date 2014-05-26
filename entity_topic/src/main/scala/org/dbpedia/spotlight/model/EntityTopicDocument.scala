@@ -1,8 +1,5 @@
 package org.dbpedia.spotlight.model
 
-import org.dbpedia.spotlight.model.{Token, Paragraph}
-import org.dbpedia.spotlight.train.TrainEntityTopicLocal
-
 /**
  * @author dirk
  *          Date: 5/15/14

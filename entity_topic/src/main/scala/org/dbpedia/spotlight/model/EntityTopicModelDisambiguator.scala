@@ -1,10 +1,9 @@
 package org.dbpedia.spotlight.model
 
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguator
-import org.dbpedia.spotlight.exceptions.{SurfaceFormNotFoundException, InputException, ItemNotFoundException, SearchException}
-import org.dbpedia.spotlight.db.model.{CandidateMapStore, TextTokenizer, SurfaceFormStore, ResourceStore}
+import org.dbpedia.spotlight.exceptions.{SurfaceFormNotFoundException}
+import org.dbpedia.spotlight.db.model.{TextTokenizer, SurfaceFormStore, ResourceStore}
 import org.dbpedia.spotlight.db.memory.MemoryCandidateMapStore
-import org.dbpedia.spotlight.model.EntityTopicDocument
 
 /**
  * @author dirk

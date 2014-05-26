@@ -17,9 +17,9 @@ import java.util.Locale
 import org.dbpedia.spotlight.log.SpotlightLog
 
 /**
- * @author dirk
- *         Date: 4/23/14
- *         Time: 12:16 PM
+ * see "An entity-topic model for entity linking. X. Han and L. Sun" This implementation is very basic but at the same time efficient and fast.
+ * Serialization through: SimpleEntityTopicModel.toFile(...), and Deserialization through: SimpleEntityTopicModel .fromFile(...)
+ *
  */
 class SimpleEntityTopicModel(val numTopics: Int, val numEntities: Int, val vocabularySize: Int, val numMentions: Int,
                              val alpha: Double, val beta: Double, val gamma: Double, val delta: Double, create:Boolean = false,
@@ -333,55 +333,5 @@ object SimpleEntityTopicModel {
     kryo.writeObject(out, model.entityCounts)
     kryo.writeObject(out, model.assignmentCounts)
     out.close()
-  }
-
-  def main(args:Array[String]) {
-    val locale = new Locale("en", "US")
-    val namespace = if (locale.getLanguage.equals("en")) {
-      "http://dbpedia.org/resource/"
-    } else {
-      "http://%s.dbpedia.org/resource/"
-    }
-    val modelDir = new File(args(0))
-    val iterations = args(2).toInt
-    val wikipediaToDBpediaClosure = new WikipediaToDBpediaClosure(
-      namespace,
-      new FileInputStream(new File(modelDir, "redirects.nt")),
-      new FileInputStream(new File(modelDir, "disambiguations.nt"))
-    )
-
-    val (tokenStore, sfStore, resStore, candMap, _) = SpotlightModel.storesFromFolder(modelDir)
-    val stopwords: Set[String] = SpotlightModel.loadStopwords(modelDir)
-
-    val tokenizer =
-      new LanguageIndependentTokenizer(stopwords, new SnowballStemmer("EnglishStemmer"), locale, tokenStore)
-
-    args.drop(3).foreach(modelFile => {
-      val model = fromFile(new File(modelFile))
-
-      val occSource = WikiOccurrenceSource.fromXMLDumpFile(new File(args(1)), Language.English)
-      var pr = 0
-      var count = 0
-
-      EntityTopicModelDocumentsSource.fromOccurrenceSource(occSource,null,tokenizer,resStore,sfStore,
-        candMap.asInstanceOf[MemoryCandidateMapStore].candidates,wikipediaToDBpediaClosure).foreach(doc => {
-        try {
-          val goldStandard = doc.mentionEntities.clone()
-          model.gibbsSampleDocument(doc,iterations=iterations)
-
-          pr += goldStandard.zip(doc.mentionEntities).count(p => p._1 == p._2)
-          count += goldStandard.length
-        }
-        catch {
-          case t:Throwable => println(t.printStackTrace())
-        }
-      })
-
-      if(count > 0 )
-        SpotlightLog.info(getClass, "Precision: "+pr.toDouble/count)
-      else
-        SpotlightLog.info(getClass, "Nothing to evaluate!")
-    })
-
   }
 }

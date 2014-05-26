@@ -27,9 +27,10 @@ import akka.routing.SmallestMailboxPool
 import org.dbpedia.spotlight.log.SpotlightLog
 
 /**
- * @author dirk
- *         Date: 4/11/14
- *         Time: 4:49 PM
+ * Trains the entity topic model. Command line args: wiki-dump.xml spotlight-model-dir numTopics(e.g. 300) outputDir parallelism(optional).
+ * It is an actor based implementation and makes use of local parallelism, but IO is the bottle neck, so decent parallelism (e.g. 8) should be enough.
+ * Make sure that the model folder contains "redirects.nt" and "disambiguations.nt", and rename "context.mem" to something else, using it does not help and
+ * requires additional RAM.
  */
 object TrainEntityTopicLocal {
 
