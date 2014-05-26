@@ -249,10 +249,13 @@ object CreateSpotlightModel {
 
     MemoryStore.dump(fsaDict, new File(outputFolder, "fsa_dict.mem"))
 
-    FileUtils.write(
-      new File(outputFolder, "spotter_thresholds.txt"),
-      "1.0 0.2 -0.2 0.1" //Defaults!
-    )
+    if(new File(stopwordsFile.getParentFile, "spotter_thresholds.txt").exists())
+      FileUtils.copyFile(new File(stopwordsFile.getParentFile, "spotter_thresholds.txt"), new File(outputFolder, "spotter_thresholds.txt"))
+    else
+      FileUtils.write(
+        new File(outputFolder, "spotter_thresholds.txt"),
+        "1.0 0.2 -0.2 0.1" //Defaults!
+      )
 
   }
 
