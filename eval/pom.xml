@@ -26,7 +26,6 @@
         <artifactId>spotlight</artifactId>
         <groupId>org.dbpedia.spotlight</groupId>
         <version>0.7</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
 

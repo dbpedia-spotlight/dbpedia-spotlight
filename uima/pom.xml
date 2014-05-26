@@ -5,7 +5,6 @@
   	<groupId>org.dbpedia.spotlight</groupId>
   	<artifactId>spotlight</artifactId>
   	<version>0.7</version>
-	<relativePath>../pom.xml</relativePath>
   </parent>
 
   
