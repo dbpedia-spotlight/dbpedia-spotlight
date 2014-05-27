@@ -252,6 +252,20 @@
         </dependency>
 
 
+        <!-- don't download if not used, thiose are models-->
+        <dependency>
+            <groupId>cc.factorie.app.nlp</groupId>
+            <artifactId>ner</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>cc.factorie.app.nlp</groupId>
+            <artifactId>pos</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+
     </dependencies>
 
 </project>

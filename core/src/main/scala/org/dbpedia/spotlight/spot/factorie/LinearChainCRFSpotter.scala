@@ -2,19 +2,18 @@ package org.dbpedia.spotlight.spot.factorie
 
 import org.dbpedia.spotlight.model._
 import cc.factorie._
+import cc.factorie.model._
 import cc.factorie.optimize._
+import cc.factorie.variable._
 import org.dbpedia.spotlight.db.model.{TextTokenizer, ResourceStore}
 import org.dbpedia.spotlight.io.AnnotatedTextSource
 import akka.actor.{ActorSystem, Props, Actor}
 import scala.util.control.Breaks._
-import akka.routing.{SmallestMailboxRouter}
+import akka.routing.{SmallestMailboxPool, SmallestMailboxRouter}
 import org.dbpedia.spotlight.spot.Spotter
 import java.util
-import akka.util.Duration
 import akka.pattern._
 import java.util.concurrent.TimeUnit
-import scala.collection.JavaConversions._
-import akka.dispatch.Await
 import org.apache.commons.logging.LogFactory
 import java.io.File
 import org.dbpedia.spotlight.model.Factory.OntologyType
@@ -23,16 +22,17 @@ import scala.Predef._
 import org.dbpedia.spotlight.log.SpotlightLog
 import cc.factorie.util.BinarySerializer
 import cc.factorie.la.{SynchronizedDoubleAccumulator, SynchronizedWeightsMapAccumulator}
+import cc.factorie.infer.{InferByBPChain, BP}
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 
 /**
- * @author dirk
- *          Date: 5/2/14
- *          Time: 12:25 PM
+ * Training of this Spotter via LinearChainCRFSpotter.fromAnnotatedTextSource(...)
  */
 class LinearChainCRFSpotter(types:Set[OntologyType] = Set[OntologyType](), tokenizer:TextTokenizer = null) extends Spotter {
 
   // The variable classes
-  object TokenDomain extends CategoricalTensorDomain[String]
+  object TokenDomain extends CategoricalVectorDomain[String]
   class Token(val t:org.dbpedia.spotlight.model.Token, labelString:String="O") extends BinaryFeatureVectorVariable[String] with ChainLink[Token,Sentence] {
     def domain = TokenDomain
     val label: Label = new Label(labelString, this)
@@ -112,12 +112,13 @@ class LinearChainCRFSpotter(types:Set[OntologyType] = Set[OntologyType](), token
         token.label
       })
 
-      BP.inferChainMax(labels, nerModel)
+      InferByBPChain.infer(labels, nerModel).setToMaximize(null)
 
       //start & end of current spot & type
       def addOccurence(acc: (Int, Int, String)) {
         val sfOcc = new SurfaceFormOccurrence(new SurfaceForm(text.text.substring(acc._1, acc._2)), text, acc._1)
-        sfOcc.setFeature(new Feature("ontology-type", acc._3))
+        if(acc._3 != "SPOT")
+          sfOcc.setFeature(new Feature("ontology-type", acc._3))
         sfOccs.add(sfOcc)
       }
 
@@ -280,9 +281,9 @@ object LinearChainCRFSpotter {
 
   private class ExampleProcessingActor(gradientAccumulator: SynchronizedWeightsMapAccumulator,
                                          valueAccumulator: SynchronizedDoubleAccumulator) extends Actor {
-    protected def receive = {
+    def receive = {
       case example:Example =>
-        example.accumulateExampleInto(gradientAccumulator,valueAccumulator)
+        example.accumulateValueAndGradient(valueAccumulator,gradientAccumulator)
         sender ! DONE
     }
   }
@@ -296,14 +297,14 @@ object LinearChainCRFSpotter {
 
     val context = ActorSystem("Ner-Training")
     val processingActors = context.actorOf(
-      Props.apply(() => new ExampleProcessingActor(gradientAccumulator,valueAccumulator)).withRouter(new SmallestMailboxRouter(nrOfInstances = Runtime.getRuntime().availableProcessors())))
+      SmallestMailboxPool(nrOfInstances = Runtime.getRuntime().availableProcessors()).props(Props(classOf[ExampleProcessingActor],gradientAccumulator,valueAccumulator)))
     //var responses:List[Awaitable[Any]] = List[Awaitable[Any]]()
 
     var examples =List[Example]()
 
     //Cannot process examples directly here, because TokenDomain is growable, so name of method is a little misleading
     def processExample(labels:Seq[model.Label]) {
-      examples ::= new LikelihoodExample(labels,model.nerModel,InferByBPChainSum)
+      examples ::= new LikelihoodExample(labels,model.nerModel,InferByBPChain)
       if(batchSize > 0) {
         localCounter += 1
         if(localCounter % batchSize == 0) {

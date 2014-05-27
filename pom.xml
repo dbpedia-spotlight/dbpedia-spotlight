@@ -774,11 +774,29 @@
             <dependency>
                 <groupId>cc.factorie</groupId>
                 <artifactId>factorie</artifactId>
-                <version>1.0.0</version>
+                <version>1.0</version>
                 <!--
                 License: Apache Software License, Version 2.0
                 -->
             </dependency>
+
+            <dependency>
+                <groupId>cc.factorie.app.nlp</groupId>
+                <artifactId>ner</artifactId>
+                <version>1.0-RC5</version>
+                <!--
+                License: Apache Software License, Version 2.0
+                -->
+            </dependency>
+            <dependency>
+                <groupId>cc.factorie.app.nlp</groupId>
+                <artifactId>pos</artifactId>
+                <version>1.0-RC5</version>
+                <!--
+                License: Apache Software License, Version 2.0
+                -->
+            </dependency>
+
 
             <!-- module live -->
 

@@ -21,7 +21,7 @@ import org.dbpedia.spotlight.db.tokenize.LanguageIndependentTokenizer
 import java.util.Locale
 import org.dbpedia.spotlight.db.stem.SnowballStemmer
 import org.dbpedia.spotlight.exceptions.NotADBpediaResourceException
-import org.dbpedia.spotlight.spot.factorie.LinearChainCRFSpotter
+import org.dbpedia.spotlight.spot.factorie.{SimpleNerSpotter, PretrainedFactorieNerSpotter, LinearChainCRFSpotter}
 
 /**
  * This class evaluates spotters by taking an annotated corpus, indexing its surface forms,
@@ -33,7 +33,8 @@ import org.dbpedia.spotlight.spot.factorie.LinearChainCRFSpotter
 object EvalSpotter {
 
   def evalCorpus = {
-    MilneWittenCorpus.fromDirectory(new File("/data/wikifiedStories"))
+    //MilneWittenCorpus.fromDirectory(new File("/data/wikifiedStories"))
+    CSAWCorpus.fromDirectory(new File("/media/dirk/Data/Wikipedia/corpus/CSAW"))
     //AnnotatedTextSource.fromOccurrencesFile(new File("/home/max/spotlight-data/CSAWoccs.red-dis-3.7-sorted.tsv")))
   }
 
@@ -92,8 +93,9 @@ object EvalSpotter {
       }).map(Factory.SurfaceFormOccurrence.from(_))
     }*/
 
-    val expected = corpus.flatMap(_.occurrences.map(Factory.SurfaceFormOccurrence.from))
+    val expected = evalCorpus.flatMap(_.occurrences.map(Factory.SurfaceFormOccurrence.from))
 
+    evalSpotter(evalCorpus, SimpleNerSpotter, expected)
     evalSpotter(corpus, crf, expected)
 
     LinearChainCRFSpotter.serialize(new File("/tmp/model.bin"),crf)

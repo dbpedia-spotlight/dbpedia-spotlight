@@ -120,7 +120,7 @@ object FreebaseType {
 
   val FREEBASE_RDF_PREFIX = "http://rdf.freebase.com/ns"
 }
-@SerialVersionUID(-1220396574888289948L)
+@SerialVersionUID(8037662401509425324l)
 class SchemaOrgType(var name : String) extends OntologyType {
 
     name = name.replace(SchemaOrgType.SCHEMAORG_PREFIX, "")

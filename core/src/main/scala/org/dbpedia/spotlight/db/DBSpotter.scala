@@ -11,7 +11,6 @@ import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import opennlp.tools.util.Span
 import opennlp.tools.namefind.RegexNameFinder
 import java.util.regex.Pattern
-import org.apache.commons.lang.StringUtils
 import org.dbpedia.spotlight.log.SpotlightLog
 
 abstract class DBSpotter(
