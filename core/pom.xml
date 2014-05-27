@@ -252,18 +252,16 @@
         </dependency>
 
 
-        <!-- don't download if not used, these are models-->
-        <dependency>
+        <!-- don't download if not used, these are models. Uncomment these dependencies if you use a PretrainedFactorieNerSpotter-->
+        <!--dependency>
             <groupId>cc.factorie.app.nlp</groupId>
             <artifactId>ner</artifactId>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>cc.factorie.app.nlp</groupId>
             <artifactId>pos</artifactId>
-            <scope>provided</scope>
-        </dependency>
+        </dependency-->
 
 
     </dependencies>
