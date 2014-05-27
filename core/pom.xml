@@ -252,17 +252,17 @@
         </dependency>
 
 
-        <!-- don't download if not used, thiose are models-->
+        <!-- don't download if not used, these are models-->
         <dependency>
             <groupId>cc.factorie.app.nlp</groupId>
             <artifactId>ner</artifactId>
-            <scope>runtime</scope>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>cc.factorie.app.nlp</groupId>
             <artifactId>pos</artifactId>
-            <scope>runtime</scope>
+            <scope>provided</scope>
         </dependency>
 
 
