@@ -9,7 +9,7 @@ import java.util
  * See SimpleNerSpotter or BilouConllNerSpotter. Factorie provides different pretrained ner models.
  * To package them see pom.xml of core and change the scope of the artifact ner and pos to package (groupId: cc.factorie.app.nlp)
  */
-class PretrainedFactorieNerSpotter(chainNer: DocumentAnnotationPipeline) extends Spotter {
+class PretrainedFactorieNerSpotter(chainNER: DocumentAnnotationPipeline) extends Spotter {
 
   private def ontologyTypeFromLabel(label:String) = label.toLowerCase match {
     case "per" => "http://dbpedia.org/ontology/Person"
