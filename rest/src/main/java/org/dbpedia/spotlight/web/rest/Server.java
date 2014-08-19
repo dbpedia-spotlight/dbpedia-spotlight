@@ -22,6 +22,7 @@ import com.sun.grizzly.http.SelectorThread;
 import com.sun.jersey.api.container.grizzly.GrizzlyWebContainerFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dbpedia.spotlight.db.BaseSpotlightModel;
 import org.dbpedia.spotlight.db.SpotlightModel;
 import org.dbpedia.spotlight.db.model.TextTokenizer;
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ;
@@ -35,7 +36,6 @@ import org.dbpedia.spotlight.sparql.SparqlQueryExecuter;
 import org.dbpedia.spotlight.spot.Spotter;
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy;
 import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy;
-import scala.collection.JavaConverters;
 
 import java.io.File;
 import java.io.IOException;
@@ -80,6 +80,8 @@ public class Server {
     private static SparqlQueryExecuter sparqlExecuter = null;
 
     private static List<Double> similarityThresholds = new ArrayList<Double>();
+
+    public static SpotlightModel model;
 
     public static void main(String[] args) throws IOException, InterruptedException, URISyntaxException, ClassNotFoundException, InitializationException {
 
@@ -294,13 +296,14 @@ public class Server {
         }
 
 
-        SpotlightModel db = SpotlightModel.fromFolder(modelFolder);
+        model = BaseSpotlightModel.fromFolder(modelFolder);
 
-        setNamespacePrefix(db.properties().getProperty("namespace"));
-        setTokenizer(db.tokenizer());
-        setSpotters(db.spotters());
-        setDisambiguators(db.disambiguators());
-        setSparqlExecuter(db.properties().getProperty("endpoint", ""),db.properties().getProperty("graph", ""));
+        setNamespacePrefix(model.properties().getProperty("namespace"));
+        setTokenizer(model.tokenizer());
+        setSpotters(model.spotters());
+        setDisambiguators(model.disambiguators());
+        setSparqlExecuter(model.properties().getProperty("endpoint", ""),model.properties().getProperty("graph", ""));
+
 
     }
 }
