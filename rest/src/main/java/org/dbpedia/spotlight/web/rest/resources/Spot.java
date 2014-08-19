@@ -20,6 +20,7 @@ package org.dbpedia.spotlight.web.rest.resources;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dbpedia.spotlight.model.AnnotationParameters;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 import org.dbpedia.spotlight.model.Text;
@@ -69,7 +70,10 @@ public class Spot {
 
         try {
             String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
-            List<SurfaceFormOccurrence> spots = annotationInterface.spot(spotterName, new Text(textToProcess));
+
+            AnnotationParameters params = new AnnotationParameters();
+            params.spotterName = spotterName;
+            List<SurfaceFormOccurrence> spots = Server.model.spot(new Text(textToProcess), params);
             String response = new Annotation(new Text(text), spots).toXML();
             return ServerUtils.ok(response);
         } catch (Exception e) {
