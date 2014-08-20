@@ -70,7 +70,6 @@ public class Spot {
 
         try {
             String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
-
             AnnotationParameters params = new AnnotationParameters();
             params.spotterName = spotterName;
             List<SurfaceFormOccurrence> spots = Server.model.spot(new Text(textToProcess), params);
