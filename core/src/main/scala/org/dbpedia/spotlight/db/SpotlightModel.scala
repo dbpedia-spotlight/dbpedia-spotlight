@@ -28,6 +28,9 @@ trait SpotlightModel{
 
   def spot(text: Text, params: AnnotationParameters): java.util.List[SurfaceFormOccurrence];
 
+  @throws( classOf[InputException] )
+  def firstBest(text: String, params: AnnotationParameters): java.util.List[DBpediaResourceOccurrence] ;
+
   def getSpotter(name: String): Spotter = {
     var policy: SpotterConfiguration.SpotterPolicy = SpotterPolicy.Default
     try {
@@ -45,23 +48,9 @@ trait SpotlightModel{
     }
     return spotter
   }
+
   //def firstBest(text: String, params: AnnotationParameters): java.util.List[DBpediaResourceOccurrence] ;
   //def nBest(text: String, params: AnnotationParameters ):  java.util.List[DBpediaResourceOccurrence];
 
-//  def announce(textString: String, params: AnnotationParameters) {
-//    LOG.info("******************************** Parameters ********************************")
-//    LOG.info("API: " + getApiName)
-//    LOG.info("client ip: " + clientIp)
-//    LOG.info("text: " + textString)
-//    LOG.info("text length in chars: " + textString.length)
-//    LOG.info("disambiguation confidence: " + String.valueOf(disambiguationConfidence))
-//    LOG.info("spotterConfidence confidence: " + String.valueOf(spotterConfidence))
-//    LOG.info("support: " + String.valueOf(support))
-//    LOG.info("types: " + ontologyTypesString)
-//    LOG.info("sparqlQuery: " + sparqlQuery)
-//    LOG.info("policy: " + policyIsBlacklist(policy))
-//    LOG.info("coreferenceResolution: " + String.valueOf(coreferenceResolution))
-//    LOG.info("spotter: " + spotterName)
-//    LOG.info("disambiguator: " + disambiguatorName)
-//  }
+
 }

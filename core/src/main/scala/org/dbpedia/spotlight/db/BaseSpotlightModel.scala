@@ -1,5 +1,7 @@
 package org.dbpedia.spotlight.db
 
+import java.util
+
 import concurrent.{TokenizerWrapper, SpotterWrapper}
 import org.dbpedia.spotlight.db.memory.{MemoryContextStore, MemoryStore}
 import model._
@@ -9,7 +11,6 @@ import opennlp.tools.postag.{POSModel, POSTaggerME}
 import org.dbpedia.spotlight.disambiguate.mixtures.UnweightedMixture
 import org.dbpedia.spotlight.db.similarity.{NoContextSimilarity, GenerativeContextSimilarity, ContextSimilarity}
 import org.dbpedia.spotlight.filter.visitor.{FilterOccsImpl, OccsFilter, FilterElement}
-import org.dbpedia.spotlight.model.Factory.SurfaceFormOccurrence
 import org.dbpedia.spotlight.model._
 import scala.collection.JavaConverters._
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy
@@ -22,14 +23,34 @@ import opennlp.tools.chunker.ChunkerModel
 import opennlp.tools.namefind.TokenNameFinderModel
 import stem.SnowballStemmer
 import tokenize.{OpenNLPTokenizer, LanguageIndependentTokenizer}
-import org.dbpedia.spotlight.exceptions.{InputException, ConfigurationException}
+import org.dbpedia.spotlight.exceptions.{SearchException, InputException, ConfigurationException}
 import org.dbpedia.spotlight.util.MathUtil
+import scala.collection.JavaConversions._
 
 class BaseSpotlightModel(val tokenizer: TextTokenizer,
                      val spotters: java.util.Map[SpotterPolicy, Spotter],
                      val disambiguators: java.util.Map[DisambiguationPolicy, ParagraphDisambiguatorJ],
                      val properties: Properties) extends SpotlightModel{
 
+
+  def disambiguate(spots: java.util.List[SurfaceFormOccurrence], disambiguator: ParagraphDisambiguatorJ): java.util.List[DBpediaResourceOccurrence] = {
+    var resources: java.util.List[DBpediaResourceOccurrence] = new util.ArrayList[DBpediaResourceOccurrence]()
+
+    if (spots.size == 0) return resources
+
+    if (tokenizer != null)
+        tokenizer.tokenizeMaybe(spots.get(0).context)
+
+    try {
+      resources = disambiguator.disambiguate(Factory.paragraph.fromJ(spots))
+    }
+    catch {
+      case e: UnsupportedOperationException => {
+        throw new SearchException(e)
+      }
+    }
+    return resources
+  }
 
 
  def spot(context: Text, params: AnnotationParameters): java.util.List[SurfaceFormOccurrence]={
@@ -50,6 +71,60 @@ class BaseSpotlightModel(val tokenizer: TextTokenizer,
     spots
   }
 
+  def firstBest(text: String, params: AnnotationParameters): java.util.List[DBpediaResourceOccurrence]={
+
+    // Get input text
+    if (text.trim == "") {
+      throw new InputException("No text was specified in the &text parameter.")
+    }
+
+    val context: Text = new Text(text)
+
+    context.setFeature(new Score("spotterConfidence", params.spotterConfidence))
+    context.setFeature(new Score("disambiguationConfidence", params.disambiguationConfidence))
+
+    // Find spots to annotate/disambiguate
+    val spots: java.util.List[SurfaceFormOccurrence] = spot(context, params)
+
+    // Call annotation or disambiguation
+    val maxLengthForOccurrenceCentric: Int = 1200
+
+    if (tokenizer == null &&
+       (params.disambiguatorName == SpotlightConfiguration.DisambiguationPolicy.Default.name) &&
+       text.length > maxLengthForOccurrenceCentric) {
+              params.disambiguatorName = SpotlightConfiguration.DisambiguationPolicy.Document.name
+//             LOG.info(String.format("Text length > %d. Using %s to disambiguate.", maxLengthForOccurrenceCentric, params.disambiguatorName))
+    }
+
+
+    val disambiguator: ParagraphDisambiguatorJ = params.disambiguator
+    var occList: java.util.List[DBpediaResourceOccurrence] = disambiguate(spots, disambiguator)
+    val filter: FilterElement = new OccsFilter(params.disambiguationConfidence,
+                                               params.support,
+                                               params.dbpediaTypes,
+                                               params.sparqlQuery,
+                                               params.blacklist,
+                                               params.coreferenceResolution,
+                                               params.similarityThresholds,
+                                               params.sparqlExecuter)
+
+    occList = filter.accept(new FilterOccsImpl, occList)
+
+
+    if (LOG.isDebugEnabled) {
+      LOG.debug("Shown:")
+
+      occList.foreach{
+          occ:DBpediaResourceOccurrence =>
+          //  LOG.debug(String.format("%s <- %s; score: %s, ctxscore: %3.2f, support: %s, prior: %s", occ.resource, occ.surfaceForm, occ.similarityScore, occ.contextualScore, occ.resource.support, occ.resource.prior))
+      }
+
+    }
+
+
+
+    return occList
+  }
 
 
 //  def firstBest(textString: String, params: AnnotationParameters): java.util.List[DBpediaResourceOccurrence]={

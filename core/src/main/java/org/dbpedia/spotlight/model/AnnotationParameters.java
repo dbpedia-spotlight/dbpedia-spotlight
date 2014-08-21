@@ -1,5 +1,7 @@
 package org.dbpedia.spotlight.model;
 
+import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ;
+import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.sparql.SparqlQueryExecuter;
 import org.dbpedia.spotlight.spot.Spotter;
 
@@ -16,11 +18,24 @@ public class AnnotationParameters {
         public int support = Integer.parseInt(SpotlightConfiguration.DEFAULT_SUPPORT);
         public String dbpediaTypes = SpotlightConfiguration.DEFAULT_TYPES;
         public String sparqlQuery = SpotlightConfiguration.DEFAULT_SPARQL;
-        public Boolean policy = Boolean.FALSE;
+        public Boolean blacklist = Boolean.FALSE;
+        public String policy = "whitelist";
         public Boolean coreferenceResolution = Boolean.parseBoolean(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION);
         public String spotterName = "Default";
         public String disambiguatorName = "Default";
+        public ParagraphDisambiguatorJ disambiguator;
         public String clientIp = "";
         public SparqlQueryExecuter sparqlExecuter;
+        public List<Double> similarityThresholds;
 
+        public void setPolicyValue(String stringPolicy){
+            blacklist = false;
+            if(stringPolicy.trim().equalsIgnoreCase("blacklist")) {
+                blacklist = true;
+                policy = "blacklist";
+            }
+            else {
+                policy = "whitelist";
+            }
+        }
 }

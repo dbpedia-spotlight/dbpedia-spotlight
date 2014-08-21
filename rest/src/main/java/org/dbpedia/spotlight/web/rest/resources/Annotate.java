@@ -16,67 +16,101 @@
 // *  Check our project website for information on how to acknowledge the authors and how to contribute to the project: http://spotlight.dbpedia.org
 // */
 //
-//package org.dbpedia.spotlight.web.rest.resources;
-//import org.apache.commons.logging.Log;
-//import org.apache.commons.logging.LogFactory;
-//import org.dbpedia.spotlight.model.SpotlightConfiguration;
-//import org.dbpedia.spotlight.web.rest.Server;
-//import org.dbpedia.spotlight.web.rest.ServerUtils;
-//import org.dbpedia.spotlight.web.rest.SpotlightInterface;
-//
-//import javax.servlet.http.HttpServletRequest;
-//import javax.ws.rs.*;
-//import javax.ws.rs.core.Context;
-//import javax.ws.rs.core.MediaType;
-//import javax.ws.rs.core.Response;
-//import javax.ws.rs.core.UriInfo;
-//
-///**
-// * REST Web Service for annotation: spotting, candidate selection, disambiguation, linking
-// *
-// * @author pablomendes
-// * @author Paul Houle (patch for POST)
-// * @author Marcus Nitzschke
-// */
-//
-//@ApplicationPath(Server.APPLICATION_PATH)
-//@Path("/annotate")
-//@Consumes("text/plain")
-//public class Annotate {
-//
-//    Log LOG = LogFactory.getLog(this.getClass());
-//
-//    @Context
-//    private UriInfo context;
-//
-//    // Annotation interface
-//    private static SpotlightInterface annotationInterface =  new SpotlightInterface("/annotate");
-//
-//    @GET
-//    @Produces(MediaType.TEXT_HTML)
-//    public Response getHTML(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
-//                            @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @QueryParam("url") String inUrl,
-//                            @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double disambiguationConfidence,
-//                            @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
-//                            @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
-//                            @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
-//                            @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
-//                            @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
-//                            @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution,
-//                            @DefaultValue("Default") @QueryParam("spotter") String spotterName,
-//                            @DefaultValue("Default") @QueryParam("disambiguator") String disambiguatorName,
-//                            @Context HttpServletRequest request) {
-//
-//        String clientIp = request.getRemoteAddr();
-//
-//        try {
-//            String response = annotationInterface.getHTML(text, inUrl, disambiguationConfidence, spotterConfidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName,  disambiguatorName);
-//            return ServerUtils.ok(response);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.TEXT_HTML).build());
-//        }
-//    }
+package org.dbpedia.spotlight.web.rest.resources;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.dbpedia.spotlight.exceptions.InputException;
+import org.dbpedia.spotlight.model.AnnotationParameters;
+import org.dbpedia.spotlight.model.DBpediaResourceOccurrence;
+import org.dbpedia.spotlight.model.SpotlightConfiguration;
+import org.dbpedia.spotlight.web.rest.OutputManager;
+import org.dbpedia.spotlight.web.rest.Server;
+import org.dbpedia.spotlight.web.rest.ServerUtils;
+import org.dbpedia.spotlight.web.rest.SpotlightInterface;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+import java.util.List;
+
+/**
+ * REST Web Service for annotation: spotting, candidate selection, disambiguation, linking
+ *
+ * @author pablomendes
+ * @author Paul Houle (patch for POST)
+ * @author Marcus Nitzschke
+ */
+
+@ApplicationPath(Server.APPLICATION_PATH)
+@Path("/annotate")
+@Consumes("text/plain")
+public class Annotate extends BaseRestResource{
+
+    Log LOG = LogFactory.getLog(this.getClass());
+    private OutputManager outputManager = new OutputManager();
+
+    @Context
+    private UriInfo context;
+
+    @GET
+    @Produces(MediaType.TEXT_HTML)
+    public Response getHTML(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
+                            @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @QueryParam("url") String inUrl,
+                            @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double disambiguationConfidence,
+                            @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
+                            @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
+                            @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
+                            @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
+                            @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
+                            @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution,
+                            @DefaultValue("Default") @QueryParam("spotter") String spotterName,
+                            @DefaultValue("Default") @QueryParam("disambiguator") String disambiguatorName,
+                            @Context HttpServletRequest request) {
+
+        String clientIp = request.getRemoteAddr();
+
+        AnnotationParameters params = new AnnotationParameters();
+        params.spotterName = spotterName;
+        params.inUrl = inUrl;
+        params.clientIp = clientIp;
+        params.disambiguationConfidence = disambiguationConfidence;
+        params.spotterConfidence = spotterConfidence;
+        params.support = support;
+        params.dbpediaTypes = dbpediaTypes;
+        params.sparqlQuery = sparqlQuery;
+        params.setPolicyValue(policy);
+        params.coreferenceResolution = coreferenceResolution;
+        params.similarityThresholds = Server.getSimilarityThresholds();
+        params.sparqlExecuter = Server.getSparqlExecute();
+
+
+        String result;
+
+        try {
+            String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
+            try {
+                params.disambiguator = Server.getDisambiguator(params.disambiguatorName);
+                List<DBpediaResourceOccurrence> occs = Server.model.firstBest(text, params);
+                result = outputManager.makeHTML(textToProcess, occs);
+            }catch(InputException e){
+                LOG.info("ERROR: "+e.getMessage());
+                result = "<html><body><b>ERROR:</b> <i>"+e.getMessage()+"</i></body></html>";
+            }
+
+            LOG.info("HTML format");
+            LOG.debug("****************************************************************");
+            return ServerUtils.ok(result);
+        }
+          catch (Exception e) {
+            LOG.info("ERROR: "+e.getMessage());
+            e.printStackTrace();
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(ServerUtils.print(e)).type(MediaType.TEXT_HTML).build());
+        }
+    }
+}
 //
 //    @GET
 //    @Produces(MediaType.APPLICATION_XHTML_XML)

@@ -75,7 +75,7 @@ public class OutputManager {
         }
     }
 
-    protected String makeXML(String text, List<DBpediaResourceOccurrence> occList, double disambiguationConfidence, double spotterConfidence, int support, String targetTypesString, String sparqlQuery, String policy, boolean coreferenceResolution) throws OutputException {
+    public String makeXML(String text, List<DBpediaResourceOccurrence> occList, double disambiguationConfidence, double spotterConfidence, int support, String targetTypesString, String sparqlQuery, String policy, boolean coreferenceResolution) throws OutputException {
         // PrintWriter from a Servlet
         String xml = "";
         try {
@@ -110,11 +110,11 @@ public class OutputManager {
         return xml;
     }
 
-    protected String makeNIF(String text, List<DBpediaResourceOccurrence> occList, String format, String prefix) throws OutputException {
+    public String makeNIF(String text, List<DBpediaResourceOccurrence> occList, String format, String prefix) throws OutputException {
     	return NIFOutputFormatter.fromResourceOccs(text, occList, format, prefix);
     }
 
-    protected void getResourcesXml(List<DBpediaResourceOccurrence> occList, TransformerHandler hd, AttributesImpl atts) throws SAXException {
+    public void getResourcesXml(List<DBpediaResourceOccurrence> occList, TransformerHandler hd, AttributesImpl atts) throws SAXException {
         int i=0;
 
         for (DBpediaResourceOccurrence occ : occList){
@@ -141,7 +141,7 @@ public class OutputManager {
             hd.endElement("","","Resources");
     }
 
-    protected String makeCandidatesXML(String text, Map<SurfaceForm, List<DBpediaResourceOccurrence>> candidateMap, double confidence, int support, String targetTypesString, String sparqlQuery, String policy, boolean coreferenceResolution) throws OutputException {
+    public String makeCandidatesXML(String text, Map<SurfaceForm, List<DBpediaResourceOccurrence>> candidateMap, double confidence, int support, String targetTypesString, String sparqlQuery, String policy, boolean coreferenceResolution) throws OutputException {
         // PrintWriter from a Servlet
         String xml = "";
         try {
@@ -191,7 +191,7 @@ public class OutputManager {
         return xml;
     }
 
-    protected String makeErrorXML(String message, String text, double confidence, int support, String targetTypesString, String sparqlQuery, String policy, boolean coreferenceResolution) throws OutputException {
+    public String makeErrorXML(String message, String text, double confidence, int support, String targetTypesString, String sparqlQuery, String policy, boolean coreferenceResolution) throws OutputException {
         // PrintWriter from a Servlet
         String xmlDoc="";
         try {
@@ -228,7 +228,7 @@ public class OutputManager {
     }
 
     private XMLSerializer xmlSerializer = new XMLSerializer();
-    protected String xml2json(String xmlDoc) throws OutputException {
+    public String xml2json(String xmlDoc) throws OutputException {
         String json = "";
         try {
             json = xmlSerializer.read(xmlDoc).toString(2);
@@ -239,12 +239,12 @@ public class OutputManager {
     }
 
     private WebCodeFormatter htmlFormat = new HTMLFormatter();
-    protected String makeHTML(String text, List<DBpediaResourceOccurrence> occList) {  //TODO throws OutputException
+    public String makeHTML(String text, List<DBpediaResourceOccurrence> occList) {  //TODO throws OutputException
         return makeWebRepresentation(text, occList, htmlFormat);
     }
 
     private WebCodeFormatter rdfaFormat = new RDFaFormatter();
-    protected String makeRDFa(String text, List<DBpediaResourceOccurrence> occList) {  //TODO throws OutputException
+    public String makeRDFa(String text, List<DBpediaResourceOccurrence> occList) {  //TODO throws OutputException
         return makeWebRepresentation(text, occList, rdfaFormat);
     }
 

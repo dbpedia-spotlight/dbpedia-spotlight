@@ -68,17 +68,7 @@ public class SpotlightInterface {
         return resources;
     }
 
-    public boolean policyIsBlacklist(String policy) {
-        boolean blacklist = false;
-        if(policy.trim().equalsIgnoreCase("blacklist")) {
-            blacklist = true;
-            policy = "blacklist";
-        }
-        else {
-            policy = "whitelist";
-        }
-        return blacklist;
-    }
+
 
     public void announce(String textString,
                          double disambiguationConfidence,
@@ -102,7 +92,7 @@ public class SpotlightInterface {
         LOG.info("support: "+String.valueOf(support));
         LOG.info("types: "+ontologyTypesString);
         LOG.info("sparqlQuery: "+ sparqlQuery);
-        LOG.info("policy: "+policyIsBlacklist(policy));
+       // LOG.info("policy: "+policyIsBlacklist(policy));
         LOG.info("coreferenceResolution: "+String.valueOf(coreferenceResolution));
         LOG.info("spotter: "+spotterName);
         LOG.info("disambiguator: "+disambiguatorName);
@@ -136,7 +126,7 @@ public class SpotlightInterface {
                                                           String disambiguatorName
                                                           ) throws SearchException, InputException, SpottingException {
 
-        boolean blacklist = policyIsBlacklist(policy);
+        boolean blacklist = false;//policyIsBlacklist(policy);
 
         announce(textString,disambiguationConfidence, spotterConfidence,support,ontologyTypesString,sparqlQuery,policy,coreferenceResolution,clientIp,spotterName,disambiguatorName);
 
