@@ -29,6 +29,7 @@ import org.dbpedia.spotlight.model.SurfaceForm;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+import javax.ws.rs.core.MediaType;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -239,6 +240,24 @@ public class OutputManager {
     }
 
     private WebCodeFormatter htmlFormat = new HTMLFormatter();
+
+    public String makeOutput(String text, List<DBpediaResourceOccurrence> occList, MediaType outputType){
+
+
+         if (outputType.equals(MediaType.TEXT_HTML_TYPE))
+                return makeHTML(text, occList);
+
+         if(outputType.equals(MediaType.APPLICATION_XHTML_XML_TYPE))
+             return makeRDFa(text, occList);
+
+        if(outputType.equals(MediaType.TEXT_XML_TYPE))
+            return makeRDFa(text, occList);
+
+
+
+        return "";
+    }
+
     public String makeHTML(String text, List<DBpediaResourceOccurrence> occList) {  //TODO throws OutputException
         return makeWebRepresentation(text, occList, htmlFormat);
     }

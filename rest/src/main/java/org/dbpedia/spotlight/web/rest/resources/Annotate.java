@@ -47,10 +47,28 @@ import java.util.List;
 @ApplicationPath(Server.APPLICATION_PATH)
 @Path("/annotate")
 @Consumes("text/plain")
-public class Annotate extends BaseRestResource{
+public class Annotate extends BaseRestResource {
 
     Log LOG = LogFactory.getLog(this.getClass());
     private OutputManager outputManager = new OutputManager();
+
+
+    private String annotate(AnnotationParameters params, MediaType outputType, String textToProcess) {
+        String result;
+        try {
+            params.disambiguator = Server.getDisambiguator(params.disambiguatorName);
+            List<DBpediaResourceOccurrence> occs = Server.model.firstBest(textToProcess, params);
+            result = outputManager.makeOutput(textToProcess, occs, outputType);
+        } catch (InputException e) {
+            LOG.info("ERROR: " + e.getMessage());
+            result = "<html><body><b>ERROR:</b> <i>" + e.getMessage() + "</i></body></html>";
+        }
+
+        LOG.info(outputType + "format");
+        LOG.debug("****************************************************************");
+
+        return result;
+    }
 
     @Context
     private UriInfo context;
@@ -88,76 +106,105 @@ public class Annotate extends BaseRestResource{
 
 
         String result;
-
         try {
             String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
-            try {
-                params.disambiguator = Server.getDisambiguator(params.disambiguatorName);
-                List<DBpediaResourceOccurrence> occs = Server.model.firstBest(text, params);
-                result = outputManager.makeHTML(textToProcess, occs);
-            }catch(InputException e){
-                LOG.info("ERROR: "+e.getMessage());
-                result = "<html><body><b>ERROR:</b> <i>"+e.getMessage()+"</i></body></html>";
-            }
-
-            LOG.info("HTML format");
-            LOG.debug("****************************************************************");
+            result = annotate(params, MediaType.TEXT_HTML_TYPE, textToProcess);
             return ServerUtils.ok(result);
+        } catch (Exception e) {
+            LOG.info("ERROR: " + e.getMessage());
+            e.printStackTrace();
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(ServerUtils.print(e)).type(MediaType.TEXT_HTML).build());
         }
-          catch (Exception e) {
-            LOG.info("ERROR: "+e.getMessage());
+    }
+
+
+    @GET
+    @Produces(MediaType.APPLICATION_XHTML_XML)
+    public Response getRDFa(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
+                            @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @QueryParam("url") String inUrl,
+                            @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double disambiguationConfidence,
+                            @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
+                            @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
+//                          @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
+                            @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
+                            @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
+                            @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution,
+                            @DefaultValue("Default") @QueryParam("spotter") String spotterName,
+                            @DefaultValue("Default") @QueryParam("disambiguator") String disambiguatorName,
+                            @Context HttpServletRequest request) {
+        String clientIp = request.getRemoteAddr();
+
+        AnnotationParameters params = new AnnotationParameters();
+        params.spotterName = spotterName;
+        params.inUrl = inUrl;
+        params.clientIp = clientIp;
+        params.disambiguationConfidence = disambiguationConfidence;
+        params.spotterConfidence = spotterConfidence;
+        params.support = support;
+        params.sparqlQuery = sparqlQuery;
+        params.setPolicyValue(policy);
+        params.coreferenceResolution = coreferenceResolution;
+        params.similarityThresholds = Server.getSimilarityThresholds();
+        params.sparqlExecuter = Server.getSparqlExecute();
+
+
+        String result;
+        try {
+            String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
+            result = annotate(params, MediaType.APPLICATION_XHTML_XML_TYPE, textToProcess);
+            return ServerUtils.ok(result);
+        } catch (Exception e) {
+            LOG.info("ERROR: " + e.getMessage());
+            e.printStackTrace();
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(ServerUtils.print(e)).type(MediaType.TEXT_HTML).build());
+        }
+    }
+
+
+    @GET
+    @Produces({MediaType.TEXT_XML, MediaType.APPLICATION_XML})
+    public Response getXML(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
+                           @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @QueryParam("url") String inUrl,
+                           @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double disambiguationConfidence,
+                           @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
+                           @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
+                           @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
+                           @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
+                           @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
+                           @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution,
+                           @DefaultValue("Default") @QueryParam("spotter") String spotterName,
+                           @DefaultValue("Default") @QueryParam("disambiguator") String disambiguatorName,
+                           @Context HttpServletRequest request) {
+        String clientIp = request.getRemoteAddr();
+
+        AnnotationParameters params = new AnnotationParameters();
+        params.spotterName = spotterName;
+        params.inUrl = inUrl;
+        params.clientIp = clientIp;
+        params.disambiguationConfidence = disambiguationConfidence;
+        params.spotterConfidence = spotterConfidence;
+        params.support = support;
+        params.dbpediaTypes = dbpediaTypes;
+        params.sparqlQuery = sparqlQuery;
+        params.setPolicyValue(policy);
+        params.coreferenceResolution = coreferenceResolution;
+        params.similarityThresholds = Server.getSimilarityThresholds();
+        params.sparqlExecuter = Server.getSparqlExecute();
+
+
+        String result;
+        try {
+            String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
+            result = annotate(params, MediaType.TEXT_XML_TYPE, textToProcess);
+            return ServerUtils.ok(result);
+        } catch (Exception e) {
+            LOG.info("ERROR: " + e.getMessage());
             e.printStackTrace();
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(ServerUtils.print(e)).type(MediaType.TEXT_HTML).build());
         }
     }
 }
-//
-//    @GET
-//    @Produces(MediaType.APPLICATION_XHTML_XML)
-//    public Response getRDFa(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
-//                            @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @QueryParam("url") String inUrl,
-//                            @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double disambiguationConfidence,
-//                            @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
-//                          @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
-////                          @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
-//                          @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
-//                          @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
-//                          @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution,
-//                          @DefaultValue("Default") @QueryParam("spotter") String spotterName,
-//                          @DefaultValue("Default") @QueryParam("disambiguator") String disambiguatorName,
-//                          @Context HttpServletRequest request) {
-//        String clientIp = request.getRemoteAddr();
-//
-//        try {
-//            return ServerUtils.ok(annotationInterface.getRDFa(text, inUrl, disambiguationConfidence, spotterConfidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName, disambiguatorName));
-//        } catch (Exception e) {
-//            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.APPLICATION_XHTML_XML).build());
-//        }
-//    }
-//
-//    @GET
-//    @Produces({MediaType.TEXT_XML,MediaType.APPLICATION_XML})
-//    public Response getXML(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
-//                           @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @QueryParam("url") String inUrl,
-//                         @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double disambiguationConfidence,
-//                         @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
-//                         @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
-//                         @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
-//                         @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
-//                         @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @QueryParam("policy") String policy,
-//                         @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @QueryParam("coreferenceResolution") boolean coreferenceResolution,
-//                         @DefaultValue("Default") @QueryParam("spotter") String spotterName,
-//                         @DefaultValue("Default") @QueryParam("disambiguator") String disambiguatorName,
-//                          @Context HttpServletRequest request) {
-//        String clientIp = request.getRemoteAddr();
-//
-//        try {
-//	    return ServerUtils.ok(annotationInterface.getXML(text, inUrl, disambiguationConfidence,  spotterConfidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName, disambiguatorName));
-//       } catch (Exception e) {
-//            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.TEXT_XML).build());
-//        }
-//    }
-//
+
 //    @GET
 //    @Produces({"text/turtle", "text/plain", "application/rdf+xml"})
 //    public Response getNIF(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
