@@ -10,18 +10,17 @@ import java.util.List;
  */
 public class AnnotationParameters {
 
-        public String inUrl;
-        public Double disambiguationConfidence;
-        public Double spotterConfidence;
-        public int support;
-        public String dbpediaTypes;
-        public String sparqlQuery;
-        public Boolean policy;
-        public Boolean coreferenceResolution;
-        public String spotterName;
-        public String disambiguatorName;
-        public Spotter spotter;
-        public List<Double> similarityThresholds;
+        public String inUrl = SpotlightConfiguration.DEFAULT_URL;
+        public Double disambiguationConfidence = Double.parseDouble(SpotlightConfiguration.DEFAULT_CONFIDENCE);
+        public Double spotterConfidence = Double.parseDouble(SpotlightConfiguration.DEFAULT_CONFIDENCE);
+        public int support = Integer.parseInt(SpotlightConfiguration.DEFAULT_SUPPORT);
+        public String dbpediaTypes = SpotlightConfiguration.DEFAULT_TYPES;
+        public String sparqlQuery = SpotlightConfiguration.DEFAULT_SPARQL;
+        public Boolean policy = Boolean.FALSE;
+        public Boolean coreferenceResolution = Boolean.parseBoolean(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION);
+        public String spotterName = "Default";
+        public String disambiguatorName = "Default";
+        public String clientIp = "";
         public SparqlQueryExecuter sparqlExecuter;
 
 }

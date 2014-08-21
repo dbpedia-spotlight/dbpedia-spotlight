@@ -47,15 +47,14 @@ import java.util.List;
 @ApplicationPath(Server.APPLICATION_PATH)
 @Path("/spot")
 @Consumes("text/plain")
-public class Spot {
+public class Spot extends BaseRestResource{
+
+    String apiName = "spot";
 
     Log LOG = LogFactory.getLog(this.getClass());
 
     @Context
     private UriInfo context;
-
-    // Annotation interface
-    private static SpotlightInterface annotationInterface =  new SpotlightInterface("/spot");
 
     @GET
     @Produces({MediaType.TEXT_XML,MediaType.APPLICATION_XML})
@@ -67,11 +66,15 @@ public class Spot {
                             @Context HttpServletRequest request) {
 
         String clientIp = request.getRemoteAddr();
+        AnnotationParameters params = new AnnotationParameters();
+        params.spotterName = spotterName;
+        params.inUrl = inUrl;
+        params.clientIp = clientIp;
+
+        announce(text, params);
 
         try {
             String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
-            AnnotationParameters params = new AnnotationParameters();
-            params.spotterName = spotterName;
             List<SurfaceFormOccurrence> spots = Server.model.spot(new Text(textToProcess), params);
             String response = new Annotation(new Text(text), spots).toXML();
             return ServerUtils.ok(response);
@@ -83,39 +86,45 @@ public class Spot {
 
     @GET
     @Produces({"text/turtle", "text/plain", "application/rdf+xml"})
-    public Response getNIF(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
-                           @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @QueryParam("url") String inUrl,
-			   @DefaultValue("Default") @QueryParam("spotter") String spotterName,
-			   @QueryParam("prefix") String prefix,
-			   @DefaultValue("offset") @QueryParam("urirecipe") String recipe,
-			   @DefaultValue("10") @QueryParam("context-length") int ctxLength,
+    public Response getNIF( @DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
+                            @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @QueryParam("url") String inUrl,
+			                @DefaultValue("Default") @QueryParam("spotter") String spotterName,
+			                @QueryParam("prefix") String prefix,
+			                @DefaultValue("offset") @QueryParam("urirecipe") String recipe,
+			                @DefaultValue("10") @QueryParam("context-length") int ctxLength,
                             @Context HttpServletRequest request) {
 
         String clientIp = request.getRemoteAddr();
+        AnnotationParameters params = new AnnotationParameters();
+        params.spotterName = spotterName;
+        params.inUrl = inUrl;
+        params.clientIp = clientIp;
 
-	String format = null;
-	String accept = request.getHeader("accept");
+	    String format = null;
+	    String accept = request.getHeader("accept");
 
-	// when no prefix argument specified and url param is used the prefix
-	// is set to the given url
-	if (prefix == null && !inUrl.equals(""))
-	    prefix = inUrl + "#";
-	// when no prefix argument specified and text param is used the prefix
-	// is set to the spotlight url + the given text
-	else if (prefix == null && !text.equals(""))
-	    prefix = "http://spotlight.dbpedia.org/rest/document/?text="+text+"#";
+	    // when no prefix argument specified and url param is used the prefix
+	    // is set to the given url
+	    if (prefix == null && !inUrl.equals(""))
+	        prefix = inUrl + "#";
 
-	if (accept.equals("text/turtle"))
-	    format = "turtle";
-	else if (accept.equals("text/plain"))
-	    format = "ntriples";
-	else if (accept.equals("application/rdf+xml"))
-	    format = "rdfxml";
-	
+	    // when no prefix argument specified and text param is used the prefix
+	    // is set to the spotlight url + the given text
+	    else if (prefix == null && !text.equals(""))
+	        prefix = "http://spotlight.dbpedia.org/rest/document/?text="+text+"#";
+
+	    if (accept.equals("text/turtle"))
+	        format = "turtle";
+	    else if (accept.equals("text/plain"))
+	        format = "ntriples";
+	    else if (accept.equals("application/rdf+xml"))
+	        format = "rdfxml";
+
         try {
             String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
-            List<SurfaceFormOccurrence> spots = annotationInterface.spot(spotterName, new Text(textToProcess));
-	    String response = NIFOutputFormatter.fromSurfaceFormOccs(text, spots, format, prefix);
+
+            List<SurfaceFormOccurrence> spots = Server.model.spot(new Text(textToProcess), params);
+	        String response = NIFOutputFormatter.fromSurfaceFormOccs(text, spots, format, prefix);
             return ServerUtils.ok(response);
         } catch (Exception e) {
             e.printStackTrace();
@@ -133,10 +142,14 @@ public class Spot {
                             @Context HttpServletRequest request) {
 
         String clientIp = request.getRemoteAddr();
+        AnnotationParameters params = new AnnotationParameters();
+        params.spotterName = spotterName;
+        params.inUrl = inUrl;
+        params.clientIp = clientIp;
 
         try {
             String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
-            List<SurfaceFormOccurrence> spots = annotationInterface.spot(spotterName, new Text(textToProcess));
+            List<SurfaceFormOccurrence> spots = Server.model.spot(new Text(textToProcess), params);
             String response = new Annotation(new Text(text), spots).toJSON();
             return ServerUtils.ok(response);
         } catch (Exception e) {
@@ -156,10 +169,14 @@ public class Spot {
                             @Context HttpServletRequest request) {
 
         String clientIp = request.getRemoteAddr();
+        AnnotationParameters params = new AnnotationParameters();
+        params.spotterName = spotterName;
+        params.inUrl = inUrl;
+        params.clientIp = clientIp;
 
         try {
             String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
-            List<SurfaceFormOccurrence> spots = annotationInterface.spot(spotterName, new Text(textToProcess));
+            List<SurfaceFormOccurrence> spots = Server.model.spot(new Text(textToProcess), params);
             String response = new Annotation(new Text(text), spots).toXML();
             return ServerUtils.ok(response);
         } catch (Exception e) {
@@ -193,10 +210,14 @@ public class Spot {
                             @Context HttpServletRequest request) {
 
         String clientIp = request.getRemoteAddr();
+        AnnotationParameters params = new AnnotationParameters();
+        params.spotterName = spotterName;
+        params.inUrl = inUrl;
+        params.clientIp = clientIp;
 
         try {
             String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
-            List<SurfaceFormOccurrence> spots = annotationInterface.spot(spotterName, new Text(text));
+            List<SurfaceFormOccurrence> spots = Server.model.spot(new Text(textToProcess), params);
             String response = new Annotation(new Text(text), spots).toJSON();
             return ServerUtils.ok(response);
         } catch (Exception e) {
