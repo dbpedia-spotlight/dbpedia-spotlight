@@ -23,6 +23,7 @@ package org.dbpedia.spotlight.web.rest;
 
 import net.sf.json.xml.XMLSerializer;
 import org.dbpedia.spotlight.exceptions.OutputException;
+import org.dbpedia.spotlight.model.AnnotationParameters;
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence;
 import org.dbpedia.spotlight.model.OntologyType;
 import org.dbpedia.spotlight.model.SurfaceForm;
@@ -37,6 +38,7 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import java.io.ByteArrayOutputStream;
+import java.net.URLEncoder;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +53,18 @@ import java.util.Map;
  * @author Andrés
  */
 public class OutputManager {
+
+
+    public enum OutputFormat {
+        TEXT_HTML,
+        XHTML_APPLICATION_XML,
+        TEXT_XML,
+        TURTLE,
+        NTRIPLES,
+        RDFXML,
+        JSON
+    };
+
 
 
     private TransformerHandler initXMLDoc(ByteArrayOutputStream out) throws SAXException, TransformerConfigurationException {
@@ -111,8 +125,18 @@ public class OutputManager {
         return xml;
     }
 
-    public String makeNIF(String text, List<DBpediaResourceOccurrence> occList, String format, String prefix) throws OutputException {
-    	return NIFOutputFormatter.fromResourceOccs(text, occList, format, prefix);
+    public String makeNIF(String text, List<DBpediaResourceOccurrence> occList, OutputFormat format, AnnotationParameters params) throws OutputException,Exception {
+
+        // when no prefix argument specified and url param is used the prefix
+        // is set to the given url
+        if (params.prefix == null && !params.inUrl.equals(""))
+            params.prefix = params.inUrl;
+            // when no prefix argument specified and text param is used the prefix
+            // is set to the spotlight url + the given text
+        else if (params.prefix == null && !text.equals(""))
+            params.prefix = params.requestedUrl.concat("/?text=").concat(URLEncoder.encode(text, "UTF-8"));
+
+        return NIFOutputFormatter.fromResourceOccs(text, occList, format, params.prefix);
     }
 
     public void getResourcesXml(List<DBpediaResourceOccurrence> occList, TransformerHandler hd, AttributesImpl atts) throws SAXException {
@@ -241,21 +265,60 @@ public class OutputManager {
 
     private WebCodeFormatter htmlFormat = new HTMLFormatter();
 
-    public String makeOutput(String text, List<DBpediaResourceOccurrence> occList, MediaType outputType){
+    public String makeOutput(String text, List<DBpediaResourceOccurrence> occList, OutputFormat outputType, AnnotationParameters params) throws Exception{
+
+        String result ="";
+
+        switch(outputType){
+
+            case TEXT_HTML:
+                result = makeHTML(text, occList);
+                break;
+
+            case XHTML_APPLICATION_XML:
+                result = makeRDFa(text, occList);
+                break;
+
+            case TEXT_XML:
+                result = makeRDFa(text, occList);
+                break;
+
+            case TURTLE:
+                result = makeNIF(text, occList, outputType, params);
+                break;
+
+            case RDFXML:
+                result  = makeNIF(text, occList, outputType, params);
+                break;
+
+            case NTRIPLES:
+                result = makeNIF(text, occList, outputType, params);
+                break;
+
+            case JSON:
+                result = makeJSON(text, occList, params);
+                break;
+
+        }
+
+        return result;
 
 
-         if (outputType.equals(MediaType.TEXT_HTML_TYPE))
-                return makeHTML(text, occList);
 
-         if(outputType.equals(MediaType.APPLICATION_XHTML_XML_TYPE))
-             return makeRDFa(text, occList);
+    }
 
-        if(outputType.equals(MediaType.TEXT_XML_TYPE))
-            return makeRDFa(text, occList);
-
-
-
-        return "";
+    public String makeJSON(String text, List<DBpediaResourceOccurrence> occList, AnnotationParameters params) throws OutputException{
+        return xml2json(
+                makeXML(text,
+                        occList,
+                        params.disambiguationConfidence,
+                        params.spotterConfidence,
+                        params.support,
+                        params.dbpediaTypes,
+                        params.sparqlQuery,
+                        params.policy,
+                        params.coreferenceResolution)
+                );
     }
 
     public String makeHTML(String text, List<DBpediaResourceOccurrence> occList) {  //TODO throws OutputException

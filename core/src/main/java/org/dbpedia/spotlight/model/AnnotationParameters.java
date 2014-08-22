@@ -27,6 +27,8 @@ public class AnnotationParameters {
         public String clientIp = "";
         public SparqlQueryExecuter sparqlExecuter;
         public List<Double> similarityThresholds;
+        public String prefix = "";
+        public String requestedUrl = "";
 
         public void setPolicyValue(String stringPolicy){
             blacklist = false;
