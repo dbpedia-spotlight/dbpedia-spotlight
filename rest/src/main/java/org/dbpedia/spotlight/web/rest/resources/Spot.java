@@ -24,10 +24,7 @@ import org.dbpedia.spotlight.model.AnnotationParameters;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 import org.dbpedia.spotlight.model.Text;
-import org.dbpedia.spotlight.web.rest.NIFOutputFormatter;
-import org.dbpedia.spotlight.web.rest.Server;
-import org.dbpedia.spotlight.web.rest.ServerUtils;
-import org.dbpedia.spotlight.web.rest.SpotlightInterface;
+import org.dbpedia.spotlight.web.rest.*;
 import org.dbpedia.spotlight.web.rest.output.Annotation;
 
 import javax.servlet.http.HttpServletRequest;
@@ -53,6 +50,16 @@ public class Spot extends BaseRestResource{
 
     Log LOG = LogFactory.getLog(this.getClass());
 
+    private OutputManager outputManager = new OutputManager();
+
+    private String spot(AnnotationParameters params, OutputManager.OutputFormat outputType, String textToProcess) throws Exception{
+        List<SurfaceFormOccurrence> spots = Server.model.spot(new Text(textToProcess), params);
+        Annotation annotation = new Annotation(new Text(textToProcess), spots);
+        outputManager.makeOutput(textToProcess, annotation, outputType, params);
+        String response = new Annotation(new Text(textToProcess), spots).toXML();
+        return response;
+    }
+
     @Context
     private UriInfo context;
 
@@ -75,8 +82,7 @@ public class Spot extends BaseRestResource{
 
         try {
             String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
-            List<SurfaceFormOccurrence> spots = Server.model.spot(new Text(textToProcess), params);
-            String response = new Annotation(new Text(text), spots).toXML();
+            String response = spot(params, OutputManager.OutputFormat.TEXT_XML, textToProcess);
             return ServerUtils.ok(response);
         } catch (Exception e) {
             e.printStackTrace();
@@ -100,9 +106,6 @@ public class Spot extends BaseRestResource{
         params.inUrl = inUrl;
         params.clientIp = clientIp;
 
-	    String format = null;
-	    String accept = request.getHeader("accept");
-
 	    // when no prefix argument specified and url param is used the prefix
 	    // is set to the given url
 	    if (prefix == null && !inUrl.equals(""))
@@ -113,12 +116,14 @@ public class Spot extends BaseRestResource{
 	    else if (prefix == null && !text.equals(""))
 	        prefix = "http://spotlight.dbpedia.org/rest/document/?text="+text+"#";
 
-	    if (accept.equals("text/turtle"))
-	        format = "turtle";
-	    else if (accept.equals("text/plain"))
-	        format = "ntriples";
-	    else if (accept.equals("application/rdf+xml"))
-	        format = "rdfxml";
+        OutputManager.OutputFormat format = OutputManager.OutputFormat.TURTLE;
+        String accept = request.getHeader("accept");
+        if (accept.equalsIgnoreCase("text/turtle"))
+            format = OutputManager.OutputFormat.TURTLE;
+        else if (accept.equalsIgnoreCase("text/plain"))
+            format = OutputManager.OutputFormat.NTRIPLES;
+        else if (accept.equalsIgnoreCase("application/rdf+xml"))
+            format = OutputManager.OutputFormat.RDFXML;
 
         try {
             String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
@@ -149,8 +154,7 @@ public class Spot extends BaseRestResource{
 
         try {
             String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
-            List<SurfaceFormOccurrence> spots = Server.model.spot(new Text(textToProcess), params);
-            String response = new Annotation(new Text(text), spots).toJSON();
+            String response = spot(params, OutputManager.OutputFormat.JSON, textToProcess);
             return ServerUtils.ok(response);
         } catch (Exception e) {
             e.printStackTrace();
@@ -176,8 +180,7 @@ public class Spot extends BaseRestResource{
 
         try {
             String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
-            List<SurfaceFormOccurrence> spots = Server.model.spot(new Text(textToProcess), params);
-            String response = new Annotation(new Text(text), spots).toXML();
+            String response = spot(params, OutputManager.OutputFormat.TEXT_XML, textToProcess);
             return ServerUtils.ok(response);
         } catch (Exception e) {
             e.printStackTrace();
@@ -217,8 +220,7 @@ public class Spot extends BaseRestResource{
 
         try {
             String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
-            List<SurfaceFormOccurrence> spots = Server.model.spot(new Text(textToProcess), params);
-            String response = new Annotation(new Text(text), spots).toJSON();
+            String response = spot(params, OutputManager.OutputFormat.JSON, textToProcess);
             return ServerUtils.ok(response);
         } catch (Exception e) {
             e.printStackTrace();

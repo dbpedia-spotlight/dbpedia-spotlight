@@ -19,14 +19,12 @@
 package org.dbpedia.spotlight.web.rest.resources;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.model.AnnotationParameters;
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.web.rest.OutputManager;
 import org.dbpedia.spotlight.web.rest.Server;
 import org.dbpedia.spotlight.web.rest.ServerUtils;
-import org.dbpedia.spotlight.web.rest.SpotlightInterface;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -317,90 +315,145 @@ public class Annotate extends BaseRestResource {
             @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
             @Context HttpServletRequest request
     ) {
-        return getHTML(text, inUrl, disambiguationConfidence, spotterConfidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, spotterName, disambiguatorName, request);
+        return getHTML(text,
+                       inUrl,
+                       disambiguationConfidence,
+                       spotterConfidence,
+                       support,
+                       dbpediaTypes,
+                       sparqlQuery,
+                       policy,
+                       coreferenceResolution,
+                       spotterName,
+                       disambiguatorName,
+                       request);
     }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_XHTML_XML)
+    public Response postRDFa(
+      @DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @FormParam("url") String inUrl,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @FormParam("confidence") Double disambiguationConfidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @FormParam("support") int support,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @FormParam("types") String dbpediaTypes,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @FormParam("policy") String policy,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @FormParam("coreferenceResolution") boolean coreferenceResolution,
+      @DefaultValue("Default") @FormParam("spotter") String spotter,
+      @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
+      @Context HttpServletRequest request
+      ) {
+        return getRDFa(text,
+                       inUrl,
+                       disambiguationConfidence,
+                       spotterConfidence,
+                       support,
+                       sparqlQuery,
+                       policy,
+                       coreferenceResolution,
+                       spotter,
+                       disambiguatorName,
+                       request);
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.TEXT_XML)
+    public Response postXML(
+      @DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @FormParam("url") String inUrl,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @FormParam("confidence") Double disambiguationConfidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @FormParam("support") int support,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @FormParam("types") String dbpediaTypes,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @FormParam("policy") String policy,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @FormParam("coreferenceResolution") boolean coreferenceResolution,
+      @DefaultValue("Default") @FormParam("spotter") String spotter,
+      @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
+      @Context HttpServletRequest request
+      ) {
+        return getXML(text,
+                      inUrl,
+                      disambiguationConfidence,
+                      spotterConfidence,
+                      support,
+                      dbpediaTypes,
+                      sparqlQuery,
+                      policy,
+                      coreferenceResolution,
+                      spotter,
+                      disambiguatorName,
+                      request);
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces({"text/turtle", "text/plain", "application/rdf+xml"})
+    public Response postNIF(
+      @DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @FormParam("url") String inUrl,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @FormParam("confidence") Double disambiguationConfidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @FormParam("support") int support,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @FormParam("types") String dbpediaTypes,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @FormParam("policy") String policy,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @FormParam("coreferenceResolution") boolean coreferenceResolution,
+      @DefaultValue("Default") @FormParam("spotter") String spotter,
+      @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
+      @FormParam("prefix") String prefix,
+      @DefaultValue("offset") @FormParam("urirecipe") String recipe,
+      @DefaultValue("10") @FormParam("context-length") int ctxLength,
+      @Context HttpServletRequest request
+      ) {
+	       return getNIF(text,
+                         inUrl,
+                         disambiguationConfidence,
+                         spotterConfidence,
+                         support,
+                         dbpediaTypes,
+                         sparqlQuery,
+                         policy,
+                         coreferenceResolution,
+                         spotter,
+                         disambiguatorName,
+                         prefix,
+                         request);
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response postJSON(
+      @DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @FormParam("url") String inUrl,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @FormParam("confidence") Double disambiguationConfidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @FormParam("support") int support,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @FormParam("types") String dbpediaTypes,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @FormParam("policy") String policy,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @FormParam("coreferenceResolution") boolean coreferenceResolution,
+      @DefaultValue("Default") @FormParam("spotter") String spotter,
+      @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
+      @Context HttpServletRequest request
+      ) {
+            return getJSON(text,
+                           inUrl,
+                           disambiguationConfidence,
+                           spotterConfidence,
+                           support,
+                           dbpediaTypes,
+                           sparqlQuery,
+                           policy,
+                           coreferenceResolution,
+                           spotter,
+                           disambiguatorName,
+                           request);
+      }
+
 }
-//    @POST
-//    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-//    @Produces(MediaType.APPLICATION_XHTML_XML)
-//    public Response postRDFa(
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @FormParam("url") String inUrl,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @FormParam("confidence") Double disambiguationConfidence,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @FormParam("support") int support,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @FormParam("types") String dbpediaTypes,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @FormParam("policy") String policy,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @FormParam("coreferenceResolution") boolean coreferenceResolution,
-//      @DefaultValue("Default") @FormParam("spotter") String spotter,
-//      @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
-//      @Context HttpServletRequest request
-//      ) {
-//        return getRDFa(text, inUrl, disambiguationConfidence,  spotterConfidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, spotter, disambiguatorName, request);
-//    }
-//
-//    @POST
-//    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-//    @Produces(MediaType.TEXT_XML)
-//    public Response postXML(
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @FormParam("url") String inUrl,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @FormParam("confidence") Double disambiguationConfidence,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @FormParam("support") int support,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @FormParam("types") String dbpediaTypes,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @FormParam("policy") String policy,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @FormParam("coreferenceResolution") boolean coreferenceResolution,
-//      @DefaultValue("Default") @FormParam("spotter") String spotter,
-//      @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
-//      @Context HttpServletRequest request
-//      ) {
-//        return getXML(text, inUrl, disambiguationConfidence,  spotterConfidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, spotter, disambiguatorName, request);
-//    }
-//
-//    @POST
-//    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-//    @Produces({"text/turtle", "text/plain", "application/rdf+xml"})
-//    public Response postNIF(
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @FormParam("url") String inUrl,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @FormParam("confidence") Double disambiguationConfidence,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @FormParam("support") int support,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @FormParam("types") String dbpediaTypes,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @FormParam("policy") String policy,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @FormParam("coreferenceResolution") boolean coreferenceResolution,
-//      @DefaultValue("Default") @FormParam("spotter") String spotter,
-//      @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
-//      @FormParam("prefix") String prefix,
-//      @DefaultValue("offset") @FormParam("urirecipe") String recipe,
-//      @DefaultValue("10") @FormParam("context-length") int ctxLength,
-//      @Context HttpServletRequest request
-//      ) {
-//	return getNIF(text, inUrl, disambiguationConfidence,  spotterConfidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, spotter, disambiguatorName, prefix, request);
-//    }
-//
-//    @POST
-//    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public Response postJSON(
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @FormParam("url") String inUrl,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @FormParam("confidence") Double disambiguationConfidence,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @FormParam("support") int support,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @FormParam("types") String dbpediaTypes,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_POLICY) @FormParam("policy") String policy,
-//      @DefaultValue(SpotlightConfiguration.DEFAULT_COREFERENCE_RESOLUTION) @FormParam("coreferenceResolution") boolean coreferenceResolution,
-//      @DefaultValue("Default") @FormParam("spotter") String spotter,
-//      @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
-//      @Context HttpServletRequest request
-//      ) {
-//        return getJSON(text, inUrl, disambiguationConfidence,  spotterConfidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, spotter, disambiguatorName, request);
-//      }
-//
-//}

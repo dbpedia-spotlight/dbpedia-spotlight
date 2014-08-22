@@ -95,7 +95,7 @@ object NIFOutputFormatter {
    * @param prefix url
    * @return the NIF representation of the annotated input text
    */
-  def fromSurfaceFormOccs(text: String, occs: List[SurfaceFormOccurrence], format: String, prefix: String): String = {
+  def fromSurfaceFormOccs(text: String, occs: List[SurfaceFormOccurrence], format: OutputFormat, prefix: String): String = {
 
     val list = new util.LinkedList[NIFBean]
     val root = new NIFBean
