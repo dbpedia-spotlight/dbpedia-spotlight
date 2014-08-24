@@ -78,9 +78,9 @@ object NIFOutputFormatter {
   private def getNIFOutput(format:OutputFormat, manager:NIFManager):String=
   {
     format match {
-      case RDFXML =>  manager.getRDFxml
-      case NTRIPLES =>  manager.getNTriples
-      case TURTLE =>  manager.getTurtle
+      case OutputFormat.RDFXML =>  manager.getRDFxml
+      case OutputFormat.NTRIPLES =>  manager.getNTriples
+      case OutputFormat.TURTLE =>  manager.getTurtle
       case _ =>  manager.getTurtle
     }
   }

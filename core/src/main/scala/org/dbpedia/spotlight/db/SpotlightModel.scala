@@ -29,7 +29,9 @@ trait SpotlightModel{
   def spot(text: Text, params: AnnotationParameters): java.util.List[SurfaceFormOccurrence];
 
   @throws( classOf[InputException] )
-  def firstBest(text: String, params: AnnotationParameters): java.util.List[DBpediaResourceOccurrence] ;
+  def firstBest(text: String, params: AnnotationParameters): java.util.List[DBpediaResourceOccurrence]
+
+  def nBest(stringText: String, params: AnnotationParameters,n: Int ): java.util.Map[SurfaceFormOccurrence, java.util.List[DBpediaResourceOccurrence]]
 
   def getSpotter(name: String): Spotter = {
     var policy: SpotterConfiguration.SpotterPolicy = SpotterPolicy.Default
@@ -49,8 +51,22 @@ trait SpotlightModel{
     return spotter
   }
 
-  //def firstBest(text: String, params: AnnotationParameters): java.util.List[DBpediaResourceOccurrence] ;
-  //def nBest(text: String, params: AnnotationParameters ):  java.util.List[DBpediaResourceOccurrence];
+  def getDisambiguator(name: String): ParagraphDisambiguatorJ = {
+    var policy: SpotlightConfiguration.DisambiguationPolicy = DisambiguationPolicy.Default
+    try {
+      policy = DisambiguationPolicy.valueOf(name)
+    }
+    catch {
+      case e: IllegalArgumentException => {
+        throw new InputException(String.format("Specified parameter disambiguator=%s is invalid. Use one of %s.", name, DisambiguationPolicy.values))
+      }
+    }
+    if (disambiguators.size == 0) throw new InputException(String.format("No disambiguators were loaded. Please add one of %s.", disambiguators.keySet))
+    val disambiguator: ParagraphDisambiguatorJ = disambiguators.get(policy)
+    if (disambiguator == null) throw new InputException(String.format("Specified disambiguator=%s has not been loaded. Use one of %s.", name, disambiguators.keySet))
+    return disambiguator
+  }
+
 
 
 }

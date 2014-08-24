@@ -10,7 +10,9 @@ import opennlp.tools.sentdetect.{SentenceModel, SentenceDetectorME}
 import opennlp.tools.postag.{POSModel, POSTaggerME}
 import org.dbpedia.spotlight.disambiguate.mixtures.UnweightedMixture
 import org.dbpedia.spotlight.db.similarity.{NoContextSimilarity, GenerativeContextSimilarity, ContextSimilarity}
+import org.dbpedia.spotlight.filter.annotations.FilterPolicy$
 import org.dbpedia.spotlight.filter.visitor.{FilterOccsImpl, OccsFilter, FilterElement}
+import org.dbpedia.spotlight.model.Factory.Paragraph
 import org.dbpedia.spotlight.model._
 import scala.collection.JavaConverters._
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy
@@ -32,6 +34,54 @@ class BaseSpotlightModel(val tokenizer: TextTokenizer,
                      val disambiguators: java.util.Map[DisambiguationPolicy, ParagraphDisambiguatorJ],
                      val properties: Properties) extends SpotlightModel{
 
+
+  def nBest(stringText: String, params: AnnotationParameters,n: Int):  java.util.Map[SurfaceFormOccurrence, java.util.List[DBpediaResourceOccurrence]] = {
+
+    val filteredEntityCandidates: scala.collection.mutable.Map[SurfaceFormOccurrence, java.util.List[DBpediaResourceOccurrence]] = new scala.collection.mutable.HashMap[SurfaceFormOccurrence, java.util.List[DBpediaResourceOccurrence]]()
+
+    val spotter = this.getSpotter(params.spotterName)
+    val disambiguator = this.getDisambiguator(params.disambiguatorName)
+
+    val textObject = new Text(stringText)
+    textObject.setFeature(new Score("confidence", params.disambiguationConfidence))
+    textObject.setFeature(new Score("spotterConfidence", params.spotterConfidence))
+
+    if(tokenizer != null)
+      tokenizer.tokenizeMaybe(textObject)
+
+    val entityMentions = spotter.extract(textObject)
+    if(entityMentions.size() == 0) return filteredEntityCandidates;
+    val paragraph = Factory.paragraph().fromJ(entityMentions);
+
+    val entityCandidates: java.util.Map[SurfaceFormOccurrence, java.util.List[DBpediaResourceOccurrence]] = disambiguator.bestK(paragraph, n)
+
+    val listColor: Enumeration#Value = if (params.blacklist) FilterPolicy$.MODULE$.Blacklist else FilterPolicy$.MODULE$.Whitelist
+
+
+    /*The previous addition of filter to the Candidates requests (which has usability questioned) produce the error described at issue #136.
+              To solve it, this feature for this argument (Candidates) is disabled, setting coreferenceResolution to false ever. Ignoring the user's configuration.
+            */
+    val unableCoreferenceResolution = false
+
+
+    val filter: FilterElement = new OccsFilter(params.spotterConfidence,
+                                               params.support,
+                                               params.dbpediaTypes,
+                                               params.sparqlQuery,
+                                               params.blacklist,
+                                               unableCoreferenceResolution,
+                                               params.similarityThresholds,
+                                               params.sparqlExecuter)
+
+    entityCandidates.entrySet().foreach{
+       entry: java.util.Map.Entry[SurfaceFormOccurrence, java.util.List[DBpediaResourceOccurrence]] =>
+         val result: java.util.List[DBpediaResourceOccurrence] = filter.accept(new FilterOccsImpl, entry.getValue)
+         if(!result.isEmpty()) filteredEntityCandidates.put(entry.getKey, result)
+    }
+
+    filteredEntityCandidates
+
+  }
 
   def disambiguate(spots: java.util.List[SurfaceFormOccurrence], disambiguator: ParagraphDisambiguatorJ): java.util.List[DBpediaResourceOccurrence] = {
     var resources: java.util.List[DBpediaResourceOccurrence] = new util.ArrayList[DBpediaResourceOccurrence]()

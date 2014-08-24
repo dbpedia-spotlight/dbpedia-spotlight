@@ -78,7 +78,7 @@ public class Spot extends BaseRestResource{
         params.inUrl = inUrl;
         params.clientIp = clientIp;
 
-        announce(text, params);
+       // announce(text, params);
 
         try {
             String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
