@@ -43,7 +43,7 @@ import java.util.List;
  */
 
 @ApplicationPath(Server.APPLICATION_PATH)
-@Path("/annotate")
+@Path("/{endpoint:annotate|disambiguate}")
 @Consumes("text/plain")
 public class Annotate extends BaseRestResource {
 
