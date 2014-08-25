@@ -55,8 +55,6 @@ class BaseSpotlightModel(val tokenizer: TextTokenizer,
 
     val entityCandidates: java.util.Map[SurfaceFormOccurrence, java.util.List[DBpediaResourceOccurrence]] = disambiguator.bestK(paragraph, n)
 
-    val listColor: Enumeration#Value = if (params.blacklist) FilterPolicy$.MODULE$.Blacklist else FilterPolicy$.MODULE$.Whitelist
-
 
     /*The previous addition of filter to the Candidates requests (which has usability questioned) produce the error described at issue #136.
               To solve it, this feature for this argument (Candidates) is disabled, setting coreferenceResolution to false ever. Ignoring the user's configuration.
