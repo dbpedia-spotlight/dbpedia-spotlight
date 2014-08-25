@@ -10,6 +10,12 @@ import java.util.List;
 /**
  * Created by dav009 on 19/08/2014.
  */
+import java.util.List;
+import java.util.Map.Entry;
+
+
+
+
 public class AnnotationParameters {
 
         public String inUrl = SpotlightConfiguration.DEFAULT_URL;
@@ -29,6 +35,7 @@ public class AnnotationParameters {
         public List<Double> similarityThresholds;
         public String prefix = "";
         public String requestedUrl = "";
+        public String text = "";
 
         public void setPolicyValue(String stringPolicy){
             blacklist = false;
