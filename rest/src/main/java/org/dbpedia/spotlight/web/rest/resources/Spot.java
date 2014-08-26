@@ -46,13 +46,16 @@ import java.util.List;
 @Consumes("text/plain")
 public class Spot extends BaseRestResource{
 
-    String apiName = "spot";
 
-    Log LOG = LogFactory.getLog(this.getClass());
+    public Spot(){
+        LOG = LogFactory.getLog(this.getClass());
+        apiName = "spot";
+    }
 
     private OutputManager outputManager = new OutputManager();
 
     private String spot(AnnotationParameters params, OutputManager.OutputFormat outputType, String textToProcess) throws Exception{
+        announce(textToProcess, params);
         List<SurfaceFormOccurrence> spots = Server.model.spot(new Text(textToProcess), params);
         Annotation annotation = new Annotation(new Text(textToProcess), spots);
         outputManager.makeOutput(textToProcess, annotation, outputType, params);

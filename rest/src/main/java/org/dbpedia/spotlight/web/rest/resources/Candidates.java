@@ -62,8 +62,12 @@ import java.util.*;
 @ApplicationPath(Server.APPLICATION_PATH)
 @Path("/candidates")
 @Consumes("text/plain")
-public class Candidates {
+public class Candidates extends BaseRestResource {
 
+    public Candidates(){
+        LOG = LogFactory.getLog(this.getClass());
+        apiName = "candidates";
+    }
 
     @Context
     private UriInfo context;
@@ -72,10 +76,9 @@ public class Candidates {
     Log LOG = LogFactory.getLog(this.getClass());
 
     public String getCandidates(String text, AnnotationParameters params, int numberOfCandidates, OutputManager.OutputFormat format) throws Exception{
+        announce(text, params);
         String response = "";
         Map<SurfaceFormOccurrence, List<DBpediaResourceOccurrence>> filteredEntityCandidates = Server.model.nBest(text, params, numberOfCandidates);
-
-        System.out.println("filtered candidates:" + filteredEntityCandidates.size());
 
         Annotation annotation = new Annotation(text);
         List<Spot> spots = new LinkedList<Spot>();

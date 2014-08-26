@@ -49,9 +49,12 @@ import java.util.List;
 @ApplicationPath(Server.APPLICATION_PATH)
 @Path("/feedback")
 @Consumes("text/plain")
-public class Feedback {
+public class Feedback extends BaseRestResource {
 
-    Log LOG = LogFactory.getLog(this.getClass());
+    public Feedback(){
+        LOG = LogFactory.getLog(this.getClass());
+        apiName = "feedback";
+    }
 
     @Context
     private UriInfo context;
