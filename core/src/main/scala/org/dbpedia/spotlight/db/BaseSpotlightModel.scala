@@ -104,17 +104,10 @@ class BaseSpotlightModel(val tokenizer: TextTokenizer,
  def spot(context: Text, params: AnnotationParameters): java.util.List[SurfaceFormOccurrence]={
     val spotter = getSpotter(params.spotterName)
 
-   println("About to tokenize...")
-
     if (this.tokenizer != null)
       tokenizer.tokenizeMaybe(context)
 
-
-   println("About to calculate  spots...")
-
     val spots: java.util.List[SurfaceFormOccurrence] = spotter.extract(context)
-
-   println("About to return spots...")
 
     spots
   }
@@ -159,15 +152,15 @@ class BaseSpotlightModel(val tokenizer: TextTokenizer,
     occList = filter.accept(new FilterOccsImpl, occList)
 
 
-    if (LOG.isDebugEnabled) {
-      LOG.debug("Shown:")
+    //if (LOG.isDebugEnabled) {
+     // LOG.debug("Shown:")
 
-      occList.foreach{
-          occ:DBpediaResourceOccurrence =>
-          //  LOG.debug(String.format("%s <- %s; score: %s, ctxscore: %3.2f, support: %s, prior: %s", occ.resource, occ.surfaceForm, occ.similarityScore, occ.contextualScore, occ.resource.support, occ.resource.prior))
-      }
+      //occList.foreach{
+      //    occ:DBpediaResourceOccurrence =>
+          // LOG.debug(String.format("%s <- %s; score: %s, ctxscore: %3.2f, support: %s, prior: %s", occ.resource, occ.surfaceForm, occ.similarityScore, occ.contextualScore, occ.resource.support, occ.resource.prior))
+      //}
 
-    }
+   // }
 
 
 
@@ -175,60 +168,6 @@ class BaseSpotlightModel(val tokenizer: TextTokenizer,
   }
 
 
-//  def firstBest(textString: String, params: AnnotationParameters): java.util.List[DBpediaResourceOccurrence]={
-//    val blacklist :Boolean = params.policy;
-//
-//    announce(textString, params);
-//
-//    // Get input text
-//    if (textString.trim().equals("")) {
-//      throw new InputException("No text was specified in the &text parameter.");
-//    }
-//
-//    val context: Text = new Text(textString);
-//    context.setFeature(new Score("spotterConfidence", params.spotterConfidence));
-//    context.setFeature(new Score("disambiguationConfidence", params.disambiguationConfidence));
-//
-//    // Find spots to annotate/disambiguate
-//    val spots = spot(context, params);
-//
-//    // Call annotation or disambiguation
-//    val maxLengthForOccurrenceCentric = 1200; //TODO configuration
-//    if (tokenizer == null && params.disambiguatorName.equals(SpotlightConfiguration.DisambiguationPolicy.Default.name())
-//      && textString.length() > maxLengthForOccurrenceCentric) {
-//      val disambiguatorName = SpotlightConfiguration.DisambiguationPolicy.Document.name();
-//      LOG.info(String.format("Text length > %d. Using %s to disambiguate.",maxLengthForOccurrenceCentric,disambiguatorName));
-//    }
-//
-//     val disambiguator: ParagraphDisambiguatorJ = getDisambiguator(disambiguatorName);
-//     var occList: List[DBpediaResourceOccurrence] = disambiguate(spots, disambiguator);
-//
-//    val filter: FilterElement = new OccsFilter(params.disambiguationConfidence,
-//                                               params.support,
-//                                               params.ontologyTypesString,
-//                                               params.sparqlQuery,
-//                                               blacklist,
-//                                               params.coreferenceResolution,
-//                                               params.similarityThresholds,
-//                                               params.sparqlExecuter);
-//
-//    occList = filter.accept(new FilterOccsImpl() ,occList);
-//
-//    if (LOG.isDebugEnabled()) {
-//      LOG.debug("Shown:");
-//      occList.foreach{
-//         occ : DBpediaResourceOccurrence =>
-//           LOG.debug(String.format("%s <- %s; score: %s, ctxscore: %3.2f, support: %s, prior: %s", occ.resource(), occ.surfaceForm(), occ.similarityScore(), occ.contextualScore(), occ.resource().support(), occ.resource().prior()));
-//      }
-//    }
-//
-//    return occList;
-//  }
-
-
-//  def nBest(text: String ):  java.util.List[DBpediaResourceOccurrence]={
-//
-//  }
 }
 
 object BaseSpotlightModel {
