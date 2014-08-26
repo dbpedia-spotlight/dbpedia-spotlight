@@ -57,59 +57,6 @@
          <pluginManagement>
             <plugins>
                 <plugin>
-                    <groupId>com.github.kongchen</groupId>
-                    <artifactId>swagger-maven-plugin</artifactId>
-                    <version>2.3</version>
-                    <configuration>
-                        <apiSources>
-                            <apiSource>
-                                <!--Required parameters BEGIN-->
-                                <locations>org.dbpedia.spotlight.web.rest.resources</locations>
-                                <apiVersion>1.0</apiVersion>
-                                <basePath>http://example.com</basePath>
-                                <!--Required parameters END-->
-
-                                <!--Optional parameters BEGIN-->
-                                <!---General parameters BEGIN-->
-                                <apiInfo>
-                                    <title>Swagger Maven Plugin Sample</title>
-                                    <description>Hellow world!</description>
-                                    <termsOfServiceUrl>http://www.github.com/kongchen/swagger-maven-plugin</termsOfServiceUrl>
-                                    <contact>kongchen#gmail$com</contact>
-                                    <license>Apache 2.0</license>
-                                    <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0.html</licenseUrl>
-                                </apiInfo>
-                                <overridingModels>/swagger-overriding-models.json</overridingModels>
-                                <swaggerInternalFilter>com.wordnik.swagger.config.DefaultSpecFilter</swaggerInternalFilter>
-                                <!---General parameters END-->
-
-                                <!---Document generation parameters BEGIN-->
-                                <outputTemplate>
-                                    https://raw.github.com/kongchen/api-doc-template/master/v2.0/strapdown.html.mustache
-                                </outputTemplate>
-                                <mustacheFileRoot>${basedir}/templates/</mustacheFileRoot>
-                                <outputPath>${basedir}/generated/document.html</outputPath>
-                                <!---Document generation parameters END-->
-
-                                <!---Swagger JSON parameters BEGIN-->
-                                <swaggerDirectory>generated/swagger-ui</swaggerDirectory>
-                                <swaggerUIDocBasePath>http://www.example.com/restapi/doc</swaggerUIDocBasePath>
-                                <useOutputFlatStructure>false</useOutputFlatStructure>
-                                <!---Swagger JSON parameters END-->
-                                <!--Optional parameters END-->
-                            </apiSource>
-                        </apiSources>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <phase>compile</phase>
-                            <goals>
-                                <goal>generate</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
                     <groupId>net.alchim31.maven</groupId>
                     <artifactId>scala-maven-plugin</artifactId>
                     <version>3.1.5</version>

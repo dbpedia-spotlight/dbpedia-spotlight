@@ -27,7 +27,6 @@ import org.dbpedia.spotlight.db.SpotlightModel;
 import org.dbpedia.spotlight.db.model.TextTokenizer;
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ;
 import org.dbpedia.spotlight.exceptions.InitializationException;
-import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.model.DBpediaResource;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SpotlightFactory;
@@ -36,7 +35,6 @@ import org.dbpedia.spotlight.sparql.SparqlQueryExecuter;
 import org.dbpedia.spotlight.spot.Spotter;
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy;
 import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -106,11 +104,12 @@ public class Server {
         LOG.info(String.format("Initiated %d disambiguators.",disambiguators.size()));
         LOG.info(String.format("Initiated %d spotters.",spotters.size()));
 
+
+
         final Map<String, String> initParams = new HashMap<String, String>();
         initParams.put("com.sun.jersey.config.property.resourceConfigClass", "com.sun.jersey.api.core.PackagesResourceConfig");
         initParams.put("com.sun.jersey.config.property.packages", "org.dbpedia.spotlight.web.rest.resources");
         initParams.put("com.sun.jersey.config.property.WadlGeneratorConfig", "org.dbpedia.spotlight.web.rest.wadl.ExternalUriWadlGeneratorConfig");
-
 
         SelectorThread threadSelector = GrizzlyWebContainerFactory.create(serverURI, initParams);
         threadSelector.start();

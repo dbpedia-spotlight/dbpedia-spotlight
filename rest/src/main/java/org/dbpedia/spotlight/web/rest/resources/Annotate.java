@@ -33,7 +33,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.List;
-import com.wordnik.swagger.annotations.*;
 
 /**
  * REST Web Service for annotation: spotting, candidate selection, disambiguation, linking
@@ -44,16 +43,20 @@ import com.wordnik.swagger.annotations.*;
  */
 
 @ApplicationPath(Server.APPLICATION_PATH)
-@Api( value = "/annotate", description = "annotates text with entities..." )
 @Path("/{endpoint:annotate|disambiguate}")
 @Consumes("text/plain")
 public class Annotate extends BaseRestResource {
 
-    Log LOG = LogFactory.getLog(this.getClass());
+    public Annotate(){
+        LOG = LogFactory.getLog(this.getClass());
+        apiName = "annotate";
+    }
+
     private OutputManager outputManager = new OutputManager();
 
 
     private String annotate(AnnotationParameters params, OutputManager.OutputFormat outputType, String textToProcess) {
+        announce(textToProcess, params);
         String result;
         try {
             params.disambiguator = Server.model.getDisambiguator(params.disambiguatorName);
@@ -74,9 +77,6 @@ public class Annotate extends BaseRestResource {
     private UriInfo context;
 
     @GET
-    @ApiOperation(
-            value = "returns an html annotation"
-    )
     @Produces(MediaType.TEXT_HTML)
     public Response getHTML(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
                             @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @QueryParam("url") String inUrl,
