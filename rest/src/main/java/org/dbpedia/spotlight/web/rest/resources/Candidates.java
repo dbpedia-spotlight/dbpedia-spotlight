@@ -86,6 +86,9 @@ public class Candidates {
 
         List<SurfaceFormOccurrence> entityMentions = spotter.extract(textObject);
         if (entityMentions.size()==0) return annotation; //nothing to disambiguate
+        if(Server.getTokenizer() != null)
+            Server.getTokenizer().tokenizeMaybe(entityMentions.get(0).context());
+
         Paragraph paragraph = Factory.paragraph().fromJ(entityMentions);
         LOG.info(String.format("Spotted %d entity mentions.",entityMentions.size()));
 
