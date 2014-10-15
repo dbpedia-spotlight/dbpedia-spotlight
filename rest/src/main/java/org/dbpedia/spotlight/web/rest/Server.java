@@ -223,7 +223,7 @@ public class Server {
     private static void setSparqlExecuter(String endpoint, String graph)
     {
         if (endpoint == null || endpoint.equals(""))  endpoint= "http://dbpedia.org/sparql";
-        if (graph == null || graph.equals(""))  endpoint= "http://dbpedia.org";
+        if (graph == null || graph.equals(""))  graph= "http://dbpedia.org";
 
         Server.sparqlExecuter = new SparqlQueryExecuter(graph, endpoint);
     }
