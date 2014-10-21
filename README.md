@@ -27,6 +27,17 @@ If you need service reliability and lower response times, you can run DBpedia Sp
     #Follow the installation assistant
     /usr/bin/dbpedia-spotlight-[language]
 
+If you want to run the latest version of spotlight (v0.7), you should do the following:
+
+1. Download the jar file: `wget http://spotlight.sztaki.hu/downloads/dbpedia-spotlight-0.7.jar`
+2. Download an entity model from http://spotlight.sztaki.hu/downloads/. For English, you can simply do: `wget http://spotlight.sztaki.hu/downloads/en_2+2.tar.gz`
+3. Uncompress the language model tarball 
+4. Run it: `java -Xmx5G -Xms5G -jar dbpedia-spotlight-0.7.jar /path/to/language/model/folder http://localhost:2222/rest 5. Test it by pointing your browser to `http://localhost:2222/rest/anotate?text=Berlin&confidence=0.5`
+
+Note 1: If you want to be on the cutting edge, you can clone this repo `git clone https://github.com/dbpedia-spotlight/dbpedia-spotlight.git` and run `mvn package` (you need maven installed). This will generate a `dbpedia-spotlight-0.7-with-dependencies.jar` file in `dist/target`. You can point to this jar file in step 4.
+
+Note 2: This will run spotlight with a dictionary-based spotter. If you want to use an opennlp based spotter, you should create an `opennlp` folder within your uncompressed language model folder (from step 3), if it doesn't exist already, and download sentence-tokenizer, tokenizer, and entity models from `http://opennlp.sourceforge.net/models-1.5/` for your language. You should rename these to `opennlp/token.bin`, `opennlp/sent.bin`, and `opennlp/ner-*.bin` (e.g. ner-person.bin).
+
 #### Build from source
 
 We provide a [Java/Scala API](http://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Java%2FScala%20API) for you to use our code in your application.
