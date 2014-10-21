@@ -32,7 +32,8 @@ If you want to run the latest version of spotlight (v0.7), you should do the fol
 1. Download the jar file: `wget http://spotlight.sztaki.hu/downloads/dbpedia-spotlight-0.7.jar`
 2. Download an entity model from http://spotlight.sztaki.hu/downloads/. For English, you can simply do: `wget http://spotlight.sztaki.hu/downloads/en_2+2.tar.gz`
 3. Uncompress the language model tarball 
-4. Run it: `java -Xmx5G -Xms5G -jar dbpedia-spotlight-0.7.jar /path/to/language/model/folder http://localhost:2222/rest 5. Test it by pointing your browser to `http://localhost:2222/rest/anotate?text=Berlin&confidence=0.5`
+4. Run it: `java -Xmx5G -Xms5G -jar dbpedia-spotlight-0.7.jar /path/to/language/model/folder http://localhost:2222/rest` .
+5. Test it by pointing your browser to `http://localhost:2222/rest/anotate?text=Berlin&confidence=0.5`
 
 Note 1: If you want to be on the cutting edge, you can clone this repo `git clone https://github.com/dbpedia-spotlight/dbpedia-spotlight.git` and run `mvn package` (you need maven installed). This will generate a `dbpedia-spotlight-0.7-with-dependencies.jar` file in `dist/target`. You can point to this jar file in step 4.
 
