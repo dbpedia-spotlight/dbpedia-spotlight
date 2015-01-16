@@ -71,6 +71,11 @@ public class SpotlightAnnotator extends JCasAnnotator_ImplBase {
 	public void process(JCas aJCas) throws AnalysisEngineProcessException {
 		String documentText = aJCas.getDocumentText();
 
+		// don't query endpoint without text
+		if (documentText == null || documentText.isEmpty()) {
+			return;
+		}
+
 		Client c = Client.create();
 
 		BufferedReader documentReader = new BufferedReader(new StringReader(documentText));
@@ -96,6 +101,9 @@ public class SpotlightAnnotator extends JCasAnnotator_ImplBase {
 				}
 				request += line;
 				numLines++;
+			}
+			if (request == null || request.isEmpty()) {
+				break;
 			}
 
 			
