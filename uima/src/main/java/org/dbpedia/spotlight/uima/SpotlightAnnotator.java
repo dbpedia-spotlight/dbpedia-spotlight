@@ -104,7 +104,7 @@ public class SpotlightAnnotator extends JCasAnnotator_ImplBase {
 				numLines++;
 			}
 			if (StringUtils.isBlank(request)) {
-				break;
+				continue;
 			}
 			
 			Annotation response = null;
