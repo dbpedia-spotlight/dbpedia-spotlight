@@ -10,7 +10,7 @@
 # $4 Analyzer+Stemmer language prefix e.g. Dutch
 # $5 Model target folder
 
-export MVN_OPTS="-Xmx26G"
+export MAVEN_OPTS="-Xmx26G"
 
 usage ()
 {
