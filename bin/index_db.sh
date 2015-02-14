@@ -7,7 +7,7 @@
 # $1 Working directory
 # $2 Locale (en_US)
 # $3 Stopwords file
-# $4 Analyzer+Stemmer language prefix e.g. Dutch(Analzyer|Stemmer)
+# $4 Analyzer+Stemmer language prefix e.g. Dutch
 # $5 Model target folder
 
 export MVN_OPTS="-Xmx26G"
@@ -15,7 +15,7 @@ export MVN_OPTS="-Xmx26G"
 usage ()
 {
      echo "index_db.sh"
-     echo "usage: ./index_db.sh -o /data/spotlight/nl/opennlp wdir nl_NL /data/spotlight/nl/stopwords.nl.list DutchStemmer /data/spotlight/nl/final_model"
+     echo "usage: ./index_db.sh -o /data/spotlight/nl/opennlp wdir nl_NL /data/spotlight/nl/stopwords.nl.list Dutch /data/spotlight/nl/final_model"
      echo "Create a database-backed model of DBpedia Spotlight for a specified language."
      echo " "
 }
