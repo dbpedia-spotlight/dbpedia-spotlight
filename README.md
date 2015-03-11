@@ -69,3 +69,7 @@ If you use the Lucene-based version of DBpedia Spotlight, please cite the follow
 ## Documentation
 
 More documentation is available from the [DBpedia Spotlight wiki](https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki).
+
+## FAQ
+
+Check the [FAQ](https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/FAQ) here
