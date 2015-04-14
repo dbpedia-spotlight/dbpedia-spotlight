@@ -81,6 +81,7 @@ LANGUAGE=`echo $2 | sed "s/_.*//g"`
 
 echo "Language: $LANGUAGE"
 echo "Working directory: $WDIR"
+echo "Data only set to \"$data_only\""
 
 mkdir -p $WDIR
 
@@ -94,7 +95,7 @@ if [ ! -f "redirects.nt" ]; then
 fi
 
 
-if [ "$DATA_ONLY" != "true" ]; then
+if [ "$data_only" != "true" ]; then
 
   #Set up Spotlight:
   cd $BASE_WDIR
@@ -141,7 +142,7 @@ if [ "$local_mode" == "true" ]; then
   if [ ! -e "$BASE_WDIR/pig/pig-0.10.1/" ]; then
     #Install pig:
     cd $BASE_WDIR/pig
-    wget http://apache.mirror.triple-it.nl/pig/pig-0.10.1/pig-0.10.1-src.tar.gz
+    wget http://archive.apache.org/dist/pig/pig-0.10.1/pig-0.10.1-src.tar.gz 
     tar xvzf pig-0.10.1-src.tar.gz
     rm pig-0.10.1-src.tar.gz
     cd pig-0.10.1-src
