@@ -157,8 +157,8 @@ object WikiOccurrenceSource
         
         var boldPattern = """\'{3}([^\']*)\'{3}""".r
         for (pattMatch <- boldPattern.findAllIn(paragraphText).matchData) {
-            val surfaceFromOffset = paragraphText.indexOf(result.toString)
-            var surfaceForm = result.group(1).trim.replaceAll("""\(.+?\)$""", "").replaceAll("""^(The|A) """, "")
+            val surfaceFormOffset = paragraphText.indexOf(pattMatch.toString)
+            var surfaceForm = pattMatch.group(1).trim.replaceAll("""\(.+?\)$""", "").replaceAll("""^(The|A) """, "")
             if (surfaceForm.nonEmpty) {
                 occurrenceTriples ::= new Tuple3(occurrenceIdBase.replaceAll("-.+?$", ""), surfaceForm, surfaceFormOffset)
             }
