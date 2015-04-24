@@ -181,7 +181,7 @@ object WikiMarkupStripper
      * @param markup the text to be stripped
      * @return the stripped markup
      */
-    def stripFormatting(markup: String): String = {
+    def stripFormattingButBold(markup: String): String = {
         var strippedMarkup: String = markup.replaceAll("""={2,}""", "")
         strippedMarkup = strippedMarkup.replaceAll("""\n:+""", "\n")
         return strippedMarkup
