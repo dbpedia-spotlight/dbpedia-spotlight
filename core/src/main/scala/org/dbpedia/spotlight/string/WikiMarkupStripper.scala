@@ -50,7 +50,7 @@ object WikiMarkupStripper
     }
 
     /**
-     * Strips a string of all markup except bullet points of lists; tries to turn it into plain text
+     * Strips a string of all markup except bold markers; tries to turn it into plain text
      *
      * @param markup the text to be stripped
      * @return the stripped text
