@@ -18,7 +18,7 @@
 
 package org.dbpedia.spotlight.model
 
-import java.lang.{Short, String}
+import java.lang.Short
 
 /**
  * Representation of types (DBpedia, Freebase, Schema.org, etc.)
@@ -57,7 +57,7 @@ trait OntologyType extends Serializable {
  */
 
 
-@SerialVersionUID(8037662401509425326l)
+@SerialVersionUID(8037662401509425326L)
 class DBpediaType(var name : String) extends OntologyType {
 
     name = name.replace(DBpediaType.DBPEDIA_ONTOLOGY_PREFIX, "")
@@ -72,8 +72,8 @@ class DBpediaType(var name : String) extends OntologyType {
         name.equalsIgnoreCase(that.name)
     }
 
-    override def getFullUri =  if (name.toLowerCase.startsWith("http")) name else DBpediaType.DBPEDIA_ONTOLOGY_PREFIX + name
-    override def typeID = if (name.toLowerCase.startsWith("http")) name else "DBpedia:".concat(name)
+    override def getFullUri =  if (name.substring(0,4).equalsIgnoreCase("http")) name else DBpediaType.DBPEDIA_ONTOLOGY_PREFIX + name
+    override def typeID = if (name.substring(0,4).equalsIgnoreCase("http")) name else "DBpedia:".concat(name)
 
 }
 
@@ -87,7 +87,7 @@ object DBpediaType {
  * Types from Freebase: non-hierarchical, grouped into domains.
  */
 
-@SerialVersionUID(8037662401509425325l)
+@SerialVersionUID(8037662401509425325L)
 class FreebaseType(val domain: String, val typeName: String) extends OntologyType {
 
   override def getFullUri = FreebaseType.FREEBASE_RDF_PREFIX + domain + "." + typeName

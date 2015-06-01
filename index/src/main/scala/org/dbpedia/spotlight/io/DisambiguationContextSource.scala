@@ -16,14 +16,17 @@ package org.dbpedia.spotlight.io
  * limitations under the License.
  */
 
-import org.dbpedia.spotlight.string.WikiMarkupStripper
-import org.dbpedia.spotlight.model._
-import org.dbpedia.extraction.wikiparser._
-import org.dbpedia.extraction.sources.{WikiPage, Source, XMLSource}
-import org.dbpedia.spotlight.log.SpotlightLog
-import java.io.{File}
-import xml.{XML, Elem}
+import java.io.File
+
+import org.dbpedia.extraction.sources.{Source, WikiPage, XMLSource}
 import org.dbpedia.extraction.util.Language
+import org.dbpedia.extraction.wikiparser._
+import org.dbpedia.extraction.wikiparser.impl.simple.SimpleWikiParser
+import org.dbpedia.spotlight.log.SpotlightLog
+import org.dbpedia.spotlight.model._
+import org.dbpedia.spotlight.string.WikiMarkupStripper
+
+import scala.xml.{Elem, XML}
 
 /**
  * Loads descriptive text that occurs around entries in disambiguation pages from a wiki dump.
@@ -65,7 +68,8 @@ object DisambiguationContextSource
     }
 
     def wikiPageCopy(wikiPage: WikiPage, newSource: String) = {
-        new WikiPage(wikiPage.title, wikiPage.redirect, wikiPage.id, wikiPage.revision, wikiPage.timestamp, newSource)
+        new WikiPage(wikiPage.title, wikiPage.redirect, wikiPage.id, wikiPage.revision, wikiPage.timestamp,
+            wikiPage.contributorID, wikiPage.contributorName, newSource, wikiPage.format)
     }
 
     /**
@@ -75,7 +79,7 @@ object DisambiguationContextSource
     {
         val splitDisambiguations = """\n"""
         
-        val wikiParser = WikiParser()
+        val wikiParser = new SimpleWikiParser()
 
         override def foreach[U](f : DBpediaResourceOccurrence => U) : Unit =
         {
