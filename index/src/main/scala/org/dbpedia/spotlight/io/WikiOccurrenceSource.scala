@@ -16,12 +16,13 @@ package org.dbpedia.spotlight.io
  * limitations under the License.
  */
 
+import org.dbpedia.extraction.wikiparser.impl.simple.SimpleWikiParser
 import org.dbpedia.spotlight.string.WikiMarkupStripper
 import org.dbpedia.spotlight.model._
 import org.dbpedia.extraction.wikiparser._
 import org.dbpedia.extraction.sources.{MemorySource, WikiPage, Source, XMLSource}
 import org.dbpedia.spotlight.log.SpotlightLog
-import java.io.{PrintStream, FileOutputStream, File}
+import java.io.File
 import xml.{XML, Elem}
 import org.dbpedia.extraction.util.Language
 
@@ -83,7 +84,7 @@ object WikiOccurrenceSource
      */
     private class WikiOccurrenceSource(wikiPages : Source) extends OccurrenceSource
     {
-        val wikiParser = WikiParser()
+        val wikiParser = new SimpleWikiParser()
 
         override def foreach[U](f : DBpediaResourceOccurrence => U) : Unit =
         {

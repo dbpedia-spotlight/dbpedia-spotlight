@@ -132,7 +132,7 @@
 
         <dependency>
             <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_${scala.compiler.version}</artifactId>
+            <artifactId>scalatest_2.10</artifactId>
         </dependency>
 
     </dependencies>
