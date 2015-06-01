@@ -69,7 +69,7 @@ class DefaultDisambiguator(val contextSearcher: ContextSearcher) extends Disambi
      * @throws org.dbpedia.spotlight.exceptions.InputException
      */
     def disambiguate(paragraph: Paragraph): List[DBpediaResourceOccurrence] = {
-        asBuffer(disambiguator.disambiguate(paragraph.occurrences.asJava)).toList
+        asScalaBuffer(disambiguator.disambiguate(paragraph.occurrences.asJava)).toList
     }
 
     /**
