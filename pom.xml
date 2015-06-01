@@ -26,7 +26,7 @@
         <dbpedia.spotlight.version>0.7</dbpedia.spotlight.version>
 
         <java.compiler.version>1.6</java.compiler.version>
-        <scala.compiler.version>2.9.2</scala.compiler.version>
+        <scala.compiler.version>2.10.4</scala.compiler.version>
         <lucene.version>3.6.0</lucene.version>
         <jersey.version>1.10</jersey.version>
 
@@ -185,30 +185,27 @@
     -->
 
     <dependencies>
-        <dependency>
+        <!--<dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-compiler</artifactId>
             <version>${scala.compiler.version}</version>
             <scope>provided</scope>
-            <!--
-                License: Scala License
-                http://www.scala-lang.org/node/146
-            -->
-        </dependency>
-
-        <dependency>
-            <groupId>org.scala-lang</groupId>
-            <artifactId>scala-library</artifactId>
-            <version>${scala.compiler.version}</version>
-            <!--
-                License: Scala License
-                http://www.scala-lang.org/node/146
-            -->
-        </dependency>
+        </dependency> -->
     </dependencies>
 
     <dependencyManagement>
         <dependencies>
+
+            <dependency>
+                <groupId>org.scala-lang</groupId>
+                <artifactId>scala-library</artifactId>
+                <version>${scala.compiler.version}</version>
+                <!--
+                    License: Scala License
+                    http://www.scala-lang.org/node/146
+                -->
+            </dependency>
+
             <dependency>
                 <groupId>org.dbpedia.spotlight</groupId>
                 <artifactId>core</artifactId>
@@ -245,7 +242,7 @@
             <dependency>
                 <groupId>org.dbpedia.extraction</groupId>
                 <artifactId>core</artifactId>
-                <version>3.8</version>
+                <version>3.9</version>
                 <!--
                     License: Apache Software License, Version 2.0
                 -->
@@ -495,8 +492,8 @@
 
             <dependency>
                 <groupId>org.scalatest</groupId>
-                <artifactId>scalatest_2.9.2</artifactId>
-                <version>2.0.M4</version>
+                <artifactId>scalatest_2.10</artifactId>
+                <version>2.2.5</version>
                 <!--
                     License: Apache Software License, Version 2.0
                 -->
@@ -565,8 +562,8 @@
 
             <dependency>
                 <groupId>org.scalanlp</groupId>
-                <artifactId>breeze-learn_2.9.2</artifactId>
-                <version>0.1</version>
+                <artifactId>breeze-learn_2.10</artifactId>
+                <version>0.3</version>
                 <!--
                     License: Apache Software License, Version 2.0
                 -->
@@ -574,8 +571,8 @@
 
             <dependency>
                 <groupId>com.typesafe.akka</groupId>
-                <artifactId>akka-actor</artifactId>
-                <version>2.0.5</version>
+                <artifactId>akka-actor_2.10</artifactId>
+                <version>2.2.3</version>
                 <!--
                     License: Apache Software License, Version 2.0
                 -->
@@ -653,8 +650,8 @@
 
             <dependency>
                 <groupId>org.scalaz</groupId>
-                <artifactId>scalaz-core_${scala.compiler.version}</artifactId>
-                <version>6.0.4</version>
+                <artifactId>scalaz-core_2.10</artifactId>
+                <version>7.0.5</version>
                 <!--
                   License: BSD 3-Clause
                 -->
@@ -727,8 +724,8 @@
 
             <dependency>
                 <groupId>net.liftweb</groupId>
-                <artifactId>lift-json_2.9.2</artifactId>
-                <version>2.5-M1</version>
+                <artifactId>lift-json_2.10</artifactId>
+                <version>2.5</version>
                 <!--
                   License: Apache Software License, Version 2.0
                 -->
@@ -783,7 +780,7 @@
             <dependency>
                 <groupId>cc.factorie</groupId>
                 <artifactId>factorie</artifactId>
-                <version>1.0.0-M4</version>
+                <version>1.0.0-RC1</version>
                 <!--
                   License: Apache Software License, Version 2.0
                 -->
@@ -959,6 +956,11 @@
             <url>https://github.com/dbpedia-spotlight/maven-repo/raw/master/snapshots</url>
         </repository>
 
+        <repository>
+            <id>maven.aksw.internal</id>
+            <name>University Leipzig, AKSW Maven2 Repository</name>
+            <url>http://maven.aksw.org/archiva/repository/internal</url>
+        </repository>
 
     </repositories>
 

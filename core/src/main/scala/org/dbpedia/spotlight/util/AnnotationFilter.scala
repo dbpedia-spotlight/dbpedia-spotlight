@@ -17,14 +17,12 @@
 package org.dbpedia.spotlight.util
 
 import org.dbpedia.spotlight.log.SpotlightLog
-import scala.collection.JavaConversions._
-import java.io.File
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.disambiguate.{DefaultDisambiguator, Disambiguator}
 import org.dbpedia.spotlight.string.ParseSurfaceFormText
 import org.dbpedia.spotlight.sparql.SparqlQueryExecuter
 import org.dbpedia.spotlight.exceptions.InputException
-import java.net.URLEncoder
+import scala.collection.JavaConversions._
 
 @deprecated("please use org.dbpedia.spotlight.filter.annotations.CombineAllAnnotationFilters")
 class AnnotationFilter(val config: SpotlightConfiguration)
@@ -273,7 +271,7 @@ class AnnotationFilter(val config: SpotlightConfiguration)
         import scala.collection.JavaConversions._
         SpotlightLog.info(this.getClass, "Disambiguating... (%s)", disambiguator.name)
         val disambiguatedOccurrences : java.util.List[DBpediaResourceOccurrence] = disambiguator.disambiguate(selectedSpots)
-        val occurrences = asBuffer(disambiguatedOccurrences).toList
+        val occurrences = asScalaBuffer(disambiguatedOccurrences).toList
 
         SpotlightLog.info(this.getClass, "Filtering... ")
 
