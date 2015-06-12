@@ -241,6 +241,12 @@
             <version>0.2</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.scalanlp</groupId>
+            <artifactId>breeze-math_2.9.2</artifactId>
+            <version>0.2</version>
+        </dependency>
+
 
         <dependency>
             <groupId>com.typesafe.akka</groupId>
