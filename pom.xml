@@ -571,8 +571,8 @@
 
             <dependency>
                 <groupId>org.scalanlp</groupId>
-                <artifactId>breeze_2.10</artifactId>
-                <version>0.10</version>
+                <artifactId>breeze-math_2.9.2</artifactId>
+                <version>0.2</version>
             </dependency>
 
             <dependency>
