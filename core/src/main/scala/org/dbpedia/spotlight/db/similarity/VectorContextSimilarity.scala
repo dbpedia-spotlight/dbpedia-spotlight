@@ -2,9 +2,7 @@ package org.dbpedia.spotlight.db.similarity
 
 import java.io.File
 
-
 import breeze.linalg._
-import breeze.io.TextReader
 
 import org.dbpedia.spotlight.model.{DBpediaResource, TokenType}
 
@@ -17,7 +15,7 @@ import scala.io.Source
 class VectorContextSimilarity(modelPath: String, dictPath: String) extends ContextSimilarity{
   var vectors: DenseMatrix[Double] = csvread(new File(modelPath))
 
-  var dict = Source.fromFile(dictPath).getLines().map { line =>
+  var dict: Map[String, Int] = Source.fromFile(dictPath).getLines().map { line =>
     val contents = line.split("\t")
     (contents(0), contents(1).toInt)
   }.toMap
@@ -34,6 +32,7 @@ class VectorContextSimilarity(modelPath: String, dictPath: String) extends Conte
 
     f * s.t
   }
+
   /**
    * Calculate the context score for all DBpedia resources in the given text. The text context is specified
    * as q query of tokens and their counts.
