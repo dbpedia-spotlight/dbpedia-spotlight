@@ -3,14 +3,16 @@ package org.dbpedia.spotlight.db.similarity
 import java.io.File
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 import breeze.linalg._
 
 import org.dbpedia.spotlight.model.{DBpediaResource, TokenType}
 import org.dbpedia.spotlight.util.MathUtil
 =======
 
+=======
+>>>>>>> started vector model wrapper in contextsimilarity interface, added breeze 0.10 dependency
 import breeze.linalg._
-import breeze.io.TextReader
 
 import org.dbpedia.spotlight.model.{DBpediaResource, TokenType}
 >>>>>>> add dependencies for new breeze version
@@ -31,7 +33,7 @@ import scala.io.Source
 class VectorContextSimilarity(modelPath: String, dictPath: String) extends ContextSimilarity{
   var vectors: DenseMatrix[Double] = csvread(new File(modelPath))
 
-  var dict = Source.fromFile(dictPath).getLines().map { line =>
+  var dict: Map[String, Int] = Source.fromFile(dictPath).getLines().map { line =>
     val contents = line.split("\t")
     (contents(0), contents(1).toInt)
   }.toMap
