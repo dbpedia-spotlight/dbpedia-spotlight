@@ -5,12 +5,16 @@ import java.io.File
 import breeze.linalg._
 
 import org.dbpedia.spotlight.model.{DBpediaResource, TokenType}
+import org.dbpedia.spotlight.util.MathUtil
 
 import scala.collection.mutable
 import scala.io.Source
 
 /**
- * Created by dowling on 12/06/15.
+ * Context similarity based on dense, continuous space vector models.
+ * @author Philipp Dowling
+ *
+ * created on 12/06/15.
  */
 class VectorContextSimilarity(modelPath: String, dictPath: String) extends ContextSimilarity{
   var vectors: DenseMatrix[Double] = csvread(new File(modelPath))
@@ -20,15 +24,24 @@ class VectorContextSimilarity(modelPath: String, dictPath: String) extends Conte
     (contents(0), contents(1).toInt)
   }.toMap
 
+  def lookup(token: String): Transpose[DenseVector[Double]] ={
+    // look up vector, if it isn't there, simply ignore the word
+    // TODO: is this good standard behaviour?
+    if(dict.contains(token)){
+      vectors(dict(token), 0 to vectors.cols - 1)
+    }else{
+      DenseVector.zeros[Double](vectors.cols).t
+    }
+  }
+
   def get_similarity(first: String, second:String): Double = {
-    val f = vectors(dict(first),0 to vectors.cols-1)
-    val s = vectors(dict(second), 0 to vectors.cols-1)
-    f * s.t
+    // todo: do we need 1 - (lookup(first) * lookup(second).t) ?
+    lookup(first) * lookup(second).t
   }
 
   def get_similarity(first: Array[String], second: Array[String]): Double = {
-    val f = first.map( s => {vectors(dict(s), 0 to vectors.cols - 1)}).reduceLeft(_ + _)
-    val s = second.map( s => {vectors(dict(s), 0 to vectors.cols - 1)}).reduceLeft(_ + _)
+    val f = first.map(lookup).reduceLeft(_ + _)
+    val s = second.map(lookup).reduceLeft(_ + _)
 
     f * s.t
   }
@@ -41,7 +54,27 @@ class VectorContextSimilarity(modelPath: String, dictPath: String) extends Conte
    * @param candidates the set of DBpedia resource candidates
    * @return
    */
-  override def score(query: Seq[TokenType], candidates: Set[DBpediaResource]): mutable.Map[DBpediaResource, Double] = null
+  override def score(query: Seq[TokenType], candidates: Set[DBpediaResource]): mutable.Map[DBpediaResource, Double] = {
+    /**
+     * TODO:
+     * Currently, this just calculates the dot product of the query vector and the sum of the context vectors.
+     * In the future, this should invoke a log-linear model that's been trained to rank candidates based on a number of
+     * features, as outlined in the proposal.
+     */
+
+    val contextScores = mutable.HashMap[DBpediaResource, Double]()
+
+    candidates.map( resource => {
+      contextScores.put(
+        resource,
+        // similarity of context and current resource
+        // TODO: use the whole context, or only surrounding n words?
+        get_similarity(Array(resource.getFullUri), query.map(_.toString).toArray)
+      )
+    }
+    )
+    contextScores
+  }
 
   /**
    * Calculate the context score for the context alone, not assuming that there is any entity generating it.
