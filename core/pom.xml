@@ -243,7 +243,7 @@
 
         <dependency>
             <groupId>org.scalanlp</groupId>
-            <artifactId>breeze_2.10</artifactId> <!-- or 2.11 -->
+            <artifactId>breeze_2.10</artifactId>
             <version>0.10</version>
         </dependency>
 
