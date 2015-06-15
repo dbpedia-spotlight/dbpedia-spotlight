@@ -24,26 +24,31 @@ class VectorContextSimilarity(modelPath: String, dictPath: String) extends Conte
     (contents(0), contents(1).toInt)
   }.toMap
 
-  def lookup(token: String): Transpose[DenseVector[Double]] ={
+  def lookup(token: String): DenseMatrix[Double] ={
     // look up vector, if it isn't there, simply ignore the word
     // TODO: is this good standard behaviour?
     if(dict.contains(token)){
-      vectors(dict(token), 0 to vectors.cols - 1)
+      vectors(dict(token), ::)
     }else{
-      DenseVector.zeros[Double](vectors.cols).t
+      DenseMatrix.zeros[Double](1, vectors.cols)
     }
   }
 
   def get_similarity(first: String, second:String): Double = {
     // todo: do we need 1 - (lookup(first) * lookup(second).t) ?
-    lookup(first) * lookup(second).t
+
+    val res: DenseMatrix[Double] = lookup(first) * lookup(second).t
+    assert(res.cols == 1 && res.rows == 1)
+    res(0,0)
   }
 
   def get_similarity(first: Array[String], second: Array[String]): Double = {
     val f = first.map(lookup).reduceLeft(_ + _)
     val s = second.map(lookup).reduceLeft(_ + _)
 
-    f * s.t
+    val res: DenseMatrix[Double] = f * s.t
+    assert(res.cols == 1 && res.rows == 1)
+    res(0,0)
   }
 
   /**
