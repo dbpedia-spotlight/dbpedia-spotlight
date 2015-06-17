@@ -5,7 +5,6 @@ import java.io.File
 import breeze.linalg._
 
 import org.dbpedia.spotlight.model.{DBpediaResource, TokenType}
-import org.dbpedia.spotlight.util.MathUtil
 
 import scala.collection.mutable
 import scala.io.Source
@@ -24,31 +23,27 @@ class VectorContextSimilarity(modelPath: String, dictPath: String) extends Conte
     (contents(0), contents(1).toInt)
   }.toMap
 
-  def lookup(token: String): DenseMatrix[Double] ={
+  def lookup(token: String): Transpose[DenseVector[Double]]={
     // look up vector, if it isn't there, simply ignore the word
     // TODO: is this good standard behaviour?
     if(dict.contains(token)){
       vectors(dict(token), ::)
     }else{
-      DenseMatrix.zeros[Double](1, vectors.cols)
+      DenseVector.zeros[Double](vectors.cols).t
     }
   }
 
   def get_similarity(first: String, second:String): Double = {
     // todo: do we need 1 - (lookup(first) * lookup(second).t) ?
 
-    val res: DenseMatrix[Double] = lookup(first) * lookup(second).t
-    assert(res.cols == 1 && res.rows == 1)
-    res(0,0)
+    lookup(first) * lookup(second).t
   }
 
   def get_similarity(first: Array[String], second: Array[String]): Double = {
     val f = first.map(lookup).reduceLeft(_ + _)
     val s = second.map(lookup).reduceLeft(_ + _)
 
-    val res: DenseMatrix[Double] = f * s.t
-    assert(res.cols == 1 && res.rows == 1)
-    res(0,0)
+    f * s.t
   }
 
   /**
