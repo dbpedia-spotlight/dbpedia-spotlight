@@ -230,10 +230,10 @@
             <artifactId>scalaz-core_2.10</artifactId>
         </dependency>
 
-        <dependency>
+        <!--dependency>
             <groupId>org.scalanlp</groupId>
             <artifactId>breeze-learn_2.10</artifactId>
-        </dependency>
+        </dependency-->
 
         <dependency>
             <groupId>org.scalanlp</groupId>
