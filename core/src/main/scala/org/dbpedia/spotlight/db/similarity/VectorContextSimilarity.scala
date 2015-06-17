@@ -2,42 +2,18 @@ package org.dbpedia.spotlight.db.similarity
 
 import java.io.File
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 import breeze.linalg._
 
 import org.dbpedia.spotlight.model.{DBpediaResource, TokenType}
-import org.dbpedia.spotlight.util.MathUtil
-<<<<<<< HEAD
-=======
-
-=======
->>>>>>> started vector model wrapper in contextsimilarity interface, added breeze 0.10 dependency
-import breeze.linalg._
-
-import org.dbpedia.spotlight.model.{DBpediaResource, TokenType}
->>>>>>> add dependencies for new breeze version
-=======
->>>>>>> VectorContextSimilarity partly implemented with basic vector model functionality
 
 import scala.collection.mutable
 import scala.io.Source
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> VectorContextSimilarity partly implemented with basic vector model functionality
  * Context similarity based on dense, continuous space vector models.
  * @author Philipp Dowling
  *
- * created on 12/06/15.
-<<<<<<< HEAD
-=======
  * Created by dowling on 12/06/15.
->>>>>>> add dependencies for new breeze version
-=======
->>>>>>> VectorContextSimilarity partly implemented with basic vector model functionality
  */
 class VectorContextSimilarity(modelPath: String, dictPath: String) extends ContextSimilarity{
   var vectors: DenseMatrix[Double] = csvread(new File(modelPath))
