@@ -5,7 +5,6 @@ import java.io.File
 import breeze.linalg._
 
 import org.dbpedia.spotlight.model.{DBpediaResource, TokenType}
-import org.dbpedia.spotlight.util.MathUtil
 
 import scala.collection.mutable
 import scala.io.Source
