@@ -34,12 +34,15 @@ package org.dbpedia.spotlight.disambiguate
  * limitations under the License.
  */
 
+
+import akka.actor._
+
+
 import scala.collection.JavaConverters._
 import org.dbpedia.spotlight.log.SpotlightLog
 import org.apache.lucene.search.Explanation
 import org.dbpedia.spotlight.model._
-import scala.actors._
-import Actor._
+
 import org.dbpedia.spotlight.exceptions.{DisambiguationException, SearchException, InputException}
 
 /**
