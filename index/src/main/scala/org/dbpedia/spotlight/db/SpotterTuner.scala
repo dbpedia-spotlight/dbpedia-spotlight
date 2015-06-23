@@ -3,9 +3,9 @@ package org.dbpedia.spotlight.db
 import breeze.linalg.{DenseMatrix, DenseVector}
 import model.TextTokenizer
 import org.dbpedia.spotlight.io.AnnotatedTextSource
-import breeze.regress.LinearRegression
+import breeze.stats.regression.leastSquares
 import java.io.File
-import org.dbpedia.spotlight.model.{SurfaceForm, SurfaceFormOccurrence, AnnotatedParagraph}
+import org.dbpedia.spotlight.model.{SurfaceFormOccurrence, AnnotatedParagraph}
 import org.apache.commons.io.FileUtils
 import scala.collection.JavaConversions._
 
@@ -48,11 +48,10 @@ object SpotterTuner {
 
     }
 
-    //System.err.println(x)
 
     FileUtils.write(
       outputFile,
-      LinearRegression.regress(x, y).activeValuesIterator.mkString(" ")
+      leastSquares(x, y).coefficients.activeValuesIterator.mkString(" ")
     )
 
   }
