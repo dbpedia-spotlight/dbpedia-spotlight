@@ -6,7 +6,7 @@ import breeze.linalg._
 import breeze.numerics._
 
 import org.dbpedia.spotlight.model.{DBpediaResource, TokenType}
-import org.dbpedia.spotlight.util.MathUtil.{cosine_similarity, LOGZERO}
+import org.dbpedia.spotlight.util.MathUtil.{cosineSimilarity, LOGZERO}
 
 import scala.collection.mutable
 import scala.io.Source
@@ -20,20 +20,21 @@ import scala.io.Source
  * created on 12/06/15.
  */
 case class VectorContextSimilarity(modelPath: String, dictPath: String) extends ContextSimilarity{
-  var vectors = read_weights_csv
+  var vectors = readWeightsCsv
 
-  var dict: Map[String, Int] = Source.fromFile(dictPath).getLines().map { line =>
+  println("Read dict..")
+  var dict: Map[String, Int] = Source.fromFile(dictPath, "UTF-8").getLines().map { line =>
     val contents = line.split("\t")
     (contents(0), contents(1).toInt)
   }.toMap
 
-  def read_weights_csv: DenseMatrix[Double] = {
+  def readWeightsCsv: DenseMatrix[Double] = {
     val matrixSource = io.Source.fromFile(modelPath)
     val lines = matrixSource.getLines()
     val rows = lines.next().substring(2).toInt
     val cols = lines.next().substring(2).toInt
     println("Allocating " + rows + "x" + cols + " matrix..")
-    val vectors: DenseMatrix[Double] = DenseMatrix.zeros[Double](rows, cols)
+    val vectors: DenseMatrix[Double] = DenseMatrix.zeros[Double](rows, cols) //DenseMatrix.rand[Double](rows, cols)
     println("Reading CSV and writing to matrix...")
     lines.zipWithIndex.foreach { case (row_str, row_idx) =>
       if (row_idx % 10000 == 0)
@@ -42,6 +43,7 @@ case class VectorContextSimilarity(modelPath: String, dictPath: String) extends 
       values.zipWithIndex.foreach { case (value, col_idx) => vectors(row_idx, col_idx) = value }
     }
     matrixSource.close()
+    println("Done.")
     vectors
   }
 
@@ -57,19 +59,19 @@ case class VectorContextSimilarity(modelPath: String, dictPath: String) extends 
     }
   }
 
-  def get_similarity(first: String, second:String): Double = {
-    cosine_similarity(lookup(first), lookup(second))
+  def getSimilarity(first: String, second:String): Double = {
+    cosineSimilarity(lookup(first), lookup(second))
   }
 
-  def get_similarity(first: Array[String], second: Array[String]): Double = {
+  def getSimilarity(first: Array[String], second: Array[String]): Double = {
     val f = first.map(lookup).reduceLeft(_ + _)
     val s = second.map(lookup).reduceLeft(_ + _)
 
-    cosine_similarity(f, s)
+    cosineSimilarity(f, s)
   }
 
 
-  def vector_similarities(query: Seq[TokenType], candidates: Set[DBpediaResource]): mutable.Map[DBpediaResource, Double] = {
+  def vectorSimilarities(query: Seq[TokenType], candidates: Set[DBpediaResource]): mutable.Map[DBpediaResource, Double] = {
     val contextScores = mutable.HashMap[DBpediaResource, Double]()
 
     candidates.map( resource => {
@@ -77,7 +79,7 @@ case class VectorContextSimilarity(modelPath: String, dictPath: String) extends 
         resource,
         // similarity of context and current resource
         // TODO: use the whole context, or only surrounding n words?
-        get_similarity(Array(resource.getFullUri), query.map(_.toString).toArray)
+        getSimilarity(Array(resource.getFullUri.replace("http://dbpedia.org/resource/", "DBPEDIA_ID/")), query.map(_.tokenType).toArray)
       )
     }
     )
@@ -100,7 +102,7 @@ case class VectorContextSimilarity(modelPath: String, dictPath: String) extends 
      * In the future, this should invoke a log-linear model that's been trained to rank candidates based on a number of
      * features, as outlined in the proposal.
      */
-    vector_similarities(query, candidates)
+    vectorSimilarities(query, candidates)
   }
 
   /**

@@ -54,7 +54,8 @@ object SpotlightModel {
     val resStore = MemoryStore.loadResourceStore(new FileInputStream(new File(modelDataFolder, "res.mem")), quantizedCountsStore)
     val candMapStore = MemoryStore.loadCandidateMapStore(new FileInputStream(new File(modelDataFolder, "candmap.mem")), resStore, quantizedCountsStore)
     val contextStore = if (new File(modelDataFolder, "context.mem").exists())
-      MemoryStore.loadContextStore(new FileInputStream(new File(modelDataFolder, "context.mem")), tokenTypeStore, quantizedCountsStore)
+      null
+      //TODO uncomment later MemoryStore.loadContextStore(new FileInputStream(new File(modelDataFolder, "context.mem")), tokenTypeStore, quantizedCountsStore)
     else
       null
 
@@ -90,8 +91,8 @@ object SpotlightModel {
     }
 
     def vectorContextSimilarity(): ContextSimilarity = {
-      new VectorContextSimilarity(modelFolder.toString + "enwiki-model-stemmed.w2c.syn0.csv",
-        modelFolder.toString + "enwiki-model-stemmed.w2c.wordids.txt")
+      new VectorContextSimilarity(modelFolder.toString + "/word2vec/enwiki-model-stemmed.w2c.syn0.csv",
+        modelFolder.toString + "/word2vec/enwiki-model-stemmed.w2c.wordids.txt")
     }
 
     val c = properties.getProperty("opennlp_parallel", Runtime.getRuntime.availableProcessors().toString).toInt
