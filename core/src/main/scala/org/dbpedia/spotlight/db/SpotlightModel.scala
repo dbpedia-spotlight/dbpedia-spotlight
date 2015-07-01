@@ -1,7 +1,7 @@
 package org.dbpedia.spotlight.db
 
 import concurrent.{TokenizerWrapper, SpotterWrapper}
-import org.dbpedia.spotlight.db.memory.{MemoryVectorStore, MemoryContextStore, MemoryStore}
+import org.dbpedia.spotlight.db.memory.{MemoryContextStore, MemoryStore}
 import model._
 import opennlp.tools.tokenize.{TokenizerModel, TokenizerME}
 import opennlp.tools.sentdetect.{SentenceModel, SentenceDetectorME}
@@ -33,7 +33,7 @@ object SpotlightModel {
   def loadStopwords(modelFolder: File): Set[String] = scala.io.Source.fromFile(new File(modelFolder, "stopwords.list")).getLines().map(_.trim()).toSet
   def loadSpotterThresholds(file: File): Seq[Double] = scala.io.Source.fromFile(file).getLines().next().split(" ").map(_.toDouble)
 
-  def storesFromFolder(modelFolder: File): (TokenTypeStore, SurfaceFormStore, ResourceStore, CandidateMapStore, ContextStore, MemoryVectorStore) = {
+  def storesFromFolder(modelFolder: File): (TokenTypeStore, SurfaceFormStore, ResourceStore, CandidateMapStore, ContextStore) = {
     val modelDataFolder = new File(modelFolder, "model")
 
     List(
@@ -53,30 +53,17 @@ object SpotlightModel {
     val sfStore = MemoryStore.loadSurfaceFormStore(new FileInputStream(new File(modelDataFolder, "sf.mem")), quantizedCountsStore)
     val resStore = MemoryStore.loadResourceStore(new FileInputStream(new File(modelDataFolder, "res.mem")), quantizedCountsStore)
     val candMapStore = MemoryStore.loadCandidateMapStore(new FileInputStream(new File(modelDataFolder, "candmap.mem")), resStore, quantizedCountsStore)
-
-
-    val contextStore = if (new File(modelDataFolder, "vectors.mem").exists()){
-      null
-    } else if (new File(modelDataFolder, "context.mem").exists()) {
+    val contextStore = if (new File(modelDataFolder, "context.mem").exists())
       MemoryStore.loadContextStore(new FileInputStream(new File(modelDataFolder, "context.mem")), tokenTypeStore, quantizedCountsStore)
-    } else {
+    else
       null
-    }
 
-    val vectorStore = if (new File(modelDataFolder, "vectors.mem").exists()){
-      MemoryStore.loadVectorStore(new FileInputStream(new File(modelDataFolder, "vectors.mem")))
-    } else {
-      null
-    }
-
-
-
-    (tokenTypeStore, sfStore, resStore, candMapStore, contextStore, vectorStore)
+    (tokenTypeStore, sfStore, resStore, candMapStore, contextStore)
   }
 
   def fromFolder(modelFolder: File): SpotlightModel = {
 
-    val (tokenTypeStore, sfStore, resStore, candMapStore, contextStore, vectorStore) = storesFromFolder(modelFolder)
+    val (tokenTypeStore, sfStore, resStore, candMapStore, contextStore) = storesFromFolder(modelFolder)
 
     val stopwords = loadStopwords(modelFolder)
 
@@ -96,14 +83,15 @@ object SpotlightModel {
       case s: String => new SnowballStemmer(s)
     }
 
-    def contextSimilarity(): ContextSimilarity = {
-      if (vectorStore != null) {
-        new VectorContextSimilarity(vectorStore)
-      } else if (contextStore != null) {
-        new GenerativeContextSimilarity(tokenTypeStore, contextStore)
-      } else {
-        new NoContextSimilarity(MathUtil.ln(1.0))
-      }
+    // TODO: add a case for the vector context similarity once we have a store
+    def contextSimilarity(): ContextSimilarity = contextStore match {
+      case store:MemoryContextStore => new GenerativeContextSimilarity(tokenTypeStore, contextStore)
+      case _ => new NoContextSimilarity(MathUtil.ln(1.0))
+    }
+
+    def vectorContextSimilarity(): ContextSimilarity = {
+      new VectorContextSimilarity(modelFolder.toString + "enwiki-model-stemmed.w2c.syn0.csv",
+        modelFolder.toString + "enwiki-model-stemmed.w2c.wordids.txt")
     }
 
     val c = properties.getProperty("opennlp_parallel", Runtime.getRuntime.availableProcessors().toString).toInt
@@ -125,7 +113,10 @@ object SpotlightModel {
         tokenTypeStore
       ).asInstanceOf[TextTokenizer]
 
-      createTokenizer()
+      if(cores.size == 1)
+        createTokenizer()
+      else
+        new TokenizerWrapper(cores.map(_ => createTokenizer())).asInstanceOf[TextTokenizer]
 
     } else {
       val locale = properties.getProperty("locale").split("_")
@@ -139,7 +130,8 @@ object SpotlightModel {
       resStore,
       searcher,
       new UnweightedMixture(Set("P(e)", "P(c|e)", "P(s|e)")),
-      contextSimilarity()
+      //contextSimilarity()
+      vectorContextSimilarity()
     ))
 
     //If there is at least one NE model or a chunker, use the OpenNLP spotter:
@@ -162,8 +154,12 @@ object SpotlightModel {
         Some(loadSpotterThresholds(new File(modelFolder, "spotter_thresholds.txt")))
       ).asInstanceOf[Spotter]
 
-
-      createSpotter()
+      if(cores.size == 1)
+        createSpotter()
+      else
+        new SpotterWrapper(
+          cores.map(_ => createSpotter())
+        ).asInstanceOf[Spotter]
 
     } else {
       val dict = MemoryStore.loadFSADictionary(new FileInputStream(new File(modelFolder, "fsa_dict.mem")))
