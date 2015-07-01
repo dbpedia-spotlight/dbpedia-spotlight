@@ -1,21 +1,19 @@
 package org.dbpedia.spotlight.db
 
-import java.util
-
 import concurrent.{TokenizerWrapper, SpotterWrapper}
-import org.dbpedia.spotlight.db.memory.{MemoryVectorStore, MemoryContextStore, MemoryStore}
+import org.dbpedia.spotlight.db.memory.{MemoryContextStore, MemoryStore}
 import model._
 import opennlp.tools.tokenize.{TokenizerModel, TokenizerME}
 import opennlp.tools.sentdetect.{SentenceModel, SentenceDetectorME}
 import opennlp.tools.postag.{POSModel, POSTaggerME}
-import org.dbpedia.spotlight.disambiguate.mixtures.{LogLinearFeatureMixture, LinearRegressionFeatureMixture, Mixture, UnweightedMixture}
+import org.dbpedia.spotlight.disambiguate.mixtures.UnweightedMixture
 import org.dbpedia.spotlight.db.similarity.{VectorContextSimilarity, NoContextSimilarity, GenerativeContextSimilarity, ContextSimilarity}
 import scala.collection.JavaConverters._
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy
 import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ
 import org.dbpedia.spotlight.spot.{SpotXmlParser, Spotter}
-import java.io.{Reader, IOException, File, FileInputStream}
+import java.io.{IOException, File, FileInputStream}
 import java.util.{Locale, Properties}
 import opennlp.tools.chunker.ChunkerModel
 import opennlp.tools.namefind.TokenNameFinderModel
@@ -35,7 +33,7 @@ object SpotlightModel {
   def loadStopwords(modelFolder: File): Set[String] = scala.io.Source.fromFile(new File(modelFolder, "stopwords.list")).getLines().map(_.trim()).toSet
   def loadSpotterThresholds(file: File): Seq[Double] = scala.io.Source.fromFile(file).getLines().next().split(" ").map(_.toDouble)
 
-  def storesFromFolder(modelFolder: File): (TokenTypeStore, SurfaceFormStore, ResourceStore, CandidateMapStore, ContextStore, MemoryVectorStore) = {
+  def storesFromFolder(modelFolder: File): (TokenTypeStore, SurfaceFormStore, ResourceStore, CandidateMapStore, ContextStore) = {
     val modelDataFolder = new File(modelFolder, "model")
 
     List(
@@ -55,30 +53,17 @@ object SpotlightModel {
     val sfStore = MemoryStore.loadSurfaceFormStore(new FileInputStream(new File(modelDataFolder, "sf.mem")), quantizedCountsStore)
     val resStore = MemoryStore.loadResourceStore(new FileInputStream(new File(modelDataFolder, "res.mem")), quantizedCountsStore)
     val candMapStore = MemoryStore.loadCandidateMapStore(new FileInputStream(new File(modelDataFolder, "candmap.mem")), resStore, quantizedCountsStore)
-
-
-    val contextStore = if (new File(modelDataFolder, "vectors.mem").exists()){
-      null
-    } else if (new File(modelDataFolder, "context.mem").exists()) {
+    val contextStore = if (new File(modelDataFolder, "context.mem").exists())
       MemoryStore.loadContextStore(new FileInputStream(new File(modelDataFolder, "context.mem")), tokenTypeStore, quantizedCountsStore)
-    } else{
+    else
       null
-    }
 
-    val vectorStore = if (new File(modelDataFolder, "vectors.mem").exists()){
-      MemoryStore.loadVectorStore(new FileInputStream(new File(modelDataFolder, "vectors.mem")))
-    }else{
-      null
-    }
-
-
-
-    (tokenTypeStore, sfStore, resStore, candMapStore, contextStore, vectorStore)
+    (tokenTypeStore, sfStore, resStore, candMapStore, contextStore)
   }
 
   def fromFolder(modelFolder: File): SpotlightModel = {
 
-    val (tokenTypeStore, sfStore, resStore, candMapStore, contextStore, vectorStore) = storesFromFolder(modelFolder)
+    val (tokenTypeStore, sfStore, resStore, candMapStore, contextStore) = storesFromFolder(modelFolder)
 
     val stopwords = loadStopwords(modelFolder)
 
@@ -98,14 +83,15 @@ object SpotlightModel {
       case s: String => new SnowballStemmer(s)
     }
 
-    def contextSimilarity(): ContextSimilarity = {
-      if (vectorStore != null) {
-        new VectorContextSimilarity(tokenTypeStore, vectorStore)
-      }else if (contextStore != null) {
-        new GenerativeContextSimilarity(tokenTypeStore, contextStore)
-      } else {
-        new NoContextSimilarity(MathUtil.ln(1.0))
-      }
+    // TODO: add a case for the vector context similarity once we have a store
+    def contextSimilarity(): ContextSimilarity = contextStore match {
+      case store:MemoryContextStore => new GenerativeContextSimilarity(tokenTypeStore, contextStore)
+      case _ => new NoContextSimilarity(MathUtil.ln(1.0))
+    }
+
+    def vectorContextSimilarity(): ContextSimilarity = {
+      new VectorContextSimilarity(modelFolder.toString + "enwiki-model-stemmed.w2c.syn0.csv",
+        modelFolder.toString + "enwiki-model-stemmed.w2c.wordids.txt")
     }
 
     val c = properties.getProperty("opennlp_parallel", Runtime.getRuntime.availableProcessors().toString).toInt
@@ -136,15 +122,6 @@ object SpotlightModel {
       val locale = properties.getProperty("locale").split("_")
       new LanguageIndependentTokenizer(stopwords, stemmer(), new Locale(locale(0), locale(1)), tokenTypeStore)
     }
-    val weightsLineElements = scala.io.Source.fromFile(new File(modelFolder, "ranklib-model.txt")).getLines().toArray.last.split(" ")
-    val weights = weightsLineElements.map { (elem: String) =>
-      elem.substring(2).toDouble
-    }
-    val p_se = weights(0)
-    val p_ce = weights(1)
-    val p_e = weights(2)
-
-    println("P(s|e): " + p_se + ", P(c|e): " + p_ce + ", P(e): " + p_e)
 
     val searcher      = new DBCandidateSearcher(resStore, sfStore, candMapStore)
     val disambiguator = new ParagraphDisambiguatorJ(new DBTwoStepDisambiguator(
@@ -152,15 +129,9 @@ object SpotlightModel {
       sfStore,
       resStore,
       searcher,
-      new LogLinearFeatureMixture(
-        List( // TODO load from file
-          Pair("P(s|e)",  p_se),// 0.704999819486556),
-          Pair("P(c|e)",  p_ce), //0.2445879603285606),
-          Pair("P(e)", p_e) //0.050412220184883456)
-        )
-      ),
-      //new UnweightedMixture(Set("P(e)", "P(c|e)", "P(s|e)")),
-      contextSimilarity()
+      new UnweightedMixture(Set("P(e)", "P(c|e)", "P(s|e)")),
+      //contextSimilarity()
+      vectorContextSimilarity()
     ))
 
     //If there is at least one NE model or a chunker, use the OpenNLP spotter:
