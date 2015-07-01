@@ -91,8 +91,8 @@ object SpotlightModel {
     }
 
     def vectorContextSimilarity(): ContextSimilarity = {
-      new VectorContextSimilarity(modelFolder.toString + "enwiki-model-stemmed.w2c.syn0.csv",
-        modelFolder.toString + "enwiki-model-stemmed.w2c.wordids.txt")
+      new VectorContextSimilarity(modelFolder.toString + "/enwiki-model-stemmed.w2c.syn0.csv",
+        modelFolder.toString + "/enwiki-model-stemmed.w2c.wordids.txt")
     }
 
     val c = properties.getProperty("opennlp_parallel", Runtime.getRuntime.availableProcessors().toString).toInt
