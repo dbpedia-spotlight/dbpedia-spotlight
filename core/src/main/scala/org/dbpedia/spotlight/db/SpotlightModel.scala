@@ -7,7 +7,7 @@ import opennlp.tools.tokenize.{TokenizerModel, TokenizerME}
 import opennlp.tools.sentdetect.{SentenceModel, SentenceDetectorME}
 import opennlp.tools.postag.{POSModel, POSTaggerME}
 import org.dbpedia.spotlight.disambiguate.mixtures.UnweightedMixture
-import org.dbpedia.spotlight.db.similarity.{NoContextSimilarity, GenerativeContextSimilarity, ContextSimilarity}
+import org.dbpedia.spotlight.db.similarity.{VectorContextSimilarity, NoContextSimilarity, GenerativeContextSimilarity, ContextSimilarity}
 import scala.collection.JavaConverters._
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy
 import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy
@@ -83,9 +83,15 @@ object SpotlightModel {
       case s: String => new SnowballStemmer(s)
     }
 
+    // TODO: add a case for the vector context similarity once we have a store
     def contextSimilarity(): ContextSimilarity = contextStore match {
       case store:MemoryContextStore => new GenerativeContextSimilarity(tokenTypeStore, contextStore)
       case _ => new NoContextSimilarity(MathUtil.ln(1.0))
+    }
+
+    def vectorContextSimilarity(): ContextSimilarity = {
+      new VectorContextSimilarity(modelFolder.toString + "enwiki-model-stemmed.w2c.syn0.csv",
+        modelFolder.toString + "enwiki-model-stemmed.w2c.wordids.txt")
     }
 
     val c = properties.getProperty("opennlp_parallel", Runtime.getRuntime.availableProcessors().toString).toInt
@@ -124,7 +130,8 @@ object SpotlightModel {
       resStore,
       searcher,
       new UnweightedMixture(Set("P(e)", "P(c|e)", "P(s|e)")),
-      contextSimilarity()
+      //contextSimilarity()
+      vectorContextSimilarity()
     ))
 
     //If there is at least one NE model or a chunker, use the OpenNLP spotter:

@@ -26,6 +26,7 @@ import scala.collection.mutable
  * https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Internationalization-(DB-backed-core)
  *
  * @author Joachim Daiber
+ * @author Philipp Dowling
  */
 
 object CreateSpotlightModel {

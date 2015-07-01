@@ -1,5 +1,7 @@
 package org.dbpedia.spotlight.util
 
+import breeze.linalg.{DenseVector, Transpose}
+import breeze.numerics._
 import org.apache.commons.math.util.FastMath
 
 /**
@@ -55,4 +57,11 @@ object MathUtil {
       a + b
   }
 
+  def magnitude(vector: Transpose[DenseVector[Double]]): Double = {
+    sqrt(vector * vector.t)
+  }
+
+  def cosine_similarity(vector1: Transpose[DenseVector[Double]], vector2: Transpose[DenseVector[Double]]): Double = {
+    (vector1 * vector2.t) / (magnitude(vector1) * magnitude(vector2))
+  }
 }
