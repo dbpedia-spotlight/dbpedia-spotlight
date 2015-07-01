@@ -60,14 +60,8 @@ object MathUtil {
   def magnitude(vector: Transpose[DenseVector[Double]]): Double = {
     sqrt(vector * vector.t)
   }
-  def magnitude(vector: Transpose[DenseVector[Float]]): Float = {
-    sqrt(vector * vector.t)
-  }
 
-  def cosineSimilarity(vector1: Transpose[DenseVector[Double]], vector2: Transpose[DenseVector[Double]]): Double = {
-    (vector1 * vector2.t) / (magnitude(vector1) * magnitude(vector2))
-  }
-  def cosineSimilarity(vector1: Transpose[DenseVector[Float]], vector2: Transpose[DenseVector[Float]]): Float = {
+  def cosine_similarity(vector1: Transpose[DenseVector[Double]], vector2: Transpose[DenseVector[Double]]): Double = {
     (vector1 * vector2.t) / (magnitude(vector1) * magnitude(vector2))
   }
 }
