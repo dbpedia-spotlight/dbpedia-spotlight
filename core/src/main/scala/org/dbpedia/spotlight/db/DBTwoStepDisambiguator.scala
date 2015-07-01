@@ -68,7 +68,7 @@ class DBTwoStepDisambiguator(
       val occurrenceStack = paragraph.getOccurrences().toBuffer
       val currentTokens = ArrayBuffer[Token]()
 
-      sentences.flatMap{
+      val res: Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]] = sentences.flatMap{
         sentence: List[Token] =>
 
           currentTokens ++= sentence
@@ -89,6 +89,7 @@ class DBTwoStepDisambiguator(
             None
           }
       }.toList.reduce(_ ++ _)
+      res
     }
   }
 
