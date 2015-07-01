@@ -33,15 +33,17 @@ case class VectorContextSimilarity(modelPath: String, dictPath: String) extends 
     val rows = lines.next().substring(2).toInt
     val cols = lines.next().substring(2).toInt
     println("Allocating " + rows + "x" + cols + " matrix..")
-    val vectors: DenseMatrix[Double] = DenseMatrix.zeros[Double](rows, cols)
+    val vectors: DenseMatrix[Double] = DenseMatrix.rand[Double](rows, cols)//DenseMatrix.zeros[Double](rows, cols)
     println("Reading CSV and writing to matrix...")
-    lines.zipWithIndex.foreach { case (row_str, row_idx) =>
-      if (row_idx % 10000 == 0)
-        println("At row " + row_idx)
-      val values = row_str.split(",").map(_.trim).map(_.toDouble)
-      values.zipWithIndex.foreach { case (value, col_idx) => vectors(row_idx, col_idx) = value }
-    }
+    // TODO uncomment in practice
+    //lines.zipWithIndex.foreach { case (row_str, row_idx) =>
+    //  if (row_idx % 10000 == 0)
+    //    println("At row " + row_idx)
+    //  val values = row_str.split(",").map(_.trim).map(_.toDouble)
+    //  values.zipWithIndex.foreach { case (value, col_idx) => vectors(row_idx, col_idx) = value }
+    //}
     matrixSource.close()
+    println("Done.")
     vectors
   }
 
