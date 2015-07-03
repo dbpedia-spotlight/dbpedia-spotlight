@@ -143,7 +143,6 @@ object FSASpotter {
     System.err.println("Tokenizing SFs...")
     iterable.grouped(100000).toList.par.flatMap(_.map{
       sfString: String =>
-        System.out.println("Naveen printing Surface form:" + sfString)
         //Tokenize all SFs first
         tokenizer.tokenize(new Text(sfString))
     }).seq.foreach{
@@ -153,13 +152,11 @@ object FSASpotter {
           System.err.println("Processed %d SFs.".format(z))
 
         val ids = tokens.map(_.tokenType.id).toArray
-        System.out.println("Naveen printing ids"); ids.foreach(println)
 
         //For each token in the SF, add the transitions to the FSA:
         var currentState = INITIAL_STATE
         if (ids.size > 1)
           (0 until ids.size-1).foreach { j: Int =>
-            System.out.println("Naveen printing Current State:" + currentState)
             currentState = addNewTransition(currentState, ids(j))
           }
 
@@ -176,9 +173,7 @@ object FSASpotter {
 
     d.transitionsTokens = pairs.map(_.map(_._1).toArray).toArray
     d.transitionsStates = pairs.map(_.map(_._2).toArray).toArray
-    System.out.println("Naveen printing transitions values")
-    d.transitionsTokens.foreach(x => x.foreach(println))
-    d.transitionsStates.foreach(x => x.foreach(println))
+
     d
   }
 
