@@ -4,9 +4,9 @@ import memory.MemoryStore
 import org.dbpedia.spotlight.model._
 import model.{TextTokenizer, StringTokenizer, SurfaceFormStore}
 import opennlp.tools.util.Span
-import collection.mutable.ArrayBuffer
-import collection.mutable.Map
+import scala.collection.mutable.{ListBuffer, ArrayBuffer, Map}
 import tokenize.LanguageIndependentTokenizer
+import util.control.Breaks._
 
 
 /**
@@ -14,15 +14,67 @@ import tokenize.LanguageIndependentTokenizer
  */
 
 class FSASpotter(
-  fsaDictionary: FSADictionary,
-  surfaceFormStore: SurfaceFormStore,
-  spotFeatureWeights: Option[Seq[Double]],
-  stopwords: Set[String]
-) extends DBSpotter(surfaceFormStore, spotFeatureWeights, stopwords) {
+                  fsaDictionary: FSADictionary,
+                  surfaceFormStore: SurfaceFormStore,
+                  spotFeatureWeights: Option[Seq[Double]],
+                  stopwords: Set[String]
+                  ) extends DBSpotter(surfaceFormStore, spotFeatureWeights, stopwords) {
 
   def generateCandidates(sentence: List[Token]): Seq[Span] = {
+    val initialSpans = findUppercaseSequences(sentence.map(_.token).toArray)
+    FSASpotter.generateCandidates(sentence, fsaDictionary, initialSpans = initialSpans)
+  }
 
-    var spans = findUppercaseSequences(sentence.map(_.token).toArray)
+  def typeOrder = Array("Capital_Sequences", "m")
+
+  private var name = "FSA dictionary spotter"
+  def getName = name
+  def setName(name: String) {
+    this.name = name
+  }
+
+}
+
+class AllOccurrencesFSASpotter(
+                                fsaDictionary: FSADictionary,
+                                tokenizer: TextTokenizer
+                                ) {
+
+  def extract(text: String): List[(java.lang.String, Int)] = {
+
+    var spots = ListBuffer[(String, Int)]()
+    val sentences: List[List[Token]] = DBSpotter.tokensToSentences(tokenizer.tokenize(new Text(text)))
+
+    //Go through all sentences
+    sentences.foreach{ sentence: List[Token] =>
+      FSASpotter.generateCandidates(sentence, fsaDictionary).foreach(chunkSpan => {
+        val firstToken = chunkSpan.getStart
+        val lastToken = chunkSpan.getEnd-1
+        val startOffset = sentence(firstToken).offset
+        val endOffset = sentence(lastToken).offset + sentence(lastToken).token.length
+
+        spots += ((text.substring(startOffset, endOffset), startOffset))
+      })
+    }
+
+    spots.toList
+  }
+}
+
+object FSASpotter {
+
+  //The initial state
+  val INITIAL_STATE = 0
+
+  //State ID for the accepting state. Note that in sorting, we rely on this being < 0.
+  val ACCEPTING_STATE = -1
+
+  //State ID for None
+  val REJECTING_STATE = -2
+
+  def generateCandidates(sentence: List[Token], fsaDictionary: FSADictionary, initialSpans: Seq[Span] = Seq[Span]()): Seq[Span] = {
+
+    var spans = initialSpans
 
     val ids = sentence.map(_.tokenType.id)
     sentence.zipWithIndex.foreach {
@@ -49,28 +101,12 @@ class FSASpotter(
     spans
   }
 
-  def typeOrder = Array("Capital_Sequences", "m")
-
-  private var name = "FSA dictionary spotter"
-  def getName = name
-  def setName(name: String) {
-    this.name = name
-  }
-
-}
-
-object FSASpotter {
-
-  //The initial state
-  val INITIAL_STATE = 0
-
-  //State ID for the accepting state. Note that in sorting, we rely on this being < 0.
-  val ACCEPTING_STATE = -1
-
-  //State ID for None
-  val REJECTING_STATE = -2
 
   def buildDictionary(sfStore: SurfaceFormStore, tokenizer: TextTokenizer): FSADictionary = {
+    buildDictionaryFromIterable(sfStore.iterateSurfaceForms.filter(_.annotationProbability >= 0.05).map(_.name), tokenizer)
+  }
+
+  def buildDictionaryFromIterable(iterable: Iterable[String], tokenizer: TextTokenizer): FSADictionary = {
 
     //Temporary FSA DSs:
     val transitions: ArrayBuffer[Map[Int, Int]] = ArrayBuffer[Map[Int, Int]]()
@@ -105,28 +141,29 @@ object FSASpotter {
     var z = 0
 
     System.err.println("Tokenizing SFs...")
-    sfStore.iterateSurfaceForms.filter(_.annotationProbability >= 0.05).grouped(100000).toList.par.flatMap(_.map{
-      sf: SurfaceForm =>
+    iterable.grouped(100000).toList.par.flatMap(_.map{
+      sfString: String =>
+        System.out.println("Naveen printing Surface form:" + sfString)
         //Tokenize all SFs first
-        ( sf, tokenizer.tokenize(new Text(sf.name)) )
+        tokenizer.tokenize(new Text(sfString))
     }).seq.foreach{
-      case (sf: SurfaceForm, tokens: Seq[Token]) if tokens.size > 0 => {
-
+      case tokens: Seq[Token] if tokens.size > 0 =>
         z+=1
         if ((z % 100000) == 0)
           System.err.println("Processed %d SFs.".format(z))
 
         val ids = tokens.map(_.tokenType.id).toArray
+        System.out.println("Naveen printing ids"); ids.foreach(println)
 
         //For each token in the SF, add the transitions to the FSA:
         var currentState = INITIAL_STATE
         if (ids.size > 1)
           (0 until ids.size-1).foreach { j: Int =>
+            System.out.println("Naveen printing Current State:" + currentState)
             currentState = addNewTransition(currentState, ids(j))
           }
 
         addTransition(currentState, ids.last, ACCEPTING_STATE)
-      }
       case _ =>
     }
 
@@ -139,7 +176,9 @@ object FSASpotter {
 
     d.transitionsTokens = pairs.map(_.map(_._1).toArray).toArray
     d.transitionsStates = pairs.map(_.map(_._2).toArray).toArray
-
+    System.out.println("Naveen printing transitions values")
+    d.transitionsTokens.foreach(x => x.foreach(println))
+    d.transitionsStates.foreach(x => x.foreach(println))
     d
   }
 
@@ -152,13 +191,13 @@ class FSADictionary extends MemoryStore {
   var transitionsStates: Array[Array[Int]] = null
 
   /**
-  * Returns the index of the first ocurrance of Token inside the transition tokens
-  * of a given state
-  *
-  * @param state
-  * @param token
-  * @return index of the first occurance
-  */
+   * Returns the index of the first ocurrance of Token inside the transition tokens
+   * of a given state
+   *
+   * @param state
+   * @param token
+   * @return index of the first occurance
+   */
   def searchTokenInTransitions(state:Int, token:Int):Int = {
 
     var i = java.util.Arrays.binarySearch(transitionsTokens(state), token)
@@ -201,5 +240,3 @@ class FSADictionary extends MemoryStore {
   def size = transitionsStates.size
 
 }
-
-
