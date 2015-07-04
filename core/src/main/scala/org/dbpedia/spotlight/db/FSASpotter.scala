@@ -14,11 +14,11 @@ import util.control.Breaks._
  */
 
 class FSASpotter(
-                  fsaDictionary: FSADictionary,
-                  surfaceFormStore: SurfaceFormStore,
-                  spotFeatureWeights: Option[Seq[Double]],
-                  stopwords: Set[String]
-                  ) extends DBSpotter(surfaceFormStore, spotFeatureWeights, stopwords) {
+  fsaDictionary: FSADictionary,
+  surfaceFormStore: SurfaceFormStore,
+  spotFeatureWeights: Option[Seq[Double]],
+  stopwords: Set[String]
+) extends DBSpotter(surfaceFormStore, spotFeatureWeights, stopwords) {
 
   def generateCandidates(sentence: List[Token]): Seq[Span] = {
     val initialSpans = findUppercaseSequences(sentence.map(_.token).toArray)
