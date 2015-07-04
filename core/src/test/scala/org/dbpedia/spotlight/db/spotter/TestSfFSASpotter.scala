@@ -290,12 +290,8 @@ class TestSfFSASpotter{
     val locale = new Locale("en")
 
     //Initializing Set Iterable
-    var token = Set[String]()
-    sfs.map(x => {
-      val lst = new LanguageIndependentStringTokenizer(locale, stemmer)
-      token = token ++ lst.tokenizeUnstemmed(x)
-    }
-    )
+    val lst = new LanguageIndependentStringTokenizer(locale, stemmer)
+    val token = sfs.flatMap( sf => lst.tokenizeUnstemmed(sf) ).toSet
 
     val tokenTypes = new ListBuffer[TokenType]()
     var i= 1
