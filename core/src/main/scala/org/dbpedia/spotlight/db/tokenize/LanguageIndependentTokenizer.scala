@@ -14,11 +14,11 @@ import org.dbpedia.spotlight.db.model.{TokenTypeStore, Stemmer}
  */
 
 class LanguageIndependentTokenizer(
-                                    stopWords: Set[String],
-                                    stemmer: Stemmer,
-                                    locale: Locale,
-                                    var tokenTypeStore: TokenTypeStore
-                                    ) extends BaseTextTokenizer(tokenTypeStore, stemmer) {
+  stopWords: Set[String],
+  stemmer: Stemmer,
+  locale: Locale,
+  var tokenTypeStore: TokenTypeStore
+) extends BaseTextTokenizer(tokenTypeStore, stemmer) {
 
   def getStringTokenizer: BaseStringTokenizer = new LanguageIndependentStringTokenizer(locale, stemmer)
 
