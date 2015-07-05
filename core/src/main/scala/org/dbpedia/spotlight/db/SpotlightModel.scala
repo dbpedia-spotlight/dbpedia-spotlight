@@ -107,10 +107,7 @@ object SpotlightModel {
         tokenTypeStore
       ).asInstanceOf[TextTokenizer]
 
-      if(cores.size == 1)
-        createTokenizer()
-      else
-        new TokenizerWrapper(cores.map(_ => createTokenizer())).asInstanceOf[TextTokenizer]
+      createTokenizer()
 
     } else {
       val locale = properties.getProperty("locale").split("_")
@@ -147,12 +144,8 @@ object SpotlightModel {
         Some(loadSpotterThresholds(new File(modelFolder, "spotter_thresholds.txt")))
       ).asInstanceOf[Spotter]
 
-      if(cores.size == 1)
-        createSpotter()
-      else
-        new SpotterWrapper(
-          cores.map(_ => createSpotter())
-        ).asInstanceOf[Spotter]
+
+      createSpotter()
 
     } else {
       val dict = MemoryStore.loadFSADictionary(new FileInputStream(new File(modelFolder, "fsa_dict.mem")))
