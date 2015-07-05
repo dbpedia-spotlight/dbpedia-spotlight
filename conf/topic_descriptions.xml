@@ -205,10 +205,10 @@
     <categories>Transport</categories>
   </topic>
 
-  <!--topic name="agriculture">
+  <!--element name="agriculture">
     <iptc mediatopic="20000210"/>
     <categories>Agriculture</categories>
-  </topic  DID NOT WORK WELL-->
+  </element  DID NOT WORK WELL-->
 
   <topic name="video_game">
     <iptc mediatopic="20000548"/>

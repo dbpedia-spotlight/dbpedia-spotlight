@@ -3,8 +3,9 @@ package org.dbpedia.spotlight.corpus
 import org.dbpedia.spotlight.io.AnnotatedTextSource
 import org.dbpedia.spotlight.model._
 import java.io.File
-import io.Source
 import xml.NodeSeq
+import scala.io.Source
+
 /**
  * Occurrence source for reading the corpus from the original Milne&Witten paper (Wikify system).
  *

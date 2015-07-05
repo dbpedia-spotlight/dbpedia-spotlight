@@ -26,7 +26,6 @@
         <groupId>org.dbpedia.spotlight</groupId>
         <artifactId>spotlight</artifactId>
         <version>0.7</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>core</artifactId>
@@ -39,6 +38,12 @@
 
 
     <dependencies>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+        </dependency>
+
+
         <dependency>
             <groupId>org.dbpedia.extraction</groupId>
             <artifactId>core</artifactId>
@@ -138,8 +143,9 @@
 
         <dependency>
             <groupId>net.liftweb</groupId>
-            <artifactId>lift-json_${scala.compiler.version}</artifactId>
+            <artifactId>lift-json_2.10</artifactId>
         </dependency>
+
 
         <dependency>
             <groupId>junit</groupId>
@@ -169,10 +175,10 @@
             <artifactId>fastutil</artifactId>
         </dependency>
 
-        <dependency>
+        <!--dependency>
             <groupId>opennlp</groupId>
             <artifactId>maxent</artifactId>
-        </dependency>
+        </dependency-->
 
         <dependency>
             <groupId>org.apache.opennlp</groupId>
@@ -192,7 +198,7 @@
 
         <dependency>
             <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_${scala.compiler.version}</artifactId>
+            <artifactId>scalatest_2.10</artifactId>
         </dependency>
 
         <dependency>
@@ -227,18 +233,35 @@
 
         <dependency>
             <groupId>org.scalaz</groupId>
-            <artifactId>scalaz-core_${scala.compiler.version}</artifactId>
+            <artifactId>scalaz-core_2.10</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.scalanlp</groupId>
-            <artifactId>breeze-learn_${scala.compiler.version}</artifactId>
+            <artifactId>breeze-learn_2.10</artifactId>
         </dependency>
 
         <dependency>
             <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-actor</artifactId>
+            <artifactId>akka-actor_2.10</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>cc.factorie</groupId>
+            <artifactId>factorie</artifactId>
+        </dependency>
+
+
+        <!-- don't download if not used, these are models. Uncomment these dependencies if you use a PretrainedFactorieNerSpotter-->
+        <!--dependency>
+            <groupId>cc.factorie.app.nlp</groupId>
+            <artifactId>ner</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>cc.factorie.app.nlp</groupId>
+            <artifactId>pos</artifactId>
+        </dependency-->
 
 
     </dependencies>

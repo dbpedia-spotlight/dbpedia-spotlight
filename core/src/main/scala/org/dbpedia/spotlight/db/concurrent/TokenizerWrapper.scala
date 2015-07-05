@@ -2,16 +2,16 @@ package org.dbpedia.spotlight.db.concurrent
 
 import java.io.IOException
 import org.dbpedia.spotlight.model.{Token, Text}
-import akka.actor.{OneForOneStrategy, Props, ActorSystem, Actor}
+import akka.actor._
 import akka.routing.SmallestMailboxRouter
 import akka.actor.SupervisorStrategy.Restart
-import akka.dispatch.Await
 import akka.util
-import akka.util.duration._
 import akka.pattern.ask
 import org.apache.commons.lang.NotImplementedException
-import org.dbpedia.spotlight.db.tokenize.BaseTextTokenizer
 import org.dbpedia.spotlight.db.model.{StringTokenizer, TextTokenizer}
+import scala.concurrent.Await
+import java.util.concurrent.TimeUnit
+import akka.actor.OneForOneStrategy
 
 /**
  * A Wrapper for Tokenizer workers.
@@ -31,14 +31,15 @@ class TokenizerWrapper(val tokenizers: Seq[TextTokenizer]) extends TextTokenizer
   def size: Int = tokenizers.size
 
   val router = system.actorOf(Props[TokenizerActor].withRouter(
-    SmallestMailboxRouter(routees = workers).withSupervisorStrategy(
+      //TODO evil HACK
+      SmallestMailboxRouter(scala.collection.immutable.Iterable(workers:_*)).withSupervisorStrategy(
       OneForOneStrategy(maxNrOfRetries = 10) {
         case _: IOException => Restart
       })
   )
   )
 
-  implicit val timeout = util.Timeout(requestTimeout seconds)
+  implicit val timeout = util.Timeout(requestTimeout,TimeUnit.SECONDS)
 
   override def tokenizeMaybe(text: Text) {
     val futureResult = router ? TokenizerRequest(text)

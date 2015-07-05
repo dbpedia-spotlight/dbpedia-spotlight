@@ -18,25 +18,13 @@
 
 package org.dbpedia.spotlight.evaluation
 
-import org.apache.lucene.analysis.{StopAnalyzer, Analyzer}
-import org.apache.lucene.util.Version
-import org.dbpedia.spotlight.io.{FileOccurrenceSource}
 import org.dbpedia.spotlight.log.SpotlightLog
-import java.io.{PrintStream, File}
-import org.apache.lucene.misc.SweetSpotSimilarity
-import org.apache.lucene.search.{Similarity, DefaultSimilarity}
-import org.dbpedia.spotlight.lucene.disambiguate._
-import org.dbpedia.spotlight.lucene.similarity._
+import java.io.{File}
 
-import  org.dbpedia.spotlight.util.Profiling._
-import org.apache.lucene.store.{NIOFSDirectory, Directory, FSDirectory}
-import io.Source
 import scala.collection.JavaConversions._
 import org.dbpedia.spotlight.disambiguate._
-import mixtures.LinearRegressionMixture
 import org.dbpedia.spotlight.lucene._
-import search.{LuceneCandidateSearcher, MergedOccurrencesContextSearcher}
-import org.dbpedia.spotlight.model.{SpotlightFactory, DBpediaResource, SpotlightConfiguration, ContextSearcher}
+import org.dbpedia.spotlight.model.{SpotlightFactory, SpotlightConfiguration}
 import org.dbpedia.spotlight.corpus.{MilneWittenCorpus, AidaCorpus}
 
 /**

@@ -21,6 +21,7 @@ import stem.SnowballStemmer
 import tokenize.{OpenNLPTokenizer, LanguageIndependentTokenizer}
 import org.dbpedia.spotlight.exceptions.ConfigurationException
 import org.dbpedia.spotlight.util.MathUtil
+import org.dbpedia.spotlight.spot.factorie.LinearChainCRFSpotter
 
 
 class SpotlightModel(val tokenizer: TextTokenizer,
@@ -128,34 +129,37 @@ object SpotlightModel {
     ))
 
     //If there is at least one NE model or a chunker, use the OpenNLP spotter:
-    val spotter = if( new File(modelFolder, "opennlp").exists() && new File(modelFolder, "opennlp").list().exists(f => f.startsWith("ner-") || f.startsWith("chunker")) ) {
-      val nerModels = new File(modelFolder, "opennlp").list().filter(_.startsWith("ner-")).map { f: String =>
-        new TokenNameFinderModel(new FileInputStream(new File(new File(modelFolder, "opennlp"), f)))
-      }.toList
+    val spotter =
+      if(properties.containsKey("spotter") && properties.getProperty("spotter") == "ner" && modelFolder.listFiles().exists(_.getName == "ner.factorie.model")) {
+        LinearChainCRFSpotter.deserialize(new File(modelFolder,"ner.factorie.model"),tokenizer)
+      } else if( new File(modelFolder, "opennlp").exists() && new File(modelFolder, "opennlp").list().exists(f => f.startsWith("ner-") || f.startsWith("chunker")) ) {
+        val nerModels = new File(modelFolder, "opennlp").list().filter(_.startsWith("ner-")).map { f: String =>
+          new TokenNameFinderModel(new FileInputStream(new File(new File(modelFolder, "opennlp"), f)))
+        }.toList
 
-      val chunkerFile = new File(modelFolder, "opennlp/chunker.bin")
-      val chunkerModel = if (chunkerFile.exists())
-        Some(new ChunkerModel(new FileInputStream(chunkerFile)))
-      else
-        None
+        val chunkerFile = new File(modelFolder, "opennlp/chunker.bin")
+        val chunkerModel = if (chunkerFile.exists())
+          Some(new ChunkerModel(new FileInputStream(chunkerFile)))
+        else
+          None
 
-      def createSpotter() = new OpenNLPSpotter(
-        chunkerModel,
-        nerModels,
-        sfStore,
-        stopwords,
-        Some(loadSpotterThresholds(new File(modelFolder, "spotter_thresholds.txt")))
-      ).asInstanceOf[Spotter]
-
-      if(cores.size == 1)
-        createSpotter()
-      else
-        new SpotterWrapper(
-          cores.map(_ => createSpotter())
+        def createSpotter() = new OpenNLPSpotter(
+          chunkerModel,
+          nerModels,
+          sfStore,
+          stopwords,
+          Some(loadSpotterThresholds(new File(modelFolder, "spotter_thresholds.txt")))
         ).asInstanceOf[Spotter]
 
-    } else {
-      val dict = MemoryStore.loadFSADictionary(new FileInputStream(new File(modelFolder, "fsa_dict.mem")))
+        if(cores.size == 1)
+          createSpotter()
+        else
+          new SpotterWrapper(
+            cores.map(_ => createSpotter())
+          ).asInstanceOf[Spotter]
+
+      } else {
+        val dict = MemoryStore.loadFSADictionary(new FileInputStream(new File(modelFolder, "fsa_dict.mem")))
 
       new FSASpotter(
         dict,

@@ -2,10 +2,10 @@ package org.dbpedia.spotlight.corpus
 
 import org.dbpedia.spotlight.io.AnnotatedTextSource
 import java.io.File
-import io.Source
 import collection.mutable.HashMap
 import xml.{NodeSeq, XML}
 import org.dbpedia.spotlight.model._
+import scala.io.Source
 
 /**
  * @author Joachim Daiber

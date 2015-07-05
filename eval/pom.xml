@@ -26,7 +26,6 @@
         <artifactId>spotlight</artifactId>
         <groupId>org.dbpedia.spotlight</groupId>
         <version>0.7</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
 
@@ -76,6 +75,16 @@
                 </configuration>
             </plugin>
 
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
 
@@ -90,6 +99,11 @@
         <dependency>
             <groupId>org.dbpedia.spotlight</groupId>
             <artifactId>index</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dbpedia.spotlight</groupId>
+            <artifactId>entity_topic</artifactId>
         </dependency>
 
         <!--dependency>
@@ -132,7 +146,7 @@
 
         <dependency>
             <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_${scala.compiler.version}</artifactId>
+            <artifactId>scalatest_2.10</artifactId>
         </dependency>
 
     </dependencies>

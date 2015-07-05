@@ -26,7 +26,7 @@ class DBpediaResource(var uri : String,
                       var prior : Double = 0.0,
                       var types : List[OntologyType] = List[OntologyType]())
 {
-    var id: Int = 0
+    var id: Int = -1
 
     require(uri != null)
 
@@ -49,7 +49,7 @@ class DBpediaResource(var uri : String,
     override def equals(obj : Any) : Boolean = {
         obj match {
             case that: DBpediaResource => {
-              if (id > 0)
+              if (id >= 0 && that.id >= 0)
                 this.id == that.id
               else
                 this.uri.equals(that.uri)

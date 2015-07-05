@@ -6,10 +6,10 @@ import akka.actor.{OneForOneStrategy, Props, ActorSystem, Actor}
 import akka.routing.SmallestMailboxRouter
 import akka.actor.SupervisorStrategy.Restart
 import org.dbpedia.spotlight.spot.Spotter
-import akka.dispatch.Await
-import akka.util.duration._
 import akka.pattern.ask
 import akka.util
+import scala.concurrent.Await
+import java.util.concurrent.TimeUnit
 
 /**
  * A Wrapper for Spotter workers.
@@ -29,14 +29,14 @@ class SpotterWrapper(val spotters: Seq[Spotter]) extends Spotter {
   def size: Int = spotters.size
 
   val router = system.actorOf(Props[SpotterActor].withRouter(
-    SmallestMailboxRouter(routees = workers).withSupervisorStrategy(
+    SmallestMailboxRouter(workers.asInstanceOf).withSupervisorStrategy(
       OneForOneStrategy(maxNrOfRetries = 10) {
         case _: IOException => Restart
       })
   )
   )
 
-  implicit val timeout = util.Timeout(requestTimeout seconds)
+  implicit val timeout = util.Timeout(requestTimeout, TimeUnit.SECONDS)
 
   def extract(text: Text): java.util.List[SurfaceFormOccurrence] = {
     val futureResult = router ? SpotterRequest(text)

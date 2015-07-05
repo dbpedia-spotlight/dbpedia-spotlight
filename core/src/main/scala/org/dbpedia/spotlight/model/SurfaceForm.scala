@@ -24,7 +24,7 @@ class SurfaceForm(var name : String) extends Serializable
 
   var annotatedCount: Int = 0
   var totalCount: Int = 0
-  var id: Int = 0
+  var id: Int = -1
 
   def this(name: String, id: Int, annotatedCount: Int, totalCount: Int) {
     this(name)

@@ -23,6 +23,7 @@ import org.dbpedia.spotlight.string.WikiMarkupStripper
 import org.dbpedia.extraction.wikiparser._
 import org.dbpedia.spotlight.model.{DBpediaResource, Text, WikiPageContext}
 import org.dbpedia.extraction.util.Language
+import org.dbpedia.extraction.wikiparser.impl.simple.SimpleWikiParser
 
 /**
  * Created by IntelliJ IDEA.
@@ -56,7 +57,7 @@ object WikiPageContextSource
      */
     private class WikipediaPageContextSource(wikiPages : Source) extends WikiPageSource
     {
-        val wikiParser = WikiParser()
+        val wikiParser = new SimpleWikiParser()
 
         override def foreach[U](f : WikiPageContext => U) : Unit =
         {

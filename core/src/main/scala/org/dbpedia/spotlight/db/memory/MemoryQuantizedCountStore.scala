@@ -7,6 +7,8 @@ class MemoryQuantizedCountStore extends MemoryStore with QuantizedCountStore {
 
   var countMap: java.util.Map[Short, Int] = new java.util.HashMap[Short, Int]()
 
+  quantizedCountStore = this
+
   def getCount(quantized: Short): Int = countMap.get(quantized)
 
   @transient
