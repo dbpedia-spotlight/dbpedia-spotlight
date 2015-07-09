@@ -8,16 +8,10 @@ import org.dbpedia.spotlight.model.{TokenType, DBpediaResource}
 /**
  * Created by dowling on 09/07/15.
  */
-@SerialVersionUID(1008001)
 class MemoryVectorStore extends MemoryStore with KryoSerializable{
 
-  @transient
   var vectors: DenseMatrix[Float] = null
-
-  @transient
   var resourceIdToVectorIndex: Map[Int, Int] = null
-
-  @transient
   var tokenTypeIdToVectorIndex: Map[Int, Int] = null
 
   override def size: Int = vectors.rows
@@ -27,24 +21,21 @@ class MemoryVectorStore extends MemoryStore with KryoSerializable{
     if(id != -1){
       vectors(id, ::)
     }else{
+      // TODO: is this good standard behaviour?
+      println("Warning: token " + resource + " not in dictionary! Lookup returning null vector.")
       DenseVector.zeros[Float](vectors.cols).t
     }
   }
 
-  def _on_nil_index(string: String) = {
-    //println("Warning: token " + string + " not in dictionary! Lookup returning null vector.")
-    -1
-  }
-
   def lookup(resource: DBpediaResource): Transpose[DenseVector[Float]]={
-    //println("Looking up " + resource + "..")
-    _lookup(resourceIdToVectorIndex.getOrElse(resource.id, _on_nil_index(resource.getFullUri)))
+    println("Looking up " + resource + "..")
+    _lookup(resourceIdToVectorIndex.getOrElse(resource.id, -1))
 
   }
 
   def lookup(token: TokenType): Transpose[DenseVector[Float]]={
-    //println("Looking up " + token + "..")
-    _lookup(tokenTypeIdToVectorIndex.getOrElse(token.id, _on_nil_index(token.tokenType)))
+    println("Looking up " + token + "..")
+    _lookup(tokenTypeIdToVectorIndex.getOrElse(token.id, -1))
 
   }
 
@@ -58,19 +49,16 @@ class MemoryVectorStore extends MemoryStore with KryoSerializable{
       }
     }
     output.writeString("# RESOURCEDICT")
-    output.writeInt(resourceIdToVectorIndex.size)
     resourceIdToVectorIndex.foreach { case(key, value) =>
       output.writeInt(key)
       output.writeInt(value)
     }
     output.writeString("# TOKENDICT")
-    output.writeInt(tokenTypeIdToVectorIndex.size)
     tokenTypeIdToVectorIndex.foreach { case(key, value) =>
       output.writeInt(key)
       output.writeInt(value)
     }
     output.writeChar('#')
-    output.close()
 
   }
 
@@ -88,18 +76,15 @@ class MemoryVectorStore extends MemoryStore with KryoSerializable{
     }
     
     assert(input.readString() == "# RESOURCEDICT")
-    val resourceNum = input.readInt()
-    resourceIdToVectorIndex = (0 to resourceNum-1).map { i =>
+    resourceIdToVectorIndex = (0 to rows-1).map { i =>
       (input.readInt(), input.readInt())
     }.toMap
-
     assert(input.readString() == "# TOKENDICT")
-    val tokenNum = input.readInt()
-    tokenTypeIdToVectorIndex = (0 to tokenNum-1).map { i =>
+
+    tokenTypeIdToVectorIndex = (0 to rows-1).map { i =>
       (input.readInt(), input.readInt())
     }.toMap
 
-    assert(input.readChar() == '#')
-    input.close()
+    assert(input.readString() == "#")
   }
 }
