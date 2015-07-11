@@ -47,12 +47,12 @@ object CreateSpotlightModel {
 
     val (localeCode: String, rawDataFolder: File, outputFolder: File, opennlpFolder: Option[File], stopwordsFile: File, stemmer: Stemmer) = try {
       (
-        args(0), // locale code
-        new File(args(1)), // raw data folder
-        new File(args(2)), // output folder
-        if (args(3) equals "None") None else Some(new File(args(3))), // openNLP
-        new File(args(4)), // stopwords
-        if (args(5) equals "None") new Stemmer() else new SnowballStemmer(args(5)) // stemmer
+        args(0),
+        new File(args(1)),
+        new File(args(2)),
+        if (args(3) equals "None") None else Some(new File(args(3))),
+        new File(args(4)),
+        if (args(5) equals "None") new Stemmer() else new SnowballStemmer(args(5))
         )
     } catch {
       case e: Exception => {
@@ -63,6 +63,7 @@ object CreateSpotlightModel {
         System.exit(1)
       }
     }
+
     val Array(lang, country) = localeCode.split("_")
     val locale = new Locale(lang, country)
 
@@ -167,7 +168,7 @@ object CreateSpotlightModel {
     val quantizedCountStore = new MemoryQuantizedCountStore()
     val memoryIndexer = new MemoryStoreIndexer(modelDataFolder, quantizedCountStore)
 
-    val diskIndexer = new JDBMStoreIndexer(new File("data/"))
+    //val diskIndexer = new JDBMStoreIndexer(new File("data/"))
 
     val wikipediaToDBpediaClosure = new WikipediaToDBpediaClosure(
       namespace,
@@ -234,13 +235,14 @@ object CreateSpotlightModel {
     )
     memoryIndexer.writeTokenOccurrences()
     memoryIndexer.writeQuantizedCounts()
-
+    
     val memoryVectorStoreIndexer = new MemoryVectorStoreIndexer(
-      new File(modelDataFolder, "/word2vec/enwiki-model-stemmed.w2c.syn0.csv"),
-      new File(modelDataFolder, "/word2vec/enwiki-model-stemmed.w2c.wordids.txt")
+      modelDataFolder,
+      "/word2vec/enwiki-model-stemmed.w2c.syn0.csv",
+      "/word2vec/enwiki-model-stemmed.w2c.wordids.txt"
     )
     memoryVectorStoreIndexer.loadVectorDict(tokenStore, resStore)
-    memoryVectorStoreIndexer.loadVectorsAndWriteToStore(new File(modelDataFolder, "vectors.mem"))
+    memoryVectorStoreIndexer.loadVectorsAndWriteToStore()
 
     val tokenizer: TextTokenizer = if (opennlpFolder.isDefined) {
       val opennlpOut = new File(outputFolder, OPENNLP_FOLDER)
@@ -259,9 +261,9 @@ object CreateSpotlightModel {
     } else {
       new LanguageIndependentTokenizer(Set[String](), stemmer, locale, tokenStore)
     }
-    //val fsaDict = FSASpotter.buildDictionary(sfStore, tokenizer)
+    val fsaDict = FSASpotter.buildDictionary(sfStore, tokenizer)
 
-    //MemoryStore.dump(fsaDict, new File(outputFolder, "fsa_dict.mem"))
+    MemoryStore.dump(fsaDict, new File(outputFolder, "fsa_dict.mem"))
 
     if(new File(stopwordsFile.getParentFile, "spotter_thresholds.txt").exists())
       FileUtils.copyFile(new File(stopwordsFile.getParentFile, "spotter_thresholds.txt"), new File(outputFolder, "spotter_thresholds.txt"))
