@@ -21,21 +21,24 @@ class MemoryVectorStore extends MemoryStore with KryoSerializable{
     if(id != -1){
       vectors(id, ::)
     }else{
-      // TODO: is this good standard behaviour?
-      println("Warning: token " + resource + " not in dictionary! Lookup returning null vector.")
       DenseVector.zeros[Float](vectors.cols).t
     }
   }
 
+  def _on_nil_index(string: String) = {
+    println("Warning: token " + string + " not in dictionary! Lookup returning null vector.")
+    -1
+  }
+
   def lookup(resource: DBpediaResource): Transpose[DenseVector[Float]]={
     println("Looking up " + resource + "..")
-    _lookup(resourceIdToVectorIndex.getOrElse(resource.id, -1))
+    _lookup(resourceIdToVectorIndex.getOrElse(resource.id, _on_nil_index(resource.getFullUri)))
 
   }
 
   def lookup(token: TokenType): Transpose[DenseVector[Float]]={
     println("Looking up " + token + "..")
-    _lookup(tokenTypeIdToVectorIndex.getOrElse(token.id, -1))
+    _lookup(tokenTypeIdToVectorIndex.getOrElse(token.id, _on_nil_index(token.tokenType)))
 
   }
 
