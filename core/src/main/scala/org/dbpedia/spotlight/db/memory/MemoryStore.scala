@@ -113,15 +113,6 @@ object MemoryStore {
   }
   )
 
-  kryos.put(classOf[MemoryVectorStore].getSimpleName,{
-    val kryo = new Kryo()
-    kryo.setRegistrationRequired(true)
-
-    kryo.register(classOf[MemoryVectorStore], new KryoSerializableSerializer())
-
-    kryo
-  })
-
 
   kryos.put(classOf[MemoryTokenTypeStore].getSimpleName,
   {
@@ -198,8 +189,9 @@ object MemoryStore {
     s
   }
 
-  def loadVectorStore(in: InputStream): MemoryVectorStore = {
-    load[MemoryVectorStore](in, classOf[MemoryVectorStore].getSimpleName)
+  def loadVectorStore(in: InputStream) = {
+    val s: MemoryVectorStore = load[MemoryVectorStore](in, classOf[MemoryVectorStore].getSimpleName)
+    s
   }
 
   def loadFSADictionary(in: InputStream): FSADictionary = {
