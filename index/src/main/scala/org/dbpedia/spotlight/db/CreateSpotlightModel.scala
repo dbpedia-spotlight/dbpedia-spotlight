@@ -161,6 +161,7 @@ object CreateSpotlightModel {
 
     val quantizedCountStore = new MemoryQuantizedCountStore()
     val memoryIndexer = new MemoryStoreIndexer(modelDataFolder, quantizedCountStore)
+
     //val diskIndexer = new JDBMStoreIndexer(new File("data/"))
 
     val wikipediaToDBpediaClosure = new WikipediaToDBpediaClosure(
@@ -228,6 +229,14 @@ object CreateSpotlightModel {
     )
     memoryIndexer.writeTokenOccurrences()
     memoryIndexer.writeQuantizedCounts()
+    
+    val memoryVectorStoreIndexer = new MemoryVectorStoreIndexer(
+      modelDataFolder,
+      "/word2vec/enwiki-model-stemmed.w2c.syn0.csv",
+      "/word2vec/enwiki-model-stemmed.w2c.wordids.txt"
+    )
+    memoryVectorStoreIndexer.loadVectorDict(tokenStore, resStore)
+    memoryVectorStoreIndexer.loadVectorsAndWriteToStore()
 
     val tokenizer: TextTokenizer = if (opennlpFolder.isDefined) {
       val opennlpOut = new File(outputFolder, OPENNLP_FOLDER)
