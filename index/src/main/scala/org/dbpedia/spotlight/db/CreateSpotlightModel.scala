@@ -229,7 +229,7 @@ object CreateSpotlightModel {
     )
     memoryIndexer.writeTokenOccurrences()
     memoryIndexer.writeQuantizedCounts()
-    
+
     val memoryVectorStoreIndexer = new MemoryVectorStoreIndexer(
       modelDataFolder,
       "/word2vec/enwiki-model-stemmed.w2c.syn0.csv",
