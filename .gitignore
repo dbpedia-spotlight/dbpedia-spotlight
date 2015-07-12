@@ -3,9 +3,16 @@
 .classpath
 .project
 .settings/
-data_quickstart
 target
 *.log
 *~
 index/output
+core/.cache
+data_quickstart/
 dist
+eval/.cache
+index/.cache
+push.sh
+rest-tomcat/.cache
+rest/.cache
+uima/.cache
