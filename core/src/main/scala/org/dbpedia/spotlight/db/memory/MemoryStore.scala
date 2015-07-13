@@ -113,6 +113,15 @@ object MemoryStore {
   }
   )
 
+  kryos.put(classOf[MemoryVectorStore].getSimpleName,{
+    val kryo = new Kryo()
+    kryo.setRegistrationRequired(true)
+
+    kryo.register(classOf[MemoryVectorStore], new KryoSerializableSerializer())
+
+    kryo
+  })
+
 
   kryos.put(classOf[MemoryTokenTypeStore].getSimpleName,
   {
