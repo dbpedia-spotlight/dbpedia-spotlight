@@ -57,7 +57,6 @@ object CreateSpotlightModel {
         System.exit(1)
       }
     }
-
     val Array(lang, country) = localeCode.split("_")
     val locale = new Locale(lang, country)
 
@@ -193,7 +192,7 @@ object CreateSpotlightModel {
         namespace
       )
     )
-
+    val quantizedCountStore = MemoryStore.loadQuantizedCountStore(new FileInputStream(new File(modelDataFolder, "quantized_counts.mem")))
     val resStore = MemoryStore.loadResourceStore(new FileInputStream(new File(modelDataFolder, "res.mem")), quantizedCountStore)
     val sfStore  = MemoryStore.loadSurfaceFormStore(new FileInputStream(new File(modelDataFolder, "sf.mem")), quantizedCountStore)
 
@@ -256,7 +255,7 @@ object CreateSpotlightModel {
     }
     //val fsaDict = FSASpotter.buildDictionary(sfStore, tokenizer)
 
-    ////MemoryStore.dump(fsaDict, new File(outputFolder, "fsa_dict.mem"))
+    //MemoryStore.dump(fsaDict, new File(outputFolder, "fsa_dict.mem"))
 
     if(new File(stopwordsFile.getParentFile, "spotter_thresholds.txt").exists())
       FileUtils.copyFile(new File(stopwordsFile.getParentFile, "spotter_thresholds.txt"), new File(outputFolder, "spotter_thresholds.txt"))
