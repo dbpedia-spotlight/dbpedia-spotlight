@@ -32,18 +32,18 @@ class MemoryVectorStore extends MemoryStore with KryoSerializable{
   }
 
   def _on_nil_index(string: String) = {
-    println("Warning: token " + string + " not in dictionary! Lookup returning null vector.")
+    //println("Warning: token " + string + " not in dictionary! Lookup returning null vector.")
     -1
   }
 
   def lookup(resource: DBpediaResource): Transpose[DenseVector[Float]]={
-    println("Looking up " + resource + "..")
+    //println("Looking up " + resource + "..")
     _lookup(resourceIdToVectorIndex.getOrElse(resource.id, _on_nil_index(resource.getFullUri)))
 
   }
 
   def lookup(token: TokenType): Transpose[DenseVector[Float]]={
-    println("Looking up " + token + "..")
+    //println("Looking up " + token + "..")
     _lookup(tokenTypeIdToVectorIndex.getOrElse(token.id, _on_nil_index(token.tokenType)))
 
   }

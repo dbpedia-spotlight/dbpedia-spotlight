@@ -7,6 +7,7 @@ import org.dbpedia.spotlight.model.{DBpediaResource, TokenType}
 import org.dbpedia.spotlight.util.MathUtil.{cosineSimilarity, LOGZERO}
 
 import scala.collection.mutable
+import scala.util.Random
 
 
 /**
@@ -29,6 +30,7 @@ case class VectorContextSimilarity(memoryVectorStore: MemoryVectorStore) extends
           query.map(memoryVectorStore.lookup).reduceLeft(_ + _),
           memoryVectorStore.lookup(resource)
         )
+        //Random.nextDouble()
       )
     }
     )
