@@ -40,12 +40,20 @@ class MemoryVectorStoreIndexer(modelPath: File, dictPath: File){
           resources += (resource.id -> value)
           succeededResources += 1
         } catch {
-          case e: DBpediaResourceNotFoundException=> failedResources += 1
+          case e: DBpediaResourceNotFoundException=> {
+            failedResources += 1
+            if (failedResources % 1000 == 0){
+              println("Can't find resource: " + key.replace("DBPEDIA_ID/", ""))
+            }
+          }
         }
       }else{
         val token = tokenTypeStore.getTokenType(key)
         if (token == TokenType.UNKNOWN){
           failedTokens += 1
+          if (failedTokens % 1000 == 0){
+            println("Can't find token: " + key)
+          }
         } else {
           tokens += (token.id -> value)
           succeededTokens += 1
