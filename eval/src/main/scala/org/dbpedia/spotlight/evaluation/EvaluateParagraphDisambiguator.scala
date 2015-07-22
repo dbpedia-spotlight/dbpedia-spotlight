@@ -67,18 +67,10 @@ object EvaluateParagraphDisambiguator {
             try {
                 val bestK: Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]] = filter(disambiguator.bestK(paragraph,100))
 
-
-                val goldOccurrences: Traversable[DBpediaResourceOccurrence] = occFilters.foldLeft(annotatedParagraph.occurrences.toTraversable){ (o,f) => f.filterOccs(o) } // discounting URIs from gold standard that we know are disambiguations, fixing redirects, etc.
+                val goldOccurrences = occFilters.foldLeft(annotatedParagraph.occurrences.toTraversable){ (o,f) => f.filterOccs(o) } // discounting URIs from gold standard that we know are disambiguations, fixing redirects, etc.
 
                 goldOccurrences.foreach( correctOccurrence => {
                     nOccurrences = nOccurrences + 1
-
-                    val dis = disambiguator.asInstanceOf[DBTwoStepDisambiguator]
-                    val tokenTypes = paragraph.text.featureValue[List[Token]]("tokens").get.map(_.tokenType)
-                    val correctContextScore = dis.contextSimilarity.score(tokenTypes, Set(correctOccurrence.resource)).get(correctOccurrence.resource).get
-                    correctOccurrence.setFeature(new Score("P(s|e)", MathUtil.ln( ???.prior )))
-                    correctOccurrence.setFeature(new Score("P(c|e)", correctContextScore))
-                    correctOccurrence.setFeature(new Score("P(e)",   MathUtil.ln( correctOccurrence.resource.prior )))
 
                     val disambResult = new DisambiguationResult(correctOccurrence,                                                     // correct
                                                                 bestK.getOrElse(Factory.SurfaceFormOccurrence.from(correctOccurrence), // predicted
