@@ -32,7 +32,7 @@ class DBTwoStepDisambiguator(
   resourceStore: ResourceStore,
   val candidateSearcher: DBCandidateSearcher,
   mixture: Mixture,
-  val contextSimilarity: ContextSimilarity
+  contextSimilarity: ContextSimilarity
 ) extends ParagraphDisambiguator {
 
   /* Tokenizer that may be used for tokenization if the text is not already tokenized. */
