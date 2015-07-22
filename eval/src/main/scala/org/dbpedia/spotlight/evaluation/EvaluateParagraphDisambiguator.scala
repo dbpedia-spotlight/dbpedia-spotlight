@@ -29,6 +29,7 @@ import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy
 
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.filter.occurrences.{UriWhitelistFilter, RedirectResolveFilter, OccurrenceFilter}
+import org.dbpedia.spotlight.util.MathUtil
 import scala.Some
 
 
@@ -56,20 +57,28 @@ object EvaluateParagraphDisambiguator {
         val paragraphs = testSource.toList
         var totalParagraphs = paragraphs.size
         //testSource.view(10000,15000)
-        val mrrResults = paragraphs.map(a => {
+        val mrrResults = paragraphs.map(annotatedParagraph => {
             i = i + 1
-            SpotlightLog.info(this.getClass, "Paragraph %d/%d: %s.", i, totalParagraphs, a.id)
-            val paragraph = Factory.Paragraph.from(a)
-            nOriginalOccurrences = nOriginalOccurrences + a.occurrences.toTraversable.size
+            SpotlightLog.info(this.getClass, "Paragraph %d/%d: %s.", i, totalParagraphs, annotatedParagraph.id)
+            val paragraph = Factory.Paragraph.from(annotatedParagraph)
+            nOriginalOccurrences = nOriginalOccurrences + annotatedParagraph.occurrences.toTraversable.size
 
             var acc = 0.0
             try {
-                val bestK = filter(disambiguator.bestK(paragraph,100))
+                val bestK: Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]] = filter(disambiguator.bestK(paragraph,100))
 
-                val goldOccurrences = occFilters.foldLeft(a.occurrences.toTraversable){ (o,f) => f.filterOccs(o) } // discounting URIs from gold standard that we know are disambiguations, fixing redirects, etc.
+
+                val goldOccurrences: Traversable[DBpediaResourceOccurrence] = occFilters.foldLeft(annotatedParagraph.occurrences.toTraversable){ (o,f) => f.filterOccs(o) } // discounting URIs from gold standard that we know are disambiguations, fixing redirects, etc.
 
                 goldOccurrences.foreach( correctOccurrence => {
                     nOccurrences = nOccurrences + 1
+
+                    val dis = disambiguator.asInstanceOf[DBTwoStepDisambiguator]
+                    val tokenTypes = paragraph.text.featureValue[List[Token]]("tokens").get.map(_.tokenType)
+                    val correctContextScore = dis.contextSimilarity.score(tokenTypes, Set(correctOccurrence.resource)).get(correctOccurrence.resource).get
+                    correctOccurrence.setFeature(new Score("P(s|e)", MathUtil.ln( ???.prior )))
+                    correctOccurrence.setFeature(new Score("P(c|e)", correctContextScore))
+                    correctOccurrence.setFeature(new Score("P(e)",   MathUtil.ln( correctOccurrence.resource.prior )))
 
                     val disambResult = new DisambiguationResult(correctOccurrence,                                                     // correct
                                                                 bestK.getOrElse(Factory.SurfaceFormOccurrence.from(correctOccurrence), // predicted
@@ -89,7 +98,7 @@ object EvaluateParagraphDisambiguator {
             } catch {
                 case e: Exception => SpotlightLog.error(this.getClass, "%s\n%s", e.getMessage, e.getStackTraceString)
             }
-            val mrr = if (a.occurrences.size==0) 0.0 else acc / a.occurrences.size
+            val mrr = if (annotatedParagraph.occurrences.size==0) 0.0 else acc / annotatedParagraph.occurrences.size
             SpotlightLog.info(this.getClass, "Mean Reciprocal Rank (MRR) = %.5f", mrr)
             mrr
         })
@@ -171,8 +180,9 @@ object EvaluateParagraphDisambiguator {
           disambiguators.foreach( d => {
               val dName = d.name.replaceAll("""[.*[?/<>|*:\"{\\}].*]""","_")
               val tsvOut = new TSVOutputGenerator(new PrintWriter("%s-%s-%s.pareval.log".format(testSourceName,dName,EvalUtils.now())))
+              val rankLibOut = new RankLibOutputGenerator(new PrintWriter("%s-%s-%s-ranklib-data.txt".format(testSourceName,dName,EvalUtils.now())))
               //val arffOut = new TrainingDataOutputGenerator()
-              val outputs = List(tsvOut)
+              val outputs = List(tsvOut, rankLibOut)
               evaluate(paragraphs, d, outputs, occFilters)
               outputs.foreach(_.close)
           })

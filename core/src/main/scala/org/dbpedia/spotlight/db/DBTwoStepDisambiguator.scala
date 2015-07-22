@@ -32,7 +32,7 @@ class DBTwoStepDisambiguator(
   resourceStore: ResourceStore,
   val candidateSearcher: DBCandidateSearcher,
   mixture: Mixture,
-  contextSimilarity: ContextSimilarity
+  val contextSimilarity: ContextSimilarity
 ) extends ParagraphDisambiguator {
 
   /* Tokenizer that may be used for tokenization if the text is not already tokenized. */
@@ -56,7 +56,7 @@ class DBTwoStepDisambiguator(
     //Tokenize the text if it wasn't tokenized before:
     if (tokenizer != null) {
       SpotlightLog.info(this.getClass, "Tokenizing input text...")
-      val tokens = tokenizer.tokenize(paragraph.text)
+      val tokens: List[Token] = tokenizer.tokenize(paragraph.text)
       paragraph.text.setFeature(new Feature("tokens", tokens))
     }
 
@@ -152,18 +152,17 @@ class DBTwoStepDisambiguator(
       val nilEntityScore = mixture.getScore(eNIL)
 
       //Get all other entities:
-      val candOccs = occs.getOrElse(aSfOcc, List[Candidate]())
-        .map{ cand: Candidate => {
+      val candOccs: List[DBpediaResourceOccurrence] = occs.getOrElse(aSfOcc, List[Candidate]()).map{ cand: Candidate => {
         val resOcc = new DBpediaResourceOccurrence(
           "",
-          cand.resource,
-          cand.surfaceForm,
-          aSfOcc.context,
-          aSfOcc.textOffset,
-          Provenance.Undefined,
-          0.0,
-          0.0,
-          contextScores(cand.resource)
+          resource = cand.resource,
+          surfaceForm = cand.surfaceForm,
+          context = aSfOcc.context,
+          textOffset = aSfOcc.textOffset,
+          provenance = Provenance.Undefined,
+          similarityScore = 0.0,
+          percentageOfSecondRank = 0.0,
+          contextualScore = contextScores(cand.resource)
         )
 
         //Set the scores as features for the resource occurrence:
