@@ -1,7 +1,7 @@
 package org.dbpedia.spotlight.db.similarity
 
 import org.dbpedia.spotlight.db.memory.MemoryVectorStore
-import org.dbpedia.spotlight.db.model.ContextStore
+import org.dbpedia.spotlight.db.model.{TokenTypeStore, ContextStore}
 
 import org.dbpedia.spotlight.model.{DBpediaResource, TokenType}
 import org.dbpedia.spotlight.util.MathUtil
@@ -16,7 +16,7 @@ import scala.collection.mutable
  *
  * created on 12/06/15.
  */
-case class VectorContextSimilarity(memoryVectorStore: MemoryVectorStore) extends ContextSimilarity{
+case class VectorContextSimilarity(tokenTypeStore: TokenTypeStore, memoryVectorStore: MemoryVectorStore) extends ContextSimilarity{
 
   def vectorSimilarities(query: Seq[TokenType], candidates: Set[DBpediaResource]): mutable.Map[DBpediaResource, Double] = {
     val contextScores = mutable.HashMap[DBpediaResource, Double]()
@@ -38,6 +38,7 @@ case class VectorContextSimilarity(memoryVectorStore: MemoryVectorStore) extends
     contextScores
   }
 
+  val lambda = 0.2
 
   /**
    * Calculate the context score for all DBpedia resources in the given text. The text context is specified
@@ -58,6 +59,19 @@ case class VectorContextSimilarity(memoryVectorStore: MemoryVectorStore) extends
   }
 
   /**
+   * Calculate a smoothed LM probability for a single token.
+   *
+   * @param token the token
+   * @return
+   */
+  def pLM(token: TokenType): Double = {
+    /* TODO: We use simple Laplace smoothing here because it does not require heldout estimation,
+     but a more advanced smoothing method may be used here. */
+
+    MathUtil.ln(token.count + 1.0) - MathUtil.ln(tokenTypeStore.getTotalTokenCount + tokenTypeStore.getVocabularySize)
+  }
+
+  /**
    * Calculate the context score for the context alone, not assuming that there is any entity generating it.
    *
    * In the generative model, this is: \product_i P_LM(token_i)
@@ -67,7 +81,12 @@ case class VectorContextSimilarity(memoryVectorStore: MemoryVectorStore) extends
    * @param query the text context of the document
    * @return
    */
-  override def nilScore(query: Seq[TokenType]): Double ={
+  def nilScore(query: Seq[TokenType]): Double = {
+    MathUtil.lnproduct(
+      query.map{ t: TokenType =>
+        MathUtil.lnproduct(MathUtil.ln(1-lambda), pLM(t))
+      }
+    )
     LOGZERO
   }
 }
