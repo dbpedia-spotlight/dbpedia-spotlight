@@ -32,7 +32,7 @@ class DBTwoStepDisambiguator(
   resourceStore: ResourceStore,
   val candidateSearcher: DBCandidateSearcher,
   mixture: Mixture,
-  contextSimilarity: ContextSimilarity
+  val contextSimilarity: ContextSimilarity
 ) extends ParagraphDisambiguator {
 
   /* Tokenizer that may be used for tokenization if the text is not already tokenized. */
@@ -140,10 +140,11 @@ class DBTwoStepDisambiguator(
         -1
       )
 
-      aSfOcc.featureValue[Array[TokenType]]("token_types") match {
+      aSfOcc.featureValue[Array[TokenType]]("token_types") match { // TODO doesn't really work yet for vector stuff
         case Some(t) => eNIL.setFeature(new Score("P(s|e)", contextSimilarity.nilScore(t)))
         case _ =>
       }
+
 
       val nilContextScore = contextSimilarity.nilScore(tokensDistinct)
 
