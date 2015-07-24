@@ -1,12 +1,14 @@
 package org.dbpedia.spotlight.db
 
+import java.util
+
 import concurrent.{TokenizerWrapper, SpotterWrapper}
 import org.dbpedia.spotlight.db.memory.{MemoryVectorStore, MemoryContextStore, MemoryStore}
 import model._
 import opennlp.tools.tokenize.{TokenizerModel, TokenizerME}
 import opennlp.tools.sentdetect.{SentenceModel, SentenceDetectorME}
 import opennlp.tools.postag.{POSModel, POSTaggerME}
-import org.dbpedia.spotlight.disambiguate.mixtures.UnweightedMixture
+import org.dbpedia.spotlight.disambiguate.mixtures.{LogLinearFeatureMixture, LinearRegressionFeatureMixture, Mixture, UnweightedMixture}
 import org.dbpedia.spotlight.db.similarity.{VectorContextSimilarity, NoContextSimilarity, GenerativeContextSimilarity, ContextSimilarity}
 import scala.collection.JavaConverters._
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy
@@ -98,7 +100,7 @@ object SpotlightModel {
 
     def contextSimilarity(): ContextSimilarity = {
       if (vectorStore != null) {
-        new VectorContextSimilarity(vectorStore)
+        new VectorContextSimilarity(tokenTypeStore, vectorStore)
       }else if (contextStore != null) {
         new GenerativeContextSimilarity(tokenTypeStore, contextStore)
       } else {
@@ -141,7 +143,14 @@ object SpotlightModel {
       sfStore,
       resStore,
       searcher,
-      new UnweightedMixture(Set("P(e)", "P(c|e)", "P(s|e)")),
+      new LogLinearFeatureMixture(
+        List( // TODO load from file
+          Pair("P(s|e)",  0.704999819486556),
+          Pair("P(c|e)",  0.2445879603285606),
+          Pair("P(e)", 0.050412220184883456)
+        )
+      ),
+      //new UnweightedMixture(Set("P(e)", "P(c|e)", "P(s|e)")),
       contextSimilarity()
     ))
 
