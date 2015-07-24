@@ -19,11 +19,11 @@ package org.dbpedia.spotlight.evaluation
 
 import org.dbpedia.spotlight.db.memory.MemoryVectorStore
 import org.dbpedia.spotlight.db.model._
-import org.dbpedia.spotlight.db.{SpotlightModel, DBTwoStepDisambiguator}
+import org.dbpedia.spotlight.db.{WikipediaToDBpediaClosure, SpotlightModel, DBTwoStepDisambiguator}
 import org.dbpedia.spotlight.io._
 import org.dbpedia.spotlight.log.SpotlightLog
 import org.dbpedia.spotlight.disambiguate._
-import java.io.{PrintWriter, File}
+import java.io.{FileInputStream, PrintWriter, File}
 import org.dbpedia.spotlight.corpus.{PredoseCorpus, MilneWittenCorpus, AidaCorpus}
 import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy
 
@@ -46,7 +46,7 @@ object EvaluateParagraphDisambiguator {
         bestK
     }
 
-    def evaluate(testSource: AnnotatedTextSource, disambiguator: ParagraphDisambiguator, outputs: List[OutputGenerator], occFilters: List[OccurrenceFilter] ) {
+    def evaluate(testSource: AnnotatedTextSource, disambiguator: ParagraphDisambiguator, outputs: List[OutputGenerator], occFilters: List[OccurrenceFilter], wikipediaToDBpediaClosure: WikipediaToDBpediaClosure = null) : Unit = {
         val startTime = System.nanoTime()
 
         var i = 0
@@ -65,16 +65,38 @@ object EvaluateParagraphDisambiguator {
 
             var acc = 0.0
             try {
+
+                paragraph.occurrences.foreach {aSfOcc =>
+                    val tokenizer: TextTokenizer = disambiguator.asInstanceOf[DBTwoStepDisambiguator].tokenizer
+                    val contextSimilarity = disambiguator.asInstanceOf[DBTwoStepDisambiguator].contextSimilarity
+
+                    aSfOcc.setFeature(
+                        new Feature(
+                            "token_types",
+                            tokenizer.tokenize(new Text(aSfOcc.surfaceForm.name)).map(_.tokenType).toArray
+                        )
+                    )
+                }
                 val bestK: Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]] = filter(disambiguator.bestK(paragraph,100))
+
+                // Add tokens feature to the surface form occurrences
+
 
                 val goldOccurrences = occFilters.foldLeft(annotatedParagraph.occurrences.toTraversable){ (o,f) => f.filterOccs(o) } // discounting URIs from gold standard that we know are disambiguations, fixing redirects, etc.
 
                 goldOccurrences.foreach( correctOccurrence => {
+                    if (wikipediaToDBpediaClosure != null)
+                        correctOccurrence.resource.uri = wikipediaToDBpediaClosure.getEndOfChainURI(correctOccurrence.resource.uri)
+
                     nOccurrences = nOccurrences + 1
 
-                    val disambResult = new DisambiguationResult(correctOccurrence,                                                     // correct
-                                                                bestK.getOrElse(Factory.SurfaceFormOccurrence.from(correctOccurrence), // predicted
-                                                                                List[DBpediaResourceOccurrence]()))
+                    val disambResult = new DisambiguationResult(
+                        correctOccurrence,                                                     // correct
+                        bestK.getOrElse(
+                            Factory.SurfaceFormOccurrence.from(correctOccurrence), // predicted
+                            List[DBpediaResourceOccurrence]()
+                        )
+                    )
 
                     outputs.foreach(_.write(disambResult))
 
@@ -85,12 +107,12 @@ object EvaluateParagraphDisambiguator {
                         nCorrects = nCorrects + 1
                     }
                     acc = acc + invRank
-                });
-                outputs.foreach(_.flush)
+                })
+                outputs.foreach(_.flush())
             } catch {
                 case e: Exception => SpotlightLog.error(this.getClass, "%s\n%s", e.getMessage, e.getStackTraceString)
             }
-            val mrr = if (annotatedParagraph.occurrences.size==0) 0.0 else acc / annotatedParagraph.occurrences.size
+            val mrr = if (annotatedParagraph.occurrences.isEmpty) 0.0 else acc / annotatedParagraph.occurrences.size
             SpotlightLog.info(this.getClass, "Mean Reciprocal Rank (MRR) = %.5f", mrr)
             mrr
         })
@@ -111,11 +133,11 @@ object EvaluateParagraphDisambiguator {
                     "\nCorrect URI not found = %d / %d = %.3f".format(nZeros,nOccurrences,nZeros.toDouble/nOccurrences)+
                     "\nAccuracy = %d / %d = %.3f".format(nCorrects,nOccurrences,nCorrects.toDouble/nOccurrences) +
                     "\nGlobal MRR: %s".format(mrrResults.sum / mrrResults.size)+
-                    "\nElapsed time: %s sec".format( (endTime-startTime) / 1000000000);
+                    "\nElapsed time: %s sec".format( (endTime-startTime) / 1000000000)
 
         outputs.foreach(_.summary(disambigSummary))
 
-        outputs.foreach(_.flush)
+        outputs.foreach(_.flush())
     }
 
     def main(args : Array[String]) {
@@ -123,26 +145,33 @@ object EvaluateParagraphDisambiguator {
 
         //val config = new SpotlightConfiguration(args(0))
         val spotlightModel = SpotlightModel.fromFolder(new File(args(0)))
-        val (_, sfStore, resStore, candMapStore, _, _) = SpotlightModel.storesFromFolder(new File(args(0)))
+        //val (_, sfStore, resStore, candMapStore, _, _) = SpotlightModel.storesFromFolder(new File(args(0)))
+        //val (_sfstore, _resstore, _candmstore) = spotlightModel
+
+        val wikipediaToDBpediaClosure = new WikipediaToDBpediaClosure(
+            spotlightModel.properties.getProperty("namespace"),
+            new FileInputStream(new File(args(0), "redirects.nt")),
+            new FileInputStream(new File(args(0), "disambiguations.nt"))
+        )
 
         //val testFileName: String = args(1)  //"e:\\dbpa\\data\\index\\dbpedia36data\\test\\test100k.tsv"
         //val paragraphs = AnnotatedTextSource
         //                    .fromOccurrencesFile(new File(testFileName))
 
-        val redirectTCFileName  = if (args.size>1) args(1) else "data/redirects_tc.tsv" //produced by ExtractCandidateMap
-        val conceptURIsFileName  = if (args.size>2) args(2) else "data/conceptURIs.list" //produced by ExtractCandidateMap
+        //val redirectTCFileName  = if (args.length>1) args(1) else "data/redirects_tc.tsv" //produced by ExtractCandidateMap
+        //val conceptURIsFileName  = if (args.length>2) args(2) else "data/conceptURIs.list" //produced by ExtractCandidateMap
 
         //val default : Disambiguator = new DefaultDisambiguator(config)
         //val test : Disambiguator = new GraphCentralityDisambiguator(config)
 
 
-        val db2stepdis= spotlightModel.disambiguators.get(DisambiguationPolicy.Default).disambiguator
+        val db2stepdis = spotlightModel.disambiguators.get(DisambiguationPolicy.Default).disambiguator
         db2stepdis.asInstanceOf[DBTwoStepDisambiguator].tokenizer = spotlightModel.tokenizer
         //val topics = HashMapTopicalPriorStore.fromDir(new File("data/topics"))
         val disambiguators = Set(//new TopicalDisambiguator(factory.candidateSearcher,topics),
                                  //new TopicBiasedDisambiguator(factory.candidateSearcher,factory.contextSearcher,topics)
-                                 db2stepdis,
-                                 new DBBaselineDisambiguator(sfStore, resStore, candMapStore)
+                                 db2stepdis
+                                 //new DBBaselineDisambiguator(sfStore, resStore, candMapStore)
                                  //, new CuttingEdgeDisambiguator(factory),
                                  //new PageRankDisambiguator(factory)
                                 )
@@ -172,10 +201,10 @@ object EvaluateParagraphDisambiguator {
           disambiguators.foreach( d => {
               val dName = d.name.replaceAll("""[.*[?/<>|*:\"{\\}].*]""","_")
               val tsvOut = new TSVOutputGenerator(new PrintWriter("%s-%s-%s.pareval.log".format(testSourceName,dName,EvalUtils.now())))
-              val rankLibOut = new RankLibOutputGenerator(new PrintWriter("%s-%s-%s-ranklib-data.txt".format(testSourceName,dName,EvalUtils.now())))
+              val rankLibOut = new RankLibOutputGenerator(new PrintWriter("ranklib-data.txt"))
               //val arffOut = new TrainingDataOutputGenerator()
               val outputs = List(tsvOut, rankLibOut)
-              evaluate(paragraphs, d, outputs, occFilters)
+              evaluate(paragraphs, d, outputs, occFilters, wikipediaToDBpediaClosure)
               outputs.foreach(_.close)
           })
         })

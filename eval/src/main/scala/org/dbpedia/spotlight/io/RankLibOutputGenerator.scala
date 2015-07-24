@@ -14,23 +14,32 @@ class RankLibOutputGenerator(val output: PrintWriter) extends OutputGenerator{
     qid += 1
     var rank = 0
 
+
     // skip the sample if the correct entity is not among predictions
-    if (result.predictedOccurrences.map{occ => occ.resource}.contains(result.correctOccurrence.resource)) {
+    if (result.predictedOccurrences.map{occ => occ.resource}.exists(res => res.getFullUri equals result.correctOccurrence.resource.getFullUri)) {
       result.predictedOccurrences.foreach { occ =>
 
-        if (occ.resource == result.correctOccurrence.resource)
-          rank = 1
-        else
+        if (occ.resource.getFullUri equals result.correctOccurrence.resource.getFullUri)
           rank = 2
+        else
+          rank = 1
 
-        output.println("%s qid:%s 1:%s 2:%s 3%s".format(
+        val out = "%s qid:%s 1:%s 2:%s 3:%s".format(
           rank,
           qid,
-          occ.feature("P(s|e)"),
-          occ.feature("P(c|e)"),
-          occ.feature("P(e)")
-        ))
+          occ.featureValue[Double]("P(s|e)").get,
+          occ.featureValue[Double]("P(c|e)").get,
+          occ.featureValue[Double]("P(e)").get
+        )
+        println("Writing "+out)
+        output.println(out)
 
+      }
+    }else{
+      try {
+        println("Resource %s not found in predictions (%s)!".format(result.correctOccurrence.resource.getFullUri.toString, result.predictedOccurrences.map(_.resource.getFullUri.toString).reduce(_ + ", " + _)))
+      }catch {
+        case _ : Throwable => println("Blah")
       }
     }
 
