@@ -82,7 +82,7 @@ object EvaluateParagraphDisambiguator {
                 // Add tokens feature to the surface form occurrences
 
 
-                val goldOccurrences = occFilters.foldLeft(annotatedParagraph.occurrences.toTraversable){ (o,f) => f.filterOccs(o) } // discounting URIs from gold standard that we know are disambiguations, fixing redirects, etc.
+                val goldOccurrences: Traversable[DBpediaResourceOccurrence] = occFilters.foldLeft(annotatedParagraph.occurrences.toTraversable){ (o,f) => f.filterOccs(o) } // discounting URIs from gold standard that we know are disambiguations, fixing redirects, etc.
 
                 goldOccurrences.foreach( correctOccurrence => {
                     if (wikipediaToDBpediaClosure != null)
