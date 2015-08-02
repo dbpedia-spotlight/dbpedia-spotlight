@@ -87,6 +87,6 @@ case class VectorContextSimilarity(tokenTypeStore: TokenTypeStore, memoryVectorS
         MathUtil.lnproduct(MathUtil.ln(1-lambda), pLM(t))
       }
     )
-    LOGZERO
+    //LOGZERO
   }
 }

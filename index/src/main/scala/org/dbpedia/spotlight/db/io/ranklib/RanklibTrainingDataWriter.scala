@@ -20,37 +20,22 @@ class RanklibTrainingDataWriter(output: PrintWriter) {
         else
           rank = 1
 
-        val (f1, f2, f3) = (
+        val out = "%s qid:%s 1:%s 2:%s 3:%s".format(
+          rank,
+          qid,
           occ.featureValue[Double]("P(s|e)").get,
           occ.featureValue[Double]("P(c|e)").get,
           occ.featureValue[Double]("P(e)").get
-          )
+        )
+        println("Writing "+out)
+        output.println(out)
 
-        def isValid(feature: Double) = !(feature.isNaN || feature.isInfinity || feature.isNegInfinity)
-
-        if (isValid(f1) && isValid(f2)&& isValid(f3)) {
-          val out = "%s qid:%s 1:%s 2:%s 3:%s".format(
-            rank,
-            qid,
-            f1,
-            f2,
-            f3
-          )
-          // println("Writing "+out)
-
-
-          output.println(out)
-          output.flush()
-        }else{
-          println("Warning: Invalid feature detected for resource %s".format(occ.resource.getFullUri))
-        }
       }
     }else{
-      //println("Resource %s not found in predictions (%s)!".format(result.correctOccurrence.resource.getFullUri, result.predictedOccurrences.map(_.resource.getFullUri).reduce(_ + ", " + _)))
       try {
         println("Resource %s not found in predictions (%s)!".format(result.correctOccurrence.resource.getFullUri, result.predictedOccurrences.map(_.resource.getFullUri).reduce(_ + ", " + _)))
       }catch {
-        case _ : Throwable => println("No prediction for resource %s".format(result.correctOccurrence.resource.getFullUri))
+        case _ : Throwable => println("Blah")
       }
     }
   }
