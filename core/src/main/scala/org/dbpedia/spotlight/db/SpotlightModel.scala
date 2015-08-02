@@ -15,7 +15,7 @@ import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy
 import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ
 import org.dbpedia.spotlight.spot.{SpotXmlParser, Spotter}
-import java.io.{IOException, File, FileInputStream}
+import java.io.{Reader, IOException, File, FileInputStream}
 import java.util.{Locale, Properties}
 import opennlp.tools.chunker.ChunkerModel
 import opennlp.tools.namefind.TokenNameFinderModel
@@ -136,6 +136,15 @@ object SpotlightModel {
       val locale = properties.getProperty("locale").split("_")
       new LanguageIndependentTokenizer(stopwords, stemmer(), new Locale(locale(0), locale(1)), tokenTypeStore)
     }
+    val weightsLineElements = scala.io.Source.fromFile(new File(modelFolder, "ranklib-model.txt")).getLines().toArray.last.split(" ")
+    val weights = weightsLineElements.map { (elem: String) =>
+      elem.substring(2).toDouble
+    }
+    val p_se = weights(0)
+    val p_ce = weights(1)
+    val p_e = weights(2)
+
+    println("P(s|e): " + p_se + ", P(c|e): " + p_ce + ", P(e): " + p_e)
 
     val searcher      = new DBCandidateSearcher(resStore, sfStore, candMapStore)
     val disambiguator = new ParagraphDisambiguatorJ(new DBTwoStepDisambiguator(
@@ -145,9 +154,9 @@ object SpotlightModel {
       searcher,
       new LogLinearFeatureMixture(
         List( // TODO load from file
-          Pair("P(s|e)",  0.704999819486556),
-          Pair("P(c|e)",  0.2445879603285606),
-          Pair("P(e)", 0.050412220184883456)
+          Pair("P(s|e)",  p_se),// 0.704999819486556),
+          Pair("P(c|e)",  p_ce), //0.2445879603285606),
+          Pair("P(e)", p_e) //0.050412220184883456)
         )
       ),
       //new UnweightedMixture(Set("P(e)", "P(c|e)", "P(s|e)")),

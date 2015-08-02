@@ -10,6 +10,9 @@
 # $4 Analyzer+Stemmer language prefix e.g. Dutch
 # $5 Model target folder
 
+
+# TODO: call ranklib to train LLM and generate output
+
 export MAVEN_OPTS="-Xmx26G"
 
 usage ()
