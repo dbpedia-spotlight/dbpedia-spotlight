@@ -271,66 +271,8 @@ object CreateSpotlightModel {
         "1.0 0.2 -0.2 0.1" //Defaults!
       )
 
-    // TODO possibly move this to another class?
 
-    // generate training data for ranklib so we can estimate the log-linear model parameters
-    val memoryCandidateMapStore = MemoryStore.loadCandidateMapStore(
-      new FileInputStream(new File(modelDataFolder, "candmap.mem")),
-      resStore,
-      quantizedCountStore
-    )
-    val dBCandidateSearcher = new DBCandidateSearcher(resStore, sfStore, memoryCandidateMapStore)
 
-    // TODO need the real file here
-    val heldoutCorpus = WikipediaHeldoutCorpus.fromFile(new File("heldout-corpus.txt"), wikipediaToDBpediaClosure, dBCandidateSearcher)
-    var qid = 0
-
-    // cycle through heldout data, make annotations, create result objects with ground truth, write to file
-    val disambiguator = new DBTwoStepDisambiguator(
-      tokenStore,
-      sfStore,
-      resStore,
-      dBCandidateSearcher,
-      new UnweightedMixture(Set("P(e)", "P(c|e)", "P(s|e)")),
-      new VectorContextSimilarity(tokenStore,
-        MemoryStore.loadVectorStore(new FileInputStream(new File(modelDataFolder, "vectors.mem")))
-      )
-    )
-    val ranklibOutputWriter = new RanklibTrainingDataWriter(new PrintWriter("ranklib-data.txt"))
-
-    heldoutCorpus.foreach{
-      annotatedParagraph: AnnotatedParagraph => // we want to iterate through annotatedParagraph and the non-annotated version in parallel
-        val paragraph = Factory.Paragraph.from(annotatedParagraph)
-
-        paragraph.occurrences.foreach {aSfOcc =>
-          val tokenizer: TextTokenizer = disambiguator.asInstanceOf[DBTwoStepDisambiguator].tokenizer
-          val contextSimilarity = disambiguator.asInstanceOf[DBTwoStepDisambiguator].contextSimilarity
-
-          aSfOcc.setFeature(
-            new Feature(
-              "token_types",
-              tokenizer.tokenize(new Text(aSfOcc.surfaceForm.name)).map(_.tokenType).toArray
-            )
-          )
-        }
-        val bestK: Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]] = disambiguator.bestK(paragraph, 100)
-        val goldOccurrences = annotatedParagraph.occurrences.toTraversable // TODO this is filtered or something in eval
-
-        goldOccurrences.foreach( correctOccurrence => {
-          if (wikipediaToDBpediaClosure != null)
-            correctOccurrence.resource.uri = wikipediaToDBpediaClosure.getEndOfChainURI(correctOccurrence.resource.uri)
-
-          val disambResult = new TrainingDataEntry(
-            correctOccurrence, // correct
-            bestK.getOrElse(
-              Factory.SurfaceFormOccurrence.from(correctOccurrence), // predicted
-              List[DBpediaResourceOccurrence]()
-            )
-          )
-          ranklibOutputWriter.write(disambResult)
-        })
-
-    }
   }
 
 }
