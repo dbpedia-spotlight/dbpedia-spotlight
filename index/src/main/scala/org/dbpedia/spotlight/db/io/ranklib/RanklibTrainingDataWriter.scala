@@ -32,11 +32,12 @@ class RanklibTrainingDataWriter(output: PrintWriter) {
 
       }
     }else{
-      try {
-        println("Resource %s not found in predictions (%s)!".format(result.correctOccurrence.resource.getFullUri, result.predictedOccurrences.map(_.resource.getFullUri).reduce(_ + ", " + _)))
-      }catch {
-        case _ : Throwable => println("Blah")
-      }
+      println("Resource %s not found in predictions (%s)!".format(result.correctOccurrence.resource.getFullUri, result.predictedOccurrences.map(_.resource.getFullUri).reduce(_ + ", " + _)))
+      //try {
+      //  println("Resource %s not found in predictions (%s)!".format(result.correctOccurrence.resource.getFullUri, result.predictedOccurrences.map(_.resource.getFullUri).reduce(_ + ", " + _)))
+      //}catch {
+      //  case _ : Throwable => println("Blah")
+      //}
     }
   }
 
