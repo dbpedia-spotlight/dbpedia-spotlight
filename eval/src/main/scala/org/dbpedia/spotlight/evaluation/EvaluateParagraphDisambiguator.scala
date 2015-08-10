@@ -68,7 +68,7 @@ object EvaluateParagraphDisambiguator {
 
                 paragraph.occurrences.foreach {aSfOcc =>
                     val tokenizer: TextTokenizer = disambiguator.asInstanceOf[DBTwoStepDisambiguator].tokenizer
-                    val contextSimilarity = disambiguator.asInstanceOf[DBTwoStepDisambiguator].contextSimilarity
+                    //val contextSimilarity = disambiguator.asInstanceOf[DBTwoStepDisambiguator].contextSimilarity
 
                     aSfOcc.setFeature(
                         new Feature(
