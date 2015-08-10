@@ -17,7 +17,6 @@
 package org.dbpedia.spotlight.filter.annotations
 
 import org.dbpedia.spotlight.filter.Filter
-import org.dbpedia.spotlight.model.DBpediaResourceOccurrence
 
 /**
  * Filter result annotations based on scores, types, SPARQL queries etc.
