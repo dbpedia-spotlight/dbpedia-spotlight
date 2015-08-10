@@ -1,13 +1,15 @@
 package org.dbpedia.spotlight.db
 
 import java.io.{PrintWriter, File, FileInputStream}
-import java.util.Locale
+import java.util
+import java.util.{Properties, Locale}
 
 import org.dbpedia.spotlight.db.io.ranklib.{TrainingDataEntry, RanklibTrainingDataWriter}
 import org.dbpedia.spotlight.db.memory.{MemoryQuantizedCountStore, MemoryStore}
 import org.dbpedia.spotlight.db.model._
 import org.dbpedia.spotlight.db.similarity.VectorContextSimilarity
 import org.dbpedia.spotlight.db.stem.SnowballStemmer
+import org.dbpedia.spotlight.db.tokenize.LanguageIndependentTokenizer
 import org.dbpedia.spotlight.disambiguate.mixtures.UnweightedMixture
 import org.dbpedia.spotlight.io.WikipediaHeldoutCorpus
 import org.dbpedia.spotlight.model._
@@ -21,8 +23,8 @@ object TrainLLMWeights {
     val (localeCode: String, rawDataFolder: File, outputFolder: File) = try {
       (
         args(0),
-        new File(args(0)), // raw data folder
-        new File(args(1)) // output folder
+        new File(args(1)), // raw data folder
+        new File(args(2)) // output folder
         )
     } catch {
       case e: Exception => {
@@ -32,11 +34,15 @@ object TrainLLMWeights {
         System.exit(1)
       }
     }
-    val modelDataFolder = new File(outputFolder, "model")
-    val (tokenStore, sfStore, resStore, candidateMapStore, contextStore, memoryVectorStore) = SpotlightModel.storesFromFolder(modelDataFolder)
+
+    val modelStoresFolder = new File(outputFolder, "model")
+    val (tokenStore, sfStore, resStore, candidateMapStore, contextStore, memoryVectorStore) = SpotlightModel.storesFromFolder(outputFolder)
+
+    val properties = new Properties()
+    properties.load(new FileInputStream(new File(outputFolder, "model.properties")))
 
     val quantizedCountStore = new MemoryQuantizedCountStore()
-    val memoryIndexer = new MemoryStoreIndexer(modelDataFolder, quantizedCountStore)
+    val memoryIndexer = new MemoryStoreIndexer(modelStoresFolder, quantizedCountStore)
 
     val Array(lang, country) = localeCode.split("_")
     val locale = new Locale(lang, country)
@@ -55,14 +61,14 @@ object TrainLLMWeights {
 
     // generate training data for ranklib so we can estimate the log-linear model parameters
     val memoryCandidateMapStore = MemoryStore.loadCandidateMapStore(
-      new FileInputStream(new File(modelDataFolder, "candmap.mem")),
+      new FileInputStream(new File(modelStoresFolder, "candmap.mem")),
       resStore,
       quantizedCountStore
     )
     val dBCandidateSearcher = new DBCandidateSearcher(resStore, sfStore, memoryCandidateMapStore)
 
     // TODO need the real file here
-    val heldoutCorpus = WikipediaHeldoutCorpus.fromFile(new File("heldout.txt"), wikipediaToDBpediaClosure, dBCandidateSearcher)
+    val heldoutCorpus = WikipediaHeldoutCorpus.fromFile(new File(rawDataFolder, "heldout.txt"), wikipediaToDBpediaClosure, dBCandidateSearcher)
     var qid = 0
 
     // cycle through heldout data, make annotations, create result objects with ground truth, write to file
@@ -72,24 +78,42 @@ object TrainLLMWeights {
       resStore,
       dBCandidateSearcher,
       new UnweightedMixture(Set("P(e)", "P(c|e)", "P(s|e)")),
-      new VectorContextSimilarity(tokenStore,
-        MemoryStore.loadVectorStore(new FileInputStream(new File(modelDataFolder, "vectors.mem")))
-      )
+      new VectorContextSimilarity(tokenStore, memoryVectorStore)
     )
-    val ranklibOutputWriter = new RanklibTrainingDataWriter(new PrintWriter("ranklib-data.txt"))
+
+    def stemmer(): Stemmer = properties.getProperty("stemmer") match {
+      case s: String if s equals "None" => null
+      case s: String => new SnowballStemmer(s)
+    }
+
+    val tokenizer: TextTokenizer = new LanguageIndependentTokenizer(
+      scala.io.Source.fromFile(new File(outputFolder, "stopwords.list")).getLines().map(_.trim()).toSet,
+      stemmer(),
+      locale,
+      tokenStore
+    )
+    disambiguator.asInstanceOf[DBTwoStepDisambiguator].tokenizer = tokenizer
+
+    val ranklibOutputWriter = new RanklibTrainingDataWriter(new PrintWriter(new File(outputFolder, "ranklib-training-data.txt")))
 
     heldoutCorpus.foreach {
       annotatedParagraph: AnnotatedParagraph => // we want to iterate through annotatedParagraph and the non-annotated version in parallel
         val paragraph = Factory.Paragraph.from(annotatedParagraph)
 
         paragraph.occurrences.foreach { aSfOcc =>
-          val tokenizer: TextTokenizer = disambiguator.asInstanceOf[DBTwoStepDisambiguator].tokenizer
+
           val contextSimilarity = disambiguator.asInstanceOf[DBTwoStepDisambiguator].contextSimilarity
 
           aSfOcc.setFeature(
             new Feature(
               "token_types",
-              tokenizer.tokenize(new Text(aSfOcc.surfaceForm.name)).map(_.tokenType).toArray
+              tokenizer.tokenize(
+                new Text(
+                  aSfOcc.surfaceForm.name
+                )
+              ).map(
+                  _.tokenType
+                ).toArray
             )
           )
         }
