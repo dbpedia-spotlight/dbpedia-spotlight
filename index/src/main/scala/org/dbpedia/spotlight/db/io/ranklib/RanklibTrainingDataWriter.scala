@@ -27,17 +27,17 @@ class RanklibTrainingDataWriter(output: PrintWriter) {
           occ.featureValue[Double]("P(c|e)").get,
           occ.featureValue[Double]("P(e)").get
         )
-        println("Writing "+out)
+        // println("Writing "+out)
         output.println(out)
 
       }
     }else{
-      println("Resource %s not found in predictions (%s)!".format(result.correctOccurrence.resource.getFullUri, result.predictedOccurrences.map(_.resource.getFullUri).reduce(_ + ", " + _)))
-      //try {
-      //  println("Resource %s not found in predictions (%s)!".format(result.correctOccurrence.resource.getFullUri, result.predictedOccurrences.map(_.resource.getFullUri).reduce(_ + ", " + _)))
-      //}catch {
-      //  case _ : Throwable => println("Blah")
-      //}
+      //println("Resource %s not found in predictions (%s)!".format(result.correctOccurrence.resource.getFullUri, result.predictedOccurrences.map(_.resource.getFullUri).reduce(_ + ", " + _)))
+      try {
+        println("Resource %s not found in predictions (%s)!".format(result.correctOccurrence.resource.getFullUri, result.predictedOccurrences.map(_.resource.getFullUri).reduce(_ + ", " + _)))
+      }catch {
+        case _ : Throwable => println("No prediction for resource %s".format(result.correctOccurrence.resource.getFullUri))
+      }
     }
   }
 
