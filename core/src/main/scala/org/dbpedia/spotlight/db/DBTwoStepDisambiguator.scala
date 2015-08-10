@@ -27,13 +27,13 @@ import org.dbpedia.spotlight.util.MathUtil
  */
 
 class DBTwoStepDisambiguator(
-  tokenStore: TokenTypeStore,
-  surfaceFormStore: SurfaceFormStore,
-  resourceStore: ResourceStore,
-  val candidateSearcher: DBCandidateSearcher,
-  mixture: Mixture,
-  val contextSimilarity: ContextSimilarity
-) extends ParagraphDisambiguator {
+                              tokenStore: TokenTypeStore,
+                              surfaceFormStore: SurfaceFormStore,
+                              resourceStore: ResourceStore,
+                              val candidateSearcher: DBCandidateSearcher,
+                              mixture: Mixture,
+                              val contextSimilarity: ContextSimilarity
+                              ) extends ParagraphDisambiguator {
 
   /* Tokenizer that may be used for tokenization if the text is not already tokenized. */
   var tokenizer: TextTokenizer = null
@@ -103,26 +103,26 @@ class DBTwoStepDisambiguator(
     var allCandidateResources = Set[DBpediaResource]()
     val occs = occurrences.foldLeft(
       Map[SurfaceFormOccurrence, List[Candidate]]())(
-      (acc, sfOcc) => {
+        (acc, sfOcc) => {
 
-        SpotlightLog.debug(this.getClass, "Searching...")
+          SpotlightLog.debug(this.getClass, "Searching...")
 
-        val candidateRes = {
+          val candidateRes = {
 
-          val cands = candidateSearcher.getCandidates(sfOcc.surfaceForm)
-          SpotlightLog.debug(this.getClass, "# candidates for: %s = %s.", sfOcc.surfaceForm, cands.size)
+            val cands = candidateSearcher.getCandidates(sfOcc.surfaceForm)
+            SpotlightLog.debug(this.getClass, "# candidates for: %s = %s.", sfOcc.surfaceForm, cands.size)
 
-          if (cands.size > MAX_CANDIDATES) {
-            SpotlightLog.debug(this.getClass, "Reducing number of candidates to %d.", MAX_CANDIDATES)
-            cands.toList.sortBy( -_.prior ).take(MAX_CANDIDATES).toSet
-          } else {
-            cands
+            if (cands.size > MAX_CANDIDATES) {
+              SpotlightLog.debug(this.getClass, "Reducing number of candidates to %d.", MAX_CANDIDATES)
+              cands.toList.sortBy( -_.prior ).take(MAX_CANDIDATES).toSet
+            } else {
+              cands
+            }
           }
-        }
 
-        allCandidateResources ++= candidateRes.map(_.resource)
-        acc + (sfOcc -> candidateRes.toList)
-      })
+          allCandidateResources ++= candidateRes.map(_.resource)
+          acc + (sfOcc -> candidateRes.toList)
+        })
 
     val tokensDistinct = tokens.distinct.sortBy(_.id)
 
