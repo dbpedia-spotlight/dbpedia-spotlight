@@ -4,6 +4,7 @@ import java.io.{PrintWriter, File, FileInputStream}
 import java.util
 import java.util.{Properties, Locale}
 
+
 import org.dbpedia.spotlight.db.io.ranklib.{TrainingDataEntry, RanklibTrainingDataWriter}
 import org.dbpedia.spotlight.db.memory.{MemoryQuantizedCountStore, MemoryStore}
 import org.dbpedia.spotlight.db.model._
@@ -42,7 +43,7 @@ object TrainLLMWeights {
     properties.load(new FileInputStream(new File(outputFolder, "model.properties")))
 
     val quantizedCountStore = new MemoryQuantizedCountStore()
-    val memoryIndexer = new MemoryStoreIndexer(modelStoresFolder, quantizedCountStore)
+    //val memoryIndexer = new MemoryStoreIndexer(modelStoresFolder, quantizedCountStore)
 
     val Array(lang, country) = localeCode.split("_")
     val locale = new Locale(lang, country)
@@ -59,16 +60,12 @@ object TrainLLMWeights {
       new FileInputStream(new File(rawDataFolder, "disambiguations.nt"))
     )
 
-    // generate training data for ranklib so we can estimate the log-linear model parameters
-    val memoryCandidateMapStore = MemoryStore.loadCandidateMapStore(
-      new FileInputStream(new File(modelStoresFolder, "candmap.mem")),
-      resStore,
-      quantizedCountStore
-    )
-    val dBCandidateSearcher = new DBCandidateSearcher(resStore, sfStore, memoryCandidateMapStore)
+    //// generate training data for ranklib so we can estimate the log-linear model parameters
 
-    // TODO need the real file here
+    val dBCandidateSearcher = new DBCandidateSearcher(resStore, sfStore, candidateMapStore)
+
     val heldoutCorpus = WikipediaHeldoutCorpus.fromFile(new File(rawDataFolder, "heldout.txt"), wikipediaToDBpediaClosure, dBCandidateSearcher)
+
     var qid = 0
 
     // cycle through heldout data, make annotations, create result objects with ground truth, write to file
@@ -102,34 +99,39 @@ object TrainLLMWeights {
 
         paragraph.occurrences.foreach { aSfOcc =>
 
-          val contextSimilarity = disambiguator.asInstanceOf[DBTwoStepDisambiguator].contextSimilarity
+          //val contextSimilarity = disambiguator.asInstanceOf[DBTwoStepDisambiguator].contextSimilarity
 
           aSfOcc.setFeature(
             new Feature(
               "token_types",
-              tokenizer.tokenize(
-                new Text(
-                  aSfOcc.surfaceForm.name
-                )
-              ).map(
-                  _.tokenType
-                ).toArray
+              tokenizer.tokenize(new Text(aSfOcc.surfaceForm.name)).map(_.tokenType).toArray
             )
           )
         }
         val bestK: Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]] = disambiguator.bestK(paragraph, 100)
+
         val goldOccurrences = annotatedParagraph.occurrences.toTraversable // TODO this is filtered or something in eval
 
-        goldOccurrences.foreach(correctOccurrence => {
-          if (wikipediaToDBpediaClosure != null)
-            correctOccurrence.resource.uri = wikipediaToDBpediaClosure.getEndOfChainURI(correctOccurrence.resource.uri)
+        goldOccurrences.foreach((correctOccurrence: DBpediaResourceOccurrence) => {
 
+          val correctSF: SurfaceForm = sfStore.getSurfaceForm(correctOccurrence.surfaceForm.name)
+
+          //val fixedOcc = new DBpediaResourceOccurrence(correctOccurrence.id, correctOccurrence.resource, correctSF, correctOccurrence.context, correctOccurrence.textOffset)
+
+          val predicted: SurfaceFormOccurrence = bestK.keys.find(_.surfaceForm equals correctSF).orNull
+          // val predicted: SurfaceFormOccurrence = Factory.SurfaceFormOccurrence.from(fixedOcc) // predicted
+
+          if (predicted == null)
+            println("Couldn't match %s to any in bestK".format(correctSF))
+          //if (wikipediaToDBpediaClosure != null)
+          //  correctOccurrence.resource.uri = wikipediaToDBpediaClosure.getEndOfChainURI(correctOccurrence.resource.uri)
+          val result: List[DBpediaResourceOccurrence] = bestK.getOrElse(
+            predicted,
+            List[DBpediaResourceOccurrence]()
+          )
           val disambResult = new TrainingDataEntry(
             correctOccurrence, // correct
-            bestK.getOrElse(
-              Factory.SurfaceFormOccurrence.from(correctOccurrence), // predicted
-              List[DBpediaResourceOccurrence]()
-            )
+            result
           )
           ranklibOutputWriter.write(disambResult)
         })

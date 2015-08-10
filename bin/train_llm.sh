@@ -11,7 +11,6 @@
 # $5 Model target folder
 
 
-# TODO: call ranklib to train LLM and generate output
 
 export MAVEN_OPTS="-Xmx26G"
 
@@ -105,4 +104,5 @@ bzcat ${LANGUAGE}wiki-latest-pages-articles.xml.bz2 | python $BASE_WDIR/pig/pign
 
 MAVEN_OPTS='-Xmx15G' mvn -pl index exec:java -Dexec.mainClass=org.dbpedia.spotlight.db.TrainLLMWeights -Dexec.args="$2 $WDIR $TARGET_DIR";
 
-# TODO: train using ranklib and generate outfile
+java -jar RankLib-2.1-patched.jar  -ranker 4 -train $TARGET_DIR/ranklib-training-data.txt -save $TARGET_DIR/ranklib-model.txt -metric2t ERR@1
+
