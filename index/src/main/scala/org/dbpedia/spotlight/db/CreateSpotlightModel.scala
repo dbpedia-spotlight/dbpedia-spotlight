@@ -1,13 +1,9 @@
 package org.dbpedia.spotlight.db
 
 import io._
-import java.io.{PrintWriter, FileOutputStream, FileInputStream, File}
-import org.dbpedia.spotlight.db.io.ranklib.{RanklibTrainingDataWriter, TrainingDataEntry}
-import org.dbpedia.spotlight.db.memory.{MemoryCandidateMapStore, MemoryQuantizedCountStore, MemoryStore}
+import java.io.{FileOutputStream, FileInputStream, File}
+import org.dbpedia.spotlight.db.memory.{MemoryQuantizedCountStore, MemoryStore}
 import model.{TextTokenizer, StringTokenizer, Stemmer}
-import org.dbpedia.spotlight.db.DBCandidateSearcher
-import org.dbpedia.spotlight.db.similarity.VectorContextSimilarity
-import org.dbpedia.spotlight.disambiguate.mixtures.UnweightedMixture
 import scala.io.Source
 import org.tartarus.snowball.SnowballProgram
 import java.util.{Locale, Properties}
@@ -22,8 +18,6 @@ import tokenize._
 import scala.Some
 import scala.collection.immutable.HashMap
 import scala.collection.mutable
-
-import org.dbpedia.spotlight.model._
 
 /**
  * This script creates a Spotlight model folder from the results of
@@ -198,7 +192,7 @@ object CreateSpotlightModel {
         namespace
       )
     )
-
+    val quantizedCountStore = MemoryStore.loadQuantizedCountStore(new FileInputStream(new File(modelDataFolder, "quantized_counts.mem")))
     val resStore = MemoryStore.loadResourceStore(new FileInputStream(new File(modelDataFolder, "res.mem")), quantizedCountStore)
     val sfStore  = MemoryStore.loadSurfaceFormStore(new FileInputStream(new File(modelDataFolder, "sf.mem")), quantizedCountStore)
 
@@ -270,8 +264,6 @@ object CreateSpotlightModel {
         new File(outputFolder, "spotter_thresholds.txt"),
         "1.0 0.2 -0.2 0.1" //Defaults!
       )
-
-
 
   }
 
