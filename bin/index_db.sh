@@ -18,7 +18,7 @@ export MAVEN_OPTS="-Xmx26G"
 usage ()
 {
      echo "index_db.sh"
-     echo "usage: ./index_db.sh -o /data/spotlight/nl/opennlp wdir nl_NL /data/spotlight/nl/stopwords.nl.list Dutch /data/spotlight/nl/final_model"
+     echo "usage: ./index_db.sh -v -o /data/spotlight/nl/opennlp wdir nl_NL /data/spotlight/nl/stopwords.nl.list Dutch /data/spotlight/nl/final_model"
      echo "Create a database-backed model of DBpedia Spotlight for a specified language."
      echo " "
 }
@@ -28,14 +28,15 @@ opennlp="None"
 eval="false"
 data_only="false"
 local_mode="false"
+train_llm="false"
 
-
-while getopts "ledo:" opt; do
+while getopts "ledov:" opt; do
   case $opt in
     o) opennlp="$OPTARG";;
     e) eval="true";;
     d) data_only="true";;
     l) local_mode="true"
+    v) train_llm="true"
   esac
 done
 
@@ -290,6 +291,21 @@ if [ "$data_only" == "true" ]; then
     echo "$CREATE_MODEL" >> create_models.job.sh
 else
   eval "$CREATE_MODEL"
+
+  if ["$train_llm" == "true"]; then
+    echo "Training LLM Weights"
+    echo "Downloading ranklib..."
+    mkdir -p $BASE_WDIR/ranklib/
+    cd $BASE_WDIR/ranklib/
+    curl -L -o RankLib-2.1-patched.jar http://downloads.sourceforge.net/project/lemur/lemur/RankLib-2.1/RankLib-2.1-patched.jar?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Flemur%2Ffiles%2Flemur%2FRankLib-2.1%2F&ts=1439317425&use_mirror=skylink
+
+    cd $BASE_DIR
+    echo "Generating features and writing ranklib train data..."
+    MAVEN_OPTS='-Xmx15G' mvn -pl index exec:java -Dexec.mainClass=org.dbpedia.spotlight.db.TrainLLMWeights -Dexec.args="$2 $WDIR $TARGET_DIR";
+
+    echo "Training LLM weights using ranklib..."
+    java -jar $BASE_WDIR/ranklib/RankLib-2.1-patched.jar  -ranker 4 -train $TARGET_DIR/ranklib-training-data.txt -save $TARGET_DIR/ranklib-model.txt -metric2t ERR@1
+  fi
   
   if [ "$eval" == "true" ]; then
       mvn -pl eval exec:java -Dexec.mainClass=org.dbpedia.spotlight.evaluation.EvaluateSpotlightModel -Dexec.args="$TARGET_DIR $WDIR/heldout.txt" > $TARGET_DIR/evaluation.txt
