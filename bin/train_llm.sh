@@ -1,6 +1,7 @@
 #!/bin/bash
 #+------------------------------------------------------------------------------------------------------------------------------+
 #| DBpedia Spotlight - Create database-backed model                                                                             |
+#| @author Joachim Daiber                                                                                                       |
 #| @author Philipp Dowling                                                                                                      |
 #+------------------------------------------------------------------------------------------------------------------------------+
 
@@ -104,20 +105,15 @@ else
     echo "Building PigNLProc..."
 fi
 
-echo "Downloading ranklib..."
-mkdir -p $BASE_WDIR/ranklib/
-cd $BASE_WDIR/ranklib/
-curl -L -o RankLib-2.1-patched.jar http://downloads.sourceforge.net/project/lemur/lemur/RankLib-2.1/RankLib-2.1-patched.jar?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Flemur%2Ffiles%2Flemur%2FRankLib-2.1%2F&ts=1439317425&use_mirror=skylink
-cd -
 
 echo "Generating train data."
 mkdir -p $BASE_WDIR/wikipedia/
 cd $BASE_WDIR/wikipedia/
 echo "Downloading wikipedia dump..."
-#curl -O "http://dumps.wikimedia.org/${LANGUAGE}wiki/latest/${LANGUAGE}wiki-latest-pages-articles.xml.bz2"
+curl -O "http://dumps.wikimedia.org/${LANGUAGE}wiki/latest/${LANGUAGE}wiki-latest-pages-articles.xml.bz2"
 
 echo "Splitting off train set..."
-#bzcat ${LANGUAGE}wiki-latest-pages-articles.xml.bz2 | python $BASE_WDIR/pig/pignlproc/utilities/split_train_test.py 12000 $WDIR/heldout.txt > /dev/null
+bzcat ${LANGUAGE}wiki-latest-pages-articles.xml.bz2 | python $BASE_WDIR/pig/pignlproc/utilities/split_train_test.py 12000 $WDIR/heldout.txt > /dev/null
 
 echo "Downloading DBpedia redirects and disambiguations..."
 cd $WDIR
@@ -125,6 +121,11 @@ if [ ! -f "redirects.nt" ]; then
   curl -# http://downloads.dbpedia.org/current/$LANGUAGE/redirects_$LANGUAGE.nt.bz2 | bzcat > redirects.nt
   curl -# http://downloads.dbpedia.org/current/$LANGUAGE/disambiguations_$LANGUAGE.nt.bz2 | bzcat > disambiguations.nt
 fi
+
+echo "Downloading ranklib..."
+mkdir -p $BASE_WDIR/ranklib/
+cd $BASE_WDIR/ranklib/
+curl -L -o RankLib-2.1-patched.jar http://downloads.sourceforge.net/project/lemur/lemur/RankLib-2.1/RankLib-2.1-patched.jar?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Flemur%2Ffiles%2Flemur%2FRankLib-2.1%2F&ts=1439317425&use_mirror=skylink
 
 cd $BASE_DIR
 echo "Generating features and writing ranklib train data..."
