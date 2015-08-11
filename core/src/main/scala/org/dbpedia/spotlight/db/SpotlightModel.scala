@@ -70,7 +70,6 @@ object SpotlightModel {
     }
 
 
-
     (tokenTypeStore, sfStore, resStore, candMapStore, contextStore, vectorStore)
   }
 

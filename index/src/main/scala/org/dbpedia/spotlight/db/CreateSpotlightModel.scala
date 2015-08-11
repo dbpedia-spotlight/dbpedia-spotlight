@@ -163,6 +163,7 @@ object CreateSpotlightModel {
 
     //val diskIndexer = new JDBMStoreIndexer(new File("data/"))
 
+
     val wikipediaToDBpediaClosure = new WikipediaToDBpediaClosure(
       namespace,
       new FileInputStream(new File(rawDataFolder, "redirects.nt")),
@@ -192,7 +193,9 @@ object CreateSpotlightModel {
         namespace
       )
     )
+
     //val quantizedCountStore = MemoryStore.loadQuantizedCountStore(new FileInputStream(new File(modelDataFolder, "quantized_counts.mem")))
+
     val resStore = MemoryStore.loadResourceStore(new FileInputStream(new File(modelDataFolder, "res.mem")), quantizedCountStore)
     val sfStore  = MemoryStore.loadSurfaceFormStore(new FileInputStream(new File(modelDataFolder, "sf.mem")), quantizedCountStore)
 
