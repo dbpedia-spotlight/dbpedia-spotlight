@@ -10,6 +10,7 @@ import opennlp.tools.sentdetect.{SentenceModel, SentenceDetectorME}
 import opennlp.tools.postag.{POSModel, POSTaggerME}
 import org.dbpedia.spotlight.disambiguate.mixtures.{LogLinearFeatureMixture, LinearRegressionFeatureMixture, Mixture, UnweightedMixture}
 import org.dbpedia.spotlight.db.similarity.{VectorContextSimilarity, NoContextSimilarity, GenerativeContextSimilarity, ContextSimilarity}
+import org.dbpedia.spotlight.log.SpotlightLog
 import scala.collection.JavaConverters._
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy
 import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy
@@ -136,15 +137,28 @@ object SpotlightModel {
       val locale = properties.getProperty("locale").split("_")
       new LanguageIndependentTokenizer(stopwords, stemmer(), new Locale(locale(0), locale(1)), tokenTypeStore)
     }
-    val weightsLineElements = scala.io.Source.fromFile(new File(modelFolder, "ranklib-model.txt")).getLines().toArray.last.split(" ")
-    val weights = weightsLineElements.map { (elem: String) =>
-      elem.substring(2).toDouble
-    }
-    val p_se = weights(0)
-    val p_ce = weights(1)
-    val p_e = weights(2)
 
-    println("P(s|e): " + p_se + ", P(c|e): " + p_ce + ", P(e): " + p_e)
+    val mixture = if(new File(modelFolder, "ranklib-model.txt").exists()) {
+      val weightsLineElements = scala.io.Source.fromFile(new File(modelFolder, "ranklib-model.txt")).getLines().toArray.last.split(" ")
+      val weights = weightsLineElements.map { (elem: String) =>
+        elem.substring(2).toDouble
+      }
+      val p_se = weights(0)
+      val p_ce = weights(1)
+      val p_e = weights(2)
+      SpotlightLog.debug(this.getClass, "Using LLM weights: P(s|e): " + p_se + ", P(c|e): " + p_ce + ", P(e): " + p_e)
+
+      new LogLinearFeatureMixture(
+        List(
+          Pair("P(s|e)",  p_se),
+          Pair("P(c|e)",  p_ce),
+          Pair("P(e)", p_e)
+        )
+      )
+    } else{
+      SpotlightLog.debug(this.getClass, "No weights found - using unweighted mixture.")
+      new UnweightedMixture(Set("P(e)", "P(c|e)", "P(s|e)"))
+    }
 
     val searcher      = new DBCandidateSearcher(resStore, sfStore, candMapStore)
     val disambiguator = new ParagraphDisambiguatorJ(new DBTwoStepDisambiguator(
@@ -152,14 +166,7 @@ object SpotlightModel {
       sfStore,
       resStore,
       searcher,
-      new LogLinearFeatureMixture(
-        List( // TODO load from file
-          Pair("P(s|e)",  p_se),// 0.704999819486556),
-          Pair("P(c|e)",  p_ce), //0.2445879603285606),
-          Pair("P(e)", p_e) //0.050412220184883456)
-        )
-      ),
-      //new UnweightedMixture(Set("P(e)", "P(c|e)", "P(s|e)")),
+      mixture,
       contextSimilarity()
     ))
 
