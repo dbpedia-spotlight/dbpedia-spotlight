@@ -54,7 +54,7 @@
     </modules>
 
     <build>
-         <pluginManagement>
+        <pluginManagement>
             <plugins>
                 <plugin>
                     <groupId>net.alchim31.maven</groupId>
@@ -171,12 +171,12 @@
                     </execution>
                 </executions>
             </plugin>
-           <!--
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-install-plugin</artifactId>
-            </plugin>
-            -->
+            <!--
+             <plugin>
+                 <groupId>org.apache.maven.plugins</groupId>
+                 <artifactId>maven-install-plugin</artifactId>
+             </plugin>
+             -->
         </plugins>
     </build>
 
@@ -564,10 +564,14 @@
                 <groupId>org.scalanlp</groupId>
                 <artifactId>breeze-learn_2.10</artifactId>
                 <version>0.3</version>
-
                     License: Apache Software License, Version 2.0
-
             </dependency-->
+
+            <dependency>
+                <groupId>org.scalanlp</groupId>
+                <artifactId>breeze_2.10</artifactId>
+                <version>0.10</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.scalanlp</groupId>
@@ -578,7 +582,7 @@
             <dependency>
                 <groupId>com.typesafe.akka</groupId>
                 <artifactId>akka-actor_2.10</artifactId>
-                <version>2.3.4</version>
+                <version>2.2.3</version>
                 <!--
                     License: Apache Software License, Version 2.0
                 -->
@@ -731,7 +735,7 @@
             <dependency>
                 <groupId>net.liftweb</groupId>
                 <artifactId>lift-json_2.10</artifactId>
-                <version>2.5.3</version>
+                <version>2.5</version>
                 <!--
                   License: Apache Software License, Version 2.0
                 -->
@@ -979,4 +983,3 @@
     </pluginRepositories>
 
 </project>
-
