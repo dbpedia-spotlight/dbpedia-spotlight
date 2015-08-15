@@ -140,14 +140,17 @@ class DBTwoStepDisambiguator(
         -1
       )
 
-      aSfOcc.featureValue[Array[TokenType]]("token_types") match { // TODO doesn't really work yet for vector stuff
+      aSfOcc.featureValue[Array[TokenType]]("token_types") match {
         case Some(t) => eNIL.setFeature(new Score("P(s|e)", contextSimilarity.nilScore(t)))
         case _ =>
       }
+      // P(e|s) = (P(s|e)P(e))/P(s)
 
+      eNIL.setFeature(new Score("P(e|s)", 1 - aSfOcc.surfaceForm.annotationProbability))
 
       val nilContextScore = contextSimilarity.nilScore(tokensDistinct)
-
+      eNIL.setFeature(new Score("bias", 1))
+      eNIL.setFeature(new Score("resource==sf", 0))
       eNIL.setFeature(new Score("P(c|e)", nilContextScore))
       eNIL.setFeature(new Score("P(e)",   MathUtil.ln( 1 / surfaceFormStore.getTotalAnnotatedCount.toDouble ) )) //surfaceFormStore.getTotalAnnotatedCount = total number of entity mentions
       val nilEntityScore = mixture.getScore(eNIL)
@@ -170,7 +173,10 @@ class DBTwoStepDisambiguator(
 
         //Note that this is not mathematically correct, since the candidate prior is P(e|s),
         //the correct P(s|e) should be MathUtil.ln( cand.support / cand.resource.support.toDouble )
-        resOcc.setFeature(new Score("P(s|e)", MathUtil.ln( cand.prior )))
+        resOcc.setFeature(new Score("bias", 1))
+        resOcc.setFeature(new Score("P(s|e)", MathUtil.ln( cand.support / cand.resource.support.toDouble )))
+        resOcc.setFeature(new Score("P(e|s)", MathUtil.ln( cand.prior )))
+        resOcc.setFeature(new Score("resource==sf", if (resOcc.resource.toString == resOcc.surfaceForm.toString) 1 else 0))
         resOcc.setFeature(new Score("P(c|e)", resOcc.contextualScore))
         resOcc.setFeature(new Score("P(e)",   MathUtil.ln( cand.resource.prior )))
 
