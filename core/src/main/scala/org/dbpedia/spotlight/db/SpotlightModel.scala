@@ -32,6 +32,8 @@ class SpotlightModel(val tokenizer: TextTokenizer,
                      val properties: Properties)
 
 object SpotlightModel {
+  //val featureNames = List("P(e|s)", "P(c|e)", "P(e)", "bias", "P(e|s)", "resource==sf")
+  val featureNames = List("P(s|e)", "P(c|e)", "P(e)", "resource==sf", "bias")
 
   def loadStopwords(modelFolder: File): Set[String] = scala.io.Source.fromFile(new File(modelFolder, "stopwords.list")).getLines().map(_.trim()).toSet
   def loadSpotterThresholds(file: File): Seq[Double] = scala.io.Source.fromFile(file).getLines().next().split(" ").map(_.toDouble)
@@ -143,21 +145,26 @@ object SpotlightModel {
       val weights = weightsLineElements.map { (elem: String) =>
         elem.substring(2).toDouble
       }
-      val p_se = weights(0)
-      val p_ce = weights(1)
-      val p_e = weights(2)
-      SpotlightLog.debug(this.getClass, "Using LLM weights: P(s|e): " + p_se + ", P(c|e): " + p_ce + ", P(e): " + p_e)
+      if (weights.length == featureNames.length) {
+        val featuresAndWeights: List[(String, Double)] = featureNames.zip(weights)
 
-      new LogLinearFeatureMixture(
-        List(
-          Pair("P(s|e)",  p_se),
-          Pair("P(c|e)",  p_ce),
-          Pair("P(e)", p_e)
+        SpotlightLog.info(this.getClass, "Using LLM weights: %s".format(
+          featuresAndWeights.map {
+            case (name, weight) =>
+              "%s=%s".format(name, weight)
+          }.reduce(_ + ", " + _)
+        ))
+
+        new LogLinearFeatureMixture(
+          featuresAndWeights
         )
-      )
+      }else{
+        SpotlightLog.warn(this.getClass, "Could not load LLM weights, wrong number of weights in file! Using UnweightedMixture.")
+        new UnweightedMixture(featureNames.toSet)
+      }
     } else{
-      SpotlightLog.debug(this.getClass, "No weights found - using unweighted mixture.")
-      new UnweightedMixture(Set("P(e)", "P(c|e)", "P(s|e)"))
+      SpotlightLog.info(this.getClass, "No weights found - using unweighted mixture.")
+      new UnweightedMixture(featureNames.toSet)
     }
 
     val searcher      = new DBCandidateSearcher(resStore, sfStore, candMapStore)

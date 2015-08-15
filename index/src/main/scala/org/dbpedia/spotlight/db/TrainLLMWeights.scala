@@ -74,7 +74,7 @@ object TrainLLMWeights {
       sfStore,
       resStore,
       dBCandidateSearcher,
-      new UnweightedMixture(Set("P(e)", "P(c|e)", "P(s|e)")),
+      new UnweightedMixture(Set("P(e)", "P(c|e)", "P(s|e)")), // TODO use SPotlightModel.featureNames here?
       new VectorContextSimilarity(tokenStore, memoryVectorStore)
     )
 
@@ -90,7 +90,6 @@ object TrainLLMWeights {
       tokenStore
     )
     disambiguator.asInstanceOf[DBTwoStepDisambiguator].tokenizer = tokenizer
-
     val ranklibOutputWriter = new RanklibTrainingDataWriter(new PrintWriter(new File(outputFolder, "ranklib-training-data.txt")))
 
     heldoutCorpus.foreach {

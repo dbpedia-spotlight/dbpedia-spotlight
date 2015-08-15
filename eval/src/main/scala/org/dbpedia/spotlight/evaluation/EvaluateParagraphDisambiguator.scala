@@ -199,11 +199,12 @@ object EvaluateParagraphDisambiguator {
         sources.foreach( paragraphs => {
           val testSourceName = paragraphs.name
           disambiguators.foreach( d => {
-              val dName = d.name.replaceAll("""[.*[?/<>|*:\"{\\}].*]""","_")
+              var dName = d.name.replaceAll("""[.*[?/<>|*:\"{\\}].*]""","_")
+              if (dName.length > 200)
+                dName = dName.substring(0, 200)
               val tsvOut = new TSVOutputGenerator(new PrintWriter("%s-%s-%s.pareval.log".format(testSourceName,dName,EvalUtils.now())))
-              val rankLibOut = new RankLibOutputGenerator(new PrintWriter("ranklib-data.txt"))
               //val arffOut = new TrainingDataOutputGenerator()
-              val outputs = List(tsvOut, rankLibOut)
+              val outputs = List(tsvOut)
               evaluate(paragraphs, d, outputs, occFilters, wikipediaToDBpediaClosure)
               outputs.foreach(_.close)
           })

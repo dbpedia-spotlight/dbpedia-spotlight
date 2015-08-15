@@ -2,6 +2,9 @@ package org.dbpedia.spotlight.db.io.ranklib
 
 import java.io.{PrintWriter, OutputStream}
 
+import org.dbpedia.spotlight.db.SpotlightModel
+import org.dbpedia.spotlight.log.SpotlightLog
+
 /**
  * Created by dowling on 02/08/15.
  */
@@ -20,25 +23,21 @@ class RanklibTrainingDataWriter(output: PrintWriter) {
         else
           rank = 1
 
-        val (f1, f2, f3) = (
-          occ.featureValue[Double]("P(s|e)").get,
-          occ.featureValue[Double]("P(c|e)").get,
-          occ.featureValue[Double]("P(e)").get
-          )
+        val featNames = SpotlightModel.featureNames
+        val feats = featNames.map(occ.featureValue[Double](_).get)
+
 
         def isValid(feature: Double) = !(feature.isNaN || feature.isInfinity || feature.isNegInfinity)
 
-        if (isValid(f1) && isValid(f2)&& isValid(f3)) {
-          val out = "%s qid:%s 1:%s 2:%s 3:%s".format(
+        if (feats.map(isValid).reduce(_ && _)) {
+          val out = "%s qid:%s %s".format(
             rank,
             qid,
-            f1,
-            f2,
-            f3
+            feats.zipWithIndex.map{
+              case (feat, idx) =>
+                "%s:%s".format(idx + 1, feat)
+            }.reduce(_ + " " + _)
           )
-          // println("Writing "+out)
-
-
           output.println(out)
           output.flush()
         }else{
@@ -48,9 +47,9 @@ class RanklibTrainingDataWriter(output: PrintWriter) {
     }else{
       //println("Resource %s not found in predictions (%s)!".format(result.correctOccurrence.resource.getFullUri, result.predictedOccurrences.map(_.resource.getFullUri).reduce(_ + ", " + _)))
       try {
-        println("Resource %s not found in predictions (%s)!".format(result.correctOccurrence.resource.getFullUri, result.predictedOccurrences.map(_.resource.getFullUri).reduce(_ + ", " + _)))
+        SpotlightLog.debug(this.getClass, "Resource %s not found in predictions (%s)!".format(result.correctOccurrence.resource.getFullUri, result.predictedOccurrences.map(_.resource.getFullUri).reduce(_ + ", " + _)))
       }catch {
-        case _ : Throwable => println("No prediction for resource %s".format(result.correctOccurrence.resource.getFullUri))
+        case _ : Throwable => SpotlightLog.debug(this.getClass, "No prediction for resource %s".format(result.correctOccurrence.resource.getFullUri))
       }
     }
   }
