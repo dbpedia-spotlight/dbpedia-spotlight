@@ -110,10 +110,10 @@ echo "Generating train data."
 mkdir -p $BASE_WDIR/wikipedia/
 cd $BASE_WDIR/wikipedia/
 echo "Downloading wikipedia dump..."
-curl -O "http://dumps.wikimedia.org/${LANGUAGE}wiki/latest/${LANGUAGE}wiki-latest-pages-articles.xml.bz2"
+# curl -O "http://dumps.wikimedia.org/${LANGUAGE}wiki/latest/${LANGUAGE}wiki-latest-pages-articles.xml.bz2"
 
 echo "Splitting off train set..."
-bzcat ${LANGUAGE}wiki-latest-pages-articles.xml.bz2 | python $BASE_WDIR/pig/pignlproc/utilities/split_train_test.py 12000 $WDIR/heldout.txt > /dev/null
+# bzcat ${LANGUAGE}wiki-latest-pages-articles.xml.bz2 | python $BASE_WDIR/pig/pignlproc/utilities/split_train_test.py 12000 $WDIR/heldout.txt > /dev/null
 
 echo "Downloading DBpedia redirects and disambiguations..."
 cd $WDIR
@@ -129,7 +129,7 @@ curl -L -o RankLib-2.1-patched.jar http://downloads.sourceforge.net/project/lemu
 
 cd $BASE_DIR
 echo "Generating features and writing ranklib train data..."
-MAVEN_OPTS='-Xmx15G' mvn -pl index exec:java -Dexec.mainClass=org.dbpedia.spotlight.db.TrainLLMWeights -Dexec.args="$2 $WDIR $TARGET_DIR";
+MAVEN_OPTS='-Xmx15G' mvn -pl index exec:java -Dexec.mainClass=org.dbpedia.spotlight.db.CreateLLMTrainData -Dexec.args="$2 $WDIR $TARGET_DIR";
 
 echo "Training model using ranklib..."
 java -jar $BASE_WDIR/ranklib/RankLib-2.1-patched.jar  -ranker 4 -train $TARGET_DIR/ranklib-training-data.txt -save $TARGET_DIR/ranklib-model.txt -metric2t ERR@1
