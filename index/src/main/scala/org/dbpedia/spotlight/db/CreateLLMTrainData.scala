@@ -18,7 +18,7 @@ import org.dbpedia.spotlight.model._
 /**
  * Created by dowling on 06/08/15.
  */
-object TrainLLMWeights {
+object CreateLLMTrainData {
   def main(args: Array[String]) {
 
     val (localeCode: String, rawDataFolder: File, outputFolder: File) = try {
@@ -74,7 +74,7 @@ object TrainLLMWeights {
       sfStore,
       resStore,
       dBCandidateSearcher,
-      new UnweightedMixture(Set("P(e)", "P(c|e)", "P(s|e)")), // TODO use SPotlightModel.featureNames here?
+      new UnweightedMixture(SpotlightModel.featureNames.toSet),
       new VectorContextSimilarity(tokenStore, memoryVectorStore)
     )
 

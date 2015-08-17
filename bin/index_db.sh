@@ -301,7 +301,7 @@ else
 
     cd $BASE_DIR
     echo "Generating features and writing ranklib train data..."
-    MAVEN_OPTS='-Xmx15G' mvn -pl index exec:java -Dexec.mainClass=org.dbpedia.spotlight.db.TrainLLMWeights -Dexec.args="$2 $WDIR $TARGET_DIR";
+    MAVEN_OPTS='-Xmx15G' mvn -pl index exec:java -Dexec.mainClass=org.dbpedia.spotlight.db.CreateLLMTrainData -Dexec.args="$2 $WDIR $TARGET_DIR";
 
     echo "Training LLM weights using ranklib..."
     java -jar $BASE_WDIR/ranklib/RankLib-2.1-patched.jar  -ranker 4 -train $TARGET_DIR/ranklib-training-data.txt -save $TARGET_DIR/ranklib-model.txt -metric2t ERR@1
