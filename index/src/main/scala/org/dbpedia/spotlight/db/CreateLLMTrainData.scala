@@ -8,7 +8,7 @@ import java.util.{Properties, Locale}
 import org.dbpedia.spotlight.db.io.ranklib.{TrainingDataEntry, RanklibTrainingDataWriter}
 import org.dbpedia.spotlight.db.memory.{MemoryQuantizedCountStore, MemoryStore}
 import org.dbpedia.spotlight.db.model._
-import org.dbpedia.spotlight.db.similarity.VectorContextSimilarity
+import org.dbpedia.spotlight.db.similarity.{GenerativeContextSimilarity, VectorContextSimilarity}
 import org.dbpedia.spotlight.db.stem.SnowballStemmer
 import org.dbpedia.spotlight.db.tokenize.LanguageIndependentTokenizer
 import org.dbpedia.spotlight.disambiguate.mixtures.UnweightedMixture
@@ -68,14 +68,20 @@ object CreateLLMTrainData {
 
     var qid = 0
 
-    // cycle through heldout data, make annotations, create result objects with ground truth, write to file
+
+    val similarity = {
+      if (memoryVectorStore != null)
+        new VectorContextSimilarity(tokenStore, memoryVectorStore)
+      else
+        new GenerativeContextSimilarity(tokenStore, contextStore)
+    }
     val disambiguator = new DBTwoStepDisambiguator(
       tokenStore,
       sfStore,
       resStore,
       dBCandidateSearcher,
       new UnweightedMixture(SpotlightModel.featureNames.toSet),
-      new VectorContextSimilarity(tokenStore, memoryVectorStore)
+      similarity
     )
 
     def stemmer(): Stemmer = properties.getProperty("stemmer") match {
@@ -92,6 +98,7 @@ object CreateLLMTrainData {
     disambiguator.asInstanceOf[DBTwoStepDisambiguator].tokenizer = tokenizer
     val ranklibOutputWriter = new RanklibTrainingDataWriter(new PrintWriter(new File(outputFolder, "ranklib-training-data.txt")))
 
+    // cycle through heldout data, make annotations, create result objects with ground truth, write to file
     heldoutCorpus.foreach {
       annotatedParagraph: AnnotatedParagraph => // we want to iterate through annotatedParagraph and the non-annotated version in parallel
         val paragraph = Factory.Paragraph.from(annotatedParagraph)
@@ -109,7 +116,7 @@ object CreateLLMTrainData {
         }
         val bestK: Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]] = disambiguator.bestK(paragraph, 100)
 
-        val goldOccurrences = annotatedParagraph.occurrences.toTraversable // TODO this is filtered or something in eval
+        val goldOccurrences = annotatedParagraph.occurrences.toTraversable
 
         goldOccurrences.foreach((correctOccurrence: DBpediaResourceOccurrence) => {
 
