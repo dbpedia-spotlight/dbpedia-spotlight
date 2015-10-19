@@ -59,13 +59,13 @@ object SpotlightModel {
       null
     } else if (new File(modelDataFolder, "context.mem").exists()) {
       MemoryStore.loadContextStore(new FileInputStream(new File(modelDataFolder, "context.mem")), tokenTypeStore, quantizedCountsStore)
-    } else{
+    } else {
       null
     }
 
     val vectorStore = if (new File(modelDataFolder, "vectors.mem").exists()){
       MemoryStore.loadVectorStore(new FileInputStream(new File(modelDataFolder, "vectors.mem")))
-    }else{
+    } else {
       null
     }
 
@@ -99,7 +99,7 @@ object SpotlightModel {
     def contextSimilarity(): ContextSimilarity = {
       if (vectorStore != null) {
         new VectorContextSimilarity(vectorStore)
-      }else if (contextStore != null) {
+      } else if (contextStore != null) {
         new GenerativeContextSimilarity(tokenTypeStore, contextStore)
       } else {
         new NoContextSimilarity(MathUtil.ln(1.0))

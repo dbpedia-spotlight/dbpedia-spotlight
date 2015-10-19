@@ -30,7 +30,6 @@ case class VectorContextSimilarity(memoryVectorStore: MemoryVectorStore) extends
           query.map(memoryVectorStore.lookup).reduceLeft(_ + _),
           memoryVectorStore.lookup(resource)
         )
-        //Random.nextDouble()
       )
     }
     )
