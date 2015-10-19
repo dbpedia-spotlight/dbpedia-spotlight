@@ -22,7 +22,7 @@ class MemoryVectorStore extends MemoryStore with KryoSerializable{
 
   override def size: Int = vectors.rows
 
-  def _lookup(id: Int) = {
+  def lookupItem(id: Int) = {
     // look up vector, if it isn't there, simply ignore the word
     if(id != -1){
       vectors(id, ::)
@@ -31,20 +31,20 @@ class MemoryVectorStore extends MemoryStore with KryoSerializable{
     }
   }
 
-  def _on_nil_index(string: String) = {
+  def onNilIndex(string: String) = {
     //println("Warning: token " + string + " not in dictionary! Lookup returning null vector.")
     -1
   }
 
   def lookup(resource: DBpediaResource): Transpose[DenseVector[Float]]={
     //println("Looking up " + resource + "..")
-    _lookup(resourceIdToVectorIndex.getOrElse(resource.id, _on_nil_index(resource.getFullUri)))
+    lookupItem(resourceIdToVectorIndex.getOrElse(resource.id, onNilIndex(resource.getFullUri)))
 
   }
 
   def lookup(token: TokenType): Transpose[DenseVector[Float]]={
     //println("Looking up " + token + "..")
-    _lookup(tokenTypeIdToVectorIndex.getOrElse(token.id, _on_nil_index(token.tokenType)))
+    lookupItem(tokenTypeIdToVectorIndex.getOrElse(token.id, onNilIndex(token.tokenType)))
 
   }
 

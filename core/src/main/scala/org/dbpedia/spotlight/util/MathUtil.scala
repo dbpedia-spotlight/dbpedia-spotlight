@@ -1,7 +1,7 @@
 package org.dbpedia.spotlight.util
 
 import breeze.linalg.{DenseVector, Transpose}
-import breeze.numerics._
+import breeze.numerics.sqrt
 import org.apache.commons.math.util.FastMath
 
 /**
