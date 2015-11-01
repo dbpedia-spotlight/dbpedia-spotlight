@@ -192,7 +192,7 @@ object CreateSpotlightModel {
         namespace
       )
     )
-    //val quantizedCountStore = MemoryStore.loadQuantizedCountStore(new FileInputStream(new File(modelDataFolder, "quantized_counts.mem")))
+
     val resStore = MemoryStore.loadResourceStore(new FileInputStream(new File(modelDataFolder, "res.mem")), quantizedCountStore)
     val sfStore  = MemoryStore.loadSurfaceFormStore(new FileInputStream(new File(modelDataFolder, "sf.mem")), quantizedCountStore)
 
@@ -253,7 +253,7 @@ object CreateSpotlightModel {
     } else {
       new LanguageIndependentTokenizer(Set[String](), stemmer, locale, tokenStore)
     }
-    //val fsaDict = FSASpotter.buildDictionary(sfStore, tokenizer)
+    val fsaDict = FSASpotter.buildDictionary(sfStore, tokenizer)
 
     //MemoryStore.dump(fsaDict, new File(outputFolder, "fsa_dict.mem"))
 
