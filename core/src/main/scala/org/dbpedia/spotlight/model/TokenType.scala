@@ -23,6 +23,6 @@ class TokenType(val id: Int, val tokenType: String, val count: Int) {
 }
 
 object TokenType {
-  val UNKNOWN  = new TokenType(0, "<<UNKNOWN>>", 1)
-  val STOPWORD = new TokenType(0, "<<STOPWORD>>", 1)
+  val UNKNOWN  = new TokenType(-1, "<<UNKNOWN>>", 1)
+  val STOPWORD = new TokenType(-2, "<<STOPWORD>>", 1)
 }
