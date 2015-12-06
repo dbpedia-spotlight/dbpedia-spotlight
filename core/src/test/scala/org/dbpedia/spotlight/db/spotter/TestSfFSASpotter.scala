@@ -19,7 +19,7 @@ package org.dbpedia.spotlight.db.spotter
 
 import java.util.Locale
 
-import org.dbpedia.spotlight.Helper.createTokenTypeStore
+import org.dbpedia.spotlight.util.MemoryStoreUtil.createTokenTypeStore
 import org.dbpedia.spotlight.db.model.Stemmer
 import org.dbpedia.spotlight.db.tokenize.{LanguageIndependentTokenizer, LanguageIndependentStringTokenizer}
 import org.dbpedia.spotlight.model.TokenType

@@ -1,11 +1,11 @@
-package org.dbpedia.spotlight
+package org.dbpedia.spotlight.util
 
 import org.dbpedia.spotlight.db.memory.{MemoryContextStore, MemoryQuantizedCountStore, MemoryTokenTypeStore}
 import org.dbpedia.spotlight.db.model.TokenTypeStore
 import org.dbpedia.spotlight.model.{DBpediaResource, TokenType}
 
 
-object Helper {
+object MemoryStoreUtil {
 
   def createTokenTypeStore(tokenTypes: List[TokenType]): MemoryTokenTypeStore = {
 
@@ -25,8 +25,7 @@ object Helper {
     tokenTypeStore
   }
 
-  def createContextStore(occs: List[(DBpediaResource, Array[TokenType], Array[Int])],
-                         tokenStore: TokenTypeStore,
+  def createContextStore(occs: List[(DBpediaResource, Array[TokenType], Array[Int])], tokenStore: TokenTypeStore,
                          quantizedCountStore: MemoryQuantizedCountStore): MemoryContextStore = {
 
     val numResources = occs.size
