@@ -78,7 +78,7 @@ class MathUtilTest {
       (DenseVector.ones[Float](6).t, DenseVector.ones[Float](5).t) -> 1.0.toFloat
 
     )
-    
+
     doubleExamples.keys.foreach( vectors => {
         val sim = cosineSimilarity(vectors._1, vectors._2)
         printf("%-30s=%30s (+/-(%s)) \n",doubleExamples(vectors), sim, epsilon)
