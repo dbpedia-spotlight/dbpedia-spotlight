@@ -88,9 +88,9 @@ mkdir -p $WDIR
 echo "Downloading DBpedia dumps..."
 cd $WDIR
 if [ ! -f "redirects.nt" ]; then
-  curl -# http://downloads.dbpedia.org/current/$LANGUAGE/redirects_$LANGUAGE.nt.bz2 | bzcat > redirects.nt
-  curl -# http://downloads.dbpedia.org/current/$LANGUAGE/disambiguations_$LANGUAGE.nt.bz2 | bzcat > disambiguations.nt
-  curl -# http://downloads.dbpedia.org/current/$LANGUAGE/instance_types_$LANGUAGE.nt.bz2 | bzcat > instance_types.nt
+  curl -# http://downloads.dbpedia.org/current/core-i18n/$LANGUAGE/redirects_$LANGUAGE.nq.bz2 | bzcat > redirects.nt
+  curl -# http://downloads.dbpedia.org/current/core-i18n/$LANGUAGE/disambiguations_$LANGUAGE.nt.bz2 | bzcat > disambiguations.nt
+  curl -# http://downloads.dbpedia.org/current/core-i18n/$LANGUAGE/instance-types_$LANGUAGE.nt.bz2 | bzcat > instance_types.nt
 fi
 
 

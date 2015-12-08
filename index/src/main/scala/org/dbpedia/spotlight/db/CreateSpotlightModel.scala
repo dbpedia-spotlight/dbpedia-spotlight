@@ -4,6 +4,7 @@ import io._
 import java.io.{FileOutputStream, FileInputStream, File}
 import org.dbpedia.spotlight.db.memory.{MemoryQuantizedCountStore, MemoryStore}
 import model.{TextTokenizer, StringTokenizer, Stemmer}
+import org.dbpedia.spotlight.log.SpotlightLog
 import scala.io.Source
 import org.tartarus.snowball.SnowballProgram
 import java.util.{Locale, Properties}
@@ -163,11 +164,20 @@ object CreateSpotlightModel {
 
     val diskIndexer = new JDBMStoreIndexer(new File("data/"))
 
-    val wikipediaToDBpediaClosure = new WikipediaToDBpediaClosure(
-      namespace,
-      new FileInputStream(new File(rawDataFolder, "redirects.nt")),
-      new FileInputStream(new File(rawDataFolder, "disambiguations.nt"))
-    )
+    val wikipediaToDBpediaClosure =
+      if (new File(rawDataFolder, "redirects.nt").exists() && new File(rawDataFolder, "disambiguations.nt").exists()) {
+        new WikipediaToDBpediaClosure(
+          namespace,
+          new FileInputStream(new File(rawDataFolder, "redirects.nt")),
+          new FileInputStream(new File(rawDataFolder, "disambiguations.nt"))
+        )
+      }
+      else {
+        SpotlightLog.warn(this.getClass,
+          "No redirects and disambiguations supplied! Not loading WikipediaToDBpediaClosure."
+        )
+        null
+      }
 
     memoryIndexer.tokenizer = Some(rawTokenizer)
     memoryIndexer.addSurfaceForms(
@@ -229,12 +239,19 @@ object CreateSpotlightModel {
     memoryIndexer.writeTokenOccurrences()
     memoryIndexer.writeQuantizedCounts()
 
-    val memoryVectorStoreIndexer = new MemoryVectorStoreIndexer(
-      new File(modelDataFolder, "word2vec/enwiki-model-stemmed.w2c.syn0.csv"),
-      new File(modelDataFolder, "word2vec/enwiki-model-stemmed.w2c.wordids.txt")
-    )
-    memoryVectorStoreIndexer.loadVectorDict(tokenStore, resStore)
-    memoryVectorStoreIndexer.loadVectorsAndWriteToStore(new File(modelDataFolder, "vectors.mem"))
+    if (new File(rawDataFolder, "wiki2vec_syn0.csv").exists()){
+      SpotlightLog.debug(this.getClass, "Found vector file, building vectors.mem store.")
+      val memoryVectorStoreIndexer: MemoryVectorStoreIndexer =
+        new MemoryVectorStoreIndexer(
+        new File(rawDataFolder, "wiki2vec_syn0.csv"),
+        new File(rawDataFolder, "wiki2vec_ids.txt")
+      )
+      memoryVectorStoreIndexer.loadVectorDict(tokenStore, resStore)
+      memoryVectorStoreIndexer.loadVectorsAndWriteToStore(new File(modelDataFolder, "vectors.mem"))
+
+    } else {
+      SpotlightLog.info(this.getClass, "No vectors supplied, not building memory vector store.")
+    }
 
     val tokenizer: TextTokenizer = if (opennlpFolder.isDefined) {
       val opennlpOut = new File(outputFolder, OPENNLP_FOLDER)
