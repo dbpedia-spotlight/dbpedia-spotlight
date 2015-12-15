@@ -239,20 +239,6 @@ object CreateSpotlightModel {
     memoryIndexer.writeTokenOccurrences()
     memoryIndexer.writeQuantizedCounts()
 
-    if (new File(rawDataFolder, "wiki2vec_syn0.csv").exists()){
-      SpotlightLog.debug(this.getClass, "Found vector file, building vectors.mem store.")
-      val memoryVectorStoreIndexer: MemoryVectorStoreIndexer =
-        new MemoryVectorStoreIndexer(
-        new File(rawDataFolder, "wiki2vec_syn0.csv"),
-        new File(rawDataFolder, "wiki2vec_ids.txt")
-      )
-      memoryVectorStoreIndexer.loadVectorDict(tokenStore, resStore)
-      memoryVectorStoreIndexer.loadVectorsAndWriteToStore(new File(modelDataFolder, "vectors.mem"))
-
-    } else {
-      SpotlightLog.info(this.getClass, "No vectors supplied, not building memory vector store.")
-    }
-
     val tokenizer: TextTokenizer = if (opennlpFolder.isDefined) {
       val opennlpOut = new File(outputFolder, OPENNLP_FOLDER)
       val oToken = new TokenizerME(new TokenizerModel(new FileInputStream(new File(opennlpOut, "token.bin"))))
@@ -272,7 +258,7 @@ object CreateSpotlightModel {
     }
     val fsaDict = FSASpotter.buildDictionary(sfStore, tokenizer)
 
-    //MemoryStore.dump(fsaDict, new File(outputFolder, "fsa_dict.mem"))
+    MemoryStore.dump(fsaDict, new File(outputFolder, "fsa_dict.mem"))
 
     if(new File(stopwordsFile.getParentFile, "spotter_thresholds.txt").exists())
       FileUtils.copyFile(new File(stopwordsFile.getParentFile, "spotter_thresholds.txt"), new File(outputFolder, "spotter_thresholds.txt"))
@@ -281,6 +267,21 @@ object CreateSpotlightModel {
         new File(outputFolder, "spotter_thresholds.txt"),
         "1.0 0.2 -0.2 0.1" //Defaults!
       )
+
+
+    if (new File(rawDataFolder, "wiki2vec_syn0.csv").exists()){
+      SpotlightLog.debug(this.getClass, "Found vector file, building vectors.mem store.")
+      val memoryVectorStoreIndexer: MemoryVectorStoreIndexer =
+        new MemoryVectorStoreIndexer(
+          new File(rawDataFolder, "wiki2vec_syn0.csv"),
+          new File(rawDataFolder, "wiki2vec_ids.txt")
+        )
+      memoryVectorStoreIndexer.loadVectorDict(tokenStore, resStore)
+      memoryVectorStoreIndexer.loadVectorsAndWriteToStore(new File(modelDataFolder, "vectors.mem"))
+
+    } else {
+      SpotlightLog.info(this.getClass, "No vectors supplied, not building memory vector store.")
+    }
 
   }
 
