@@ -176,6 +176,7 @@ object CreateSpotlightModel {
         SpotlightLog.warn(this.getClass,
           "No redirects and disambiguations supplied! Not loading WikipediaToDBpediaClosure."
         )
+        System.exit(1)
         null
       }
 
@@ -269,7 +270,7 @@ object CreateSpotlightModel {
       )
 
 
-    if (new File(rawDataFolder, "wiki2vec_syn0.csv").exists()){
+    if (new File(rawDataFolder, "wiki2vec_syn0.csv").exists() && new File(rawDataFolder, "wiki2vec_ids.txt").exists()){
       SpotlightLog.debug(this.getClass, "Found vector file, building vectors.mem store.")
       val memoryVectorStoreIndexer: MemoryVectorStoreIndexer =
         new MemoryVectorStoreIndexer(
