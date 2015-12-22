@@ -27,13 +27,13 @@ import org.dbpedia.spotlight.util.MathUtil
  */
 
 class DBTwoStepDisambiguator(
-  tokenStore: TokenTypeStore,
-  surfaceFormStore: SurfaceFormStore,
-  resourceStore: ResourceStore,
-  val candidateSearcher: DBCandidateSearcher,
-  mixture: Mixture,
-  contextSimilarity: ContextSimilarity
-) extends ParagraphDisambiguator {
+                              tokenStore: TokenTypeStore,
+                              surfaceFormStore: SurfaceFormStore,
+                              resourceStore: ResourceStore,
+                              val candidateSearcher: DBCandidateSearcher,
+                              mixture: Mixture,
+                              val contextSimilarity: ContextSimilarity
+                              ) extends ParagraphDisambiguator {
 
   /* Tokenizer that may be used for tokenization if the text is not already tokenized. */
   var tokenizer: TextTokenizer = null
@@ -56,7 +56,7 @@ class DBTwoStepDisambiguator(
     //Tokenize the text if it wasn't tokenized before:
     if (tokenizer != null) {
       SpotlightLog.info(this.getClass, "Tokenizing input text...")
-      val tokens = tokenizer.tokenize(paragraph.text)
+      val tokens: List[Token] = tokenizer.tokenize(paragraph.text)
       paragraph.text.setFeature(new Feature("tokens", tokens))
     }
 
@@ -68,7 +68,7 @@ class DBTwoStepDisambiguator(
       val occurrenceStack = paragraph.getOccurrences().toBuffer
       val currentTokens = ArrayBuffer[Token]()
 
-      sentences.flatMap{
+      val res: Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]] = sentences.flatMap{
         sentence: List[Token] =>
 
           currentTokens ++= sentence
@@ -89,6 +89,7 @@ class DBTwoStepDisambiguator(
             None
           }
       }.toList.reduce(_ ++ _)
+      res
     }
   }
 
@@ -102,26 +103,26 @@ class DBTwoStepDisambiguator(
     var allCandidateResources = Set[DBpediaResource]()
     val occs = occurrences.foldLeft(
       Map[SurfaceFormOccurrence, List[Candidate]]())(
-      (acc, sfOcc) => {
+        (acc, sfOcc) => {
 
-        SpotlightLog.debug(this.getClass, "Searching...")
+          SpotlightLog.debug(this.getClass, "Searching...")
 
-        val candidateRes = {
+          val candidateRes = {
 
-          val cands = candidateSearcher.getCandidates(sfOcc.surfaceForm)
-          SpotlightLog.debug(this.getClass, "# candidates for: %s = %s.", sfOcc.surfaceForm, cands.size)
+            val cands = candidateSearcher.getCandidates(sfOcc.surfaceForm)
+            SpotlightLog.debug(this.getClass, "# candidates for: %s = %s.", sfOcc.surfaceForm, cands.size)
 
-          if (cands.size > MAX_CANDIDATES) {
-            SpotlightLog.debug(this.getClass, "Reducing number of candidates to %d.", MAX_CANDIDATES)
-            cands.toList.sortBy( -_.prior ).take(MAX_CANDIDATES).toSet
-          } else {
-            cands
+            if (cands.size > MAX_CANDIDATES) {
+              SpotlightLog.debug(this.getClass, "Reducing number of candidates to %d.", MAX_CANDIDATES)
+              cands.toList.sortBy( -_.prior ).take(MAX_CANDIDATES).toSet
+            } else {
+              cands
+            }
           }
-        }
 
-        allCandidateResources ++= candidateRes.map(_.resource)
-        acc + (sfOcc -> candidateRes.toList)
-      })
+          allCandidateResources ++= candidateRes.map(_.resource)
+          acc + (sfOcc -> candidateRes.toList)
+        })
 
     val tokensDistinct = tokens.distinct.sortBy(_.id)
 
@@ -139,10 +140,11 @@ class DBTwoStepDisambiguator(
         -1
       )
 
-      aSfOcc.featureValue[Array[TokenType]]("token_types") match {
+      aSfOcc.featureValue[Array[TokenType]]("token_types") match { // TODO doesn't really work yet for vector stuff
         case Some(t) => eNIL.setFeature(new Score("P(s|e)", contextSimilarity.nilScore(t)))
         case _ =>
       }
+
 
       val nilContextScore = contextSimilarity.nilScore(tokensDistinct)
 
@@ -151,18 +153,17 @@ class DBTwoStepDisambiguator(
       val nilEntityScore = mixture.getScore(eNIL)
 
       //Get all other entities:
-      val candOccs = occs.getOrElse(aSfOcc, List[Candidate]())
-        .map{ cand: Candidate => {
+      val candOccs: List[DBpediaResourceOccurrence] = occs.getOrElse(aSfOcc, List[Candidate]()).map{ cand: Candidate => {
         val resOcc = new DBpediaResourceOccurrence(
           "",
-          cand.resource,
-          cand.surfaceForm,
-          aSfOcc.context,
-          aSfOcc.textOffset,
-          Provenance.Undefined,
-          0.0,
-          0.0,
-          contextScores(cand.resource)
+          resource = cand.resource,
+          surfaceForm = cand.surfaceForm,
+          context = aSfOcc.context,
+          textOffset = aSfOcc.textOffset,
+          provenance = Provenance.Undefined,
+          similarityScore = 0.0,
+          percentageOfSecondRank = 0.0,
+          contextualScore = contextScores(cand.resource)
         )
 
         //Set the scores as features for the resource occurrence:

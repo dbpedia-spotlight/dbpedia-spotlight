@@ -560,13 +560,19 @@
                 -->
             </dependency>
 
-            <dependency>
+            <!--dependency>
                 <groupId>org.scalanlp</groupId>
                 <artifactId>breeze-learn_2.10</artifactId>
                 <version>0.3</version>
-                <!--
+
                     License: Apache Software License, Version 2.0
-                -->
+
+            </dependency-->
+
+            <dependency>
+                <groupId>org.scalanlp</groupId>
+                <artifactId>breeze_2.10</artifactId>
+                <version>0.10</version>
             </dependency>
 
             <dependency>

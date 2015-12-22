@@ -113,6 +113,15 @@ object MemoryStore {
   }
   )
 
+  kryos.put(classOf[MemoryVectorStore].getSimpleName,{
+    val kryo = new Kryo()
+    kryo.setRegistrationRequired(true)
+
+    kryo.register(classOf[MemoryVectorStore], new KryoSerializableSerializer())
+
+    kryo
+  })
+
 
   kryos.put(classOf[MemoryTokenTypeStore].getSimpleName,
   {
@@ -186,6 +195,11 @@ object MemoryStore {
     val s = load[MemoryContextStore](in, classOf[MemoryContextStore].getSimpleName, Some(quantizedCountStore))
     s.tokenStore = tokenStore
     s.calculateTotalTokenCounts()
+    s
+  }
+
+  def loadVectorStore(in: InputStream) = {
+    val s: MemoryVectorStore = load[MemoryVectorStore](in, classOf[MemoryVectorStore].getSimpleName)
     s
   }
 
