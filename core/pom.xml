@@ -230,6 +230,12 @@
             <artifactId>scalaz-core_2.10</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-actors</artifactId>
+            <version>2.10.5</version>
+        </dependency>
+
         <!--dependency>
             <groupId>org.scalanlp</groupId>
             <artifactId>breeze-learn_2.10</artifactId>
@@ -237,14 +243,8 @@
 
         <dependency>
             <groupId>org.scalanlp</groupId>
-            <artifactId>breeze-math_2.9.2</artifactId>
-            <version>0.2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.scalanlp</groupId>
-            <artifactId>breeze-math_2.9.2</artifactId>
-            <version>0.2</version>
+            <artifactId>breeze_2.10</artifactId>
+            <version>0.10</version>
         </dependency>
 
 

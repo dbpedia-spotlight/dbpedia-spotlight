@@ -199,8 +199,7 @@ object MemoryStore {
   }
 
   def loadVectorStore(in: InputStream) = {
-    val s: MemoryVectorStore = load[MemoryVectorStore](in, classOf[MemoryVectorStore].getSimpleName)
-    s
+    load[MemoryVectorStore](in, classOf[MemoryVectorStore].getSimpleName)
   }
 
   def loadFSADictionary(in: InputStream): FSADictionary = {
