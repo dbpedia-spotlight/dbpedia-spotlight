@@ -1,19 +1,22 @@
 package org.dbpedia.spotlight.db
 
+import java.util
+
 import concurrent.{TokenizerWrapper, SpotterWrapper}
 import org.dbpedia.spotlight.db.memory.{MemoryVectorStore, MemoryContextStore, MemoryStore}
 import model._
 import opennlp.tools.tokenize.{TokenizerModel, TokenizerME}
 import opennlp.tools.sentdetect.{SentenceModel, SentenceDetectorME}
 import opennlp.tools.postag.{POSModel, POSTaggerME}
-import org.dbpedia.spotlight.disambiguate.mixtures.UnweightedMixture
+import org.dbpedia.spotlight.disambiguate.mixtures.{LogLinearFeatureMixture, LinearRegressionFeatureMixture, Mixture, UnweightedMixture}
 import org.dbpedia.spotlight.db.similarity.{VectorContextSimilarity, NoContextSimilarity, GenerativeContextSimilarity, ContextSimilarity}
+import org.dbpedia.spotlight.log.SpotlightLog
 import scala.collection.JavaConverters._
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy
 import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ
 import org.dbpedia.spotlight.spot.{SpotXmlParser, Spotter}
-import java.io.{IOException, File, FileInputStream}
+import java.io.{Reader, IOException, File, FileInputStream}
 import java.util.{Locale, Properties}
 import opennlp.tools.chunker.ChunkerModel
 import opennlp.tools.namefind.TokenNameFinderModel
@@ -29,6 +32,8 @@ class SpotlightModel(val tokenizer: TextTokenizer,
                      val properties: Properties)
 
 object SpotlightModel {
+  //val featureNames = List("P(e|s)", "P(c|e)", "P(e)", "bias", "P(e|s)", "resource==sf")
+  val featureNames = List("P(s|e)", "P(c|e)", "P(e)", "resource==sf", "bias")
 
   def loadStopwords(modelFolder: File): Set[String] = scala.io.Source.fromFile(new File(modelFolder, "stopwords.list")).getLines().map(_.trim()).toSet
   def loadSpotterThresholds(file: File): Seq[Double] = scala.io.Source.fromFile(file).getLines().next().split(" ").map(_.toDouble)
@@ -59,13 +64,13 @@ object SpotlightModel {
       null
     } else if (new File(modelDataFolder, "context.mem").exists()) {
       MemoryStore.loadContextStore(new FileInputStream(new File(modelDataFolder, "context.mem")), tokenTypeStore, quantizedCountsStore)
-    } else {
+    } else{
       null
     }
 
     val vectorStore = if (new File(modelDataFolder, "vectors.mem").exists()){
       MemoryStore.loadVectorStore(new FileInputStream(new File(modelDataFolder, "vectors.mem")))
-    } else {
+    }else{
       null
     }
 
@@ -98,8 +103,8 @@ object SpotlightModel {
 
     def contextSimilarity(): ContextSimilarity = {
       if (vectorStore != null) {
-        new VectorContextSimilarity(vectorStore)
-      } else if (contextStore != null) {
+        new VectorContextSimilarity(tokenTypeStore, vectorStore)
+      }else if (contextStore != null) {
         new GenerativeContextSimilarity(tokenTypeStore, contextStore)
       } else {
         new NoContextSimilarity(MathUtil.ln(1.0))
@@ -125,11 +130,41 @@ object SpotlightModel {
         tokenTypeStore
       ).asInstanceOf[TextTokenizer]
 
-      createTokenizer()
+      if(cores.size == 1)
+        createTokenizer()
+      else
+        new TokenizerWrapper(cores.map(_ => createTokenizer())).asInstanceOf[TextTokenizer]
 
     } else {
       val locale = properties.getProperty("locale").split("_")
       new LanguageIndependentTokenizer(stopwords, stemmer(), new Locale(locale(0), locale(1)), tokenTypeStore)
+    }
+
+    val mixture = if(new File(modelFolder, "ranklib-model.txt").exists()) {
+      val weightsLineElements = scala.io.Source.fromFile(new File(modelFolder, "ranklib-model.txt")).getLines().toArray.last.split(" ")
+      val weights = weightsLineElements.map { (elem: String) =>
+        elem.substring(2).toDouble
+      }
+      if (weights.length == featureNames.length) {
+        val featuresAndWeights: List[(String, Double)] = featureNames.zip(weights)
+
+        SpotlightLog.info(this.getClass, "Using LLM weights: %s".format(
+          featuresAndWeights.map {
+            case (name, weight) =>
+              "%s=%s".format(name, weight)
+          }.reduce(_ + ", " + _)
+        ))
+
+        new LogLinearFeatureMixture(
+          featuresAndWeights
+        )
+      }else{
+        SpotlightLog.warn(this.getClass, "Could not load LLM weights, wrong number of weights in file! Using UnweightedMixture.")
+        new UnweightedMixture(featureNames.toSet)
+      }
+    } else{
+      SpotlightLog.info(this.getClass, "No weights found - using unweighted mixture.")
+      new UnweightedMixture(featureNames.toSet)
     }
 
     val searcher      = new DBCandidateSearcher(resStore, sfStore, candMapStore)
@@ -138,7 +173,7 @@ object SpotlightModel {
       sfStore,
       resStore,
       searcher,
-      new UnweightedMixture(Set("P(e)", "P(c|e)", "P(s|e)")),
+      mixture,
       contextSimilarity()
     ))
 
@@ -162,8 +197,12 @@ object SpotlightModel {
         Some(loadSpotterThresholds(new File(modelFolder, "spotter_thresholds.txt")))
       ).asInstanceOf[Spotter]
 
-
-      createSpotter()
+      if(cores.size == 1)
+        createSpotter()
+      else
+        new SpotterWrapper(
+          cores.map(_ => createSpotter())
+        ).asInstanceOf[Spotter]
 
     } else {
       val dict = MemoryStore.loadFSADictionary(new FileInputStream(new File(modelFolder, "fsa_dict.mem")))

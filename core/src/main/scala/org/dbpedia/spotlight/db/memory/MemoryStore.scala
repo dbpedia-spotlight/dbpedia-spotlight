@@ -198,7 +198,7 @@ object MemoryStore {
     s
   }
 
-  def loadVectorStore(in: InputStream): MemoryVectorStore = {
+  def loadVectorStore(in: InputStream) = {
     load[MemoryVectorStore](in, classOf[MemoryVectorStore].getSimpleName)
   }
 

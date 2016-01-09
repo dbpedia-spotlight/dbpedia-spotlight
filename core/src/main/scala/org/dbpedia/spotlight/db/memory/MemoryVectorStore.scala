@@ -3,7 +3,6 @@ package org.dbpedia.spotlight.db.memory
 import breeze.linalg.{DenseVector, Transpose, DenseMatrix}
 import com.esotericsoftware.kryo.io.{Output, Input}
 import com.esotericsoftware.kryo.{Kryo, KryoSerializable}
-import org.dbpedia.spotlight.log.SpotlightLog
 import org.dbpedia.spotlight.model.{TokenType, DBpediaResource}
 
 /**
@@ -33,16 +32,18 @@ class MemoryVectorStore extends MemoryStore with KryoSerializable{
   }
 
   def onNilIndex(string: String) = {
-    SpotlightLog.warn(this.getClass, "Warning: token " + string + " not in dictionary! Lookup returning null vector.")
+    //println("Warning: token " + string + " not in dictionary! Lookup returning null vector.")
     -1
   }
 
   def lookup(resource: DBpediaResource): Transpose[DenseVector[Float]]={
+    //println("Looking up " + resource + "..")
     lookupItem(resourceIdToVectorIndex.getOrElse(resource.id, onNilIndex(resource.getFullUri)))
 
   }
 
   def lookup(token: TokenType): Transpose[DenseVector[Float]]={
+    //println("Looking up " + token + "..")
     lookupItem(tokenTypeIdToVectorIndex.getOrElse(token.id, onNilIndex(token.tokenType)))
 
   }
@@ -85,7 +86,7 @@ class MemoryVectorStore extends MemoryStore with KryoSerializable{
         vectors(rowIdx,colIdx) = input.readFloat()
       }
     }
-    
+
     assert(input.readString() == "# RESOURCEDICT")
     val resourceNum = input.readInt()
     resourceIdToVectorIndex = (0 to resourceNum-1).map { i =>

@@ -54,7 +54,7 @@
     </modules>
 
     <build>
-        <pluginManagement>
+         <pluginManagement>
             <plugins>
                 <plugin>
                     <groupId>net.alchim31.maven</groupId>
@@ -171,12 +171,12 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--
-             <plugin>
-                 <groupId>org.apache.maven.plugins</groupId>
-                 <artifactId>maven-install-plugin</artifactId>
-             </plugin>
-             -->
+           <!--
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+            </plugin>
+            -->
         </plugins>
     </build>
 
@@ -564,7 +564,9 @@
                 <groupId>org.scalanlp</groupId>
                 <artifactId>breeze-learn_2.10</artifactId>
                 <version>0.3</version>
+
                     License: Apache Software License, Version 2.0
+
             </dependency-->
 
             <dependency>
@@ -977,3 +979,4 @@
     </pluginRepositories>
 
 </project>
+

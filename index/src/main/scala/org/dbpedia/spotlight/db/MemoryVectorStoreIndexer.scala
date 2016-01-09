@@ -43,7 +43,7 @@ class MemoryVectorStoreIndexer(modelPath: File, dictPath: File){
           case e: DBpediaResourceNotFoundException=> {
             failedResources += 1
             if (failedResources % 1000 == 0){
-              println("Can't find resource: " + key.replace("DBPEDIA_ID/", ""))
+              println("Can't find resource: " + key)
             }
           }
         }
