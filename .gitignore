@@ -3,7 +3,9 @@
 .classpath
 .project
 .settings/
+data_quickstart
 target
 *.log
 *~
 index/output
+dist

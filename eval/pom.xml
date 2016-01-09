@@ -97,7 +97,6 @@
             <artifactId>jung</artifactId>
             <version>0.6</version>
         </dependency>
-
         <dependency>
             <groupId>org.dbpedia.spotlight</groupId>
             <artifactId>webgraph</artifactId>
@@ -118,11 +117,11 @@
         <dependency>
             <groupId>com.thoughtworks.paranamer</groupId>
             <artifactId>paranamer</artifactId>
-       </dependency>
+        </dependency>
 
-       <dependency>
-           <groupId>net.htmlparser.jericho</groupId>
-           <artifactId>jericho-html</artifactId>
+        <dependency>
+            <groupId>net.htmlparser.jericho</groupId>
+            <artifactId>jericho-html</artifactId>
         </dependency>
 
         <dependency>
