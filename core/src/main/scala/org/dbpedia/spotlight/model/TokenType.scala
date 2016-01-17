@@ -19,6 +19,7 @@ class TokenType(val id: Int, val tokenType: String, val count: Int) {
   }
 
   override def toString = "%s (%d)".format(tokenType, count)
+  def isStopWord(): Boolean = this.equals(TokenType.STOPWORD)
 
 }
 
