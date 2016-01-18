@@ -56,4 +56,7 @@ class OpenNLPStringTokenizer(tokenizer: opennlp.tools.tokenize.Tokenizer, stemme
 
   def tokenizePos(text: String): Array[Span] = this.synchronized{ tokenizer.tokenizePos(text) }
 
+  override def setThreadSafe(isThreadSafe: Boolean) {
+
+  }
 }

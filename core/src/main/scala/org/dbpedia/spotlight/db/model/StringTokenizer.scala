@@ -10,4 +10,5 @@ trait StringTokenizer {
   def tokenize(text: String): Seq[String]
   def tokenizePos(text: String): Array[Span]
 
+  def setThreadSafe(isThreadSafe: Boolean)
 }

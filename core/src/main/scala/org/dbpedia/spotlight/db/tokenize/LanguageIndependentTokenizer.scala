@@ -62,6 +62,9 @@ class LanguageIndependentStringTokenizer(locale: Locale, stemmer: Stemmer, stopW
 
   def tokenizePos(text: String): Array[Span] = baseTokenizer.tokenizeWords(locale, text)
 
+  override def setThreadSafe(isThreadSafe: Boolean): Unit = {
+    baseTokenizer.isThreadSafe = isThreadSafe
+  }
 }
 
 
@@ -112,13 +115,13 @@ object Helper {
 
 }
 
-class BaseLanguageIndependentTokenizer(locale: Locale) {
+class BaseLanguageIndependentTokenizer(locale: Locale, var isThreadSafe: Boolean = true) {
   val wordBreakIterator = BreakIterator.getWordInstance(locale)
   def tokenizeWords(locale: Locale, text: String): Array[Span] =
-    Helper.tokenizeString(locale, wordBreakIterator, text)
+    Helper.tokenizeString(locale, if(isThreadSafe) BreakIterator.getWordInstance(locale) else wordBreakIterator, text)
 
   val sentenceBreakIterator = BreakIterator.getSentenceInstance(locale)
   def tokenizeSentences(locale: Locale, text: String): Array[Span] =
-    Helper.tokenizeString(locale, sentenceBreakIterator, text)
+    Helper.tokenizeString(locale, if(isThreadSafe) BreakIterator.getSentenceInstance(locale) else sentenceBreakIterator, text)
 
 }
