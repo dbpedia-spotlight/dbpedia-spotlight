@@ -9,10 +9,18 @@ class SnowballStemmer(stemmer: SnowballProgram) extends Stemmer {
     this(Class.forName("org.tartarus.snowball.ext.%s".format(s)).newInstance().asInstanceOf[SnowballProgram])
   }
 
-  override def stem(token: String): String = this.synchronized {
-    stemmer.setCurrent(token.toLowerCase)
-    stemmer.stem()
-    stemmer.getCurrent
+  override def stem(token: String): String = {
+    if (isThreadSafe) {
+      this.synchronized {
+        stemmer.setCurrent(token.toLowerCase)
+        stemmer.stem()
+        stemmer.getCurrent
+      }
+    } else {
+      stemmer.setCurrent(token.toLowerCase)
+      stemmer.stem()
+      stemmer.getCurrent
+    }
   }
 
 }

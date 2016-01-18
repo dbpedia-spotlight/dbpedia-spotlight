@@ -57,13 +57,14 @@ class LanguageIndependentStringTokenizer(locale: Locale, stemmer: Stemmer, stopW
   def tokenizeUnstemmed(text: String): Seq[String] = {
     baseTokenizer.tokenizeWords(locale, text).map{ s: Span =>
       text.substring(s.getStart, s.getEnd)
-    }.filter(s => !stopWords.contains(s))
+    }.filter(s => !stopWords.contains(s.toLowerCase))
   }
 
   def tokenizePos(text: String): Array[Span] = baseTokenizer.tokenizeWords(locale, text)
 
   override def setThreadSafe(isThreadSafe: Boolean): Unit = {
     baseTokenizer.isThreadSafe = isThreadSafe
+    stemmer.isThreadSafe = isThreadSafe
   }
 }
 
