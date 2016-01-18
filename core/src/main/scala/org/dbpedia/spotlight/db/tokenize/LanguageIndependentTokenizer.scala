@@ -21,15 +21,17 @@ class LanguageIndependentTokenizer(
   var tokenTypeStore: TokenTypeStore
 ) extends BaseTextTokenizer(tokenTypeStore, stemmer) {
 
+  val baseTokenizer = new BaseLanguageIndependentTokenizer(locale)
+
   def getStringTokenizer: BaseStringTokenizer = new LanguageIndependentStringTokenizer(locale, stemmer, stopWords)
 
   def tokenize(text: Text): List[Token] = {
 
-    Helper.tokenizeSentences(locale, text.text).map{ sentencePos: Span =>
+    baseTokenizer.tokenizeSentences(locale, text.text).map{ sentencePos: Span =>
 
       val sentence = text.text.substring(sentencePos.getStart, sentencePos.getEnd)
 
-      val sentenceTokenPos = Helper.tokenizeWords(locale, sentence)
+      val sentenceTokenPos = baseTokenizer.tokenizeWords(locale, sentence)
       val sentenceTokens   = sentenceTokenPos.map(s => sentence.substring(s.getStart, s.getEnd))
 
       (0 to sentenceTokens.size-1).map{ i: Int =>
@@ -50,13 +52,15 @@ class LanguageIndependentTokenizer(
 
 class LanguageIndependentStringTokenizer(locale: Locale, stemmer: Stemmer, stopWords: Set[String] = Set()) extends BaseStringTokenizer(stemmer) {
 
+  val baseTokenizer = new BaseLanguageIndependentTokenizer(locale)
+
   def tokenizeUnstemmed(text: String): Seq[String] = {
-    Helper.tokenizeWords(locale, text).map{ s: Span =>
+    baseTokenizer.tokenizeWords(locale, text).map{ s: Span =>
       text.substring(s.getStart, s.getEnd)
     }.filter(s => !stopWords.contains(s))
   }
 
-  def tokenizePos(text: String): Array[Span] = Helper.tokenizeWords(locale, text)
+  def tokenizePos(text: String): Array[Span] = baseTokenizer.tokenizeWords(locale, text)
 
 }
 
@@ -78,13 +82,6 @@ object Helper {
 
     normalizedText
   }
-
-  def tokenizeWords(locale: Locale, text: String): Array[Span] =
-    tokenizeString(locale, BreakIterator.getWordInstance(locale), text)
-
-  def tokenizeSentences(locale: Locale, text: String): Array[Span] =
-    tokenizeString(locale, BreakIterator.getSentenceInstance(locale), text)
-
 
   def tokenizeString(locale: Locale, it: BreakIterator, text: String): Array[Span] = {
     val normalizedText = normalize(locale, text)
@@ -112,5 +109,16 @@ object Helper {
 
     spans.toArray
   }
+
+}
+
+class BaseLanguageIndependentTokenizer(locale: Locale) {
+  val wordBreakIterator = BreakIterator.getWordInstance(locale)
+  def tokenizeWords(locale: Locale, text: String): Array[Span] =
+    Helper.tokenizeString(locale, wordBreakIterator, text)
+
+  val sentenceBreakIterator = BreakIterator.getSentenceInstance(locale)
+  def tokenizeSentences(locale: Locale, text: String): Array[Span] =
+    Helper.tokenizeString(locale, sentenceBreakIterator, text)
 
 }
