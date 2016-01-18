@@ -1,12 +1,13 @@
 package org.dbpedia.spotlight.db.tokenize
 
-import org.tartarus.snowball.SnowballProgram
-import org.dbpedia.spotlight.model.{Feature, TokenType, Token, Text}
-import opennlp.tools.util.Span
-import java.util.Locale
 import java.text.BreakIterator
-import collection.mutable.ArrayBuffer
-import org.dbpedia.spotlight.db.model.{TokenTypeStore, Stemmer}
+import java.util.Locale
+
+import opennlp.tools.util.Span
+import org.dbpedia.spotlight.db.model.{Stemmer, TokenTypeStore}
+import org.dbpedia.spotlight.model.{Feature, Text, Token, TokenType}
+
+import scala.collection.mutable.ArrayBuffer
 
 
 /**
@@ -20,7 +21,7 @@ class LanguageIndependentTokenizer(
   var tokenTypeStore: TokenTypeStore
 ) extends BaseTextTokenizer(tokenTypeStore, stemmer) {
 
-  def getStringTokenizer: BaseStringTokenizer = new LanguageIndependentStringTokenizer(locale, stemmer)
+  def getStringTokenizer: BaseStringTokenizer = new LanguageIndependentStringTokenizer(locale, stemmer, stopWords)
 
   def tokenize(text: Text): List[Token] = {
 
@@ -47,12 +48,12 @@ class LanguageIndependentTokenizer(
   }
 }
 
-class LanguageIndependentStringTokenizer(locale: Locale, stemmer: Stemmer) extends BaseStringTokenizer(stemmer) {
+class LanguageIndependentStringTokenizer(locale: Locale, stemmer: Stemmer, stopWords: Set[String] = Set()) extends BaseStringTokenizer(stemmer) {
 
   def tokenizeUnstemmed(text: String): Seq[String] = {
     Helper.tokenizeWords(locale, text).map{ s: Span =>
       text.substring(s.getStart, s.getEnd)
-    }.toSeq
+    }.filter(s => !stopWords.contains(s))
   }
 
   def tokenizePos(text: String): Array[Span] = Helper.tokenizeWords(locale, text)
