@@ -79,16 +79,55 @@ echo "Working directory: $WDIR"
 
 mkdir -p $WDIR
 
+########################################################################################################
+# DBpedia extraction:
+########################################################################################################
+
 #Download:
-echo "Downloading DBpedia dumps..."
-cd $WDIR
-if [ ! -f "redirects.nt" ]; then
-  curl -# http://downloads.dbpedia.org/current/$LANGUAGE/redirects_$LANGUAGE.nt.bz2 | bzcat > redirects.nt
-  curl -# http://downloads.dbpedia.org/current/$LANGUAGE/disambiguations_$LANGUAGE.nt.bz2 | bzcat > disambiguations.nt
-  curl -# http://downloads.dbpedia.org/current/$LANGUAGE/instance_types_$LANGUAGE.nt.bz2 | bzcat > instance_types.nt
+echo "Creating DBpedia nt files..."
+cd $BASE_WDIR
+
+if [ -d extraction-framework ]; then
+    echo "Updating DBpedia Spotlight..."
+    cd extraction-framework
+    git reset --hard HEAD
+    git pull
+    mvn install
+else
+    echo "Setting up DEF..."
+    git clone git://github.com/dbpedia/extraction-framework.git
+    cd extraction-framework
+    mvn install
 fi
 
-#Set up Spotlight:
+cd dump
+
+mkdir -p $WDIR/${LANGUAGE}wiki/$(date +%Y%m%d)/
+ln -s $WDIR/dump.xml $WDIR/${LANGUAGE}wiki/$(date +%Y%m%d)/${LANGUAGE}wiki-$(date +%Y%m%d)-dump.xml
+
+cat << EOF > dbpedia.properties
+base-dir=$WDIR
+source=dump.xml
+require-download-complete=false
+languages=$LANGUAGE
+extractors=.RedirectExtractor,.DisambiguationExtractor,.MappingExtractor
+ontology=../ontology.xml
+mappings=../mappings
+uri-policy.uri=uri:en; generic:en; xml-safe-predicates:*
+format.nt.gz=n-triples;uri-policy.uri
+EOF
+
+../run extraction dbpedia.properties
+
+zcat $WDIR/${LANGUAGE}wiki/$(date +%Y%m%d)/${LANGUAGE}wiki-$(date +%Y%m%d)-instance-types.nt.gz > $WDIR/instance-types.nt
+zcat $WDIR/${LANGUAGE}wiki/$(date +%Y%m%d)/${LANGUAGE}wiki-$(date +%Y%m%d)-disambiguations-unredirected.nt.gz > $WDIR/disambiguations.nt
+zcat $WDIR/${LANGUAGE}wiki/$(date +%Y%m%d)/${LANGUAGE}wiki-$(date +%Y%m%d)-redirects.nt.gz > $WDIR/redirects.nt
+
+
+########################################################################################################
+# Setting up Spotlight:
+########################################################################################################
+
 cd $BASE_WDIR
 
 if [ -d dbpedia-spotlight ]; then
@@ -105,6 +144,10 @@ else
 fi
 
 
+########################################################################################################
+# Extracting wiki stats:
+########################################################################################################
+
 cd $BASE_WDIR
 git clone --depth 1 https://github.com/jodaiber/wikistatsextractor
 
@@ -116,7 +159,7 @@ echo "Loading Wikipedia dump into HDFS..."
 if [ "$eval" == "false" ]; then
   curl -# "http://dumps.wikimedia.org/${LANGUAGE}wiki/latest/${LANGUAGE}wiki-latest-pages-articles.xml.bz2" | bzcat > $WDIR/dump.xml
 else
-  curl -# "http://dumps.wikimedia.org/${LANGUAGE}wiki/latest/${LANGUAGE}wiki-latest-pages-articles.xml.bz2" | bzcat | python $BASE_WDIR/pig/pignlproc/utilities/split_train_test.py 12000 $WDIR/heldout.txt > $WDIR/dump.xml
+  curl -# "http://dumps.wikimedia.org/${LANGUAGE}wiki/latest/${LANGUAGE}wiki-latest-pages-articles.xml.bz2" | bzcat | python $BASE_WDIR/pig/pignlproc/utilities/split_train_test.py 1200 $WDIR/heldout.txt > $WDIR/dump.xml
 fi
 
 cd $WDIR
@@ -133,6 +176,10 @@ fi
 cd $BASE_WDIR/wikistatsextractor
 mvn install exec:java -Dexec.args="--output_folder $WDIR $LANGUAGE $2 $4Stemmer $WDIR/dump.xml $WDIR/stopwords.$LANGUAGE.list"
 
+########################################################################################################
+# Building Spotlight model:
+########################################################################################################
+
 #Create the model:
 cd $BASE_WDIR/dbpedia-spotlight
 
@@ -142,5 +189,7 @@ if [ "$eval" == "true" ]; then
   mvn -pl eval exec:java -Dexec.mainClass=org.dbpedia.spotlight.evaluation.EvaluateSpotlightModel -Dexec.args="$TARGET_DIR $WDIR/heldout.txt" > $TARGET_DIR/evaluation.txt
 fi
 
-echo "Finished!"
+echo "Finished! Cleaning up..."
+rm -f $WDIR/dump.xml
+
 set +e
