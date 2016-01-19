@@ -56,6 +56,7 @@ class WikipediaToDBpediaClosure (
 
   val WikiURL = """http://([a-z]+)[.]wikipedia[.]org/wiki/(.*)$""".r
   val DBpediaURL = """http://([a-z]+)[.]dbpedia[.]org/resource/(.*)$""".r
+  val DBpediaENURL = """http://dbpedia[.]org/resource/(.*)$""".r
 
   private def cutOffBeforeAnchor(url: String): String = {
     if(url.contains("%23")) //Take only the part of the URI before the last anchor (#)
@@ -82,6 +83,7 @@ class WikipediaToDBpediaClosure (
   private def decodedNameFromURL(url: String): String = url match {
     case WikiURL(language, title) =>  WikiUtil.wikiEncode(decodeURL(removeLeadingSlashes(cutOffBeforeAnchor(title))))
     case DBpediaURL(language, title) => decodeURL(removeLeadingSlashes(cutOffBeforeAnchor(title)))
+    case DBpediaENURL(title) => decodeURL(removeLeadingSlashes(cutOffBeforeAnchor(title)))
     case _ => throw new NotADBpediaResourceException("Resource is a disambiguation page."); SpotlightLog.error(this.getClass, "Invalid Wikipedia URL %s", url); null
   }
 
