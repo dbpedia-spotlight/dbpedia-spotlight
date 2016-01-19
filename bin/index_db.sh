@@ -24,7 +24,7 @@ usage ()
 opennlp="None"
 eval="false"
 
-while getopts "ledo:" opt; do
+while getopts "eo:" opt; do
   case $opt in
     o) opennlp="$OPTARG";;
     e) eval="true";;
@@ -78,6 +78,27 @@ echo "Language: $LANGUAGE"
 echo "Working directory: $WDIR"
 
 mkdir -p $WDIR
+
+########################################################################################################
+# Preparing the data.
+########################################################################################################
+
+echo "Loading Wikipedia dump..."
+if [ "$eval" == "false" ]; then
+  curl -# "http://dumps.wikimedia.org/${LANGUAGE}wiki/latest/${LANGUAGE}wiki-latest-pages-articles.xml.bz2" | bzcat > $WDIR/dump.xml
+else
+  curl -# "http://dumps.wikimedia.org/${LANGUAGE}wiki/latest/${LANGUAGE}wiki-latest-pages-articles.xml.bz2" | bzcat | python $BASE_DIR/scripts/split_train_test.py 1200 $WDIR/heldout.txt > $WDIR/dump.xml
+fi
+
+cd $WDIR
+cp $STOPWORDS stopwords.$LANGUAGE.list
+
+if [ -e "$opennlp/$LANGUAGE-token.bin" ]; then
+  cp "$opennlp/$LANGUAGE-token.bin" "$LANGUAGE.tokenizer_model" || echo "tokenizer already exists"
+else
+  touch "$LANGUAGE.tokenizer_model"
+fi
+
 
 ########################################################################################################
 # DBpedia extraction:
@@ -151,26 +172,8 @@ fi
 cd $BASE_WDIR
 git clone --depth 1 https://github.com/jodaiber/wikistatsextractor
 
-cd $BASE_DIR
-
 # Stop processing if one step fails
 set -e
-echo "Loading Wikipedia dump into HDFS..."
-if [ "$eval" == "false" ]; then
-  curl -# "http://dumps.wikimedia.org/${LANGUAGE}wiki/latest/${LANGUAGE}wiki-latest-pages-articles.xml.bz2" | bzcat > $WDIR/dump.xml
-else
-  curl -# "http://dumps.wikimedia.org/${LANGUAGE}wiki/latest/${LANGUAGE}wiki-latest-pages-articles.xml.bz2" | bzcat | python $BASE_WDIR/pig/pignlproc/utilities/split_train_test.py 1200 $WDIR/heldout.txt > $WDIR/dump.xml
-fi
-
-cd $WDIR
-cp $STOPWORDS stopwords.$LANGUAGE.list || echo "stopwords already in HDFS"
-
-if [ -e "$opennlp/$LANGUAGE-token.bin" ]; then
-  cp "$opennlp/$LANGUAGE-token.bin" "$LANGUAGE.tokenizer_model" || echo "tokenizer already exists"
-else
-  touch "$LANGUAGE.tokenizer_model"
-fi
-
 
 #Copy results to local:
 cd $BASE_WDIR/wikistatsextractor
