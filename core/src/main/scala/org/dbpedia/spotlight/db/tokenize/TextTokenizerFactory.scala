@@ -14,7 +14,7 @@ class TextTokenizerFactory(locale: Locale, stemmerString: String, stopWordsFile:
     val stopWords =  scala.io.Source.fromFile(stopWordsFile).getLines().map(_.trim()).toSet
 
     val stemmer = stemmerString match {
-      case "" => new Stemmer
+      case "" | "None" => new Stemmer
       case s => new SnowballStemmer(s)
     }
 
