@@ -195,4 +195,9 @@ fi
 echo "Finished! Cleaning up..."
 rm -f $WDIR/dump.xml
 
+echo "Collecting data..."
+cd $BASE_DIR
+mkdir -p data/$LANGUAGE
+mv $WDIR/*Counts data/$LANGUAGE
+
 set +e
