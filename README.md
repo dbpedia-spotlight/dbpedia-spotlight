@@ -53,7 +53,7 @@ If you use DBpedia Spotlight in your research, please cite the following paper:
 ```
 
 
-More information on citation and how to cite the deprecated Lucene version can be found [here](wiki/Citation).
+More information on citation and how to cite the deprecated Lucene version can be found [here](https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Citation).
 
 ## Documentation
 
