@@ -174,6 +174,7 @@ fi
 ########################################################################################################
 
 cd $BASE_WDIR
+rm -Rf wikistatsextractor
 git clone --depth 1 https://github.com/jodaiber/wikistatsextractor
 
 # Stop processing if one step fails
