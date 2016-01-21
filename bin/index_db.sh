@@ -135,12 +135,17 @@ base-dir=$WDIR
 source=dump.xml
 require-download-complete=false
 languages=$LANGUAGE
-extractors=.RedirectExtractor,.DisambiguationExtractor,.MappingExtractor
 ontology=../ontology.xml
 mappings=../mappings
 uri-policy.uri=uri:en; generic:en; xml-safe-predicates:*
 format.nt.gz=n-triples;uri-policy.uri
 EOF
+
+if [[ ",ga,ar,be,bg,bn,ced,cs,cy,da,eo,et,fa,fi,gl,hi,hr,hu,id,ja,lt,lv,mk,mt,sk,sl,sr,tr,ur,vi,war,zh," == *",$LANGUAGE,"* ]]; then #Languages with no disambiguation definitions
+     echo "extractors=.RedirectExtractor,.MappingExtractor" >> dbpedia.properties
+else:
+     echo "extractors=.RedirectExtractor,.DisambiguationExtractor,.MappingExtractor" >> dbpedia.properties
+fi
 
 ../run extraction dbpedia.properties
 
