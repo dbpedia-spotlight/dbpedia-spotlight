@@ -20,7 +20,7 @@ You can use our demonstration [Web Service](http://github.com/dbpedia-spotlight/
 
 #### Run your own server
 
-If you need service reliability and lower response times, you can run DBpedia Spotlight in your own [In-House Server](https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Installation). Just download a model and Spotlight from [here](spotlight.sztaki.hu/downloads/) to get started.
+If you need service reliability and lower response times, you can run DBpedia Spotlight in your own [In-House Server](https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Installation). Just download a model and Spotlight from [here](http://spotlight.sztaki.hu/downloads/) to get started.
 
     wget http://spotlight.sztaki.hu/downloads/dbpedia-spotlight-latest.jar
     wget http://spotlight.sztaki.hu/downloads/latest_models/en.tar.gz
