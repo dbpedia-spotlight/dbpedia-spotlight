@@ -203,7 +203,7 @@ if [ "$eval" == "true" ]; then
 fi
 
 curl https://raw.githubusercontent.com/dbpedia-spotlight/model-quickstarter/master/model_readme.txt > $TARGET_DIR/README.txt
-curl "$WIKI_MIRROR/${LANGUAGE}wiki/latest/${LANGUAGEwiki-latest-pages-articyles.xml.bz2-rss.xml" | grep link | sed -e 's/^.*<link>//' -e 's/<[/]link>.*$//' | uniq >> $TARGET_DIR/README.txt
+curl "$WIKI_MIRROR/${LANGUAGE}wiki/latest/${LANGUAGE}wiki-latest-pages-articles.xml.bz2-rss.xml" | grep link | sed -e 's/^.*<link>//' -e 's/<[/]link>.*$//' | uniq >> $TARGET_DIR/README.txt
 
 echo "Finished! Cleaning up..."
 rm -f $WDIR/dump.xml
