@@ -143,7 +143,7 @@ EOF
 
 if [[ ",ga,ar,be,bg,bn,ced,cs,cy,da,eo,et,fa,fi,gl,hi,hr,hu,id,ja,lt,lv,mk,mt,sk,sl,sr,tr,ur,vi,war,zh," == *",$LANGUAGE,"* ]]; then #Languages with no disambiguation definitions
      echo "extractors=.RedirectExtractor,.MappingExtractor" >> dbpedia.properties
-else:
+else
      echo "extractors=.RedirectExtractor,.DisambiguationExtractor,.MappingExtractor" >> dbpedia.properties
 fi
 
