@@ -5,7 +5,7 @@ DBpedia Spotlight looks for ~3.5M things of unknown or ~320 known types in text 
 
 #### Demonstration
 
-Go to our [Demonstration](http://spotlight.dbpedia.org/demo/) page, copy+paste some text and play with the parameters to see how it works.
+Go to our [Demonstration](http://dbpedia-spotlight.github.io/demo/) page, copy+paste some text and play with the parameters to see how it works.
 
 #### Call our web service
 
