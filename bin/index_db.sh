@@ -149,7 +149,7 @@ fi
 
 ../run extraction dbpedia.properties
 
-zcat $WDIR/${LANGUAGE}wiki/$(date +%Y%m%d)/${LANGUAGE}wiki-$(date +%Y%m%d)-instance-types.nt.gz > $WDIR/instance_types.nt
+zcat $WDIR/${LANGUAGE}wiki/$(date +%Y%m%d)/${LANGUAGE}wiki-$(date +%Y%m%d)-instance-types*.nt.gz  > $WDIR/instance_types.nt
 zcat $WDIR/${LANGUAGE}wiki/$(date +%Y%m%d)/${LANGUAGE}wiki-$(date +%Y%m%d)-disambiguations-unredirected.nt.gz > $WDIR/disambiguations.nt
 zcat $WDIR/${LANGUAGE}wiki/$(date +%Y%m%d)/${LANGUAGE}wiki-$(date +%Y%m%d)-redirects.nt.gz > $WDIR/redirects.nt
 
