@@ -3,6 +3,7 @@ package org.dbpedia.spotlight.db.memory
 import breeze.linalg.{DenseVector, Transpose, DenseMatrix}
 import com.esotericsoftware.kryo.io.{Output, Input}
 import com.esotericsoftware.kryo.{Kryo, KryoSerializable}
+import org.dbpedia.spotlight.log.SpotlightLog
 import org.dbpedia.spotlight.model.{TokenType, DBpediaResource}
 
 /**
@@ -32,7 +33,7 @@ class MemoryVectorStore extends MemoryStore with KryoSerializable{
   }
 
   def onNilIndex(string: String) = {
-    //println("Warning: token " + string + " not in dictionary! Lookup returning null vector.")
+    SpotlightLog.debug(this.getClass, "Warning: token " + string + " not in dictionary! Lookup returning null vector.")
     -1
   }
 
