@@ -23,11 +23,13 @@ usage ()
 
 opennlp="None"
 eval="false"
+blacklist="false"
 
 while getopts "eo:" opt; do
   case $opt in
     o) opennlp="$OPTARG";;
     e) eval="true";;
+    b) blacklist="$OPTARG";;
   esac
 done
 
@@ -188,6 +190,12 @@ set -e
 #Copy results to local:
 cd $BASE_WDIR/wikistatsextractor
 mvn install exec:java -Dexec.args="--output_folder $WDIR $LANGUAGE $2 $4Stemmer $WDIR/dump.xml $WDIR/stopwords.$LANGUAGE.list"
+
+if [ "$blacklist" != "false" ]; then
+  echo "Removing blacklist URLs..."
+  mv $WDIR/uriCounts $WDIR/uriCounts_all
+  grep -v -f $blacklist $WDIR/uriCounts_all > $WDIR/uriCounts
+fi
 
 ########################################################################################################
 # Building Spotlight model:
