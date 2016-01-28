@@ -45,7 +45,7 @@ object SurfaceFormSource {
           //Read the total count: If there is no total count for the
           //surface form, we use -1 to encode this case for handling
           //in later steps.
-          val countTotal = if( line.size == 3 ) line(2).toInt else -1
+          val countTotal = if( line.size == 3 && line(2).toInt > 0 ) line(2).toInt else -1
 
           sfMap.put(
             surfaceform,
