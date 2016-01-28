@@ -18,7 +18,7 @@
 
 package org.dbpedia.spotlight.model
 
-import java.lang.{Short, String}
+import java.lang.Short
 
 /**
  * Representation of types (DBpedia, Freebase, Schema.org, etc.)
@@ -160,3 +160,45 @@ class OpenCycConcept(var name : String) extends OntologyType {
 object OpenCycConcept {
     val OPENCYCCONCEPT_PREFIX = "http://sw.opencyc.org/concept/"
 }
+
+@SerialVersionUID(80376624015095324l)
+class WikidataType(var name : String) extends OntologyType {
+
+  name = name.replace(WikidataType.WIKIDATATYPE_PREFIX, "")
+
+  def equals(that : WikidataType) : Boolean = {
+    name.equalsIgnoreCase(that.name)
+  }
+
+  override def getFullUri = WikidataType.WIKIDATATYPE_PREFIX + name
+  override def typeID = "Wikidata:" + name
+
+
+}
+
+object WikidataType {
+  val WIKIDATATYPE_PREFIX = "http://www.wikidata.org/entity/"
+}
+
+
+
+@SerialVersionUID(8037662409415095324l)
+class DULType(var name : String) extends OntologyType {
+
+  name = name.replace(DULType.DULTYPE_PREFIX, "")
+
+  def equals(that : DULType) : Boolean = {
+    name.equalsIgnoreCase(that.name)
+  }
+
+  override def getFullUri = DULType.DULTYPE_PREFIX + name
+  override def typeID = "DUL:" + name
+
+
+}
+
+object DULType {
+  val DULTYPE_PREFIX = "http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#"
+}
+
+
