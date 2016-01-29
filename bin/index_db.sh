@@ -14,10 +14,10 @@ export MAVEN_OPTS="-Xmx26G"
 
 usage ()
 {
-     echo "index_db.sh"
-     echo "usage: ./index_db.sh -o /data/spotlight/nl/opennlp wdir nl_NL /data/spotlight/nl/stopwords.nl.list Dutch /data/spotlight/nl/final_model"
-     echo "Create a database-backed model of DBpedia Spotlight for a specified language."
-     echo " "
+  echo "index_db.sh"
+  echo "usage: ./index_db.sh -o /data/spotlight/nl/opennlp wdir nl_NL /data/spotlight/nl/stopwords.nl.list Dutch /data/spotlight/nl/final_model"
+  echo "Create a database-backed model of DBpedia Spotlight for a specified language."
+  echo " "
 }
 
 
@@ -44,35 +44,26 @@ fi
 
 BASE_DIR=$(pwd)
 
-if [[ "$1"  = /* ]]
-then
-   BASE_WDIR="$1"
-else
-   BASE_WDIR="$BASE_DIR/$1"
-fi
+function get_path {
+  if [[ "$1"  = /* ]]
+  then
+    echo "$1"
+  else
+   echo "$BASE_DIR/$1"
+  fi
+}
 
-if [[ "$5" = /* ]]
-then
-   TARGET_DIR="$5"
-else
-   TARGET_DIR="$BASE_DIR/$5"
-fi
-
-if [[ "$3" = /* ]]
-then
-   STOPWORDS="$3"
-else
-   STOPWORDS="$BASE_DIR/$3"
-fi
-
+BASE_WDIR=$(get_path $1)
+TARGET_DIR=$(get_path $5)
+STOPWORDS=$(get_path $3)
 WDIR="$BASE_WDIR/$2"
 
-if [[ "$opennlp" == "None" ]]; then
-    echo "";
-elif [[ "$opennlp" != /* ]]; then
-    opennlp="$BASE_DIR/$opennlp";
+if [[ "$opennlp" != "None" ]]; then
+  opennlp=$(get_path $opennlp)
 fi
-
+if [[ "$blacklist" != "false" ]]; then
+  blacklist=$(get_path $blacklist)
+fi
 
 LANGUAGE=`echo $2 | sed "s/_.*//g"`
 
