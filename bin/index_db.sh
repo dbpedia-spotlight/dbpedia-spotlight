@@ -120,8 +120,11 @@ fi
 
 cd dump
 
-mkdir -p $WDIR/${LANGUAGE}wiki/$(date +%Y%m%d)/
-ln -s $WDIR/dump.xml $WDIR/${LANGUAGE}wiki/$(date +%Y%m%d)/${LANGUAGE}wiki-$(date +%Y%m%d)-dump.xml
+dumpdate=$(date +%Y%m%d)
+dumpdir=$WDIR/${LANGUAGE}wiki/${dumpdate}
+
+mkdir -p $dumpdir
+ln -s $WDIR/dump.xml $dumpdir/${LANGUAGE}wiki-${dumpdate}-dump.xml
 
 cat << EOF > dbpedia.properties
 base-dir=$WDIR
@@ -142,10 +145,11 @@ fi
 
 ../run extraction dbpedia.properties
 
-zcat $WDIR/${LANGUAGE}wiki/$(date +%Y%m%d)/${LANGUAGE}wiki-$(date +%Y%m%d)-instance-types*.nt.gz  > $WDIR/instance_types.nt
-zcat $WDIR/${LANGUAGE}wiki/$(date +%Y%m%d)/${LANGUAGE}wiki-$(date +%Y%m%d)-disambiguations-unredirected.nt.gz > $WDIR/disambiguations.nt
-zcat $WDIR/${LANGUAGE}wiki/$(date +%Y%m%d)/${LANGUAGE}wiki-$(date +%Y%m%d)-redirects.nt.gz > $WDIR/redirects.nt
+zcat $dumpdir/${LANGUAGE}wiki-${dumpdate}-instance-types*.nt.gz > $WDIR/instance_types.nt
+zcat $dumpdir/${LANGUAGE}wiki-${dumpdate}-disambiguations-unredirected.nt.gz > $WDIR/disambiguations.nt
+zcat $dumpdir/${LANGUAGE}wiki-${dumpdate}-redirects.nt.gz > $WDIR/redirects.nt
 
+rm -Rf $dumpdir
 
 ########################################################################################################
 # Setting up Spotlight:
@@ -188,6 +192,10 @@ if [ "$blacklist" != "false" ]; then
   grep -v -f $blacklist $WDIR/uriCounts_all > $WDIR/uriCounts
 fi
 
+echo "Finished wikistats extraction. Cleaning up..."
+rm -f $WDIR/dump.xml
+
+
 ########################################################################################################
 # Building Spotlight model:
 ########################################################################################################
@@ -204,12 +212,10 @@ fi
 curl https://raw.githubusercontent.com/dbpedia-spotlight/model-quickstarter/master/model_readme.txt > $TARGET_DIR/README.txt
 curl "$WIKI_MIRROR/${LANGUAGE}wiki/latest/${LANGUAGE}wiki-latest-pages-articles.xml.bz2-rss.xml" | grep link | sed -e 's/^.*<link>//' -e 's/<[/]link>.*$//' | uniq >> $TARGET_DIR/README.txt
 
-echo "Finished! Cleaning up..."
-rm -f $WDIR/dump.xml
 
 echo "Collecting data..."
 cd $BASE_DIR
-mkdir -p data/$LANGUAGE
-mv $WDIR/*Counts data/$LANGUAGE
+mkdir -p data/$LANGUAGE && mv $WDIR/*Counts data/$LANGUAGE
+gzip $WDIR/*.nt &
 
 set +e
