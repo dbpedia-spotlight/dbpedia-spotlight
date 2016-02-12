@@ -39,11 +39,6 @@ If you need service reliability and lower response times, you can run DBpedia Sp
 
 Models and raw data for most languages are available [here](http://spotlight.sztaki.hu/downloads/).
 
-
-#### Build from source
-
-We provide a [Java/Scala API](http://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Java%2FScala%20API) for you to use our code in your application.
-
 [![Build Status](https://secure.travis-ci.org/dbpedia-spotlight/dbpedia-spotlight.png?branch=master)](http://travis-ci.org/dbpedia-spotlight/dbpedia-spotlight)
 
 ## Licenses
