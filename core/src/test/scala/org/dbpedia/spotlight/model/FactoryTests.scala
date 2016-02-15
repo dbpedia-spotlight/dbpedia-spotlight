@@ -1,9 +1,6 @@
 package org.dbpedia.spotlight.model
 
-
-import org.dbpedia.spotlight.exceptions.ItemNotFoundException
-import io.Source
-import org.junit.{Before, Test}
+import org.junit.Test
 import org.junit.Assert._
 
 /**
@@ -87,7 +84,7 @@ class FactoryTests {
 
         // now test method used in the new TwoStepDisambiguator
         val created2 = Factory.DBpediaResourceOccurrence.from(sfOcc,r,(2000,0.5))
-        assertEquals(created2.resource.support,2000)
+        assertEquals(created2.resource.support,1000)
 
 
     }
