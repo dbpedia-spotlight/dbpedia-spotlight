@@ -5,8 +5,10 @@ import de.l3s.boilerpipe.extractors.ArticleExtractor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.exceptions.InputException;
+import org.xml.sax.InputSource;
 
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -49,17 +51,20 @@ public class ServerUtils {
             textToProcess = text;
         }else if (!inUrl.equals("")) {
             LOG.info("Parsing URL to get main content");
-            URL url = null;
             try {
-                url = new URL(inUrl);
+                URL url = new URL(inUrl);
+                InputSource is = new InputSource();
+                is.setEncoding("UTF-8");
+                is.setByteStream(url.openStream());
                 textToProcess = ArticleExtractor.INSTANCE.getText(url);
             } catch (MalformedURLException e) {
-                // e.printStackTrace();
                 LOG.error("Input URL is not valid");
                 textToProcess = "";
             } catch (BoilerpipeProcessingException e) {
-                e.printStackTrace();
                 LOG.error("Boilerpipe Cannot process the web page");
+                textToProcess = "";
+            } catch (IOException e) {
+                LOG.error("Input URL is not available");
                 textToProcess = "";
             }
 
