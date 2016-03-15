@@ -21,11 +21,10 @@ class OpenNLPTokenizer(
 
   def tokenize(text: Text): List[Token] = this.synchronized {
     sentenceDetector.sentPosDetect(text.text).map{ sentencePos: Span =>
+      val sentence = sentencePos.getCoveredText(text.text).toString()
 
-      val sentence = text.text.substring(sentencePos.getStart, sentencePos.getEnd)
-
-      val sentenceTokens   = tokenizer.tokenize(sentence)
       val sentenceTokenPos = tokenizer.tokenizePos(sentence)
+      val sentenceTokens   = Span.spansToStrings(sentenceTokenPos, sentence)
       val posTags          = if(posTagger != null) posTagger.tag(sentenceTokens) else Array[String]()
 
       (0 to sentenceTokens.size-1).map{ i: Int =>
