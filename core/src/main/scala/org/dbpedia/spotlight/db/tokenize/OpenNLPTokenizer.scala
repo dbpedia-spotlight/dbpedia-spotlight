@@ -1,8 +1,8 @@
 package org.dbpedia.spotlight.db.tokenize
 
 import opennlp.tools.sentdetect.SentenceDetector
-import opennlp.tools.postag.POSTagger
-import org.dbpedia.spotlight.model.{Feature, TokenType, Token, Text}
+import opennlp.tools.postag.POSTaggerME
+import org.dbpedia.spotlight.model.{Feature, Score, TokenType, Token, Text}
 import opennlp.tools.util.Span
 import org.dbpedia.spotlight.db.model.{TokenTypeStore, Stemmer}
 
@@ -11,11 +11,11 @@ import org.dbpedia.spotlight.db.model.{TokenTypeStore, Stemmer}
  */
 
 class OpenNLPTokenizer(
-  tokenizer: opennlp.tools.tokenize.Tokenizer,
+  tokenizer: opennlp.tools.tokenize.TokenizerME,
   stopWords: Set[String],
   stemmer: Stemmer,
   sentenceDetector: SentenceDetector,
-  var posTagger: POSTagger,
+  var posTagger: POSTaggerME,
   tokenTypeStore: TokenTypeStore
 ) extends BaseTextTokenizer(tokenTypeStore, stemmer) {
 
@@ -25,7 +25,10 @@ class OpenNLPTokenizer(
 
       val sentenceTokenPos = tokenizer.tokenizePos(sentence)
       val sentenceTokens   = Span.spansToStrings(sentenceTokenPos, sentence)
+      val tokensProbs      = tokenizer.getTokenProbabilities()
+
       val posTags          = if(posTagger != null) posTagger.tag(sentenceTokens) else Array[String]()
+      val posTagsProbs     = if(posTagger != null) posTagger.probs() else Array[Double]()
 
       (0 to sentenceTokens.size-1).map{ i: Int =>
         val token = if (stopWords contains sentenceTokens(i)) {
@@ -33,9 +36,12 @@ class OpenNLPTokenizer(
         } else {
           new Token(sentenceTokens(i), sentencePos.getStart + sentenceTokenPos(i).getStart, getStemmedTokenType(sentenceTokens(i)))
         }
+        token.setFeature(new Score("token-prob", tokensProbs(i)))
 
-        if(posTagger != null)
+        if(posTagger != null) {
           token.setFeature(new Feature("pos", posTags(i)))
+          token.setFeature(new Score("pos-prob", posTagsProbs(i)))
+        }
 
         if(i == sentenceTokens.size-1)
           token.setFeature(new Feature("end-of-sentence", true))
