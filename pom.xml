@@ -659,15 +659,6 @@
             </dependency>
 
             <dependency>
-                <groupId>scala.ahocorasick</groupId>
-                <artifactId>spotter-aho</artifactId>
-                <version>0.1</version>
-                <!--
-                    License: Apache Software License, Version 2.0
-                -->
-            </dependency>
-
-            <dependency>
                 <groupId>org.apache.opennlp</groupId>
                 <artifactId>opennlp-tools</artifactId>
                 <version>1.5.3</version>
