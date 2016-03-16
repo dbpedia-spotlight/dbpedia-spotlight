@@ -49,7 +49,6 @@
         <module>index</module>
         <module>eval</module>
         <module>uima</module>
-        <module>dist</module>
     </modules>
 
     <build>
