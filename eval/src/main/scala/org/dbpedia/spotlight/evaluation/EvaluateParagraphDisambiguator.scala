@@ -141,12 +141,7 @@ object EvaluateParagraphDisambiguator {
     }
 
     def main(args : Array[String]) {
-        //val indexDir: String = args(0)  //"e:\\dbpa\\data\\index\\index-that-works\\Index.wikipediaTraining.Merged."
-
-        //val config = new SpotlightConfiguration(args(0))
         val spotlightModel = SpotlightModel.fromFolder(new File(args(0)))
-        //val (_, sfStore, resStore, candMapStore, _, _) = SpotlightModel.storesFromFolder(new File(args(0)))
-        //val (_sfstore, _resstore, _candmstore) = spotlightModel
 
         val wikipediaToDBpediaClosure = new WikipediaToDBpediaClosure(
             spotlightModel.properties.getProperty("namespace"),
