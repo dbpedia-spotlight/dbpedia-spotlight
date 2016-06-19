@@ -1,4 +1,4 @@
-# DBpedia Spotlight
+    # DBpedia Spotlight
 #### Shedding Light on the Web of Documents
 
 DBpedia Spotlight looks for ~3.5M things of unknown or ~320 known types in text and tries to link them to their global unique identifiers in [DBpedia](http://dbpedia.org). 
@@ -28,12 +28,51 @@ or for JSON:
 
 #### Run your own server
 
+##### Download jar file and data
+
 If you need service reliability and lower response times, you can run DBpedia Spotlight in your own [In-House Server](https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Installation). Just download a model and Spotlight from [here](http://spotlight.sztaki.hu/downloads/) to get started.
 
-    wget http://spotlight.sztaki.hu/downloads/dbpedia-spotlight-latest.jar
-    wget http://spotlight.sztaki.hu/downloads/latest_models/en.tar.gz
-    tar xzf en.tar.gz
-    java -jar dbpedia-spotlight-latest.jar en http://localhost:2222/rest
+1. wget http://spotlight.sztaki.hu/downloads/dbpedia-spotlight-latest.jar
+2. wget http://spotlight.sztaki.hu/downloads/latest_models/en.tar.gz
+3. tar xzf en.tar.gz
+4. java -jar dbpedia-spotlight-latest.jar en http://localhost:2222/rest
+
+Note that `en` above represents the path to the english model downloaded from step 2, and
+`http://localhost:2222/rest` is the mountpoint of the spotlight server.
+Although you can change the base address and port, you cannot change the `/rest` mountpoint.
+
+##### Build From source
+
+If you want to run the latest version of spotlight (to be packaged as v0.8), you should do the following:
+
+1. Clone this repository
+2. Checkout development branch (`git checkout -b development origin/development`, where `origin` is the name of the official spotlight remote)
+3. Build the package `cd dbpedia-spotlight && mvn clean package` (needs java 7 and maven installed)
+4. Download an entity model (as per step 2 in the subsection above)
+5. Uncompress the language model tarball (as per step 3 in the subsection above)
+6. Run the spotlight server (as per step 4 in the subsection above, the jar file is build on `dist/target` folder)
+
+Note: the current development branch (v0.8) works with the vanilla datasets provided in the steps above,
+but it also works with datasets containing (i) weights for a Log-Linear Model for disambiguation,
+and (ii) serialized dense vector representations (word2vec) that would be loaded and used in the desambiguation step.
+The weights comprise of a simple `ranklib-model.txt` file that should be included in the language model's folder (if it's not there already) with content as follows:
+
+```
+## Coordinate Ascent
+## Restart = 5
+## MaxIteration = 25
+## StepBase = 0.05
+## StepScale = 2.0
+## Tolerance = 0.001
+## Regularized = false
+## Slack = 0.001
+1:0.37391416006434364 2:0.07140601847073497 3:0.2616870643056067 4:0.07643781575763943 5:0.21655494140167517
+```
+
+The serialized dense vectors should be placed under a `word2vec` folder inside the spotlight language model's root.
+Most of the work done in the general of these vectors is done by Idio's [wiki2vec](https://github.com/idio/wiki2vec) plus some tooling.
+The use of these models is extremely experimental, so testing and bug reporting is very welcome.
+A full wiki on how to generate these dense vector representations and obtain the LLVM weights is in the works, but for a tentative guide see (this document)[https://github.com/phdowling/gsoc-progress/wiki/Final-Summary]
 
 #### Models and data
 

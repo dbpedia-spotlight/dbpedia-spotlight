@@ -23,7 +23,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
-        <dbpedia.spotlight.version>0.7</dbpedia.spotlight.version>
+        <dbpedia.spotlight.version>0.8</dbpedia.spotlight.version>
 
         <java.compiler.version>1.6</java.compiler.version>
         <scala.compiler.version>2.10.4</scala.compiler.version>
@@ -39,7 +39,7 @@
 
     <groupId>org.dbpedia.spotlight</groupId>
     <artifactId>spotlight</artifactId>
-    <version>0.7</version>
+    <version>0.8</version>
     <packaging>pom</packaging>
     <name>DBpedia Spotlight annotation framework (parent POM)</name>
 
