@@ -33,7 +33,7 @@ class MemoryVectorStore extends MemoryStore with KryoSerializable{
   }
 
   def onNilIndex(string: String) = {
-    SpotlightLog.warn(this.getClass, "Warning: token " + string + " not in dictionary! Lookup returning null vector.")
+    SpotlightLog.debug(this.getClass, "Warning: token " + string + " not in dictionary! Lookup returning null vector.")
     -1
   }
 
@@ -85,7 +85,7 @@ class MemoryVectorStore extends MemoryStore with KryoSerializable{
         vectors(rowIdx,colIdx) = input.readFloat()
       }
     }
-    
+
     assert(input.readString() == "# RESOURCEDICT")
     val resourceNum = input.readInt()
     resourceIdToVectorIndex = (0 to resourceNum-1).map { i =>

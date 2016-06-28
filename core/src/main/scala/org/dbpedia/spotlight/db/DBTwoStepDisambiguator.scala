@@ -12,6 +12,7 @@ import scala.collection.JavaConversions._
 import scala.collection.mutable.ArrayBuffer
 import org.dbpedia.spotlight.log.SpotlightLog
 import org.dbpedia.spotlight.util.MathUtil
+import scala.math.abs
 
 
 /**
@@ -27,13 +28,13 @@ import org.dbpedia.spotlight.util.MathUtil
  */
 
 class DBTwoStepDisambiguator(
-  tokenStore: TokenTypeStore,
-  surfaceFormStore: SurfaceFormStore,
-  resourceStore: ResourceStore,
-  val candidateSearcher: DBCandidateSearcher,
-  mixture: Mixture,
-  contextSimilarity: ContextSimilarity
-) extends ParagraphDisambiguator {
+                              tokenStore: TokenTypeStore,
+                              surfaceFormStore: SurfaceFormStore,
+                              resourceStore: ResourceStore,
+                              val candidateSearcher: DBCandidateSearcher,
+                              mixture: Mixture,
+                              val contextSimilarity: ContextSimilarity
+                              ) extends ParagraphDisambiguator {
 
   /* Tokenizer that may be used for tokenization if the text is not already tokenized. */
   var tokenizer: TextTokenizer = null
@@ -56,7 +57,7 @@ class DBTwoStepDisambiguator(
     //Tokenize the text if it wasn't tokenized before:
     if (tokenizer != null) {
       SpotlightLog.info(this.getClass, "Tokenizing input text...")
-      val tokens = tokenizer.tokenize(paragraph.text)
+      val tokens: List[Token] = tokenizer.tokenize(paragraph.text)
       paragraph.text.setFeature(new Feature("tokens", tokens))
     }
 
@@ -103,26 +104,26 @@ class DBTwoStepDisambiguator(
     var allCandidateResources = Set[DBpediaResource]()
     val occs = occurrences.foldLeft(
       Map[SurfaceFormOccurrence, List[Candidate]]())(
-      (acc, sfOcc) => {
+        (acc, sfOcc) => {
 
-        SpotlightLog.debug(this.getClass, "Searching...")
+          SpotlightLog.debug(this.getClass, "Searching...")
 
-        val candidateRes = {
+          val candidateRes = {
 
-          val cands = candidateSearcher.getCandidates(sfOcc.surfaceForm)
-          SpotlightLog.debug(this.getClass, "# candidates for: %s = %s.", sfOcc.surfaceForm, cands.size)
+            val cands = candidateSearcher.getCandidates(sfOcc.surfaceForm)
+            SpotlightLog.debug(this.getClass, "# candidates for: %s = %s.", sfOcc.surfaceForm, cands.size)
 
-          if (cands.size > MAX_CANDIDATES) {
-            SpotlightLog.debug(this.getClass, "Reducing number of candidates to %d.", MAX_CANDIDATES)
-            cands.toList.sortBy( -_.prior ).take(MAX_CANDIDATES).toSet
-          } else {
-            cands
+            if (cands.size > MAX_CANDIDATES) {
+              SpotlightLog.debug(this.getClass, "Reducing number of candidates to %d.", MAX_CANDIDATES)
+              cands.toList.sortBy( -_.prior ).take(MAX_CANDIDATES).toSet
+            } else {
+              cands
+            }
           }
-        }
 
-        allCandidateResources ++= candidateRes.map(_.resource)
-        acc + (sfOcc -> candidateRes.toList)
-      })
+          allCandidateResources ++= candidateRes.map(_.resource)
+          acc + (sfOcc -> candidateRes.toList)
+        })
 
     val tokensDistinct = tokens.distinct.sortBy(_.id)
 
@@ -145,32 +146,49 @@ class DBTwoStepDisambiguator(
         case _ =>
       }
 
-      val nilContextScore = contextSimilarity.nilScore(tokensDistinct)
+      eNIL.setFeature(new Score("P(e|s)", MathUtil.ln(1 - aSfOcc.surfaceForm.annotationProbability)))
 
+      val nilContextScore = contextSimilarity.nilScore(tokensDistinct)
+      eNIL.setFeature(new Score("bias", MathUtil.ln(1)))
+      eNIL.setFeature(new Score("resource==sf", MathUtil.ln(1.0)))
       eNIL.setFeature(new Score("P(c|e)", nilContextScore))
       eNIL.setFeature(new Score("P(e)",   MathUtil.ln( 1 / surfaceFormStore.getTotalAnnotatedCount.toDouble ) )) //surfaceFormStore.getTotalAnnotatedCount = total number of entity mentions
       val nilEntityScore = mixture.getScore(eNIL)
 
       //Get all other entities:
-      val candOccs = occs.getOrElse(aSfOcc, List[Candidate]())
-        .map{ cand: Candidate => {
+      val candOccs: List[DBpediaResourceOccurrence] = occs.getOrElse(aSfOcc, List[Candidate]()).map{ cand: Candidate => {
         val resOcc = new DBpediaResourceOccurrence(
           "",
-          cand.resource,
-          cand.surfaceForm,
-          aSfOcc.context,
-          aSfOcc.textOffset,
-          Provenance.Undefined,
-          0.0,
-          0.0,
-          contextScores(cand.resource)
+          resource = cand.resource,
+          surfaceForm = cand.surfaceForm,
+          context = aSfOcc.context,
+          textOffset = aSfOcc.textOffset,
+          provenance = Provenance.Undefined,
+          similarityScore = 0.0,
+          percentageOfSecondRank = 0.0,
+          contextualScore = contextScores(cand.resource)
         )
 
         //Set the scores as features for the resource occurrence:
 
-        //Note that this is not mathematically correct, since the candidate prior is P(e|s),
-        //the correct P(s|e) should be MathUtil.ln( cand.support / cand.resource.support.toDouble )
-        resOcc.setFeature(new Score("P(s|e)", MathUtil.ln( cand.prior )))
+        resOcc.setFeature(new Score("bias", MathUtil.ln(1)))
+        resOcc.setFeature(new Score("P(s|e)", MathUtil.ln( cand.support / cand.resource.support.toDouble )))
+        resOcc.setFeature(new Score("P(e|s)", MathUtil.ln( cand.prior )))
+
+        val sfResSimilarity = {
+          val resString = resOcc.resource.uri.replace("_", " ").toLowerCase
+          val sfString = resOcc.surfaceForm.name.toLowerCase
+          val strLenDiff = abs(resString.length - sfString.length)
+          val totalLength = if (resString.length > sfString.length) resString.length else sfString.length
+          val commonChars = resString.zip(sfString).map{
+            case (char1, char2) =>
+              if (char1 == char2) 1 else 0
+          }.sum
+
+          commonChars.toDouble / totalLength.toDouble
+        }
+        //SpotlightLog.info(this.getClass, "Similarity between %s and %s is %s".format(resOcc.resource.uri, resOcc.surfaceForm.name, sfResSimilarity))
+        resOcc.setFeature(new Score("resource==sf", MathUtil.ln(sfResSimilarity + 1.0)))
         resOcc.setFeature(new Score("P(c|e)", resOcc.contextualScore))
         resOcc.setFeature(new Score("P(e)",   MathUtil.ln( cand.resource.prior )))
 

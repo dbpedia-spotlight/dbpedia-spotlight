@@ -1,9 +1,13 @@
 package org.dbpedia.spotlight.db
 
 import io._
-import java.io.{FileOutputStream, FileInputStream, File}
-import org.dbpedia.spotlight.db.memory.{MemoryQuantizedCountStore, MemoryStore}
+import java.io.{PrintWriter, FileOutputStream, FileInputStream, File}
+import org.dbpedia.spotlight.db.io.ranklib.{RanklibTrainingDataWriter, TrainingDataEntry}
+import org.dbpedia.spotlight.db.memory.{MemoryCandidateMapStore, MemoryQuantizedCountStore, MemoryStore}
 import model.{TextTokenizer, StringTokenizer, Stemmer}
+import org.dbpedia.spotlight.db.DBCandidateSearcher
+import org.dbpedia.spotlight.db.similarity.VectorContextSimilarity
+import org.dbpedia.spotlight.disambiguate.mixtures.UnweightedMixture
 import org.dbpedia.spotlight.log.SpotlightLog
 import scala.io.Source
 import org.tartarus.snowball.SnowballProgram
@@ -19,6 +23,8 @@ import tokenize._
 import scala.Some
 import scala.collection.immutable.HashMap
 import scala.collection.mutable
+
+import org.dbpedia.spotlight.model._
 
 /**
  * This script creates a Spotlight model folder from the results of
@@ -269,7 +275,6 @@ object CreateSpotlightModel {
         "1.0 0.2 -0.2 0.1" //Defaults!
       )
 
-
     if (new File(rawDataFolder, "wiki2vec_syn0.csv").exists() && new File(rawDataFolder, "wiki2vec_ids.txt").exists()){
       SpotlightLog.debug(this.getClass, "Found vector file, building vectors.mem store.")
       val memoryVectorStoreIndexer: MemoryVectorStoreIndexer =
@@ -283,6 +288,8 @@ object CreateSpotlightModel {
     } else {
       SpotlightLog.info(this.getClass, "No vectors supplied, not building memory vector store.")
     }
+
+
 
   }
 

@@ -23,7 +23,7 @@
     <parent>
         <groupId>org.dbpedia.spotlight</groupId>
         <artifactId>spotlight</artifactId>
-        <version>0.7</version>
+        <version>0.8</version>
     </parent>
 
     <artifactId>rest</artifactId>
