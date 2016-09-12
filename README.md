@@ -1,4 +1,4 @@
-# DBpedia Spotlight
+# DBpedia Spotlight [![Build Status](https://secure.travis-ci.org/dbpedia-spotlight/dbpedia-spotlight.png?branch=master)](http://travis-ci.org/dbpedia-spotlight/dbpedia-spotlight)
 #### Shedding Light on the Web of Documents
 
 DBpedia Spotlight looks for ~3.5M things of unknown or ~320 known types in text and tries to link them to their global unique identifiers in [DBpedia](http://dbpedia.org). 
@@ -38,8 +38,6 @@ If you need service reliability and lower response times, you can run DBpedia Sp
 #### Models and data
 
 Models and raw data for most languages are available [here](http://spotlight.sztaki.hu/downloads/).
-
-[![Build Status](https://secure.travis-ci.org/dbpedia-spotlight/dbpedia-spotlight.png?branch=master)](http://travis-ci.org/dbpedia-spotlight/dbpedia-spotlight)
 
 ## Citation
 
