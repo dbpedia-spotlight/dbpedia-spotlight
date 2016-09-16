@@ -49,8 +49,6 @@
         <module>index</module>
         <module>eval</module>
         <module>uima</module>
-        <module>dist</module>
-        <module>rest-tomcat</module>
     </modules>
 
     <build>
@@ -657,15 +655,6 @@
                 <version>6.0.4</version>
                 <!--
                   License: BSD 3-Clause
-                -->
-            </dependency>
-
-            <dependency>
-                <groupId>scala.ahocorasick</groupId>
-                <artifactId>spotter-aho</artifactId>
-                <version>0.1</version>
-                <!--
-                    License: Apache Software License, Version 2.0
                 -->
             </dependency>
 

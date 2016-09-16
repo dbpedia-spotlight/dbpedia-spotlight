@@ -59,8 +59,7 @@ public class SpotterConfiguration {
         KeyphraseSpotter,
         OpenNLPChunkerSpotter,
         WikiMarkupSpotter,
-        SpotXmlParser,
-        AhoCorasickSpotter
+        SpotXmlParser
     }
 
 
@@ -137,16 +136,6 @@ public class SpotterConfiguration {
             if (!new File(getOpenNLPModelDir()).exists())
                 throw new ConfigurationException(String.format("OpenNLP model directory was not found. It is required by %s.", NESpotter.class));
             setOpenNLPModelsURI();
-        }
-
-        //Validate AhoCorasickSpotter
-        if(spotters.contains(SpotterPolicy.AhoCorasickSpotter))
-        {
-            //Load spotter configuration:
-            spotterSurfaceForms = config.getProperty("org.dbpedia.spotlight.spot.ahocorasick.surfaceforms").trim();
-            if(!new File(spotterSurfaceForms).isFile()) {
-                throw new ConfigurationException("Cannot find surfaceForms file "+spotterSurfaceForms);
-            }
         }
 
     }

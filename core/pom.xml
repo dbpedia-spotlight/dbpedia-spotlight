@@ -221,11 +221,6 @@
         </dependency>
 
         <dependency>
-            <groupId>scala.ahocorasick</groupId>
-            <artifactId>spotter-aho</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.scalaz</groupId>
             <artifactId>scalaz-core_${scala.compiler.version}</artifactId>
         </dependency>

@@ -13,7 +13,6 @@ import collection.JavaConversions
 import org.apache.lucene.analysis._
 import org.dbpedia.spotlight.log.SpotlightLog
 import org.apache.lucene.analysis.standard.{StandardAnalyzer, ClassicAnalyzer}
-import org.dbpedia.spotlight.spot.ahocorasick.AhoCorasickSpotter
 
 /**
  * This class evaluates spotters by taking an annotated corpus, indexing its surface forms,
@@ -30,8 +29,7 @@ object EvalSpotter {
   }
 
   def spotterMethods: List[Traversable[SurfaceForm] => Spotter] = {
-    getLingPipeSpotters :::
-      getAhoCorasickSpotter
+    getLingPipeSpotters
   }
 
   def main(args: Array[String]) {
@@ -41,13 +39,6 @@ object EvalSpotter {
     }
   }
 
-
-  private def getAhoCorasickSpotter: List[Traversable[SurfaceForm] => Spotter] = {
-    List({
-      sfs: Traversable[SurfaceForm] =>
-        AhoCorasickSpotter.fromSurfaceForms(sfs.map(_.name), caseSensitive = false, overlap = false)
-    })
-  }
 
   private def getLingPipeSpotters: List[Traversable[SurfaceForm] => Spotter] = {
     // LingPipe with different analyzers
