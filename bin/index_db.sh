@@ -78,7 +78,7 @@ mkdir -p $WDIR
 
 echo "Loading Wikipedia dump..."
 if [ -z "$WIKI_MIRROR" ]; then
-  WIKI_MIRROR="http://dumps.wikimedia.org/"
+  WIKI_MIRROR="https://dumps.wikimedia.org/"
 fi
 
 if [ "$eval" == "false" ]; then
