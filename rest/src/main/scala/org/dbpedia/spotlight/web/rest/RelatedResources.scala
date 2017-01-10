@@ -46,7 +46,7 @@ import net.liftweb.json.JsonDSL._
 
 
 /**
- * 
+ *
  * @author pablomendes
  */
 class RelatedResources {

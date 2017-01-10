@@ -14,8 +14,8 @@ object EvaluateSpotlightModel {
 
   def main(args: Array[String]) {
 
-    val model = SpotlightModel.fromFolder(new File(args(0)))
-    val (_, sfStore, resStore, candMapStore, _) = SpotlightModel.storesFromFolder(new File(args(0)))
+    val model = BaseSpotlightModel.fromFolder(new File(args(0)))
+    val (_, sfStore, resStore, candMapStore, _) = BaseSpotlightModel.storesFromFolder(new File(args(0)))
 
     val memLoaded = (Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / (1024 * 1024)
     System.err.println("Memory footprint (model loaded): %s".format( memLoaded ) )

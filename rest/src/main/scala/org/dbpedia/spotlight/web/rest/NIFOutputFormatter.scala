@@ -20,6 +20,8 @@ import org.dbpedia.spotlight.model.{DBpediaResourceOccurrence, SurfaceFormOccurr
 import java.util.List
 import org.aksw.spotlight.nif.bean.NIFBean
 import java.util
+import org.dbpedia.spotlight.web.rest.OutputManager.OutputFormat
+
 import scala.collection.JavaConversions._
 import org.aksw.spotlight.nif.business.NIFManager
 
@@ -40,7 +42,7 @@ object NIFOutputFormatter {
    * @param prefix url
    * @return the NIF representation of the annotated input text
    */
-  def fromResourceOccs(text: String, occs: List[DBpediaResourceOccurrence], format: String, prefix: String): String = {
+  def fromResourceOccs(text: String, occs: List[DBpediaResourceOccurrence], format: OutputFormat, prefix: String): String = {
 
     val list = new util.LinkedList[NIFBean]
     val root = new NIFBean
@@ -73,12 +75,12 @@ object NIFOutputFormatter {
    * @param manager
    * @return
    */
-  private def getNIFOutput(format:String,manager:NIFManager):String=
+  private def getNIFOutput(format:OutputFormat, manager:NIFManager):String=
   {
     format match {
-      case "rdfxml" =>  manager.getRDFxml
-      case "ntriples" =>  manager.getNTriples
-      case "turtle" =>  manager.getTurtle
+      case OutputFormat.RDFXML =>  manager.getRDFxml
+      case OutputFormat.NTRIPLES =>  manager.getNTriples
+      case OutputFormat.TURTLE =>  manager.getTurtle
       case _ =>  manager.getTurtle
     }
   }
@@ -93,7 +95,7 @@ object NIFOutputFormatter {
    * @param prefix url
    * @return the NIF representation of the annotated input text
    */
-  def fromSurfaceFormOccs(text: String, occs: List[SurfaceFormOccurrence], format: String, prefix: String): String = {
+  def fromSurfaceFormOccs(text: String, occs: List[SurfaceFormOccurrence], format: OutputFormat, prefix: String): String = {
 
     val list = new util.LinkedList[NIFBean]
     val root = new NIFBean

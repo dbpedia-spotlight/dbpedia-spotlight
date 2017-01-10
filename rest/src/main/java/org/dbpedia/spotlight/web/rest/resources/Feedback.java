@@ -26,7 +26,6 @@ import org.dbpedia.spotlight.io.FeedbackStore;
 import org.dbpedia.spotlight.model.*;
 import org.dbpedia.spotlight.web.rest.Server;
 import org.dbpedia.spotlight.web.rest.ServerUtils;
-import org.dbpedia.spotlight.web.rest.SpotlightInterface;
 import org.dbpedia.spotlight.web.rest.output.Annotation;
 
 import javax.servlet.http.HttpServletRequest;
@@ -50,9 +49,12 @@ import java.util.List;
 @ApplicationPath(Server.APPLICATION_PATH)
 @Path("/feedback")
 @Consumes("text/plain")
-public class Feedback {
+public class Feedback extends BaseRestResource {
 
-    Log LOG = LogFactory.getLog(this.getClass());
+    public Feedback(){
+        LOG = LogFactory.getLog(this.getClass());
+        apiName = "feedback";
+    }
 
     @Context
     private UriInfo context;

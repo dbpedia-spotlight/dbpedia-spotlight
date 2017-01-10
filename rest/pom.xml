@@ -135,6 +135,7 @@
             <groupId>org.aksw</groupId>
             <artifactId>nif</artifactId>
         </dependency>
+
     </dependencies>
 
 </project>

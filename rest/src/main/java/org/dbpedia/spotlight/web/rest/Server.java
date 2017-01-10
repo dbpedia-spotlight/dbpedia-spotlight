@@ -22,11 +22,11 @@ import com.sun.grizzly.http.SelectorThread;
 import com.sun.jersey.api.container.grizzly.GrizzlyWebContainerFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dbpedia.spotlight.db.BaseSpotlightModel;
 import org.dbpedia.spotlight.db.SpotlightModel;
 import org.dbpedia.spotlight.db.model.TextTokenizer;
 import org.dbpedia.spotlight.disambiguate.ParagraphDisambiguatorJ;
 import org.dbpedia.spotlight.exceptions.InitializationException;
-import org.dbpedia.spotlight.exceptions.InputException;
 import org.dbpedia.spotlight.model.DBpediaResource;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SpotlightFactory;
@@ -35,8 +35,6 @@ import org.dbpedia.spotlight.sparql.SparqlQueryExecuter;
 import org.dbpedia.spotlight.spot.Spotter;
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy;
 import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy;
-import scala.collection.JavaConverters;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -81,6 +79,8 @@ public class Server {
 
     private static List<Double> similarityThresholds = new ArrayList<Double>();
 
+    public static SpotlightModel model;
+
     public static void main(String[] args) throws IOException, InterruptedException, URISyntaxException, ClassNotFoundException, InitializationException {
 
         URI serverURI = null;
@@ -104,11 +104,12 @@ public class Server {
         LOG.info(String.format("Initiated %d disambiguators.",disambiguators.size()));
         LOG.info(String.format("Initiated %d spotters.",spotters.size()));
 
+
+
         final Map<String, String> initParams = new HashMap<String, String>();
         initParams.put("com.sun.jersey.config.property.resourceConfigClass", "com.sun.jersey.api.core.PackagesResourceConfig");
         initParams.put("com.sun.jersey.config.property.packages", "org.dbpedia.spotlight.web.rest.resources");
         initParams.put("com.sun.jersey.config.property.WadlGeneratorConfig", "org.dbpedia.spotlight.web.rest.wadl.ExternalUriWadlGeneratorConfig");
-
 
         SelectorThread threadSelector = GrizzlyWebContainerFactory.create(serverURI, initParams);
         threadSelector.start();
@@ -149,68 +150,6 @@ public class Server {
             throw new InitializationException("Trying to overwrite singleton Server.disambiguators. Something fishy happened!");
     }
 
-    public static Spotter getSpotter(String name) throws InputException {
-        SpotterPolicy policy = SpotterPolicy.Default;
-        try {
-            policy = SpotterPolicy.valueOf(name);
-        } catch (IllegalArgumentException e) {
-            throw new InputException(String.format("Specified parameter spotter=%s is invalid. Use one of %s.",name,SpotterPolicy.values()));
-        }
-
-        if (spotters.size() == 0)
-            throw new InputException(String.format("No spotters were loaded. Please add one of %s.",spotters.keySet()));
-
-        Spotter spotter = spotters.get(policy);
-        if (spotter==null) {
-            throw new InputException(String.format("Specified spotter=%s has not been loaded. Use one of %s.",name,spotters.keySet()));
-        }
-        return spotter;
-    }
-
-    public static ParagraphDisambiguatorJ getDisambiguator(String name) throws InputException {
-        DisambiguationPolicy policy = DisambiguationPolicy.Default;
-        try {
-            policy = DisambiguationPolicy.valueOf(name);
-        } catch (IllegalArgumentException e) {
-            throw new InputException(String.format("Specified parameter disambiguator=%s is invalid. Use one of %s.",name,DisambiguationPolicy.values()));
-        }
-
-        if (disambiguators.size() == 0)
-            throw new InputException(String.format("No disambiguators were loaded. Please add one of %s.",disambiguators.keySet()));
-
-        ParagraphDisambiguatorJ disambiguator = disambiguators.get(policy);
-        if (disambiguator == null)
-            throw new InputException(String.format("Specified disambiguator=%s has not been loaded. Use one of %s.",name,disambiguators.keySet()));
-        return disambiguator;
-
-    }
-
-//    public static Spotter getSpotter(SpotterPolicy policy) throws InputException {
-//        Spotter spotter = spotters.get(policy);
-//        if (spotters.size()==0 || spotter==null) {
-//            throw new InputException(String.format("Specified spotter=%s has not been loaded. Use one of %s.",policy,spotters.keySet()));
-//        }
-//        return spotter;
-//    }
-//
-//    public static ParagraphDisambiguatorJ getDisambiguator(DisambiguationPolicy policy) throws InputException {
-//        ParagraphDisambiguatorJ disambiguator = disambiguators.get(policy);
-//        if (disambiguators.size() == 0 || disambiguators == null)
-//            throw new InputException(String.format("Specified disambiguator=%s has not been loaded. Use one of %s.",policy,disambiguators.keySet()));
-//        return disambiguator;
-//    }
-
-    public static SpotlightConfiguration getConfiguration() {
-        return configuration;
-    }
-
-    public static TextTokenizer getTokenizer() {
-        return tokenizer;
-    }
-
-    public static void setTokenizer(TextTokenizer tokenizer) {
-        Server.tokenizer = tokenizer;
-    }
 
     public static String getPrefixedDBpediaURL(DBpediaResource resource) {
         return namespacePrefix + resource.uri();
@@ -294,13 +233,9 @@ public class Server {
         }
 
 
-        SpotlightModel db = SpotlightModel.fromFolder(modelFolder);
+        model = BaseSpotlightModel.fromFolder(modelFolder);
 
-        setNamespacePrefix(db.properties().getProperty("namespace"));
-        setTokenizer(db.tokenizer());
-        setSpotters(db.spotters());
-        setDisambiguators(db.disambiguators());
-        setSparqlExecuter(db.properties().getProperty("endpoint", ""),db.properties().getProperty("graph", ""));
-
+        setNamespacePrefix(model.properties().getProperty("namespace"));
+        setSparqlExecuter(model.properties().getProperty("endpoint", ""),model.properties().getProperty("graph", ""));
     }
 }
