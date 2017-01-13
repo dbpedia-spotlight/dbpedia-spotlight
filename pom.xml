@@ -35,6 +35,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <spotlight.basedir>${project.basedir}</spotlight.basedir>
+        <guava.version>19.0</guava.version>
     </properties>
 
     <groupId>org.dbpedia.spotlight</groupId>
@@ -882,13 +883,21 @@
             </dependency>
 
             <dependency>
-                <groupId>org.aksw</groupId>
+                <groupId>org.nlp2rdf</groupId>
                 <artifactId>nif</artifactId>
-                <version>0.1</version>
+                <version>0.3.7-spotlight</version>
                 <!--
                   License: Apache Software License, Version 2.0
                 -->
             </dependency>
+
+
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
+
 
         </dependencies>
     </dependencyManagement>

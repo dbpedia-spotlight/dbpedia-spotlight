@@ -132,8 +132,14 @@
         </dependency>
 
         <dependency>
-            <groupId>org.aksw</groupId>
+            <groupId>org.nlp2rdf</groupId>
             <artifactId>nif</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>19.0</version>
         </dependency>
     </dependencies>
 

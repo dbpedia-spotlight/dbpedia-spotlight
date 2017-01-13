@@ -23,10 +23,10 @@ import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.model.SpotlightConfiguration;
 import org.dbpedia.spotlight.model.SurfaceFormOccurrence;
 import org.dbpedia.spotlight.model.Text;
-import org.dbpedia.spotlight.web.rest.NIFOutputFormatter;
 import org.dbpedia.spotlight.web.rest.Server;
 import org.dbpedia.spotlight.web.rest.ServerUtils;
 import org.dbpedia.spotlight.web.rest.SpotlightInterface;
+import org.dbpedia.spotlight.web.rest.nlp2rdf.NIFWrapper;
 import org.dbpedia.spotlight.web.rest.output.Annotation;
 
 import javax.servlet.http.HttpServletRequest;
@@ -112,7 +112,7 @@ public class Spot {
         try {
             String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
             List<SurfaceFormOccurrence> spots = annotationInterface.spot(spotterName, new Text(textToProcess));
-	    String response = NIFOutputFormatter.fromSurfaceFormOccs(text, spots, format, prefix);
+	    String response = NIFWrapper.fromSurfaceFormOccs(text, spots, format, prefix);
             return ServerUtils.ok(response);
         } catch (Exception e) {
             e.printStackTrace();

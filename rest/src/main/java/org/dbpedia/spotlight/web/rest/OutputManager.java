@@ -26,6 +26,7 @@ import org.dbpedia.spotlight.exceptions.OutputException;
 import org.dbpedia.spotlight.model.DBpediaResourceOccurrence;
 import org.dbpedia.spotlight.model.OntologyType;
 import org.dbpedia.spotlight.model.SurfaceForm;
+import org.dbpedia.spotlight.web.rest.nlp2rdf.NIFWrapper;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
@@ -110,7 +111,7 @@ public class OutputManager {
     }
 
     protected String makeNIF(String text, List<DBpediaResourceOccurrence> occList, String format, String prefix) throws OutputException {
-    	return NIFOutputFormatter.fromResourceOccs(text, occList, format, prefix);
+    	return NIFWrapper.fromResourceOccs(text, occList, format, prefix);
     }
 
     protected void getResourcesXml(List<DBpediaResourceOccurrence> occList, TransformerHandler hd, AttributesImpl atts) throws SAXException {
