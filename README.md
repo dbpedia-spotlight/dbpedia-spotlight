@@ -11,7 +11,7 @@ Go to our [Demonstration](http://dbpedia-spotlight.github.io/demo/) page, copy+p
 
 You can use our demonstration [Web Service](http://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Web-service) directly from your application.
 
-    curl http://spotlight.sztaki.hu:2222/rest/annotate \
+    curl http://www.dbpedia-spotlight.com/en/annotate  \
       --data-urlencode "text=President Obama called Wednesday on Congress to extend a tax break
       for students included in last year's economic stimulus package, arguing
       that the policy provides more generous assistance." \
@@ -19,7 +19,7 @@ You can use our demonstration [Web Service](http://github.com/dbpedia-spotlight/
 
 or for JSON:
 
-    curl http://spotlight.sztaki.hu:2222/rest/annotate \
+    curl http://www.dbpedia-spotlight.com/en/annotate  \
       --data-urlencode "text=President Obama called Wednesday on Congress to extend a tax break
       for students included in last year's economic stimulus package, arguing
       that the policy provides more generous assistance." \
@@ -30,14 +30,14 @@ or for JSON:
 
 If you need service reliability and lower response times, you can run DBpedia Spotlight in your own [In-House Server](https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Installation). Just download a model and Spotlight from [here](http://spotlight.sztaki.hu/downloads/) to get started.
 
-    wget http://spotlight.sztaki.hu/downloads/dbpedia-spotlight-latest.jar
-    wget http://spotlight.sztaki.hu/downloads/latest_models/en.tar.gz
+    wget http://www.dbpedia-spotlight.com/dbpedia-spotlight-latest.jar
+    wget http://www.dbpedia-spotlight.com/latest_models/en.tar.gz
     tar xzf en.tar.gz
     java -jar dbpedia-spotlight-latest.jar en http://localhost:2222/rest
 
 #### Models and data
 
-Models and raw data for most languages are available [here](http://spotlight.sztaki.hu/downloads/).
+Models and raw data for most languages are available [here](http://www.dbpedia-spotlight.com).
 
 ## Citation
 
