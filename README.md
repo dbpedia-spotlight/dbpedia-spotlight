@@ -28,16 +28,16 @@ or for JSON:
 
 #### Run your own server
 
-If you need service reliability and lower response times, you can run DBpedia Spotlight in your own [In-House Server](https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Installation). Just download a model and Spotlight from [here](http://spotlight.sztaki.hu/downloads/) to get started.
+If you need service reliability and lower response times, you can run DBpedia Spotlight in your own [In-House Server](https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Installation). Just download a model and Spotlight from [here](http://model.dbpedia-spotlight.org) to get started.
 
-    wget http://www.dbpedia-spotlight.com/dbpedia-spotlight-latest.jar
-    wget http://www.dbpedia-spotlight.com/latest_models/en.tar.gz
+    wget http://model.dbpedia-spotlight.org/dbpedia-spotlight-latest.jar
+    wget http://model.dbpedia-spotlight.org/latest_models/en.tar.gz
     tar xzf en.tar.gz
     java -jar dbpedia-spotlight-latest.jar en http://localhost:2222/rest
 
 #### Models and data
 
-Models and raw data for most languages are available [here](http://www.dbpedia-spotlight.com).
+Models and raw data for most languages are available [here](http://model.dbpedia-spotlight.org).
 
 ## Citation
 
@@ -60,7 +60,7 @@ All the original code produced for DBpedia Spotlight is licensed under  [Apache 
 The documentation on this website is shared as [Creative Commons Attribution-ShareAlike 3.0 Unported License](http://en.wikipedia.org/wiki/Wikipedia:Text_of_Creative_Commons_Attribution-ShareAlike_3.0_Unported_License).
 
 
-More information on citation and how to cite the deprecated Lucene version can be found [here](https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Citation).
+More information on citation and how to cite the deprecated Lucene version can be found [here](http://www.dbpedia-spotlight.org/publications).
 
 ## Documentation
 
