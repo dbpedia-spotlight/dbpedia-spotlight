@@ -68,4 +68,4 @@ More documentation is available from the [DBpedia Spotlight wiki](https://github
 
 ## FAQ
 
-Check the [FAQ](https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/FAQ) here
+Check the [FAQ](http://www.dbpedia-spotlight.org/faq) here
