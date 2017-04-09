@@ -4,15 +4,9 @@ import org.dbpedia.spotlight.spot.Spotter
 import org.dbpedia.spotlight.corpus.{CSAWCorpus, MilneWittenCorpus}
 import java.io.File
 import org.dbpedia.spotlight.io.AnnotatedTextSource
-import org.dbpedia.spotlight.spot.lingpipe.LingPipeSpotter
-import com.aliasi.dict.{DictionaryEntry, MapDictionary}
-import org.apache.lucene.analysis.en.EnglishAnalyzer
-import org.apache.lucene.util.Version
 import org.dbpedia.spotlight.model.{SurfaceForm, Factory, SurfaceFormOccurrence}
 import collection.JavaConversions
-import org.apache.lucene.analysis._
 import org.dbpedia.spotlight.log.SpotlightLog
-import org.apache.lucene.analysis.standard.{StandardAnalyzer, ClassicAnalyzer}
 import org.dbpedia.spotlight.spot.ahocorasick.AhoCorasickSpotter
 
 /**
@@ -30,8 +24,7 @@ object EvalSpotter {
   }
 
   def spotterMethods: List[Traversable[SurfaceForm] => Spotter] = {
-    getLingPipeSpotters :::
-      getAhoCorasickSpotter
+       getAhoCorasickSpotter
   }
 
   def main(args: Array[String]) {
@@ -49,29 +42,7 @@ object EvalSpotter {
     })
   }
 
-  private def getLingPipeSpotters: List[Traversable[SurfaceForm] => Spotter] = {
-    // LingPipe with different analyzers
-    val analyzers = List(
-      new SimpleAnalyzer(Version.LUCENE_36),
-      new StopAnalyzer(Version.LUCENE_36),
-      new ClassicAnalyzer(Version.LUCENE_36),
-      new StandardAnalyzer(Version.LUCENE_36),
-      new EnglishAnalyzer(Version.LUCENE_36),
-      new WhitespaceAnalyzer(Version.LUCENE_36)
-    )
-    analyzers.map(analyzer => {
-      val analyzerName = analyzer.getClass.toString.replaceFirst("^.*\\.", "")
-      surfaceForms: Traversable[SurfaceForm] => {
-        val dictionary = new MapDictionary[String]()
-        for (surfaceForm <- surfaceForms) {
-          dictionary.addEntry(new DictionaryEntry[String](surfaceForm.name, ""))
-        }
-        val lps = new LingPipeSpotter(dictionary, analyzer, false, false)
-        lps.setName("LingPipeSpotter[analyzer=%s]".format(analyzerName))
-        lps
-      }
-    })
-  }
+
 
   def getExpectedResult(annotatedTextSource: AnnotatedTextSource) = {
     annotatedTextSource.foldLeft(Set[SurfaceFormOccurrence]()){ (set, par) =>

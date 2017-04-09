@@ -50,32 +50,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-core</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-analyzers</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-misc</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-queries</artifactId>
-            <type>jar</type>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-phonetic</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>jcs</groupId>
             <artifactId>jcs</artifactId>
             <exclusions>
@@ -89,6 +63,11 @@
         <dependency>
             <groupId>xerces</groupId>
             <artifactId>xercesImpl</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.solr</groupId>
+            <artifactId>solr-analysis-extras</artifactId>
         </dependency>
 
         <dependency>
@@ -114,11 +93,6 @@
         <dependency>
             <groupId>org.semanticweb.yars</groupId>
             <artifactId>nxparser</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.aliasi</groupId>
-            <artifactId>lingpipe</artifactId>
         </dependency>
 
         <dependency>

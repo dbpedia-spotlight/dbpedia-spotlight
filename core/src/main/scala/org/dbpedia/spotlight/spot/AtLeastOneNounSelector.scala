@@ -18,9 +18,6 @@ package org.dbpedia.spotlight.spot
  *
  */
 
-import com.aliasi.sentences.IndoEuropeanSentenceModel
-import java.io.File
-import org.dbpedia.spotlight.tagging.lingpipe.{LingPipeTaggedTokenProvider, LingPipeFactory}
 import scala.collection.JavaConverters._
 
 import org.dbpedia.spotlight.model._

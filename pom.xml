@@ -25,10 +25,9 @@
     <properties>
         <dbpedia.spotlight.version>0.7</dbpedia.spotlight.version>
 
-        <java.compiler.version>1.6</java.compiler.version>
+        <java.compiler.version>1.8</java.compiler.version>
         <scala.compiler.version>2.10.4</scala.compiler.version>
-        <lucene.version>3.6.0</lucene.version>
-        <jersey.version>1.10</jersey.version>
+        <jersey.version>1.19.3</jersey.version>
 
         <heapspace.Xmx.compiler>-Xmx1g</heapspace.Xmx.compiler>
         <heapspace.Xmx.indexer>-Xmx1g</heapspace.Xmx.indexer>
@@ -254,46 +253,13 @@
                     License: Apache Software License, Version 2.0
                 -->
             </dependency>
+
+
+
             <dependency>
-                <groupId>org.apache.lucene</groupId>
-                <artifactId>lucene-core</artifactId>
-                <version>${lucene.version}</version>
-                <!--
-                    License: Apache Software License, Version 2.0
-                -->
-            </dependency>
-            <dependency>
-                <groupId>org.apache.lucene</groupId>
-                <artifactId>lucene-analyzers</artifactId>
-                <version>${lucene.version}</version>
-                <!--
-                    License: Apache Software License, Version 2.0
-                -->
-            </dependency>
-            <dependency>
-                <groupId>org.apache.lucene</groupId>
-                <artifactId>lucene-phonetic</artifactId>
-                <version>${lucene.version}</version>
-                <!--
-                    License: Apache Software License, Version 2.0
-                -->
-            </dependency>
-            <dependency>
-                <groupId>org.apache.lucene</groupId>
-                <artifactId>lucene-misc</artifactId>
-                <version>${lucene.version}</version>
-                <!--
-                    License: Apache Software License, Version 2.0
-                -->
-            </dependency>
-            <dependency>
-                <groupId>org.apache.lucene</groupId>
-                <artifactId>lucene-queries</artifactId>
-                <version>${lucene.version}</version>
-                <type>jar</type>
-                <!--
-                    License: Apache Software License, Version 2.0
-                -->
+                <groupId>org.apache.solr</groupId>
+                <artifactId>solr-analysis-extras</artifactId>
+                <version>6.5.0</version>
             </dependency>
 
             <dependency>
@@ -748,16 +714,6 @@
                 <version>SNAPSHOT</version>
                 <!--
                   License: Apache Software License, Version 2.0
-                -->
-            </dependency>
-
-            <dependency>
-                <groupId>com.aliasi</groupId>
-                <artifactId>lingpipe</artifactId>
-                <version>4.1.0</version>
-                <!--
-                   License: Alias-i Royalty Free License Version 1
-                   url: http://alias-i.com/lingpipe/licenses/lingpipe-license-1.txt
                 -->
             </dependency>
 

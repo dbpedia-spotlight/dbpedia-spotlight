@@ -99,10 +99,6 @@ class IndexingConfiguration(val configFile: File) {
         get("org.dbpedia.spotlight.language")
     }
 
-    def getAnalyzer : Analyzer = {
-        val lang = get("org.dbpedia.spotlight.language")
-        Factory.Analyzer.from(get("org.dbpedia.spotlight.lucene.analyzer"),get("org.dbpedia.spotlight.lucene.version"), getStopWords(lang))
-    }
 
     private def validate { //TODO move validation to finer grained factory classes that have specific purposes (e.g. candidate mapping, lucene indexing, etc.)
 

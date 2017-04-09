@@ -275,9 +275,6 @@ public class SpotlightConfiguration {
             }
         }
 
-        analyzer = Factory.analyzer().from(
-                config.getProperty("org.dbpedia.spotlight.lucene.analyzer", "org.apache.lucene.analysis.standard.StandardAnalyzer"),
-                config.getProperty("org.dbpedia.spotlight.lucene.version", "LUCENE_36"), stopWords);
 
         serverURI = config.getProperty("org.dbpedia.spotlight.web.rest.uri", "").trim();
         if (serverURI != null && !serverURI.endsWith("/")) {

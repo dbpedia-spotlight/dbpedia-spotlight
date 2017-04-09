@@ -3,6 +3,7 @@ package org.dbpedia.spotlight.db.stem
 import org.dbpedia.spotlight.db.model.Stemmer
 import org.tartarus.snowball.SnowballProgram
 
+
 class SnowballStemmer(stemmer: SnowballProgram) extends Stemmer {
 
   def this(s: String) {
