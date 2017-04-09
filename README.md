@@ -68,7 +68,7 @@ More documentation is available from the [DBpedia Spotlight wiki](https://github
 
 ## FAQ
 
-Check the [FAQ](FAQ) here
+Check the [FAQ here](https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/faq) 
 
 
 ## Maintainers
