@@ -83,23 +83,8 @@ public class Server {
 
     public static void main(String[] args) throws IOException, InterruptedException, URISyntaxException, ClassNotFoundException, InitializationException {
 
-        URI serverURI = null;
-
-        if(args[0].endsWith(".properties")) {
-            //We are using the old-style configuration file:
-
-            initByPropertiesFile(args[0]);
-            serverURI = new URI(configuration.getServerURI());
-
-        } else {
-            //We are using a model folder:
-
-            serverURI = new URI(args[1]);
-            initByModel(args[0]);
-        }
-
-        //ExternalUriWadlGeneratorConfig.setUri(configuration.getServerURI()); //TODO get another parameter, maybe getExternalServerURI since Grizzly will use this in order to find out to which port to bind
-
+        URI serverURI = new URI(args[1]);
+        initByModel(args[0]);
 
         LOG.info(String.format("Initiated %d disambiguators.",disambiguators.size()));
         LOG.info(String.format("Initiated %d spotters.",spotters.size()));
@@ -114,13 +99,6 @@ public class Server {
         threadSelector.start();
 
         System.err.println("Server started in " + System.getProperty("user.dir") + " listening on " + serverURI);
-
-        Thread warmUp = new Thread() {
-            public void run() {
-                //factory.searcher().warmUp((int) (configuration.getMaxCacheSize() * 0.7));
-            }
-        };
-        warmUp.start();
 
 
         while(running) {
@@ -185,20 +163,6 @@ public class Server {
 
     }
 
-//    public static Spotter getSpotter(SpotterPolicy policy) throws InputException {
-//        Spotter spotter = spotters.get(policy);
-//        if (spotters.size()==0 || spotter==null) {
-//            throw new InputException(String.format("Specified spotter=%s has not been loaded. Use one of %s.",policy,spotters.keySet()));
-//        }
-//        return spotter;
-//    }
-//
-//    public static ParagraphDisambiguatorJ getDisambiguator(DisambiguationPolicy policy) throws InputException {
-//        ParagraphDisambiguatorJ disambiguator = disambiguators.get(policy);
-//        if (disambiguators.size() == 0 || disambiguators == null)
-//            throw new InputException(String.format("Specified disambiguator=%s has not been loaded. Use one of %s.",policy,disambiguators.keySet()));
-//        return disambiguator;
-//    }
 
     public static SpotlightConfiguration getConfiguration() {
         return configuration;
@@ -242,45 +206,13 @@ public class Server {
 
 
     public static void initSpotlightConfiguration(String configFileName) throws InitializationException {
-
-        if(configFileName.endsWith(".properties")) {
-
-            initByPropertiesFile(configFileName);
-
-        } else {
-
-            //We are using a model folder:
-            initByModel(configFileName);
-
-        }
+        initByModel(configFileName);
 
         LOG.info(String.format("Initiated %d disambiguators.",disambiguators.size()));
 
         LOG.info(String.format("Initiated %d spotters.",spotters.size()));
 
     }
-
-    private static void initByPropertiesFile(String configFileName) throws  InitializationException {
-
-        //We are using the old-style configuration file:
-        //Initialization, check values
-        try {
-            configuration = new SpotlightConfiguration(configFileName);
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.err.println("\n"+ usage);
-            System.exit(1);
-        }
-        // Set static annotator that will be used by Annotate and Disambiguate
-        final SpotlightFactory factory  = new SpotlightFactory(configuration);
-        setDisambiguators(factory.disambiguators());
-        setSpotters(factory.spotters());
-        setNamespacePrefix(configuration.getDbpediaResource());
-        setSparqlExecuter(configuration.getSparqlEndpoint(), configuration.getSparqlMainGraph());
-        setSimilarityThresholds(configuration.getSimilarityThresholds());
-
-    }
-
     private static void initByModel(String folder) throws InitializationException {
 
         File modelFolder = null;

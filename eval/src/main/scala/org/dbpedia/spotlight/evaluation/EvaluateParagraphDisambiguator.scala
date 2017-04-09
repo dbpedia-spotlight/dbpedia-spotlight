@@ -131,8 +131,6 @@ object EvaluateParagraphDisambiguator {
         val redirectTCFileName  = if (args.size>1) args(1) else "data/redirects_tc.tsv" //produced by ExtractCandidateMap
         val conceptURIsFileName  = if (args.size>2) args(2) else "data/conceptURIs.list" //produced by ExtractCandidateMap
 
-        //val default : Disambiguator = new DefaultDisambiguator(config)
-        //val test : Disambiguator = new GraphCentralityDisambiguator(config)
 
 
         val db2stepdis= spotlightModel.disambiguators.get(DisambiguationPolicy.Default).disambiguator
