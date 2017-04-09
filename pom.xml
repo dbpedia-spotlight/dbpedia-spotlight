@@ -754,16 +754,6 @@
             </dependency>
 
             <dependency>
-                <groupId>com.aliasi</groupId>
-                <artifactId>lingpipe</artifactId>
-                <version>4.1.0</version>
-                <!--
-                   License: Alias-i Royalty Free License Version 1
-                   url: http://alias-i.com/lingpipe/licenses/lingpipe-license-1.txt
-                -->
-            </dependency>
-
-            <dependency>
                 <groupId>org.semanticweb.yars</groupId>
                 <artifactId>nxparser</artifactId>
                 <version>1.1</version>

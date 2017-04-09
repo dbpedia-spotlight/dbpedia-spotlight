@@ -69,16 +69,6 @@
                             </args-->
                         </launcher>
                         <launcher>
-                            <id>IndexLingPipeSpotter</id>
-                            <mainClass>org.dbpedia.spotlight.spot.lingpipe.IndexLingPipeSpotter</mainClass>
-                            <jvmArgs>
-                                <jvmArg>-Xmx${javaOpts.Xmx}</jvmArg>
-                            </jvmArgs>
-                            <!--args>
-                                <arg>../conf/indexing-3.8.properties</arg>
-                            </args-->
-                        </launcher>
-                        <launcher>
                             <id>IndexMergedOccurrences</id>
                             <mainClass>org.dbpedia.spotlight.lucene.index.IndexMergedOccurrences</mainClass>
                             <jvmArgs>

@@ -117,11 +117,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.aliasi</groupId>
-            <artifactId>lingpipe</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>edu.umd</groupId>
             <artifactId>cloud9</artifactId>
         </dependency>
