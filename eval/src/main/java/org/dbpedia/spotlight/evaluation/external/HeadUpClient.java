@@ -17,7 +17,7 @@
 
 package org.dbpedia.spotlight.evaluation.external;
 
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.http.client.methods.HttpGet;
 import org.dbpedia.spotlight.exceptions.AnnotationException;
 import org.dbpedia.spotlight.model.DBpediaResource;
 import org.dbpedia.spotlight.model.Text;
@@ -109,7 +109,7 @@ public class HeadUpClient extends AnnotationClient {
 
 
 	private JSONArray request(String url) throws JSONException, AnnotationException {
-		GetMethod method = new GetMethod(url);
+		HttpGet method = new HttpGet(url);
 		String response = request(method);
         LOG.info("reponse: " + response);
 		JSONArray json = new JSONArray(response);

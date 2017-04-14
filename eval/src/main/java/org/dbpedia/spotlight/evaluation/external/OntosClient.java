@@ -16,8 +16,9 @@
 
 package org.dbpedia.spotlight.evaluation.external;
 
-import org.apache.commons.httpclient.*;
-import org.apache.commons.httpclient.methods.*;
+import org.apache.http.client.*;
+import org.apache.http.client.methods.*;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dbpedia.spotlight.exceptions.AnnotationException;
@@ -67,7 +68,7 @@ public class OntosClient extends AnnotationClient {
     public Log LOG = LogFactory.getLog(this.getClass());
 
     // Create an instance of HttpClient.
-    HttpClient client = new HttpClient();
+    HttpClient client = new DefaultHttpClient();
     boolean authenticated = false;
     String authToken;
 
@@ -77,7 +78,7 @@ public class OntosClient extends AnnotationClient {
 
     private boolean authenticate(String user, String password) {
                     // Create a method instance.
-        GetMethod method = new GetMethod("http://news.ontos.com/token?j_username="+user+"&j_password="+password);
+        HttpGet method = new HttpGet("http://news.ontos.com/token?j_username="+user+"&j_password="+password);
 //        method.getParams().setCookiePolicy(CookiePolicy.RFC_2109);
         try {
             this.authToken = request(method);
@@ -103,7 +104,7 @@ public class OntosClient extends AnnotationClient {
                 "\"ontology\":\"common.english\"," +
                 "\"format\":\"NTRIPLES\"," +
                 "\"text\":\""+clean(text)+"\""+                "}");
-        GetMethod method = new GetMethod(url);
+        HttpGet method = new HttpGet(url);
         String response = request(method);
         
         return response;
@@ -244,7 +245,7 @@ public class OntosClient extends AnnotationClient {
      * @author Alex Klebeck, Ontos AG, (C)2010
 	 */
     private JSONObject request(String url) throws AnnotationException {
-       GetMethod method = new GetMethod(url);
+        HttpGet method = new HttpGet(url);
        String response = request(method);
        JSONObject json = new JSONObject();
        try {
