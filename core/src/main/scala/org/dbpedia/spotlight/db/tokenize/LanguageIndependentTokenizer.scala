@@ -68,7 +68,6 @@ class LanguageIndependentStringTokenizer(locale: Locale, stemmer: Stemmer, stopW
   }
 }
 
-
 object Helper {
 
   val normalizations = Map[String, List[(String, String)]](
