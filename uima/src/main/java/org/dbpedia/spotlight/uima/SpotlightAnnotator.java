@@ -3,7 +3,6 @@ package org.dbpedia.spotlight.uima;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
-import java.net.URLEncoder;
 
 import javax.ws.rs.core.MediaType;
 
@@ -40,7 +39,7 @@ public class SpotlightAnnotator extends JCasAnnotator_ImplBase {
 	private String SPOTLIGHT_ENDPOINT;
 
 	// Default values for the web service parameters for the spotlight endpoint
-
+	
 	public static final String PARAM_CONFIDENCE = "confidence";
 	@ConfigurationParameter(name=PARAM_CONFIDENCE, defaultValue="0.0")
 	private double CONFIDENCE;
