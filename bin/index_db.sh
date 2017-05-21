@@ -177,7 +177,7 @@ fi
 
 cd $BASE_WDIR
 rm -Rf wikistatsextractor
-git clone --depth 1 https://github.com/jodaiber/wikistatsextractor
+git clone --depth 1 https://github.com/dbpedia-spotlight/wikistatsextractor
 
 # Stop processing if one step fails
 set -e
