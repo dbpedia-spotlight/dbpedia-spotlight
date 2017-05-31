@@ -21,8 +21,6 @@ package org.dbpedia.spotlight.model
 import collection.JavaConversions._
 import collection.mutable.HashMap
 
-import org.dbpedia.spotlight.lucene.search.BaseSearcher
-import org.dbpedia.spotlight.lucene.LuceneManager
 import java.sql.{SQLException, ResultSet, PreparedStatement, DriverManager}
 
 import java.lang.String
@@ -98,19 +96,6 @@ class DBpediaResourceFactorySQL(sqlDriver : String, sqlConnector : String, usern
             case Some(t) => t.toCharArray.toList.flatMap( id => typeIDMap.get(id) )
             case None => List[OntologyType]()
         }
-    }
-
-}
-
-class DBpediaResourceFactoryLucene(val luceneManager: LuceneManager, val searcher: BaseSearcher) {
-
-    @throws(classOf[SearchException])
-    def from(dbpediaID : String): DBpediaResource = {
-        from(searcher.getHits(luceneManager.getQuery(new DBpediaResource(dbpediaID))).head.doc)
-    }
-
-    def from(luceneDocId : Int): DBpediaResource = {
-        searcher.getDBpediaResource(luceneDocId)
     }
 
 }

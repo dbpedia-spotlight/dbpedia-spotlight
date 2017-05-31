@@ -15,16 +15,13 @@
  */
 package org.dbpedia.spotlight.io
 
-import org.dbpedia.spotlight.model._
-import io.Source
 import java.io._
-import java.util.zip.{GZIPOutputStream, GZIPInputStream}
-import tools.nsc.doc.model.comment.Paragraph
+import java.util.zip.GZIPInputStream
+
 import org.apache.commons.lang.NotImplementedException
-import scala.collection.JavaConversions._
-import java.util.ArrayList
-import org.junit.Test
-import java.text.ParseException
+import org.dbpedia.spotlight.model._
+
+import scala.io.Source
 
 /**
  * Reads *SORTED* DBpediaResourceOccurrences from TSV files and converts them to paragraphs that hold N occurrences.

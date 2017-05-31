@@ -17,7 +17,7 @@
  */
 package org.dbpedia.spotlight.disambiguate
 
-import org.apache.lucene.search.Explanation
+
 import org.dbpedia.spotlight.exceptions.InputException
 import org.dbpedia.spotlight.exceptions.ItemNotFoundException
 import org.dbpedia.spotlight.exceptions.SearchException
@@ -47,7 +47,6 @@ trait ParagraphDisambiguator {
      * Executes disambiguation per occurrence, returns a list of possible candidates.
      * Can be seen as a ranking (rather than classification) task: query instance in, ranked list of target URIs out.
      *
-     * @param sfOccurrences
      * @param k
      * @return
      * @throws org.dbpedia.spotlight.exceptions.SearchException
@@ -67,7 +66,6 @@ trait ParagraphDisambiguator {
 
     /**
      * Every disambiguator should know how to measure the ambiguity of a surface form.
-     * @param sf
      * @return ambiguity of surface form (number of candidates)
      */
     //@throws(classOf[SearchException])
@@ -75,7 +73,6 @@ trait ParagraphDisambiguator {
 
     /**
      * Counts how many occurrences we indexed for a given URI. (size of training set for that URI)
-     * @param resource
      * @return
      * @throws org.dbpedia.spotlight.exceptions.SearchException
      */

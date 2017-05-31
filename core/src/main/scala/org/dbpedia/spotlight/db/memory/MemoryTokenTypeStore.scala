@@ -2,9 +2,7 @@ package org.dbpedia.spotlight.db.memory
 
 import org.dbpedia.spotlight.log.SpotlightLog
 import org.dbpedia.spotlight.db.model.TokenTypeStore
-import java.lang.String
 import org.dbpedia.spotlight.model.TokenType
-import scala.transient
 import util.StringToIDMapFactory
 
 /**
@@ -67,9 +65,14 @@ class MemoryTokenTypeStore
   }
 
   def getTokenTypeByID(id: Int): TokenType = {
-    val token = tokenForId(id)
-    val count = counts(id)
-    new TokenType(id, token, count)
+    id match {
+      case TokenType.UNKNOWN.id => TokenType.UNKNOWN
+      case TokenType.STOPWORD.id => TokenType.STOPWORD
+      case regularId =>
+        val token = tokenForId(regularId)
+        val count = counts(regularId)
+        new TokenType(regularId, token, count)
+    }
   }
 
   def getTotalTokenCount: Double = totalTokenCount

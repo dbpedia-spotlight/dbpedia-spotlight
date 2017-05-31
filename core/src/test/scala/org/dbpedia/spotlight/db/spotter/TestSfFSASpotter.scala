@@ -19,7 +19,7 @@ package org.dbpedia.spotlight.db.spotter
 
 import java.util.Locale
 
-import org.dbpedia.spotlight.db.memory.MemoryTokenTypeStore
+import org.dbpedia.spotlight.util.MemoryStoreUtil.createTokenTypeStore
 import org.dbpedia.spotlight.db.model.Stemmer
 import org.dbpedia.spotlight.db.tokenize.{LanguageIndependentTokenizer, LanguageIndependentStringTokenizer}
 import org.dbpedia.spotlight.model.TokenType
@@ -303,7 +303,7 @@ class TestSfFSASpotter{
     } )
 
     //Initalizing the Memory Token Store
-    val tokenTypeStore = TestSfFSASpotter.createTokenTypeStore(tokenTypes.toList)
+    val tokenTypeStore = createTokenTypeStore(tokenTypes.toList)
 
     //Creating a sample StopWords
     val stopWords = Set[String]("a","the","an","that")
@@ -321,26 +321,4 @@ class TestSfFSASpotter{
   }
 }
 
-
-object TestSfFSASpotter {
-
-  def createTokenTypeStore(tokenTypes:List[TokenType]): MemoryTokenTypeStore =  {
-
-    val tokenTypeStore = new MemoryTokenTypeStore()
-    val tokens = new Array[String](tokenTypes.size + 1)
-    val counts = new Array[Int](tokenTypes.size + 1)
-
-    tokenTypes.foreach(token => {
-      tokens(token.id) = token.tokenType
-      counts(token.id) = token.count
-
-    })
-
-    tokenTypeStore.tokenForId  = tokens.array
-    tokenTypeStore.counts = counts.array
-    tokenTypeStore.loaded()
-
-    return tokenTypeStore
-  }
-}
 

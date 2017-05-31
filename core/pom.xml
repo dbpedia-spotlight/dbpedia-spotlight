@@ -50,32 +50,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-core</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-analyzers</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-misc</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-queries</artifactId>
-            <type>jar</type>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-phonetic</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>jcs</groupId>
             <artifactId>jcs</artifactId>
             <exclusions>
@@ -89,6 +63,11 @@
         <dependency>
             <groupId>xerces</groupId>
             <artifactId>xercesImpl</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.solr</groupId>
+            <artifactId>solr-analysis-extras</artifactId>
         </dependency>
 
         <dependency>
@@ -117,11 +96,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.aliasi</groupId>
-            <artifactId>lingpipe</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>edu.umd</groupId>
             <artifactId>cloud9</artifactId>
         </dependency>
@@ -138,7 +112,7 @@
 
         <dependency>
             <groupId>net.liftweb</groupId>
-            <artifactId>lift-json_${scala.compiler.version}</artifactId>
+            <artifactId>lift-json_2.10</artifactId>
         </dependency>
 
         <dependency>
@@ -192,7 +166,7 @@
 
         <dependency>
             <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_${scala.compiler.version}</artifactId>
+            <artifactId>scalatest_2.10</artifactId>
         </dependency>
 
         <dependency>
@@ -227,17 +201,24 @@
 
         <dependency>
             <groupId>org.scalaz</groupId>
-            <artifactId>scalaz-core_${scala.compiler.version}</artifactId>
+            <artifactId>scalaz-core_2.10</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-actors</artifactId>
+            <version>2.10.5</version>
         </dependency>
 
         <dependency>
             <groupId>org.scalanlp</groupId>
-            <artifactId>breeze-learn_${scala.compiler.version}</artifactId>
+            <artifactId>breeze_2.10</artifactId>
+            <version>0.10</version>
         </dependency>
 
         <dependency>
             <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-actor</artifactId>
+            <artifactId>akka-actor_2.10</artifactId>
         </dependency>
 
 

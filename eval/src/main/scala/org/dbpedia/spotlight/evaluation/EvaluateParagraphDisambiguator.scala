@@ -17,11 +17,15 @@
  */
 package org.dbpedia.spotlight.evaluation
 
+import org.dbpedia.spotlight.db.memory.MemoryVectorStore
+import org.dbpedia.spotlight.db.model._
+import org.dbpedia.spotlight.db.{SpotlightModel, DBTwoStepDisambiguator}
 import org.dbpedia.spotlight.io._
 import org.dbpedia.spotlight.log.SpotlightLog
 import org.dbpedia.spotlight.disambiguate._
 import java.io.{PrintWriter, File}
 import org.dbpedia.spotlight.corpus.{PredoseCorpus, MilneWittenCorpus, AidaCorpus}
+import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy
 
 import org.dbpedia.spotlight.model._
 import org.dbpedia.spotlight.filter.occurrences.{UriWhitelistFilter, RedirectResolveFilter, OccurrenceFilter}
@@ -38,13 +42,13 @@ import scala.Some
 object EvaluateParagraphDisambiguator {
 
     def filter(bestK: Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]]) :  Map[SurfaceFormOccurrence, List[DBpediaResourceOccurrence]] = {
-        bestK;
+        bestK
     }
 
     def evaluate(testSource: AnnotatedTextSource, disambiguator: ParagraphDisambiguator, outputs: List[OutputGenerator], occFilters: List[OccurrenceFilter] ) {
         val startTime = System.nanoTime()
 
-        var i = 0;
+        var i = 0
         var nZeros = 0
         var nCorrects = 0
         var nOccurrences = 0
@@ -115,7 +119,10 @@ object EvaluateParagraphDisambiguator {
 
     def main(args : Array[String]) {
         //val indexDir: String = args(0)  //"e:\\dbpa\\data\\index\\index-that-works\\Index.wikipediaTraining.Merged."
-        val config = new SpotlightConfiguration(args(0));
+
+        //val config = new SpotlightConfiguration(args(0))
+        val spotlightModel = SpotlightModel.fromFolder(new File(args(0)))
+        val (_, sfStore, resStore, candMapStore, _, _) = SpotlightModel.storesFromFolder(new File(args(0)))
 
         //val testFileName: String = args(1)  //"e:\\dbpa\\data\\index\\dbpedia36data\\test\\test100k.tsv"
         //val paragraphs = AnnotatedTextSource
@@ -124,22 +131,23 @@ object EvaluateParagraphDisambiguator {
         val redirectTCFileName  = if (args.size>1) args(1) else "data/redirects_tc.tsv" //produced by ExtractCandidateMap
         val conceptURIsFileName  = if (args.size>2) args(2) else "data/conceptURIs.list" //produced by ExtractCandidateMap
 
-        //val default : Disambiguator = new DefaultDisambiguator(config)
-        //val test : Disambiguator = new GraphCentralityDisambiguator(config)
 
-        val factory = new SpotlightFactory(config)
 
+        val db2stepdis= spotlightModel.disambiguators.get(DisambiguationPolicy.Default).disambiguator
+        db2stepdis.asInstanceOf[DBTwoStepDisambiguator].tokenizer = spotlightModel.tokenizer
         //val topics = HashMapTopicalPriorStore.fromDir(new File("data/topics"))
         val disambiguators = Set(//new TopicalDisambiguator(factory.candidateSearcher,topics),
                                  //new TopicBiasedDisambiguator(factory.candidateSearcher,factory.contextSearcher,topics)
-                                 new TwoStepDisambiguator(factory.candidateSearcher,factory.contextSearcher)
+                                 db2stepdis,
+                                 new DBBaselineDisambiguator(sfStore, resStore, candMapStore)
                                  //, new CuttingEdgeDisambiguator(factory),
                                  //new PageRankDisambiguator(factory)
                                 )
 
+
         val sources = List(//AidaCorpus.fromFile(new File("/home/pablo/eval/aida/gold/CoNLL-YAGO.tsv")),
-                           //MilneWittenCorpus.fromDirectory(new File("/home/pablo/eval/wikify/original"))
-                           PredoseCorpus.fromFile(new File("/home/pablo/eval/predose/predose_annotations.tsv")))
+                           MilneWittenCorpus.fromDirectory(new File("/home/dirk/gsoc/data/evaldata/data_gold/spotlight/wikify/original")))
+                           //PredoseCorpus.fromFile(new File("/home/pablo/eval/predose/predose_annotations.tsv")))
 
         val noNils = new OccurrenceFilter {
             def touchOcc(occ : DBpediaResourceOccurrence) : Option[DBpediaResourceOccurrence] = {
@@ -153,9 +161,8 @@ object EvaluateParagraphDisambiguator {
             }
         }
 
-        val occFilters = List(UriWhitelistFilter.fromFile(new File(conceptURIsFileName)),
-                              RedirectResolveFilter.fromFile(new File(redirectTCFileName)),
-                              noNils)
+        val occFilters = List()
+      //UriWhitelistFilter.fromFile(new File(conceptURIsFileName)), RedirectResolveFilter.fromFile(new File(redirectTCFileName)), noNils)
 
         sources.foreach( paragraphs => {
           val testSourceName = paragraphs.name

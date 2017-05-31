@@ -1,13 +1,13 @@
 package org.dbpedia.spotlight.db
 
 import concurrent.{TokenizerWrapper, SpotterWrapper}
-import org.dbpedia.spotlight.db.memory.{MemoryContextStore, MemoryStore}
+import org.dbpedia.spotlight.db.memory.{MemoryVectorStore, MemoryContextStore, MemoryStore}
 import model._
 import opennlp.tools.tokenize.{TokenizerModel, TokenizerME}
 import opennlp.tools.sentdetect.{SentenceModel, SentenceDetectorME}
 import opennlp.tools.postag.{POSModel, POSTaggerME}
 import org.dbpedia.spotlight.disambiguate.mixtures.UnweightedMixture
-import org.dbpedia.spotlight.db.similarity.{NoContextSimilarity, GenerativeContextSimilarity, ContextSimilarity}
+import org.dbpedia.spotlight.db.similarity.{VectorContextSimilarity, NoContextSimilarity, GenerativeContextSimilarity, ContextSimilarity}
 import scala.collection.JavaConverters._
 import org.dbpedia.spotlight.model.SpotterConfiguration.SpotterPolicy
 import org.dbpedia.spotlight.model.SpotlightConfiguration.DisambiguationPolicy
@@ -33,7 +33,7 @@ object SpotlightModel {
   def loadStopwords(modelFolder: File): Set[String] = scala.io.Source.fromFile(new File(modelFolder, "stopwords.list")).getLines().map(_.trim()).toSet
   def loadSpotterThresholds(file: File): Seq[Double] = scala.io.Source.fromFile(file).getLines().next().split(" ").map(_.toDouble)
 
-  def storesFromFolder(modelFolder: File): (TokenTypeStore, SurfaceFormStore, ResourceStore, CandidateMapStore, ContextStore) = {
+  def storesFromFolder(modelFolder: File): (TokenTypeStore, SurfaceFormStore, ResourceStore, CandidateMapStore, ContextStore, MemoryVectorStore) = {
     val modelDataFolder = new File(modelFolder, "model")
 
     List(
@@ -53,17 +53,30 @@ object SpotlightModel {
     val sfStore = MemoryStore.loadSurfaceFormStore(new FileInputStream(new File(modelDataFolder, "sf.mem")), quantizedCountsStore)
     val resStore = MemoryStore.loadResourceStore(new FileInputStream(new File(modelDataFolder, "res.mem")), quantizedCountsStore)
     val candMapStore = MemoryStore.loadCandidateMapStore(new FileInputStream(new File(modelDataFolder, "candmap.mem")), resStore, quantizedCountsStore)
-    val contextStore = if (new File(modelDataFolder, "context.mem").exists())
-      MemoryStore.loadContextStore(new FileInputStream(new File(modelDataFolder, "context.mem")), tokenTypeStore, quantizedCountsStore)
-    else
-      null
 
-    (tokenTypeStore, sfStore, resStore, candMapStore, contextStore)
+
+    val contextStore = if (new File(modelDataFolder, "vectors.mem").exists()){
+      null
+    } else if (new File(modelDataFolder, "context.mem").exists()) {
+      MemoryStore.loadContextStore(new FileInputStream(new File(modelDataFolder, "context.mem")), tokenTypeStore, quantizedCountsStore)
+    } else {
+      null
+    }
+
+    val vectorStore = if (new File(modelDataFolder, "vectors.mem").exists()){
+      MemoryStore.loadVectorStore(new FileInputStream(new File(modelDataFolder, "vectors.mem")))
+    } else {
+      null
+    }
+
+
+
+    (tokenTypeStore, sfStore, resStore, candMapStore, contextStore, vectorStore)
   }
 
   def fromFolder(modelFolder: File): SpotlightModel = {
 
-    val (tokenTypeStore, sfStore, resStore, candMapStore, contextStore) = storesFromFolder(modelFolder)
+    val (tokenTypeStore, sfStore, resStore, candMapStore, contextStore, vectorStore) = storesFromFolder(modelFolder)
 
     val stopwords = loadStopwords(modelFolder)
 
@@ -83,9 +96,14 @@ object SpotlightModel {
       case s: String => new SnowballStemmer(s)
     }
 
-    def contextSimilarity(): ContextSimilarity = contextStore match {
-      case store:MemoryContextStore => new GenerativeContextSimilarity(tokenTypeStore, contextStore)
-      case _ => new NoContextSimilarity(MathUtil.ln(1.0))
+    def contextSimilarity(): ContextSimilarity = {
+      if (vectorStore != null) {
+        new VectorContextSimilarity(vectorStore)
+      } else if (contextStore != null) {
+        new GenerativeContextSimilarity(tokenTypeStore, contextStore)
+      } else {
+        new NoContextSimilarity(MathUtil.ln(1.0))
+      }
     }
 
     val c = properties.getProperty("opennlp_parallel", Runtime.getRuntime.availableProcessors().toString).toInt
@@ -107,10 +125,7 @@ object SpotlightModel {
         tokenTypeStore
       ).asInstanceOf[TextTokenizer]
 
-      if(cores.size == 1)
-        createTokenizer()
-      else
-        new TokenizerWrapper(cores.map(_ => createTokenizer())).asInstanceOf[TextTokenizer]
+      createTokenizer()
 
     } else {
       val locale = properties.getProperty("locale").split("_")
@@ -147,12 +162,8 @@ object SpotlightModel {
         Some(loadSpotterThresholds(new File(modelFolder, "spotter_thresholds.txt")))
       ).asInstanceOf[Spotter]
 
-      if(cores.size == 1)
-        createSpotter()
-      else
-        new SpotterWrapper(
-          cores.map(_ => createSpotter())
-        ).asInstanceOf[Spotter]
+
+      createSpotter()
 
     } else {
       val dict = MemoryStore.loadFSADictionary(new FileInputStream(new File(modelFolder, "fsa_dict.mem")))

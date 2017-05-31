@@ -4,6 +4,7 @@ import io._
 import java.io.{FileOutputStream, FileInputStream, File}
 import org.dbpedia.spotlight.db.memory.{MemoryQuantizedCountStore, MemoryStore}
 import model.{TextTokenizer, StringTokenizer, Stemmer}
+import org.dbpedia.spotlight.log.SpotlightLog
 import scala.io.Source
 import org.tartarus.snowball.SnowballProgram
 import java.util.{Locale, Properties}
@@ -26,6 +27,7 @@ import scala.collection.mutable
  * https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/Internationalization-(DB-backed-core)
  *
  * @author Joachim Daiber
+ * @author Philipp Dowling
  */
 
 object CreateSpotlightModel {
@@ -40,12 +42,12 @@ object CreateSpotlightModel {
 
     val (localeCode: String, rawDataFolder: File, outputFolder: File, opennlpFolder: Option[File], stopwordsFile: File, stemmer: Stemmer) = try {
       (
-        args(0),
-        new File(args(1)),
-        new File(args(2)),
-        if (args(3) equals "None") None else Some(new File(args(3))),
-        new File(args(4)),
-        if (args(5) equals "None") new Stemmer() else new SnowballStemmer(args(5))
+        args(0), // locale code
+        new File(args(1)), // raw data folder
+        new File(args(2)), // output folder
+        if (args(3) equals "None") None else Some(new File(args(3))), // openNLP
+        new File(args(4)), // stopwords
+        if (args(5) equals "None") new Stemmer() else new SnowballStemmer(args(5)) // stemmer
         )
     } catch {
       case e: Exception => {
@@ -56,7 +58,6 @@ object CreateSpotlightModel {
         System.exit(1)
       }
     }
-
     val Array(lang, country) = localeCode.split("_")
     val locale = new Locale(lang, country)
 
@@ -160,13 +161,24 @@ object CreateSpotlightModel {
 
     val quantizedCountStore = new MemoryQuantizedCountStore()
     val memoryIndexer = new MemoryStoreIndexer(modelDataFolder, quantizedCountStore)
-    //val diskIndexer = new JDBMStoreIndexer(new File("data/"))
 
-    val wikipediaToDBpediaClosure = new WikipediaToDBpediaClosure(
-      namespace,
-      new FileInputStream(new File(rawDataFolder, "redirects.nt")),
-      new FileInputStream(new File(rawDataFolder, "disambiguations.nt"))
-    )
+    val diskIndexer = new JDBMStoreIndexer(new File("data/"))
+
+    val wikipediaToDBpediaClosure =
+      if (new File(rawDataFolder, "redirects.nt").exists() && new File(rawDataFolder, "disambiguations.nt").exists()) {
+        new WikipediaToDBpediaClosure(
+          namespace,
+          new FileInputStream(new File(rawDataFolder, "redirects.nt")),
+          new FileInputStream(new File(rawDataFolder, "disambiguations.nt"))
+        )
+      }
+      else {
+        SpotlightLog.warn(this.getClass,
+          "No redirects and disambiguations supplied! Not loading WikipediaToDBpediaClosure."
+        )
+        System.exit(1)
+        null
+      }
 
     memoryIndexer.tokenizer = Some(rawTokenizer)
     memoryIndexer.addSurfaceForms(
@@ -256,6 +268,21 @@ object CreateSpotlightModel {
         new File(outputFolder, "spotter_thresholds.txt"),
         "1.0 0.2 -0.2 0.1" //Defaults!
       )
+
+
+    if (new File(rawDataFolder, "wiki2vec_syn0.csv").exists() && new File(rawDataFolder, "wiki2vec_ids.txt").exists()){
+      SpotlightLog.debug(this.getClass, "Found vector file, building vectors.mem store.")
+      val memoryVectorStoreIndexer: MemoryVectorStoreIndexer =
+        new MemoryVectorStoreIndexer(
+          new File(rawDataFolder, "wiki2vec_syn0.csv"),
+          new File(rawDataFolder, "wiki2vec_ids.txt")
+        )
+      memoryVectorStoreIndexer.loadVectorDict(tokenStore, resStore)
+      memoryVectorStoreIndexer.loadVectorsAndWriteToStore(new File(modelDataFolder, "vectors.mem"))
+
+    } else {
+      SpotlightLog.info(this.getClass, "No vectors supplied, not building memory vector store.")
+    }
 
   }
 
