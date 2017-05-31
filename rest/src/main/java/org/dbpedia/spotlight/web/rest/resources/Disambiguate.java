@@ -50,7 +50,8 @@ public class Disambiguate {
     @Produces("text/html")
     public Response getHTML(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
                             @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @QueryParam("url") String inUrl,
-                          @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
+                          @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double disambiguatorConfidence,
+                          @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
                           @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
                           @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
                           @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
@@ -61,7 +62,7 @@ public class Disambiguate {
     ) {
         String clientIp = request.getRemoteAddr();
         try {
-            return ServerUtils.ok(disambigInterface.getHTML(text, inUrl, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.SpotXmlParser.name(), disambiguatorName));
+            return ServerUtils.ok(disambigInterface.getHTML(text, inUrl, disambiguatorConfidence, spotterConfidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.SpotXmlParser.name(), disambiguatorName));
         } catch (Exception e) {
             e.printStackTrace();
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.TEXT_HTML).build());
@@ -72,7 +73,8 @@ public class Disambiguate {
     @Produces("application/xhtml+xml")
     public Response getRDFa(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
                             @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @QueryParam("url") String inUrl,
-                          @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
+                            @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double disambiguatorConfidence,
+                            @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
                           @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
                           @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
                           @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
@@ -83,7 +85,7 @@ public class Disambiguate {
     ) {
         String clientIp = request.getRemoteAddr();
         try {
-            return ServerUtils.ok(disambigInterface.getRDFa(text, inUrl, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.SpotXmlParser.name(), disambiguatorName));
+            return ServerUtils.ok(disambigInterface.getRDFa(text, inUrl, disambiguatorConfidence, spotterConfidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.SpotXmlParser.name(), disambiguatorName));
         } catch (Exception e) {
             e.printStackTrace();
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.APPLICATION_XHTML_XML).build());
@@ -94,7 +96,8 @@ public class Disambiguate {
     @Produces("text/xml")
     public Response getXML(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
                            @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @QueryParam("url") String inUrl,
-                         @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
+                           @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double disambiguatorConfidence,
+                           @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
                          @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
                          @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
                          @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
@@ -106,7 +109,7 @@ public class Disambiguate {
         String clientIp = request.getRemoteAddr();
 
         try {
-            return ServerUtils.ok(disambigInterface.getXML(text, inUrl, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.SpotXmlParser.name(), disambiguatorName));
+            return ServerUtils.ok(disambigInterface.getXML(text, inUrl, disambiguatorConfidence, spotterConfidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.SpotXmlParser.name(), disambiguatorName));
         } catch (Exception e) {
             e.printStackTrace();
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.TEXT_XML).build());
@@ -117,7 +120,8 @@ public class Disambiguate {
     @Produces({"text/turtle", "text/plain", "application/rdf+xml"})
     public Response getNIF(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
 			      @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @QueryParam("url") String inUrl,
-			      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
+                  @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double disambiguatorConfidence,
+                  @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
 			      @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
 			      @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
 			      @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
@@ -141,7 +145,7 @@ public class Disambiguate {
             format = "rdfxml";
 
         try {
-            return ServerUtils.ok(disambigInterface.getNIF(text, inUrl, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.SpotXmlParser.name(), disambiguatorName, format, prefix, request.getRequestURL().toString()));
+            return ServerUtils.ok(disambigInterface.getNIF(text, inUrl, disambiguatorConfidence, spotterConfidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.SpotXmlParser.name(), disambiguatorName, format, prefix, request.getRequestURL().toString()));
         } catch (Exception e) {
             e.printStackTrace();
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(accept).build());
@@ -152,7 +156,8 @@ public class Disambiguate {
     @Produces("application/json")
     public Response getJSON(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
                             @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @QueryParam("url") String inUrl,
-                          @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
+                            @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double disambiguatorConfidence,
+                            @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
                           @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
                           @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
                           @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
@@ -164,7 +169,7 @@ public class Disambiguate {
         String clientIp = request.getRemoteAddr();
 
         try {
-            return ServerUtils.ok(disambigInterface.getJSON(text, inUrl, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.SpotXmlParser.name(), disambiguatorName));
+            return ServerUtils.ok(disambigInterface.getJSON(text, inUrl, disambiguatorConfidence, spotterConfidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.SpotXmlParser.name(), disambiguatorName));
         } catch (Exception e) {
             e.printStackTrace();
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.APPLICATION_JSON).build());
@@ -179,7 +184,8 @@ public class Disambiguate {
     public Response postHTML(
       @DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
       @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @FormParam("url") String inUrl,
-      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @FormParam("confidence") Double confidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double disambiguatorConfidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
       @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @FormParam("support") int support,
       @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @FormParam("types") String dbpediaTypes,
       @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
@@ -190,7 +196,7 @@ public class Disambiguate {
       ) {
         String clientIp = request.getRemoteAddr();
         try {
-            return ServerUtils.ok(disambigInterface.getHTML(text, inUrl, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.SpotXmlParser.name(), disambiguatorName));
+            return ServerUtils.ok(disambigInterface.getHTML(text, inUrl, disambiguatorConfidence, spotterConfidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.SpotXmlParser.name(), disambiguatorName));
         } catch (Exception e) {
             e.printStackTrace();
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.TEXT_HTML).build());
@@ -204,7 +210,8 @@ public class Disambiguate {
     public Response postRDFa(
       @DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
       @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @FormParam("url") String inUrl,
-      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @FormParam("confidence") Double confidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double disambiguatorConfidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
       @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @FormParam("support") int support,
       @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @FormParam("types") String dbpediaTypes,
       @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
@@ -215,7 +222,7 @@ public class Disambiguate {
       ) {
         try {
             String clientIp = request.getRemoteAddr();
-            return ServerUtils.ok(disambigInterface.getHTML(text, inUrl, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.SpotXmlParser.name(), disambiguatorName));
+            return ServerUtils.ok(disambigInterface.getHTML(text, inUrl, disambiguatorConfidence, spotterConfidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.SpotXmlParser.name(), disambiguatorName));
         } catch (Exception e) {
             e.printStackTrace();
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.TEXT_HTML).build());
@@ -229,7 +236,8 @@ public class Disambiguate {
     public Response postXML(
       @DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
       @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @FormParam("url") String inUrl,
-      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @FormParam("confidence") Double confidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double disambiguatorConfidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
       @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @FormParam("support") int support,
       @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @FormParam("types") String dbpediaTypes,
       @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
@@ -240,7 +248,7 @@ public class Disambiguate {
       ) {
         try {
             String clientIp = request.getRemoteAddr();
-            return ServerUtils.ok(disambigInterface.getXML(text, inUrl, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.SpotXmlParser.name(), disambiguatorName));
+            return ServerUtils.ok(disambigInterface.getXML(text, inUrl, disambiguatorConfidence, spotterConfidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.SpotXmlParser.name(), disambiguatorName));
         } catch (Exception e) {
             e.printStackTrace();
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.TEXT_XML).build());
@@ -254,7 +262,8 @@ public class Disambiguate {
     public Response postNIF(
       @DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
       @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @FormParam("url") String inUrl,
-      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @FormParam("confidence") Double confidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double disambiguatorConfidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
       @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @FormParam("support") int support,
       @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @FormParam("types") String dbpediaTypes,
       @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
@@ -266,7 +275,7 @@ public class Disambiguate {
       @DefaultValue("10") @FormParam("context-length") int ctxLength,
       @Context HttpServletRequest request
       ) {
-	return getNIF(text,inUrl,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,disambiguatorName,prefix,recipe,ctxLength,request);
+	return getNIF(text,inUrl,disambiguatorConfidence, spotterConfidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,disambiguatorName,prefix,recipe,ctxLength,request);
     }
     
     @POST
@@ -275,7 +284,8 @@ public class Disambiguate {
     public Response postJSON(
       @DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
       @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @FormParam("url") String inUrl,
-      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @FormParam("confidence") Double confidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double disambiguatorConfidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
       @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @FormParam("support") int support,
       @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @FormParam("types") String dbpediaTypes,
       @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
@@ -286,7 +296,7 @@ public class Disambiguate {
       ) {
         String clientIp = request.getRemoteAddr();
         try {
-            return ServerUtils.ok(disambigInterface.getJSON(text, inUrl, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.SpotXmlParser.name(), disambiguatorName));
+            return ServerUtils.ok(disambigInterface.getJSON(text, inUrl, disambiguatorConfidence, spotterConfidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, SpotterPolicy.SpotXmlParser.name(), disambiguatorName));
         } catch (Exception e) {
             e.printStackTrace();
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.APPLICATION_JSON).build());

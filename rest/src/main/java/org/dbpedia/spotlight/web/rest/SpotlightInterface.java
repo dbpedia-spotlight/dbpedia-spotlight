@@ -81,7 +81,8 @@ public class SpotlightInterface {
     }
 
     public void announce(String textString,
-                         double confidence,
+                         double disambiguationConfidence,
+                         double spotterConfidence,
                          int support,
                          String ontologyTypesString,
                          String sparqlQuery,
@@ -96,7 +97,8 @@ public class SpotlightInterface {
         LOG.info("client ip: " + clientIp);
         LOG.info("text: " + textString);
         LOG.info("text length in chars: " +textString.length());
-        LOG.info("confidence: "+String.valueOf(confidence));
+        LOG.info("disambiguation confidence: "+String.valueOf(disambiguationConfidence));
+        LOG.info("spotterConfidence confidence: "+String.valueOf(spotterConfidence));
         LOG.info("support: "+String.valueOf(support));
         LOG.info("types: "+ontologyTypesString);
         LOG.info("sparqlQuery: "+ sparqlQuery);
@@ -122,7 +124,8 @@ public class SpotlightInterface {
      * @return an instance of java.lang.String
      */
     public List<DBpediaResourceOccurrence> getOccurrences(String textString,
-                                                          double confidence,
+                                                          double disambiguationConfidence,
+                                                          double spotterConfidence,
                                                           int support,
                                                           String ontologyTypesString,
                                                           String sparqlQuery,
@@ -135,14 +138,15 @@ public class SpotlightInterface {
 
         boolean blacklist = policyIsBlacklist(policy);
 
-        announce(textString,confidence,support,ontologyTypesString,sparqlQuery,policy,coreferenceResolution,clientIp,spotterName,disambiguatorName);
+        announce(textString,disambiguationConfidence, spotterConfidence,support,ontologyTypesString,sparqlQuery,policy,coreferenceResolution,clientIp,spotterName,disambiguatorName);
 
         // Get input text
         if (textString.trim().equals("")) {
             throw new InputException("No text was specified in the &text parameter.");
         }
         Text context = new Text(textString);
-        context.setFeature(new Score("confidence", confidence));
+        context.setFeature(new Score("spotterConfidence", spotterConfidence));
+        context.setFeature(new Score("disambiguationConfidence", disambiguationConfidence));
 
         // Find spots to annotate/disambiguate
         List<SurfaceFormOccurrence> spots = spot(spotterName,context);
@@ -157,7 +161,7 @@ public class SpotlightInterface {
         ParagraphDisambiguatorJ disambiguator = Server.getDisambiguator(disambiguatorName);
         List<DBpediaResourceOccurrence> occList = disambiguate(spots, disambiguator);
 
-        FilterElement filter = new OccsFilter(confidence, support, ontologyTypesString, sparqlQuery, blacklist, coreferenceResolution, Server.getSimilarityThresholds(), Server.getSparqlExecute());
+        FilterElement filter = new OccsFilter(disambiguationConfidence, support, ontologyTypesString, sparqlQuery, blacklist, coreferenceResolution, Server.getSimilarityThresholds(), Server.getSparqlExecute());
         occList = filter.accept(new FilterOccsImpl() ,occList);
 
 
@@ -174,7 +178,8 @@ public class SpotlightInterface {
 
     public String getHTML(String text,
                           String inUrl,
-                          double confidence,
+                          double disambiguationConfidence,
+                          double spotterConfidence,
                           int support,
                           String dbpediaTypesString,
                           String sparqlQuery,
@@ -188,7 +193,7 @@ public class SpotlightInterface {
         String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
 
         try {
-            List<DBpediaResourceOccurrence> occs = getOccurrences(textToProcess, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter, disambiguator);
+            List<DBpediaResourceOccurrence> occs = getOccurrences(textToProcess, disambiguationConfidence, spotterConfidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter, disambiguator);
             result = outputManager.makeHTML(textToProcess, occs);
         }
         catch (InputException e) { //TODO throw exception up to Annotate for WebApplicationException to handle.
@@ -202,7 +207,8 @@ public class SpotlightInterface {
 
     public String getRDFa(String text,
                           String inUrl,
-                          double confidence,
+                          double disambiguationConfidence,
+                          double spotterConfidence,
                           int support,
                           String dbpediaTypesString,
                           String sparqlQuery,
@@ -216,7 +222,7 @@ public class SpotlightInterface {
         String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
 
         try {
-            List<DBpediaResourceOccurrence> occs = getOccurrences(textToProcess, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter, disambiguator);
+            List<DBpediaResourceOccurrence> occs = getOccurrences(textToProcess, disambiguationConfidence, spotterConfidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter, disambiguator);
             result = outputManager.makeRDFa(textToProcess, occs);
         }
         catch (InputException e) { //TODO throw exception up to Annotate for WebApplicationException to handle.
@@ -230,7 +236,8 @@ public class SpotlightInterface {
 
     public String getXML(String text,
                          String inUrl,
-                         double confidence,
+                         double disambiguationConfidence,
+                         double spotterConfidence,
                          int support,
                          String dbpediaTypesString,
                          String sparqlQuery,
@@ -244,8 +251,8 @@ public class SpotlightInterface {
         String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
 
 //        try {
-            List<DBpediaResourceOccurrence> occs = getOccurrences(textToProcess, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter,disambiguator);
-            result = outputManager.makeXML(textToProcess, occs, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution);
+            List<DBpediaResourceOccurrence> occs = getOccurrences(textToProcess, disambiguationConfidence, spotterConfidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter,disambiguator);
+            result = outputManager.makeXML(textToProcess, occs, disambiguationConfidence, spotterConfidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution);
 //        }
 //        catch (Exception e) { //TODO throw exception up to Annotate for WebApplicationException to handle.
 //            LOG.info("ERROR: "+e.getMessage());
@@ -259,7 +266,8 @@ public class SpotlightInterface {
 
     public String getNIF(String text,
                          String inUrl,
-                         double confidence,
+                         double disambiguationConfidence,
+                         double spotterConfidence,
                          int support,
                          String dbpediaTypesString,
                          String sparqlQuery,
@@ -283,7 +291,7 @@ public class SpotlightInterface {
 	    else if (prefix == null && !text.equals(""))
 	        prefix = requestedURL.concat("/?text=").concat(URLEncoder.encode(text, "UTF-8"));
 	
-	    List<DBpediaResourceOccurrence> occs = getOccurrences(textToProcess, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter,disambiguator);
+	    List<DBpediaResourceOccurrence> occs = getOccurrences(textToProcess, disambiguationConfidence, spotterConfidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter,disambiguator);
 	    result = outputManager.makeNIF(textToProcess, occs, format, prefix);
 
 	    LOG.info("NIF format: " + format);
@@ -295,7 +303,8 @@ public class SpotlightInterface {
     //FIXME
     public String getCandidateXML(String text,
                                   String inUrl,
-                         double confidence,
+                         double disambiguationConfidence,
+                         double spotterConfidence,
                          int support,
                          String dbpediaTypesString,
                          String sparqlQuery,
@@ -309,8 +318,8 @@ public class SpotlightInterface {
 
         String textToProcess = ServerUtils.getTextToProcess(text, inUrl);
 
-        List<DBpediaResourceOccurrence> occs = getOccurrences(textToProcess, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter,disambiguator);
-        result = outputManager.makeXML(textToProcess, occs, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution);
+        List<DBpediaResourceOccurrence> occs = getOccurrences(textToProcess, disambiguationConfidence, spotterConfidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotter,disambiguator);
+        result = outputManager.makeXML(textToProcess, occs, disambiguationConfidence, spotterConfidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution);
         LOG.info("XML format");
         LOG.debug("****************************************************************");
         return result;
@@ -318,7 +327,8 @@ public class SpotlightInterface {
 
     public String getJSON(String text,
                           String inUrl,
-                          double confidence,
+                          double disambiguationConfidence,
+                          double spotterConfidence,
                           int support,
                           String dbpediaTypesString,
                           String sparqlQuery,
@@ -329,7 +339,7 @@ public class SpotlightInterface {
                           String disambiguator
     ) throws Exception {
         String result;
-        String xml = getXML(text,inUrl, confidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName,disambiguator);
+        String xml = getXML(text,inUrl, disambiguationConfidence, spotterConfidence, support, dbpediaTypesString, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName,disambiguator);
         result = outputManager.xml2json(xml);
         LOG.info("JSON format");
         LOG.debug("****************************************************************");

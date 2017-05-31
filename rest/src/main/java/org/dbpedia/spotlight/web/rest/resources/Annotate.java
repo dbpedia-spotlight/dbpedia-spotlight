@@ -56,7 +56,8 @@ public class Annotate {
     @Produces(MediaType.TEXT_HTML)
     public Response getHTML(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
                             @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @QueryParam("url") String inUrl,
-                            @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
+                            @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double disambiguationConfidence,
+                            @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
                             @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
                             @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
                             @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
@@ -69,7 +70,7 @@ public class Annotate {
         String clientIp = request.getRemoteAddr();
 
         try {
-            String response = annotationInterface.getHTML(text, inUrl, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName,  disambiguatorName);
+            String response = annotationInterface.getHTML(text, inUrl, disambiguationConfidence, spotterConfidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName,  disambiguatorName);
             return ServerUtils.ok(response);
         } catch (Exception e) {
             e.printStackTrace();
@@ -81,7 +82,8 @@ public class Annotate {
     @Produces(MediaType.APPLICATION_XHTML_XML)
     public Response getRDFa(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
                             @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @QueryParam("url") String inUrl,
-                            @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
+                            @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double disambiguationConfidence,
+                            @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
                           @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
                           @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
                           @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
@@ -93,7 +95,7 @@ public class Annotate {
         String clientIp = request.getRemoteAddr();
 
         try {
-            return ServerUtils.ok(annotationInterface.getRDFa(text, inUrl, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName, disambiguatorName));
+            return ServerUtils.ok(annotationInterface.getRDFa(text, inUrl, disambiguationConfidence, spotterConfidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName, disambiguatorName));
         } catch (Exception e) {
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.APPLICATION_XHTML_XML).build());
         }
@@ -103,7 +105,8 @@ public class Annotate {
     @Produces({MediaType.TEXT_XML,MediaType.APPLICATION_XML})
     public Response getXML(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
                            @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @QueryParam("url") String inUrl,
-                         @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
+                         @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double disambiguationConfidence,
+                         @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
                          @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
                          @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
                          @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
@@ -115,7 +118,7 @@ public class Annotate {
         String clientIp = request.getRemoteAddr();
 
         try {
-	    return ServerUtils.ok(annotationInterface.getXML(text, inUrl, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName, disambiguatorName));
+	    return ServerUtils.ok(annotationInterface.getXML(text, inUrl, disambiguationConfidence,  spotterConfidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName, disambiguatorName));
        } catch (Exception e) {
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.TEXT_XML).build());
         }
@@ -125,7 +128,8 @@ public class Annotate {
     @Produces({"text/turtle", "text/plain", "application/rdf+xml"})
     public Response getNIF(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
 			   @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @QueryParam("url") String inUrl,
-			   @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
+			   @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double disambiguationConfidence,
+               @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
 			   @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
 			   @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
 			   @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
@@ -147,7 +151,7 @@ public class Annotate {
 	    format = "rdfxml";
 
 	try {
-	    return ServerUtils.ok(annotationInterface.getNIF(text, inUrl, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName, disambiguatorName, format, prefix, request.getRequestURL().toString()));
+	    return ServerUtils.ok(annotationInterface.getNIF(text, inUrl, disambiguationConfidence,  spotterConfidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName, disambiguatorName, format, prefix, request.getRequestURL().toString()));
        } catch (Exception e) {
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(accept).build());
         }
@@ -157,7 +161,8 @@ public class Annotate {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getJSON(@DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @QueryParam("text") String text,
                             @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @QueryParam("url") String inUrl,
-                          @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double confidence,
+                          @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("confidence") Double disambiguationConfidence,
+                          @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
                           @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @QueryParam("support") int support,
                           @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @QueryParam("types") String dbpediaTypes,
                           @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @QueryParam("sparql") String sparqlQuery,
@@ -169,7 +174,7 @@ public class Annotate {
         String clientIp = request.getRemoteAddr();
 
         try {
-            return ServerUtils.ok(annotationInterface.getJSON(text, inUrl, confidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName, disambiguatorName));
+            return ServerUtils.ok(annotationInterface.getJSON(text, inUrl, disambiguationConfidence,  spotterConfidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, clientIp, spotterName, disambiguatorName));
        } catch (Exception e) {
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST). entity(ServerUtils.print(e)).type(MediaType.APPLICATION_JSON).build());
         }
@@ -183,7 +188,8 @@ public class Annotate {
     public Response postHTML(
       @DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
       @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @FormParam("url") String inUrl,
-      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @FormParam("confidence") Double confidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @FormParam("confidence") Double disambiguationConfidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
       @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @FormParam("support") int support,
       @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @FormParam("types") String dbpediaTypes,
       @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
@@ -193,7 +199,7 @@ public class Annotate {
       @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
       @Context HttpServletRequest request              
       ) {
-        return getHTML(text,inUrl,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,spotterName,disambiguatorName,request);
+        return getHTML(text, inUrl, disambiguationConfidence, spotterConfidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, spotterName, disambiguatorName, request);
     }
     
     @POST
@@ -202,7 +208,8 @@ public class Annotate {
     public Response postRDFa(
       @DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
       @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @FormParam("url") String inUrl,
-      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @FormParam("confidence") Double confidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @FormParam("confidence") Double disambiguationConfidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
       @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @FormParam("support") int support,
       @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @FormParam("types") String dbpediaTypes,
       @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
@@ -212,7 +219,7 @@ public class Annotate {
       @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
       @Context HttpServletRequest request              
       ) {
-        return getRDFa(text,inUrl,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,spotter,disambiguatorName,request);
+        return getRDFa(text, inUrl, disambiguationConfidence,  spotterConfidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, spotter, disambiguatorName, request);
     }
     
     @POST
@@ -221,7 +228,8 @@ public class Annotate {
     public Response postXML(
       @DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
       @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @FormParam("url") String inUrl,
-      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @FormParam("confidence") Double confidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @FormParam("confidence") Double disambiguationConfidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
       @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @FormParam("support") int support,
       @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @FormParam("types") String dbpediaTypes,
       @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
@@ -231,7 +239,7 @@ public class Annotate {
       @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
       @Context HttpServletRequest request              
       ) {
-        return getXML(text,inUrl,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,spotter,disambiguatorName,request);
+        return getXML(text, inUrl, disambiguationConfidence,  spotterConfidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, spotter, disambiguatorName, request);
     }
     
     @POST
@@ -240,7 +248,8 @@ public class Annotate {
     public Response postNIF(
       @DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
       @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @FormParam("url") String inUrl,
-      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @FormParam("confidence") Double confidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @FormParam("confidence") Double disambiguationConfidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
       @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @FormParam("support") int support,
       @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @FormParam("types") String dbpediaTypes,
       @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
@@ -253,7 +262,7 @@ public class Annotate {
       @DefaultValue("10") @FormParam("context-length") int ctxLength,
       @Context HttpServletRequest request
       ) {
-	return getNIF(text,inUrl,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,spotter,disambiguatorName,prefix,request);
+	return getNIF(text, inUrl, disambiguationConfidence,  spotterConfidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, spotter, disambiguatorName, prefix, request);
     }
 
     @POST
@@ -262,7 +271,8 @@ public class Annotate {
     public Response postJSON(
       @DefaultValue(SpotlightConfiguration.DEFAULT_TEXT) @FormParam("text") String text,
       @DefaultValue(SpotlightConfiguration.DEFAULT_URL) @FormParam("url") String inUrl,
-      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @FormParam("confidence") Double confidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @FormParam("confidence") Double disambiguationConfidence,
+      @DefaultValue(SpotlightConfiguration.DEFAULT_CONFIDENCE) @QueryParam("spotterConfidence") Double spotterConfidence,
       @DefaultValue(SpotlightConfiguration.DEFAULT_SUPPORT) @FormParam("support") int support,
       @DefaultValue(SpotlightConfiguration.DEFAULT_TYPES) @FormParam("types") String dbpediaTypes,
       @DefaultValue(SpotlightConfiguration.DEFAULT_SPARQL) @FormParam("sparql") String sparqlQuery,
@@ -272,7 +282,7 @@ public class Annotate {
       @DefaultValue("Default") @FormParam("disambiguator") String disambiguatorName,
       @Context HttpServletRequest request              
       ) {
-        return getJSON(text,inUrl,confidence,support,dbpediaTypes,sparqlQuery,policy,coreferenceResolution,spotter,disambiguatorName,request);
+        return getJSON(text, inUrl, disambiguationConfidence,  spotterConfidence, support, dbpediaTypes, sparqlQuery, policy, coreferenceResolution, spotter, disambiguatorName, request);
       }
 
 }

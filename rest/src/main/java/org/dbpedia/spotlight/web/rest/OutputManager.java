@@ -76,7 +76,7 @@ public class OutputManager {
         }
     }
 
-    protected String makeXML(String text, List<DBpediaResourceOccurrence> occList, double confidence, int support, String targetTypesString, String sparqlQuery, String policy, boolean coreferenceResolution) throws OutputException {
+    protected String makeXML(String text, List<DBpediaResourceOccurrence> occList, double disambiguationConfidence, double spotterConfidence, int support, String targetTypesString, String sparqlQuery, String policy, boolean coreferenceResolution) throws OutputException {
         // PrintWriter from a Servlet
         String xml = "";
         try {
@@ -90,7 +90,8 @@ public class OutputManager {
         AttributesImpl atts = new AttributesImpl();
 
         atts.addAttribute("","","text","CDATA",text);
-        atts.addAttribute("","","confidence","CDATA",String.valueOf(confidence));
+        atts.addAttribute("","","disambiguationConfidence","CDATA",String.valueOf(disambiguationConfidence));
+        atts.addAttribute("","","spotterConfidence","CDATA",String.valueOf(spotterConfidence));
         atts.addAttribute("","","support","CDATA",String.valueOf(support));
         atts.addAttribute("","","types","CDATA",targetTypesString);
         atts.addAttribute("","","sparql","CDATA",sparqlQuery);
