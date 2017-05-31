@@ -50,6 +50,30 @@ object WikiMarkupStripper
     }
 
     /**
+     * Strips a string of all markup except bold markers; tries to turn it into plain text
+     *
+     * @param markup the text to be stripped
+     * @return the stripped text
+     */
+    def stripEverythingButBold(markup : String) : String = {
+        var strippedMarkup = StringEscapeUtils.unescapeHtml(markup)
+
+        strippedMarkup = stripSection(strippedMarkup, "see also")
+        strippedMarkup = stripSection(strippedMarkup, "references")
+        strippedMarkup = stripSection(strippedMarkup, "further reading")
+        strippedMarkup = stripSection(strippedMarkup, "external links")
+        //strippedMarkup = stripHeadings(strippedMarkup)
+        strippedMarkup = stripMagicWords(strippedMarkup)
+        //strippedMarkup = stripFormatting(strippedMarkup)
+        strippedMarkup = stripFormattingButBold(strippedMarkup)
+        strippedMarkup = stripBullets(strippedMarkup)
+        strippedMarkup = stripHTML(strippedMarkup)
+        strippedMarkup = stripExcessNewlines(strippedMarkup)
+
+        strippedMarkup
+    }
+
+    /**
      * Strips a string of all markup except bullet points of lists; tries to turn it into plain text
      *
      * @param markup the text to be stripped
@@ -122,6 +146,7 @@ object WikiMarkupStripper
     def stripRefs(markup: String): String = {
         // called in stripHTML
         var strippedMarkup: String = markup.replaceAll("""<ref\\\\>""", "")
+        strippedMarkup = strippedMarkup.replaceAll("""<ref(.*?)/>""","")
         strippedMarkup = strippedMarkup.replaceAll("""(?s)<ref>(.*?)</ref>""", "")
         strippedMarkup = strippedMarkup.replaceAll("""(?s)<ref\s(.*?)>(.*?)</ref>""", "")
         return strippedMarkup
@@ -146,6 +171,18 @@ object WikiMarkupStripper
     def stripFormatting(markup: String): String = {
         var strippedMarkup: String = markup.replaceAll("""'{2,}""", "")
         strippedMarkup = strippedMarkup.replaceAll("""={2,}""", "")
+        strippedMarkup = strippedMarkup.replaceAll("""\n:+""", "\n")
+        return strippedMarkup
+    }
+    
+    /**
+     * Strips all wiki formatting, like italicised, intented, listed, or made into headers except bold
+     *
+     * @param markup the text to be stripped
+     * @return the stripped markup
+     */
+    def stripFormattingButBold(markup: String): String = {
+        var strippedMarkup: String = markup.replaceAll("""={2,}""", "")
         strippedMarkup = strippedMarkup.replaceAll("""\n:+""", "\n")
         return strippedMarkup
     }

@@ -78,6 +78,7 @@ object AllOccurrenceSource
             for (wikiPage <- wikiPages)
             {
                 var pageNode = wikiParser( wikiPage )
+                var gotBoldSurfaceForms : Boolean = false
 
                 // disambiguations
                 if (pageNode.isDisambiguation) {
@@ -113,7 +114,8 @@ object AllOccurrenceSource
                     // Occurrences
                     
                     // clean the wiki markup from everything but links
-                    val cleanSource = WikiMarkupStripper.stripEverything(wikiPage.source)
+                    // val cleanSource = WikiMarkupStripper.stripEverything(wikiPage.source)
+                    val cleanSource = WikiMarkupStripper.stripEverythingButBold(wikiPage.source)
 
                     // parse the (clean) wiki page
                     pageNode = wikiParser( WikiPageUtil.copyWikiPage(wikiPage, cleanSource) )
@@ -127,6 +129,11 @@ object AllOccurrenceSource
                         WikiOccurrenceSource.getOccurrences(paragraph, idBase).foreach{occ =>
                             occCount += 1
                             f(occ)
+                            if(!gotBoldSurfaceForms) {
+                                if(occ.context.text contains "\'\'\'") {
+                                    gotBoldSurfaceForms = true
+                                }
+                            }
                         }
                     }
 

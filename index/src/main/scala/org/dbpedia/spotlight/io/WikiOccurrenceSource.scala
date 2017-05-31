@@ -154,6 +154,15 @@ object WikiOccurrenceSource
                 case _ =>
             }
         }
+        
+        var boldPattern = """\'{3}([^\']*)\'{3}""".r
+        for (pattMatch <- boldPattern.findAllIn(paragraphText).matchData) {
+            val surfaceFormOffset = paragraphText.indexOf(pattMatch.toString)
+            var surfaceForm = pattMatch.group(1).trim.replaceAll("""\(.+?\)$""", "").replaceAll("""^(The|A) """, "")
+            if (surfaceForm.nonEmpty) {
+                occurrenceTriples ::= new Tuple3(occurrenceIdBase.replaceAll("-.+?$", ""), surfaceForm, surfaceFormOffset)
+            }
+        }
 
         // make a Text instance and check if it is valid
         val textInstance = new Text(paragraphText.replaceAll("""\s""", " "))
