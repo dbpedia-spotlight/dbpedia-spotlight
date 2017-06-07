@@ -1,4 +1,30 @@
 # DBpedia Spotlight [![Build Status](https://secure.travis-ci.org/dbpedia-spotlight/dbpedia-spotlight.png?branch=master)](http://travis-ci.org/dbpedia-spotlight/dbpedia-spotlight)
+
+### General Notes
+
+Since v1.0, DBpedia Spotlight was split into two versions, under the same API,  as follow:
+
+  - DBpedia-Spotlight-Model: described in [Improving Efficiency and Accuracy in Multilingual Entity Extraction](http://jodaiber.de/doc/entity.pdf)
+
+  - DBpedia-Spotlight-Lucene: described in [DBpedia Spotlight: Shedding Light on the Web of Documents](https://blog.semantic-web.at/wp-content/uploads/2011/09/p1_mendes.pdf)
+  
+We will keep this repository just to historical references. Every issue opened should be closed and reopened in their respective repositories.
+
+This important movement was the way that we found to deliver faster fixes and new releases, providing solutions for each annotation approach.
+
+Our first achievement is related with licensing. DBpedia Spotlight Model is now full compliance with Apache 2.0. It means that you can use it without any commercial restrictions.
+
+We are so excited because there's even more great news to come.
+
+If you require any further information, feel free to contact us via dbpedia@infai.org. We are already very excited to spend time with you on further community meetings and to publish new DBpedia releases.
+
+Keep annotating,
+
+All the best
+
+
+
+
 #### Shedding Light on the Web of Documents
 
 DBpedia Spotlight looks for ~3.5M things of unknown or ~320 known types in text and tries to link them to their global unique identifiers in [DBpedia](http://dbpedia.org). 
