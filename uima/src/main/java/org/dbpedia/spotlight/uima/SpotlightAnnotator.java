@@ -7,6 +7,7 @@ import java.net.URLEncoder;
 
 import javax.ws.rs.core.MediaType;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.component.JCasAnnotator_ImplBase;
@@ -72,7 +73,7 @@ public class SpotlightAnnotator extends JCasAnnotator_ImplBase {
 		String documentText = aJCas.getDocumentText();
 
 		// don't query endpoint without text
-		if (documentText == null || documentText.isEmpty()) {
+		if (StringUtils.isBlank(documentText)) {
 			return;
 		}
 
@@ -102,10 +103,9 @@ public class SpotlightAnnotator extends JCasAnnotator_ImplBase {
 				request += line;
 				numLines++;
 			}
-			if (request == null || request.isEmpty()) {
-				break;
+			if (StringUtils.isBlank(request)) {
+				continue;
 			}
-
 			
 			Annotation response = null;
 			boolean retry = false;
