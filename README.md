@@ -6,7 +6,7 @@ Since v1.0, DBpedia Spotlight was split into two versions, under the same API,  
 
   - DBpedia-Spotlight-Model: described in [Improving Efficiency and Accuracy in Multilingual Entity Extraction](http://jodaiber.de/doc/entity.pdf)
 
-  - DBpedia-Spotlight-Lucene: described in [DBpedia Spotlight: Shedding Light on the Web of Documents](https://blog.semantic-web.at/wp-content/uploads/2011/09/p1_mendes.pdf)
+  - DBpedia-Spotlight-Lucene: described in [DBpedia Spotlight: Shedding Light on the Web of Documents](http://www.dbpedia-spotlight.org/docs/spotlight.pdf)
   
 We will keep this repository just to historical references. Every issue opened should be closed and reopened in their respective repositories.
 
