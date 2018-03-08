@@ -1,4 +1,4 @@
-**IMPORTANT: No longer in active development.  Please use https://github.com/dbpedia-spotlight/dbpedia-spotlight-model instead. **
+**IMPORTANT: No longer in active development.  Please use https://github.com/dbpedia-spotlight/dbpedia-spotlight-model instead.**
 
 ---
 
