@@ -117,6 +117,3 @@ More documentation is available from the [DBpedia Spotlight wiki](https://github
 Check the [FAQ here](https://github.com/dbpedia-spotlight/dbpedia-spotlight/wiki/faq) 
 
 
-## Maintainers
-
-<a href="http://infai.org"><img src="http://infai.org/de/Presse/Logos/files?get=infai_logo_en_rgb_300dpi.jpg" align="left" height="20%" width="20%" ></a>
