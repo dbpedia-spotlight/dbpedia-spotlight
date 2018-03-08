@@ -1,3 +1,8 @@
+**IMPORTANT: No longer in active development.**
+
+---
+
+
 # DBpedia Spotlight [![Build Status](https://secure.travis-ci.org/dbpedia-spotlight/dbpedia-spotlight.png?branch=master)](http://travis-ci.org/dbpedia-spotlight/dbpedia-spotlight)
 
 
@@ -19,9 +24,9 @@ CI -http://jenkins.dbpedia-spotlight.org
 
 Since v1.0, DBpedia Spotlight was split into two versions, under the same API,  as follow:
 
-  - DBpedia-Spotlight-Model: described in [Improving Efficiency and Accuracy in Multilingual Entity Extraction](http://jodaiber.de/doc/entity.pdf)
+  - DBpedia-Spotlight-Model: described in [Improving Efficiency and Accuracy in Multilingual Entity Extraction](http://jodaiber.de/doc/entity.pdf) - Repo: https://github.com/dbpedia-spotlight/dbpedia-spotlight-model
 
-  - DBpedia-Spotlight-Lucene: described in [DBpedia Spotlight: Shedding Light on the Web of Documents](http://www.dbpedia-spotlight.org/docs/spotlight.pdf)
+  - DBpedia-Spotlight-Lucene: described in [DBpedia Spotlight: Shedding Light on the Web of Documents](http://www.dbpedia-spotlight.org/docs/spotlight.pdf)  - Repo: - https://github.com/dbpedia-spotlight/dbpedia-spotlight - No longer in active development
   
 We will keep this repository just to historical references. Every issue opened should be closed and reopened in their respective repositories.
 
